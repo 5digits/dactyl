@@ -339,6 +339,7 @@ function keys(obj) iter(function keys() {
         if (hasOwnProperty.call(obj, k))
             yield k;
 }());
+
 /**
  * Iterates over all of the top-level, iterable property values of an
  * object.

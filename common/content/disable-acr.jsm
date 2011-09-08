@@ -8,8 +8,7 @@ const OVERLAY_URLS = [
     "chrome://mozapps/content/extensions/extensions.xul"
 ];
 
-const Ci = Components.interfaces;
-const Cu = Components.utils;
+let { interfaces: Ci, utils: Cu } = Components;
 
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
@@ -64,7 +63,10 @@ function chromeDocuments() {
             let docShells = window.docShell.getDocShellEnumerator(Ci.nsIDocShellTreeItem[type],
                                                                   Ci.nsIDocShell.ENUMERATE_FORWARDS);
             while (docShells.hasMoreElements())
+                try {
                 yield docShells.getNext().QueryInterface(Ci.nsIDocShell).contentViewer.DOMDocument;
+                }
+                catch (e) {}
         }
     }
 }

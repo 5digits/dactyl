@@ -268,7 +268,13 @@ var DOM = Class("DOM", {
 
         add: function add(cls) this.each("add", cls),
         remove: function remove(cls) this.each("remove", cls),
-        toggle: function toggle(cls, val) this.each(val == null ? "toggle" : val ? "add" : "remove", cls),
+        toggle: function toggle(cls, val, thisObj) {
+            if (callable(val))
+                return self.each(function (elem, i) {
+                    this.class.toggle(cls, val.call(thisObj || this, elem, i));
+                });
+            return this.each(val == null ? "toggle" : val ? "add" : "remove", cls);
+        },
 
         has: function has(cls) this[0].classList.has(cls)
     }),
@@ -524,7 +530,7 @@ var DOM = Class("DOM", {
         let hooks = this.attrHooks[ns] || {};
 
         if (isObject(key))
-            return this.each(function (elem) {
+            return this.each(function (elem, i) {
                 for (let [k, v] in Iterator(key)) {
                     if (callable(v))
                         v = v.call(this, elem, i);
@@ -549,7 +555,6 @@ var DOM = Class("DOM", {
 
         return this[0].getAttributeNS(ns, key);
     },
-
 
     css: update(function css(key, val) {
         if (val !== undefined)

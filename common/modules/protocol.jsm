@@ -12,7 +12,7 @@ defineModule("protocol", {
 
 var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
-function Channel(url, orig, noErrorChannel) {
+function Channel(url, orig, noErrorChannel, unprivileged) {
     try {
         if (url == null)
             return noErrorChannel ? null : NetError(orig);
@@ -97,6 +97,17 @@ ProtocolBase.prototype = {
     get classDescription()  this.scheme + " utility protocol",
     QueryInterface:         XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
 
+    purge: function purge() {
+        for (let doc in util.iterDocuments())
+            try {
+                if (doc.documentURIObject.scheme == this.scheme)
+                    doc.defaultView.close();
+            }
+            catch (e) {
+                util.reportError(e);
+            }
+    },
+
     defaultPort: -1,
     allowPort: function (port, scheme) false,
     protocolFlags: 0
@@ -151,7 +162,7 @@ function StringChannel(data, contentType, uri) {
     return channel;
 }
 
-function XMLChannel(uri, contentType, noErrorChannel) {
+function XMLChannel(uri, contentType, noErrorChannel, unprivileged) {
     try {
         var channel = services.io.newChannelFromURI(uri);
         var channelStream = channel.open();
@@ -170,13 +181,14 @@ function XMLChannel(uri, contentType, noErrorChannel) {
     this.channel.contentStream = this.pipe.inputStream;
     this.channel.contentType = contentType || channel.contentType;
     this.channel.contentCharset = "UTF-8";
+    if (!unprivileged)
     this.channel.owner = systemPrincipal;
 
     let stream = services.InputStream(channelStream);
-    let [, pre, doctype, url, open, post] = util.regexp(<![CDATA[
+    let [, pre, doctype, url, extra, open, post] = util.regexp(<![CDATA[
             ^ ([^]*?)
             (?:
-                (<!DOCTYPE \s+ \S+ \s+) SYSTEM \s+ "([^"]*)"
+                (<!DOCTYPE \s+ \S+ \s+) (?:SYSTEM \s+ "([^"]*)" | ((?:[^[>\s]|\s[^[])*))
                 (\s+ \[)?
                 ([^]*)
             )?
@@ -184,14 +196,18 @@ function XMLChannel(uri, contentType, noErrorChannel) {
         ]]>, "x").exec(stream.read(4096));
     this.writes.push(pre);
     if (doctype) {
-        this.writes.push(doctype + "[\n");
-        try {
-            this.writes.push(services.io.newChannel(url, null, null).open());
-        }
-        catch (e) {}
+        this.writes.push(doctype + (extra || "") + " [\n");
+        if (url)
+            this.addChannel(url);
+
         if (!open)
             this.writes.push("\n]");
-        this.writes.push(post);
+
+        for (let [, pre, url] in util.regexp.iterate(/([^]*?)(?:%include\s+"([^"]*)";|$)/gy, post)) {
+            this.writes.push(pre);
+            if (url)
+                this.addChannel(url);
+        }
     }
     this.writes.push(channelStream);
 
@@ -199,6 +215,16 @@ function XMLChannel(uri, contentType, noErrorChannel) {
 }
 XMLChannel.prototype = {
     QueryInterface:   XPCOMUtils.generateQI([Ci.nsIRequestObserver]),
+
+    addChannel: function addChannel(url) {
+        try {
+            this.writes.push(services.io.newChannel(url, null, this.uri).open());
+        }
+        catch (e) {
+            util.reportError(e);
+        }
+    },
+
     writeNext: function () {
         try {
             if (!this.writes.length)

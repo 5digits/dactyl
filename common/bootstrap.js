@@ -102,7 +102,7 @@ function startup(data, reason) {
             addon = a;
             updateVersion();
             if (typeof require !== "undefined")
-                require(global, "overlay");
+                require(global, "main");
         });
 
         if (basePath.isDirectory())
@@ -260,7 +260,7 @@ function init() {
     updateVersion();
 
     if (addon !== addonData)
-        require(global, "overlay");
+        require(global, "main");
 }
 
 function shutdown(data, reason) {

@@ -215,7 +215,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         }
                     </>
                 },
-                init: function (win) {
+                ready: function ready(win) {
                     let elem =  win.document.getElementById("itemList");
                     elem.setAttribute("rows", elem.itemCount);
                     win.Sanitizer = Class("Sanitizer", win.Sanitizer, {

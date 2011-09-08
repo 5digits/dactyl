@@ -72,6 +72,7 @@ var ConfigBase = Class("ConfigBase", {
                  "help",
                  "highlight",
                  "javascript",
+                 "main",
                  "messages",
                  "options",
                  "overlay",

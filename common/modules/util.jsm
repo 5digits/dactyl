@@ -60,6 +60,29 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     overlayObject: deprecated("overlay.overlayObject", { get: function overlayObject() overlay.closure.overlayObject }),
     overlayWindow: deprecated("overlay.overlayWindow", { get: function overlayWindow() overlay.closure.overlayWindow }),
 
+    compileMatcher: deprecated("DOM.compileMatcher", { get: function compileMatcher() DOM.compileMatcher }),
+    computedStyle: deprecated("DOM#style", function computedStyle(elem) DOM(elem).style),
+    domToString: deprecated("DOM.stringify", { get: function domToString() DOM.stringify }),
+    editableInputs: deprecated("DOM.editableInputs", { get: function editableInputs(elem) DOM.editableInputs }),
+    escapeHTML: deprecated("DOM.escapeHTML", { get: function escapeHTML(elem) DOM.escapeHTML }),
+    evaluateXPath: deprecated("DOM.XPath",
+        function evaluateXPath(path, elem, asIterator) DOM.XPath(path, elem || util.activeWindow.content.document, asIterator)),
+    isVisible: deprecated("DOM#isVisible", function isVisible(elem) DOM(elem).isVisible),
+    makeXPath: deprecated("DOM.makeXPath", { get: function makeXPath(elem) DOM.makeXPath }),
+    namespaces: deprecated("DOM.namespaces", { get: function namespaces(elem) DOM.namespaces }),
+    namespaceNames: deprecated("DOM.namespaceNames", { get: function namespaceNames(elem) DOM.namespaceNames }),
+    parseForm: deprecated("DOM#formData", function parseForm(elem) values(DOM(elem).formData).toArray()),
+    scrollIntoView: deprecated("DOM#scrollIntoView", function scrollIntoView(elem, alignWithTop) DOM(elem).scrollIntoView(alignWithTop)),
+    validateMatcher: deprecated("DOM.validateMatcher", { get: function validateMatcher() DOM.validateMatcher }),
+
+    map: deprecated("iter.map", function map(obj, fn, self) iter(obj).map(fn, self).toArray()),
+    writeToClipboard: deprecated("dactyl.clipboardWrite", function writeToClipboard(str, verbose) util.dactyl.clipboardWrite(str, verbose)),
+    readFromClipboard: deprecated("dactyl.clipboardRead", function readFromClipboard() util.dactyl.clipboardRead(false)),
+
+    chromePackages: deprecated("config.chromePackages", { get: function chromePackages() config.chromePackages }),
+    haveGecko: deprecated("config.haveGecko", { get: function haveGecko() config.closure.haveGecko }),
+    OS: deprecated("config.OS", { get: function OS() config.OS }),
+
     dactyl: update(function dactyl(obj) {
         if (obj)
             var global = Class.objectGlobal(obj);
@@ -374,25 +397,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         util.assert(stack.length === 1, /*L*/"Unmatched <{ in macro");
         return stack.top;
     },
-
-    compileMatcher: deprecated("DOM.compileMatcher", { get: function compileMatcher() DOM.compileMatcher }),
-    computedStyle: deprecated("DOM#style", function computedStyle(elem) DOM(elem).style),
-    domToString: deprecated("DOM.stringify", { get: function domToString() DOM.stringify }),
-    editableInputs: deprecated("DOM.editableInputs", { get: function editableInputs(elem) DOM.editableInputs }),
-    escapeHTML: deprecated("DOM.escapeHTML", { get: function escapeHTML(elem) DOM.escapeHTML }),
-    evaluateXPath: deprecated("DOM.XPath",
-        function evaluateXPath(path, elem, asIterator) DOM.XPath(path, elem || util.activeWindow.content.document, asIterator)),
-    isVisible: deprecated("DOM#isVisible", function isVisible(elem) DOM(elem).isVisible),
-    makeXPath: deprecated("DOM.makeXPath", { get: function makeXPath(elem) DOM.makeXPath }),
-    namespaces: deprecated("DOM.namespaces", { get: function namespaces(elem) DOM.namespaces }),
-    namespaceNames: deprecated("DOM.namespaceNames", { get: function namespaceNames(elem) DOM.namespaceNames }),
-    parseForm: deprecated("DOM#formData", function parseForm(elem) values(DOM(elem).formData).toArray()),
-    scrollIntoView: deprecated("DOM#scrollIntoView", function scrollIntoView(elem, alignWithTop) DOM(elem).scrollIntoView(alignWithTop)),
-    validateMatcher: deprecated("DOM.validateMatcher", { get: function validateMatcher() DOM.validateMatcher }),
-
-    chromePackages: deprecated("config.chromePackages", { get: function chromePackages() config.chromePackages }),
-    haveGecko: deprecated("config.haveGecko", { get: function haveGecko() config.closure.haveGecko }),
-    OS: deprecated("config.OS", { get: function OS() config.OS }),
 
     /**
      * Converts any arbitrary string into an URI object. Returns null on
@@ -825,10 +829,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                                                                        function (m) map[m]),
                                   "'>"].join(""))
           .join("\n"),
-
-    map: deprecated("iter.map", function map(obj, fn, self) iter(obj).map(fn, self).toArray()),
-    writeToClipboard: deprecated("dactyl.clipboardWrite", function writeToClipboard(str, verbose) util.dactyl.clipboardWrite(str, verbose)),
-    readFromClipboard: deprecated("dactyl.clipboardRead", function readFromClipboard() util.dactyl.clipboardRead(false)),
 
     /**
      * Converts a URI string into a URI object.
