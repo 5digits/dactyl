@@ -859,7 +859,7 @@ var Buffer = Module("buffer", {
         dactyl.assert(idx in elems);
 
         let elem = elems[idx][0];
-        DOM(elem).scrollIntoView();
+        elem.scrollIntoView(true);
 
         let sel = elem.ownerDocument.defaultView.getSelection();
         sel.removeAllRanges();
