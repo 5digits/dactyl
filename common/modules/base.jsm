@@ -986,8 +986,10 @@ Class.prototype = {
                 catch (e) {}
             }, this);
         }
+        return this;
     },
 
+    localizedProperties: {},
     magicalProperties: {}
 };
 Class.makeClosure = function makeClosure() {
