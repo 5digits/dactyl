@@ -493,6 +493,29 @@ var Events = Module("events", {
 
         this._activeMenubar = false;
         this.listen(window, this, "events", true);
+
+        this.popups = {
+            active: [],
+
+            update: function update(elem) {
+                if (elem) {
+                    if (elem instanceof Ci.nsIAutoCompletePopup
+                            || elem.localName == "tooltip"
+                            || !elem.popupBoxObject)
+                        return;
+
+                    if (!~this.active.indexOf(elem))
+                        this.active.push(elem);
+                }
+
+                this.active = this.active.filter(function (e) e.popupBoxObject.popupState != "closed");
+
+                if (!this.active.length && !events._activeMenubar)
+                    modes.remove(modes.MENU, true);
+                else if (modes.main != modes.MENU)
+                    modes.push(modes.MENU);
+            }
+        };
     },
 
     signals: {
@@ -1118,13 +1141,13 @@ var Events = Module("events", {
     },
 
     events: {
-        DOMMenuBarActive: function () {
+        DOMMenuBarActive: function onDOMMenuBarActive() {
             this._activeMenubar = true;
             if (modes.main != modes.MENU)
                 modes.push(modes.MENU);
         },
 
-        DOMMenuBarInactive: function () {
+        DOMMenuBarInactive: function onDOMMenuBarInactive() {
             this._activeMenubar = false;
             modes.remove(modes.MENU, true);
         },
@@ -1376,24 +1399,27 @@ var Events = Module("events", {
             }
         },
 
+        popupshowing: function onPopupShowing(event) {
+            this.popups.update(event.originalTarget);
+        },
+
         popupshown: function onPopupShown(event) {
             let elem = event.originalTarget;
+            this.popups.update(elem);
+
             if (elem instanceof Ci.nsIAutoCompletePopup) {
                 if (modes.main != modes.AUTOCOMPLETE)
                     modes.push(modes.AUTOCOMPLETE);
             }
-            else if (elem.localName !== "tooltip")
-                if (Events.isHidden(elem)) {
+            else if (elem.localName !== "tooltip") {
+                if (Events.isHidden(elem))
                     if (elem.hidePopup && Events.isHidden(elem.parentNode))
                         elem.hidePopup();
-                }
-                else if (modes.main != modes.MENU)
-                    modes.push(modes.MENU);
+            }
         },
 
         popuphidden: function onPopupHidden(event) {
-            if (window.gContextMenu == null && !this._activeMenubar)
-                modes.remove(modes.MENU, true);
+            this.popups.update();
             modes.remove(modes.AUTOCOMPLETE);
         },
 

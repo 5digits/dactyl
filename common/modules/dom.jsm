@@ -821,8 +821,8 @@ var DOM = Class("DOM", {
             };
 
             opts = opts || {};
-            var t = this.constructor.types[type];
-            var evt = doc.createEvent((t || "HTML") + "Events");
+            var t = this.constructor.types[type] || "";
+            var evt = doc.createEvent(t + "Events");
 
             let defaults = DEFAULTS[t || "HTML"];
             update(defaults, this.constructor.defaults[type]);
