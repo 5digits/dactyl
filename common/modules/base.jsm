@@ -768,6 +768,7 @@ function Class() {
     }
 
     Class.extend(Constructor, superclass, args[0]);
+    memoize(Constructor, "closure", Class.makeClosure);
     update(Constructor, args[1]);
 
     Constructor.__proto__ = superclass;

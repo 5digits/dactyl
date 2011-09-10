@@ -393,7 +393,7 @@ var CommandMode = Class("CommandMode", {
             this.onChange(commandline.command);
         },
         keyup: function CM_onKeyUp(event) {
-            let key = events.toString(event);
+            let key = DOM.Event.stringify(event);
             if (/-?Tab>$/.test(key) && this.completions)
                 this.completions.tabTimer.flush();
         }

@@ -29,7 +29,7 @@ var HintSession = Class("HintSession", CommandMode, {
         this.activeTimeout = null; // needed for hinttimeout > 0
         this.continue = Boolean(opts.continue);
         this.docs = [];
-        this.hintKeys = events.fromString(options["hintkeys"]).map(events.closure.toString);
+        this.hintKeys = DOM.Event.parse(options["hintkeys"]).map(DOM.Event.closure.stringify);
         this.hintNumber = 0;
         this.hintString = opts.filter || "";
         this.pageHints = [];
@@ -403,7 +403,7 @@ var HintSession = Class("HintSession", CommandMode, {
      */
     onKeyPress: function onKeyPress(eventList) {
         const KILL = false, PASS = true;
-        let key = events.toString(eventList[0]);
+        let key = DOM.Event.stringify(eventList[0]);
 
         this.clearTimeout();
 
@@ -1301,7 +1301,7 @@ var Hints = Module("hints", {
                     "asdfg;lkjh": "Home Row"
                 },
                 validator: function (value) {
-                    let values = events.fromString(value).map(events.closure.toString);
+                    let values = DOM.Event.parse(value).map(DOM.Event.closure.stringify);
                     return Option.validIf(array.uniq(values).length === values.length && values.length > 1,
                                           _("option.hintkeys.duplicate"));
                 }

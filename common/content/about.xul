@@ -6,7 +6,7 @@
 <page id="about-&dactyl.name;" orient="vertical" title="About &dactyl.appName;"
       xmlns="&xmlns.xul;" xmlns:html="&xmlns.html;">
 
-  <html:link rel="icon" href="chrome://&dactyl.name;/skin/icon.png"
+  <html:link rel="icon" href="resource://dactyl-local-skin/icon.png"
              type="image/png" style="display: none;"/>
 
   <spring flex="1"/>

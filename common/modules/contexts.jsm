@@ -421,7 +421,7 @@ var Contexts = Module("contexts", {
             /* fallthrough */
         case "-keys":
             let silent = args["-silent"];
-            rhs = events.canonicalKeys(rhs, true);
+            rhs = DOM.Event.canonicalKeys(rhs, true);
             var action = function action() {
                 events.feedkeys(action.macro(makeParams(this, arguments)),
                                 noremap, silent);

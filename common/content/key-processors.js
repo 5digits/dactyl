@@ -134,7 +134,7 @@ var ProcessorStack = Class("ProcessorStack", {
             events.passing = true;
 
         if (result === Events.PASS_THROUGH && this.keyEvents.length)
-            events.dbg("PASS_THROUGH:\n\t" + this.keyEvents.map(function (e) [e.type, events.toString(e)]).join("\n\t"));
+            events.dbg("PASS_THROUGH:\n\t" + this.keyEvents.map(function (e) [e.type, DOM.Event.stringify(e)]).join("\n\t"));
 
         if (result === Events.PASS_THROUGH)
             events.feedevents(null, this.keyEvents, { skipmap: true, isMacro: true, isReplay: true });
@@ -142,9 +142,9 @@ var ProcessorStack = Class("ProcessorStack", {
             let list = this.events.filter(function (e) e.getPreventDefault() && !e.dactylDefaultPrevented);
 
             if (result === Events.PASS)
-                events.dbg("PASS THROUGH: " + list.slice(0, length).filter(function (e) e.type === "keypress").map(events.closure.toString));
+                events.dbg("PASS THROUGH: " + list.slice(0, length).filter(function (e) e.type === "keypress").map(DOM.Event.closure.stringify));
             if (list.length > length)
-                events.dbg("REFEED: " + list.slice(length).filter(function (e) e.type === "keypress").map(events.closure.toString));
+                events.dbg("REFEED: " + list.slice(length).filter(function (e) e.type === "keypress").map(DOM.Event.closure.stringify));
 
             if (result === Events.PASS)
                 events.feedevents(null, list.slice(0, length), { skipmap: true, isMacro: true, isReplay: true });
@@ -159,7 +159,7 @@ var ProcessorStack = Class("ProcessorStack", {
         if (this.timer)
             this.timer.cancel();
 
-        let key = events.toString(event);
+        let key = DOM.Event.stringify(event);
         this.events.push(event);
         if (this.keyEvents)
             this.keyEvents.push(event);
@@ -233,7 +233,7 @@ var KeyProcessor = Class("KeyProcessor", {
 
     append: function append(event) {
         this.events.push(event);
-        let key = events.toString(event);
+        let key = DOM.Event.stringify(event);
 
         if (this.wantCount && !this.command &&
                 (this.countStr ? /^[0-9]$/ : /^[1-9]$/).test(key))

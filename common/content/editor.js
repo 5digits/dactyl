@@ -132,7 +132,7 @@ var Editor = Module("editor", {
         if (count == null)
             count = 1;
 
-        let code = events.fromString(key)[0].charCode;
+        let code = DOM.Event.parse(key)[0].charCode;
         util.assert(code);
         let char = String.fromCharCode(code);
 

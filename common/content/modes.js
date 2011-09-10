@@ -109,7 +109,7 @@ var Modes = Module("modes", {
                 const KILL = false, PASS = true;
 
                 // Hack, really.
-                if (eventList[0].charCode || /^<(?:.-)*(?:BS|Del|C-h|C-w|C-u|C-k)>$/.test(events.toString(eventList[0]))) {
+                if (eventList[0].charCode || /^<(?:.-)*(?:BS|Del|C-h|C-w|C-u|C-k)>$/.test(DOM.Event.stringify(eventList[0]))) {
                     dactyl.beep();
                     return KILL;
                 }

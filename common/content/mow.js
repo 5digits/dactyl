@@ -170,7 +170,7 @@ var MOW = Module("mow", {
             };
 
             if (event.target instanceof HTMLAnchorElement)
-                switch (events.toString(event)) {
+                switch (DOM.Event.stringify(event)) {
                 case "<LeftMouse>":
                     openLink(dactyl.CURRENT_TAB);
                     break;

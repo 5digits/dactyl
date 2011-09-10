@@ -48,7 +48,7 @@ var Map = Class("Map", {
     name: Class.Memoize(function () this.names[0]),
 
     /** @property {[string]} All of this mapping's names (key sequences). */
-    names: Class.Memoize(function () this._keys.map(function (k) events.canonicalKeys(k))),
+    names: Class.Memoize(function () this._keys.map(function (k) DOM.Event.canonicalKeys(k))),
 
     get toStringParams() [this.modes.map(function (m) m.name), this.names.map(String.quote)],
 
@@ -303,7 +303,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
                 for (let name in values(map.keys)) {
                     states.mappings[name] = map;
                     let state = "";
-                    for (let key in events.iterKeys(name)) {
+                    for (let key in DOM.Event.iterKeys(name)) {
                         state += key;
                         if (state !== name)
                             states.candidates[state] = (states.candidates[state] || 0) + 1;
@@ -341,11 +341,11 @@ var Mappings = Module("mappings", {
         if (!/<\*-/.test(keys))
             return keys;
 
-        return util.debrace(events.iterKeys(keys).map(function (key) {
+        return util.debrace(DOM.Event.iterKeys(keys).map(function (key) {
             if (/^<\*-/.test(key))
                 return ["<", this.prefixes, key.slice(3)];
             return key;
-        }, this).flatten().array).map(function (k) events.canonicalKeys(k));
+        }, this).flatten().array).map(function (k) DOM.Event.canonicalKeys(k));
     },
 
     iterate: function (mode) {

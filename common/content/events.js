@@ -115,67 +115,6 @@ var Events = Module("events", {
             if (isString(m))
                 m = { keys: m, timeRecorded: Date.now() };
 
-        // NOTE: the order of ["Esc", "Escape"] or ["Escape", "Esc"]
-        //       matters, so use that string as the first item, that you
-        //       want to refer to within dactyl's source code for
-        //       comparisons like if (key == "<Esc>") { ... }
-        this._keyTable = {
-            add: ["Plus", "Add"],
-            back_space: ["BS"],
-            count: ["count"],
-            delete: ["Del"],
-            escape: ["Esc", "Escape"],
-            insert: ["Insert", "Ins"],
-            leader: ["Leader"],
-            left_shift: ["LT", "<"],
-            nop: ["Nop"],
-            pass: ["Pass"],
-            return: ["Return", "CR", "Enter"],
-            right_shift: [">"],
-            space: ["Space", " "],
-            subtract: ["Minus", "Subtract"]
-        };
-
-        this._pseudoKeys = Set(["count", "leader", "nop", "pass"]);
-
-        this._key_key = {};
-        this._code_key = {};
-        this._key_code = {};
-        this._code_nativeKey = {};
-
-        for (let list in values(this._keyTable))
-            for (let v in values(list)) {
-                if (v.length == 1)
-                    v = v.toLowerCase();
-                this._key_key[v.toLowerCase()] = v;
-            }
-
-        for (let [k, v] in Iterator(KeyEvent)) {
-            this._code_nativeKey[v] = k.substr(4);
-
-            k = k.substr(7).toLowerCase();
-            let names = [k.replace(/(^|_)(.)/g, function (m, n1, n2) n2.toUpperCase())
-                          .replace(/^NUMPAD/, "k")];
-
-            if (names[0].length == 1)
-                names[0] = names[0].toLowerCase();
-
-            if (k in this._keyTable)
-                names = this._keyTable[k];
-            this._code_key[v] = names[0];
-            for (let [, name] in Iterator(names)) {
-                this._key_key[name.toLowerCase()] = name;
-                this._key_code[name.toLowerCase()] = v;
-            }
-        }
-
-        // HACK: as Gecko does not include an event for <, we must add this in manually.
-        if (!("<" in this._key_code)) {
-            this._key_code["<"] = 60;
-            this._key_code["lt"] = 60;
-            this._code_key[60] = "lt";
-        }
-
         this.popups = {
             active: [],
 
@@ -298,8 +237,8 @@ var Events = Module("events", {
 
         if (/[A-Z]/.test(macro)) { // uppercase (append)
             macro = macro.toLowerCase();
-            this._macroKeys = events.fromString((this._macros.get(macro) || { keys: "" }).keys, true)
-                                    .map(events.closure.toString);
+            this._macroKeys = DOM.Event.stringify((this._macros.get(macro) || { keys: "" }).keys, true)
+                                 .map(DOM.Event.closure.stringify);
         }
         else if (macro) {
             this._macroKeys = [];
@@ -421,9 +360,9 @@ var Events = Module("events", {
 
             keys = mappings.expandLeader(keys);
 
-            for (let [, evt_obj] in Iterator(events.fromString(keys))) {
+            for (let [, evt_obj] in Iterator(DOM.Event.parse(keys))) {
                 let now = Date.now();
-                let key = events.toString(evt_obj);
+                let key = DOM.Event.stringify(evt_obj);
                 for (let type in values(["keydown", "keypress", "keyup"])) {
                     let evt = update({}, evt_obj, { type: type });
                     if (type !== "keypress" && !evt.keyCode)
@@ -472,266 +411,20 @@ var Events = Module("events", {
         return true;
     },
 
-    create: deprecated("DOM.Event", function create() DOM.Event.apply(null, arguments)),
-    dispatch: deprecated("DOM.Event.dispatch", function dispatch() DOM.Event.dispatch.apply(DOM.Event, arguments)),
+    canonicalKeys: deprecated("DOM.Event.canonicalKeys", { get: function canonicalKeys() DOM.Event.closure.canonicalKeys }),
+    create:        deprecated("DOM.Event", function create() DOM.Event.apply(null, arguments)),
+    dispatch:      deprecated("DOM.Event.dispatch", function dispatch() DOM.Event.dispatch.apply(DOM.Event, arguments)),
+    fromString:    deprecated("DOM.Event.parse", { get: function fromString() DOM.Event.closure.parse }),
+    iterKeys:      deprecated("DOM.Event.iterKeys", { get: function iterKeys() DOM.Event.closure.iterKeys }),
 
-    /**
-     * Converts a user-input string of keys into a canonical
-     * representation.
-     *
-     * <C-A> maps to <C-a>, <C-S-a> maps to <C-S-A>
-     * <C- > maps to <C-Space>, <S-a> maps to A
-     * << maps to <lt><lt>
-     *
-     * <S-@> is preserved, as in Vim, to allow untypeable key-combinations
-     * in macros.
-     *
-     * canonicalKeys(canonicalKeys(x)) == canonicalKeys(x) for all values
-     * of x.
-     *
-     * @param {string} keys Messy form.
-     * @param {boolean} unknownOk Whether unknown keys are passed
-     *     through rather than being converted to <lt>keyname>.
-     *     @default false
-     * @returns {string} Canonical form.
-     */
-    canonicalKeys: function (keys, unknownOk) {
-        if (arguments.length === 1)
-            unknownOk = true;
-        return events.fromString(keys, unknownOk).map(events.closure.toString).join("");
+    toString: function toString() {
+        if (!arguments.length)
+            return toString.supercall(this);
+        deprecated.warn(toString, "toString", "DOM.Event.stringify");
+        return DOM.Event.stringify.apply(DOM.Event, arguments);
     },
-
-    iterKeys: function (keys) iter(function () {
-        let match, re = /<.*?>?>|[^<]/g;
-        while (match = re.exec(keys))
-            yield match[0];
-    }()),
 
     get defaultTarget() dactyl.focusedElement || content.document.body || document.documentElement,
-
-    /**
-     * Converts an event string into an array of pseudo-event objects.
-     *
-     * These objects can be used as arguments to events.toString or
-     * events.create, though they are unlikely to be much use for other
-     * purposes. They have many of the properties you'd expect to find on a
-     * real event, but none of the methods.
-     *
-     * Also may contain two "special" parameters, .dactylString and
-     * .dactylShift these are set for characters that can never by
-     * typed, but may appear in mappings, for example <Nop> is passed as
-     * dactylString, and dactylShift is set when a user specifies
-     * <S-@> where @ is a non-case-changeable, non-space character.
-     *
-     * @param {string} keys The string to parse.
-     * @param {boolean} unknownOk Whether unknown keys are passed
-     *     through rather than being converted to <lt>keyname>.
-     *     @default false
-     * @returns {Array[Object]}
-     */
-    fromString: function (input, unknownOk) {
-
-        if (arguments.length === 1)
-            unknownOk = true;
-
-        let out = [];
-        for (let match in util.regexp.iterate(/<.*?>?>|[^<]|<(?!.*>)/g, input)) {
-            let evt_str = match[0];
-
-            let evt_obj = { ctrlKey: false, shiftKey: false, altKey: false, metaKey: false,
-                            keyCode: 0, charCode: 0, type: "keypress" };
-
-            if (evt_str.length == 1) {
-                evt_obj.charCode = evt_str.charCodeAt(0);
-                evt_obj._keyCode = this._key_code[evt_str[0].toLowerCase()];
-                evt_obj.shiftKey = evt_str !== evt_str.toLowerCase();
-            }
-            else {
-                let [match, modifier, keyname] = evt_str.match(/^<((?:[*12CASM⌘]-)*)(.+?)>$/i) || [false, '', ''];
-                modifier = Set(modifier.toUpperCase());
-                keyname = keyname.toLowerCase();
-                evt_obj.dactylKeyname = keyname;
-                if (/^u[0-9a-f]+$/.test(keyname))
-                    keyname = String.fromCharCode(parseInt(keyname.substr(1), 16));
-
-                if (keyname && (unknownOk || keyname.length == 1 || /mouse$/.test(keyname) ||
-                                this._key_code[keyname] || Set.has(this._pseudoKeys, keyname))) {
-                    evt_obj.globKey  ="*" in modifier;
-                    evt_obj.ctrlKey  ="C" in modifier;
-                    evt_obj.altKey   ="A" in modifier;
-                    evt_obj.shiftKey ="S" in modifier;
-                    evt_obj.metaKey  ="M" in modifier || "⌘" in modifier;
-                    evt_obj.dactylShift = evt_obj.shiftKey;
-
-                    if (keyname.length == 1) { // normal characters
-                        if (evt_obj.shiftKey)
-                            keyname = keyname.toUpperCase();
-
-                        evt_obj.dactylShift = evt_obj.shiftKey && keyname.toUpperCase() == keyname.toLowerCase();
-                        evt_obj.charCode = keyname.charCodeAt(0);
-                        evt_obj._keyCode = this._key_code[keyname.toLowerCase()];
-                    }
-                    else if (Set.has(this._pseudoKeys, keyname)) {
-                        evt_obj.dactylString = "<" + this._key_key[keyname] + ">";
-                    }
-                    else if (/mouse$/.test(keyname)) { // mouse events
-                        evt_obj.type = (/2-/.test(modifier) ? "dblclick" : "click");
-                        evt_obj.button = ["leftmouse", "middlemouse", "rightmouse"].indexOf(keyname);
-                        delete evt_obj.keyCode;
-                        delete evt_obj.charCode;
-                    }
-                    else { // spaces, control characters, and <
-                        evt_obj.keyCode = this._key_code[keyname];
-                        evt_obj.charCode = 0;
-                    }
-                }
-                else { // an invalid sequence starting with <, treat as a literal
-                    out = out.concat(events.fromString("<lt>" + evt_str.substr(1)));
-                    continue;
-                }
-            }
-
-            // TODO: make a list of characters that need keyCode and charCode somewhere
-            if (evt_obj.keyCode == 32 || evt_obj.charCode == 32)
-                evt_obj.charCode = evt_obj.keyCode = 32; // <Space>
-            if (evt_obj.keyCode == 60 || evt_obj.charCode == 60)
-                evt_obj.charCode = evt_obj.keyCode = 60; // <lt>
-
-            evt_obj.modifiers = (evt_obj.ctrlKey  && Ci.nsIDOMNSEvent.CONTROL_MASK)
-                              | (evt_obj.altKey   && Ci.nsIDOMNSEvent.ALT_MASK)
-                              | (evt_obj.shiftKey && Ci.nsIDOMNSEvent.SHIFT_MASK)
-                              | (evt_obj.metaKey  && Ci.nsIDOMNSEvent.META_MASK);
-
-            out.push(evt_obj);
-        }
-        return out;
-    },
-
-    /**
-     * Converts the specified event to a string in dactyl key-code
-     * notation. Returns null for an unknown event.
-     *
-     * @param {Event} event
-     * @returns {string}
-     */
-    toString: function toString(event) {
-        if (!event)
-            return toString.supercall(this);
-
-        if (event.dactylString)
-            return event.dactylString;
-
-        let key = null;
-        let modifier = "";
-
-        if (event.globKey)
-            modifier += "*-";
-        if (event.ctrlKey)
-            modifier += "C-";
-        if (event.altKey)
-            modifier += "A-";
-        if (event.metaKey)
-            modifier += "M-";
-
-        if (/^key/.test(event.type)) {
-            let charCode = event.type == "keyup" ? 0 : event.charCode; // Why? --Kris
-            if (charCode == 0) {
-                if (event.keyCode in this._code_key) {
-                    key = this._code_key[event.keyCode];
-
-                    if (event.shiftKey && (key.length > 1 || event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
-                        modifier += "S-";
-                    else if (!modifier && key.length === 1)
-                        if (event.shiftKey)
-                            key = key.toUpperCase();
-                        else
-                            key = key.toLowerCase();
-
-                    if (!modifier && /^[a-z0-9]$/i.test(key))
-                        return key;
-                }
-            }
-            // [Ctrl-Bug] special handling of mysterious <C-[>, <C-\\>, <C-]>, <C-^>, <C-_> bugs (OS/X)
-            //            (i.e., cntrl codes 27--31)
-            // ---
-            // For more information, see:
-            //     [*] Referenced mailing list msg: http://www.mozdev.org/pipermail/pentadactyl/2008-May/001548.html
-            //     [*] Mozilla bug 416227: event.charCode in keypress handler has unexpected values on Mac for Ctrl with chars in "[ ] _ \"
-            //         https://bugzilla.mozilla.org/show_bug.cgi?id=416227
-            //     [*] Mozilla bug 432951: Ctrl+'foo' doesn't seem same charCode as Meta+'foo' on Cocoa
-            //         https://bugzilla.mozilla.org/show_bug.cgi?id=432951
-            // ---
-            //
-            // The following fixes are only activated if config.OS.isMacOSX.
-            // Technically, they prevent mappings from <C-Esc> (and
-            // <C-C-]> if your fancy keyboard permits such things<?>), but
-            // these <C-control> mappings are probably pathological (<C-Esc>
-            // certainly is on Windows), and so it is probably
-            // harmless to remove the config.OS.isMacOSX if desired.
-            //
-            else if (config.OS.isMacOSX && event.ctrlKey && charCode >= 27 && charCode <= 31) {
-                if (charCode == 27) { // [Ctrl-Bug 1/5] the <C-[> bug
-                    key = "Esc";
-                    modifier = modifier.replace("C-", "");
-                }
-                else // [Ctrl-Bug 2,3,4,5/5] the <C-\\>, <C-]>, <C-^>, <C-_> bugs
-                    key = String.fromCharCode(charCode + 64);
-            }
-            // a normal key like a, b, c, 0, etc.
-            else if (charCode > 0) {
-                key = String.fromCharCode(charCode);
-
-                if (!/^[a-z0-9]$/i.test(key) && key in this._key_code) {
-                    // a named charCode key (<Space> and <lt>) space can be shifted, <lt> must be forced
-                    if ((key.match(/^\s$/) && event.shiftKey) || event.dactylShift)
-                        modifier += "S-";
-
-                    key = this._code_key[this._key_code[key]];
-                }
-                else {
-                    // a shift modifier is only allowed if the key is alphabetical and used in a C-A-M- mapping in the uppercase,
-                    // or if the shift has been forced for a non-alphabetical character by the user while :map-ping
-                    if (key !== key.toLowerCase() && (event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
-                        modifier += "S-";
-                    if (/^\s$/.test(key))
-                        key = let (s = charCode.toString(16)) "U" + "0000".substr(4 - s.length) + s;
-                    else if (modifier.length == 0)
-                        return key;
-                }
-            }
-            if (key == null) {
-                if (event.shiftKey)
-                    modifier += "S-";
-                key = this._key_key[event.dactylKeyname] || event.dactylKeyname;
-            }
-            if (key == null)
-                return null;
-        }
-        else if (event.type == "click" || event.type == "dblclick") {
-            if (event.shiftKey)
-                modifier += "S-";
-            if (event.type == "dblclick")
-                modifier += "2-";
-            // TODO: triple and quadruple click
-
-            switch (event.button) {
-            case 0:
-                key = "LeftMouse";
-                break;
-            case 1:
-                key = "MiddleMouse";
-                break;
-            case 2:
-                key = "RightMouse";
-                break;
-            }
-        }
-
-        if (key == null)
-            return null;
-
-        return "<" + modifier + key + ">";
-    },
 
     /**
      * Returns true if there's a known native key handler for the given
@@ -957,7 +650,7 @@ var Events = Module("events", {
                             event[k] = v;
                 DOM.Event.feedingEvent = null;
 
-                let key = events.toString(event);
+                let key = DOM.Event.stringify(event);
 
                 // Hack to deal with <BS> and so forth not dispatching input
                 // events
@@ -1079,7 +772,7 @@ var Events = Module("events", {
                     !modes.passThrough && this.shouldPass(event) ||
                     !this.processor && event.type === "keydown"
                         && options.get("passunknown").getKey(modes.main.allBases)
-                        && let (key = events.toString(event))
+                        && let (key = DOM.Event.stringify(event))
                             !modes.main.allBases.some(
                                 function (mode) mappings.hives.some(
                                     function (hive) hive.get(mode, key) || hive.getCandidates(mode, key)));
@@ -1087,7 +780,7 @@ var Events = Module("events", {
             if (event.type === "keydown")
                 this.passing = pass;
 
-            events.dbg("ON " + event.type.toUpperCase() + " " + this.toString(event) + " pass: " + pass + " replay: " + event.isReplay + " macro: " + event.isMacro);
+            events.dbg("ON " + event.type.toUpperCase() + " " + DOM.Event.stringify(event) + " pass: " + pass + " replay: " + event.isReplay + " macro: " + event.isMacro);
 
             // Prevents certain sites from transferring focus to an input box
             // before we get a chance to process our key bindings on the
@@ -1220,7 +913,7 @@ var Events = Module("events", {
 
     shouldPass: function shouldPass(event)
         !event.noremap && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
-        options.get("passkeys").has(events.toString(event))
+        options.get("passkeys").has(DOM.Event.stringify(event))
 }, {
     ABORT: {},
     KILL: true,
@@ -1229,7 +922,7 @@ var Events = Module("events", {
     WAIT: null,
 
     isEscape: function isEscape(event)
-        let (key = isString(event) ? event : events.toString(event))
+        let (key = isString(event) ? event : DOM.Event.stringify(event))
             key === "<Esc>" || key === "<C-[>",
 
     isHidden: function isHidden(elem, aggressive) {
@@ -1405,9 +1098,9 @@ var Events = Module("events", {
                     let value = parse.superapply(this, arguments);
                     value.forEach(function (filter) {
                         let vals = Option.splitList(filter.result);
-                        filter.keys = events.fromString(vals[0]).map(events.closure.toString);
+                        filter.keys = DOM.Event.parse(vals[0]).map(DOM.Event.closure.stringify);
 
-                        filter.commandKeys = vals.slice(1).map(events.closure.canonicalKeys);
+                        filter.commandKeys = vals.slice(1).map(DOM.Event.closure.canonicalKeys);
                         filter.inputKeys = filter.commandKeys.filter(bind("test", /^<[ACM]-/));
                     });
                     return value;
