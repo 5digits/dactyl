@@ -51,7 +51,7 @@ CommandLineHandler.prototype = {
     observe: function observe(subject, topic, data) {
         if (topic === "profile-after-change") {
             init();
-            require(global, "overlay");
+            require(global, "main");
         }
     },
 
