@@ -94,6 +94,7 @@ var ConfigBase = Class("ConfigBase", {
                  "editor",
                  "events",
                  "hints",
+                 "key-processors",
                  "mappings",
                  "marks",
                  "mow",

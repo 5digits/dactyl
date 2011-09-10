@@ -609,7 +609,7 @@ var Modes = Module("modes", {
         mappings.add([modes.MENU], ["<Esc>"],
             "Close the current popup",
             function () {
-                if (modes.popup.active.length)
+                if (events.popups.active.length)
                     return Events.PASS_THROUGH;
                 modes.pop();
             });
