@@ -270,9 +270,10 @@ var Buffer = Module("buffer", {
      */
     get localStore() {
         let doc = content.document;
-        if (!doc.dactylStore || !buffer.localStorePrototype.isPrototypeOf(doc.dactylStore))
-            doc.dactylStore = Object.create(buffer.localStorePrototype);
-        return doc.dactylStore.instance = doc.dactylStore;
+        let store = overlay.getData(doc, "buffer");
+        if (!store || !buffer.localStorePrototype.isPrototypeOf(store))
+            store = overlay.setData(doc, "buffer", Object.create(buffer.localStorePrototype));
+        return store.instance = store;
     },
 
     localStorePrototype: memoize({
@@ -463,7 +464,8 @@ var Buffer = Module("buffer", {
             else
                 flags = services.focus.FLAG_SHOWRING;
 
-            if (!elem.dactylHadFocus && elem.value &&
+            if (!overlay.getData(elem, "had-focus", false) &&
+                    elem.value &&
                     elem instanceof HTMLInputElement &&
                     Editor.getEditor(elem) &&
                     elem.selectionStart != null &&

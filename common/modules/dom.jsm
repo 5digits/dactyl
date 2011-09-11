@@ -77,14 +77,15 @@ var DOM = Class("DOM", {
             yield this.eq(i);
     },
 
-    get document() this._document || this[0].ownerDocument || this[0].document || this[0],
+    get document() this._document || this[0] && (this[0].ownerDocument || this[0].document || this[0]),
     set document(val) this._document = val,
 
     attrHooks: array.toObject([
         ["", {
             href: { get: function (elem) elem.href || elem.getAttribute("href") },
             src:  { get: function (elem) elem.src || elem.getAttribute("src") },
-            checked: { get: function (elem) elem.checked, set: function (elem, val) elem.checked = val },
+            checked: { get: function (elem) elem.hasAttribute("checked") ? elem.getAttribute("checked") == "true" : elem.checked,
+                       set: function (elem, val) { elem.setAttribute("checked", !!val); elem.checked = val } },
             collapsed: BooleanAttribute("collapsed"),
             disabled: BooleanAttribute("disabled"),
             hidden: BooleanAttribute("hidden"),

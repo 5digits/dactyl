@@ -150,11 +150,14 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
     getData: function getData(obj, key, constructor) {
         let { id } = this;
 
-        if (!(id in obj))
+        if (!(id in obj && obj[id]))
             obj[id] = {};
 
         if (obj[id][key] === undefined)
-            obj[id][key] = (constructor || Array)();
+            if (constructor === undefined || callable(constructor))
+                obj[id][key] = (constructor || Array)();
+            else
+                obj[id][key] = constructor;
 
         return obj[id][key];
     },

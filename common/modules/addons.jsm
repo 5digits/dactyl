@@ -117,8 +117,8 @@ var actions = {
             });
         },
         get filter() {
-            let ids = XPIProvider.bootstrappedAddons;
-            return function ({ item }) !item.userDisabled && Set.has(ids, item.id);
+            return function ({ item }) !item.userDisabled &&
+                !(item.operationsRequiringRestart & (AddonManager.OP_NEEDS_RESTART_ENABLE | AddonManager.OP_NEEDS_RESTART_DISABLE))
         },
         perm: "disable"
     },
@@ -492,10 +492,8 @@ var Addons = Module("addons", {
     }
 });
 
-if (!services.has("extensionManager")) {
+if (!services.has("extensionManager"))
     Components.utils.import("resource://gre/modules/AddonManager.jsm");
-    var { XPIProvider } = Components.utils.import("resource://gre/modules/XPIProvider.jsm", {});
-}
 else
     var AddonManager = {
         PERM_CAN_UNINSTALL: 1,

@@ -993,6 +993,12 @@ Class.prototype = {
     localizedProperties: {},
     magicalProperties: {}
 };
+for (let name in properties(Class.prototype)) {
+    let desc = Object.getOwnPropertyDescriptor(Class.prototype, name);
+    desc.enumerable = false;
+    Object.defineProperty(Class.prototype, name, desc);
+}
+
 Class.makeClosure = function makeClosure() {
     const self = this;
     function closure(fn) {
@@ -1059,7 +1065,12 @@ function XPCOMShim(interfaces) {
     return (interfaces || []).reduce(function (shim, iface) shim.QueryInterface(Ci[iface]),
                                      ip.data)
 };
-function stub() null;
+let stub = Class.Property({
+    configurable: true,
+    enumerable: false,
+    value: function stub() null,
+    writable: true
+});
 
 /**
  * An abstract base class for classes that wish to inherit from Error.

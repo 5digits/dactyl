@@ -163,10 +163,10 @@ var Events = Module("events", {
                         if (modes.main != modes.AUTOCOMPLETE)
                             modes.push(modes.AUTOCOMPLETE);
                     }
-                    else if (elem.localName !== "tooltip") {
-                        if (Events.isHidden(elem))
-                            if (elem.hidePopup && Events.isHidden(elem.parentNode))
-                                elem.hidePopup();
+                    else if (elem.hidePopup && elem.localName !== "tooltip"
+                                && Events.isHidden(elem)
+                                && Events.isHidden(elem.parentNode)) {
+                        elem.hidePopup();
                     }
                 },
 
@@ -420,6 +420,7 @@ var Events = Module("events", {
     toString: function toString() {
         if (!arguments.length)
             return toString.supercall(this);
+
         deprecated.warn(toString, "toString", "DOM.Event.stringify");
         return DOM.Event.stringify.apply(DOM.Event, arguments);
     },
@@ -584,7 +585,7 @@ var Events = Module("events", {
             if (elem == window)
                 overlay.activeWindow = window;
 
-            elem.dactylHadFocus = true;
+            overlay.setData(elem, "had-focus", true);
             if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
                 if (Events.isHidden(elem, true))
                     elem.blur();

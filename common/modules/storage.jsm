@@ -164,10 +164,6 @@ var Storage = Module("Storage", {
                 this[key].timer.flush();
             delete this[key];
         }
-        for (let ary in values(this.observers))
-            for (let obj in values(ary))
-                if (obj.ref && obj.ref.get())
-                    delete obj.ref.get().dactylStorageRefs;
 
         this.keys = {};
         this.observers = {};
@@ -201,9 +197,8 @@ var Storage = Module("Storage", {
 
     addObserver: function addObserver(key, callback, ref) {
         if (ref) {
-            if (!ref.dactylStorageRefs)
-                ref.dactylStorageRefs = [];
-            ref.dactylStorageRefs.push(callback);
+            let refs = overlay.getData(ref, "storage-refs");
+            refs.push(callback);
             var callbackRef = Cu.getWeakReference(callback);
         }
         else {
@@ -227,7 +222,9 @@ var Storage = Module("Storage", {
 
     removeDeadObservers: function () {
         for (let [key, ary] in Iterator(this.observers)) {
-            this.observers[key] = ary = ary.filter(function (o) o.callback.get() && (!o.ref || o.ref.get() && o.ref.get().dactylStorageRefs));
+            this.observers[key] = ary = ary.filter(function (o) o.callback.get()
+                                                             && (!o.ref || o.ref.get()
+                                                                        && overlay.getData(o.ref.get(), "storage-refs", null)));
             if (!ary.length)
                 delete this.observers[key];
         }
@@ -280,7 +277,7 @@ var Storage = Module("Storage", {
     },
 
     cleanup: function (dactyl, modules, window) {
-        delete window.dactylStorageRefs;
+        overlay.setData(window, "storage-refs", null);
         this.removeDeadObservers();
     }
 });
