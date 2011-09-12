@@ -106,10 +106,10 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         onStateChange: util.wrapCallback(function onStateChange(webProgress, request, flags, status) {
             const L = Ci.nsIWebProgressListener;
 
-            if (request)
-                dactyl.applyTriggerObserver("browser.stateChange", arguments);
-
             if (flags & (L.STATE_IS_DOCUMENT | L.STATE_IS_WINDOW)) {
+                if (request)
+                    dactyl.applyTriggerObserver("browser.stateChange", arguments);
+
                 // This fires when the load event is initiated
                 // only thrown for the current tab, not when another tab changes
                 if (flags & L.STATE_START) {
@@ -148,13 +148,14 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
             let win = webProgress.DOMWindow;
             if (win && uri) {
-                let oldURI = win.document.dactylURI;
-                if (win.document.dactylLoadIdx === webProgress.loadedTransIndex
+                let oldURI = overlay.getData(win.document)["uri"];
+                if (overlay.getData(win.document)["load-idx"] === webProgress.loadedTransIndex
                     || !oldURI || uri.spec.replace(/#.*/, "") !== oldURI.replace(/#.*/, ""))
                     for (let frame in values(buffer.allFrames(win)))
-                        frame.document.dactylFocusAllowed = false;
-                win.document.dactylURI = uri.spec;
-                win.document.dactylLoadIdx = webProgress.loadedTransIndex;
+                        overlay.setData(frame.document, "focus-allowed", false);
+
+                overlay.setData(win.document, "uri", uri.spec);
+                overlay.setData(win.document, "load-idx", webProgress.loadedTransIndex);
             }
 
             // Workaround for bugs 591425 and 606877, dactyl bug #81

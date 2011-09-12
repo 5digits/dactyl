@@ -429,9 +429,11 @@ var Buffer = Module("buffer", {
         let doc = elem.ownerDocument || elem.document || elem;
         switch (options.get("strictfocus").getKey(doc.documentURIObject || util.newURI(doc.documentURI), "moderate")) {
         case "despotic":
-            return elem.dactylFocusAllowed || elem.frameElement && elem.frameElement.dactylFocusAllowed;
+            return overlay.getData(elem)["focus-allowed"]
+                    || elem.frameElement && overlay.getData(elem.frameElement)["focus-allowed"];
         case "moderate":
-            return doc.dactylFocusAllowed || elem.frameElement && elem.frameElement.ownerDocument.dactylFocusAllowed;
+            return overlay.getData(doc, "focus-allowed")
+                    || elem.frameElement && overlay.getData(elem.frameElement.ownerDocument)["focus-allowed"];
         default:
             return true;
         }
@@ -446,13 +448,13 @@ var Buffer = Module("buffer", {
      */
     focusElement: function focusElement(elem) {
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
-        elem.dactylFocusAllowed = true;
-        win.document.dactylFocusAllowed = true;
+        overlay.setData(elem, "focus-allowed", true);
+        overlay.setData(win.document, "focus-allowed", true);
 
         if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
             elem = elem.contentWindow;
         if (elem.document)
-            elem.document.dactylFocusAllowed = true;
+            overlay.setData(elem.document, "focus-allowed", true);
 
         if (elem instanceof HTMLInputElement && elem.type == "file") {
             Buffer.openUploadPrompt(elem);

@@ -120,6 +120,10 @@ var DOM = Class("DOM", {
     },
 
     eachDOM: function eachDOM(val, fn, self) {
+        XML.prettyPrinting = XML.ignoreWhitespace = false;
+        if (isString(val))
+            val = XML(val);
+
         if (typeof val == "xml")
             return this.each(function (elem, i) {
                 fn.call(this, DOM.fromXML(val, elem.ownerDocument), elem, i);
@@ -127,13 +131,16 @@ var DOM = Class("DOM", {
 
         let dom = this;
         function munge(val) {
+            if (val instanceof Ci.nsIDOMRange)
+                return val.extractContents();
+
             if (typeof val == "xml")
                 val = dom.constructor(val, dom.document);
 
             if (isObject(val) && "length" in val) {
                 let frag = dom.document.createDocumentFragment();
                 for (let i = 0; i < val.length; i++)
-                    frag.appendChild(val[i]);
+                    frag.appendChild(munge(val[i]));
                 return frag;
             }
             return val;

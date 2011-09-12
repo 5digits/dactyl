@@ -153,6 +153,9 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         if (!(id in obj && obj[id]))
             obj[id] = {};
 
+        if (arguments.length == 1)
+            return obj[id];
+
         if (obj[id][key] === undefined)
             if (constructor === undefined || callable(constructor))
                 obj[id][key] = (constructor || Array)();

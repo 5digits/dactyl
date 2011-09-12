@@ -801,8 +801,8 @@ var Events = Module("events", {
 
             for (; win; win = win != win.parent && win.parent) {
                 for (; elem instanceof Element; elem = elem.parentNode)
-                    elem.dactylFocusAllowed = true;
-                win.document.dactylFocusAllowed = true;
+                    overlay.setData(elem, "focus-allowed", true);
+                overlay.setData(win.document, "focus-allowed", true);
             }
         },
 
