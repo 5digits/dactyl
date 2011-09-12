@@ -224,10 +224,10 @@ var Marks = Module("marks", {
     },
 
     _scrollTo: function _scrollTo(mark) {
-        if (!mark.xpath)
+        if (!mark.path)
             var node = buffer.findScrollable(0, (mark.offset || mark.position).x)
         else
-            for (node in DOM.XPath(mark.xpath, buffer.focusedFrame.document))
+            for (node in DOM.XPath(mark.path, buffer.focusedFrame.document))
                 break;
 
         util.assert(node);
