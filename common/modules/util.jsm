@@ -119,8 +119,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (!obj.observers)
             obj.observers = obj.observe;
 
+        let cleanup = ["dactyl-cleanup-modules", "quit-application"];
+
         function register(meth) {
-            for (let target in Set(["dactyl-cleanup-modules", "quit-application"].concat(Object.keys(obj.observers))))
+            for (let target in Set(cleanup.concat(Object.keys(obj.observers))))
                 try {
                     services.observer[meth](obj, target, true);
                 }
@@ -130,7 +132,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         Class.replaceProperty(obj, "observe",
             function (subject, target, data) {
                 try {
-                    if (target == "quit-application" || target == "dactyl-cleanup-modules")
+                    if (!cleanup.indexOf(target))
                         register("removeObserver");
                     if (obj.observers[target])
                         obj.observers[target].call(obj, subject, data);
@@ -538,22 +540,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (delimiter == undefined)
             delimiter = '"';
         return delimiter + str.replace(/([\\'"])/g, "\\$1").replace("\n", "\\n", "g").replace("\t", "\\t", "g") + delimiter;
-    },
-
-    extend: function extend(dest) {
-        Array.slice(arguments, 1).filter(util.identity).forEach(function (src) {
-            for (let [k, v] in Iterator(src)) {
-                let get = src.__lookupGetter__(k),
-                    set = src.__lookupSetter__(k);
-                if (!get && !set)
-                    dest[k] = v;
-                if (get)
-                    dest.__defineGetter__(k, get);
-                if (set)
-                    dest.__defineSetter__(k, set);
-            }
-        });
-        return dest;
     },
 
     /**
