@@ -106,10 +106,10 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         onStateChange: util.wrapCallback(function onStateChange(webProgress, request, flags, status) {
             const L = Ci.nsIWebProgressListener;
 
-            if (flags & (L.STATE_IS_DOCUMENT | L.STATE_IS_WINDOW)) {
-                if (request)
-                    dactyl.applyTriggerObserver("browser.stateChange", arguments);
+            if (request)
+                dactyl.applyTriggerObserver("browser.stateChange", arguments);
 
+            if (flags & (L.STATE_IS_DOCUMENT | L.STATE_IS_WINDOW)) {
                 // This fires when the load event is initiated
                 // only thrown for the current tab, not when another tab changes
                 if (flags & L.STATE_START) {

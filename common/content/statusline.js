@@ -140,12 +140,16 @@ var StatusLine = Module("statusline", {
                 webProgress.DOMWindow.document.dactylSecurity = this.security;
         },
         "browser.stateChange": function onStateChange(webProgress, request, flags, status) {
-            if (flags & Ci.nsIWebProgressListener.STATE_START)
-                this.progress = 0;
-            if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
-                this.progress = "";
+            const L = Ci.nsIWebProgressListener;
+
+            if (flags & (L.STATE_IS_DOCUMENT | L.STATE_IS_WINDOW))
+                if (flags & L.STATE_START)
+                    this.progress = 0;
+                else if (flags & L.STATE_STOP)
+                    this.progress = "";
+
+            if (flags & L.STATE_STOP)
                 this.updateStatus();
-            }
         },
         "browser.statusChange": function onStatusChange(webProgress, request, status, message) {
             this.timeout(function () {
