@@ -133,6 +133,8 @@ var DOM = Class("DOM", {
         function munge(val) {
             if (val instanceof Ci.nsIDOMRange)
                 return val.extractContents();
+            if (val instanceof Ci.nsIDOMNode)
+                return val;
 
             if (typeof val == "xml")
                 val = dom.constructor(val, dom.document);
