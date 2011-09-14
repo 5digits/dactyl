@@ -70,7 +70,12 @@ var Modules = function Modules(window) {
         var base = ModuleBase;
         if (callable(args[1]))
             base = args.splice(1, 1)[0];
+
         let [, prototype, classProperties, moduleInit] = args;
+        prototype._metaInit_ = function () {
+            delete module.prototype._metaInit_;
+            Class.replaceProperty(modules, module.className, this);
+        };
         const module = Class(name, base, prototype, classProperties);
 
         module.INIT = moduleInit || {};

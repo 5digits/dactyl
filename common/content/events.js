@@ -72,7 +72,9 @@ var EventHive = Class("EventHive", Contexts.Hive, {
             }
             return !args[0].get();
         });
-    }
+    },
+
+    get wrapListener() events.closure.wrapListener
 });
 
 /**
@@ -83,14 +85,6 @@ var Events = Module("events", {
 
     init: function () {
         this.keyEvents = [];
-
-        update(this, {
-            hives: contexts.Hives("events", EventHive),
-            user: contexts.hives.events.user,
-            builtin: contexts.hives.events.builtin
-        });
-
-        EventHive.prototype.wrapListener = this.closure.wrapListener;
 
         XML.ignoreWhitespace = true;
         overlay.overlayWindow(window, {
@@ -951,6 +945,14 @@ var Events = Module("events", {
         event.preventDefault();
     }
 }, {
+    contexts: function initContexts(dactyl, modules, window) {
+        update(Events.prototype, {
+            hives: contexts.Hives("events", EventHive),
+            user: contexts.hives.events.user,
+            builtin: contexts.hives.events.builtin
+        });
+    },
+
     commands: function () {
         commands.add(["delmac[ros]"],
             "Delete macros",
