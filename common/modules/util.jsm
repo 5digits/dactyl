@@ -132,7 +132,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         Class.replaceProperty(obj, "observe",
             function (subject, target, data) {
                 try {
-                    if (!cleanup.indexOf(target))
+                    if (~cleanup.indexOf(target))
                         register("removeObserver");
                     if (obj.observers[target])
                         obj.observers[target].call(obj, subject, data);
