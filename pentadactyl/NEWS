@@ -211,7 +211,7 @@
       - Added 'passkeys' option. [b3]
       - Added 'passunknown' option. [b7]
       - Changed 'urlseparator' default value to "|". [b3]
-      - Added "passwords" and "venkman" dialogs to :dialog. [b2]
+      - Added "errorconsole", "passwords", and "venkman" dialogs to :dialog. [b2][b8]
       - Added 'spelllang' option. [b8]
       - Make 'showmode' a [stringlist] option. [b7]
       - Added 'wildanchor' option. [b2]

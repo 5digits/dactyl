@@ -15,7 +15,12 @@
  * @instance buffer
  */
 var Buffer = Module("buffer", {
-    init: function init() {
+    init: function init(win) {
+        if (win)
+            this.win = win;
+        else
+            this.__defineGetter__("win", function () content);
+
         this.pageInfo = {};
 
         this.addPageInfoSection("e", "Search Engines", function (verbose) {
@@ -297,28 +302,28 @@ var Buffer = Module("buffer", {
     /**
      * @property {nsIURI} The current top-level document.
      */
-    get doc() window.content.document,
+    get doc() this.win.document,
 
     /**
      * @property {nsIURI} The current top-level document's URI.
      */
-    get uri() util.newURI(content.location.href),
+    get uri() util.newURI(this.win.location.href),
 
     /**
      * @property {nsIURI} The current top-level document's URI, sans any
      *     fragment identifier.
      */
-    get documentURI() let (doc = content.document) doc.documentURIObject || util.newURI(doc.documentURI),
+    get documentURI() this.doc.documentURIObject || util.newURI(this.doc.documentURI),
 
     /**
      * @property {string} The current top-level document's URL.
      */
-    get URL() update(new String(content.location.href), util.newURI(content.location.href)),
+    get URL() update(new String(this.win.location.href), util.newURI(this.win.location.href)),
 
     /**
      * @property {number} The buffer's height in pixels.
      */
-    get pageHeight() content.innerHeight,
+    get pageHeight() this.win.innerHeight,
 
     /**
      * @property {number} The current browser's zoom level, as a
@@ -337,7 +342,7 @@ var Buffer = Module("buffer", {
     /**
      * @property {string} The current document's title.
      */
-    get title() content.document.title,
+    get title() this.doc.title,
 
     /**
      * @property {number} The buffer's horizontal scroll percentile.
@@ -387,7 +392,7 @@ var Buffer = Module("buffer", {
             if (true || frame.document.body instanceof HTMLBodyElement)
                 frames.push(frame);
             Array.forEach(frame.frames, rec);
-        })(win || content);
+        })(win || this.win);
         if (focusedFirst)
             return frames.filter(function (f) f === buffer.focusedFrame).concat(
                     frames.filter(function (f) f !== buffer.focusedFrame));
@@ -399,7 +404,7 @@ var Buffer = Module("buffer", {
      */
     get focusedFrame() {
         let frame = this.localStore.focusedFrame;
-        return frame && frame.get() || content;
+        return frame && frame.get() || this.win;
     },
     set focusedFrame(frame) {
         this.localStore.focusedFrame = Cu.getWeakReference(frame);
@@ -814,7 +819,7 @@ var Buffer = Module("buffer", {
      * Find the best candidate scrollable frame in the current buffer.
      */
     findScrollableWindow: function findScrollableWindow() {
-        win = window.document.commandDispatcher.focusedWindow;
+        let win = window.document.commandDispatcher.focusedWindow;
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
             return win;
 
@@ -822,7 +827,7 @@ var Buffer = Module("buffer", {
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
             return win;
 
-        win = content;
+        win = this.win;
         if (win.scrollMaxX > 0 || win.scrollMaxY > 0)
             return win;
 
@@ -879,7 +884,7 @@ var Buffer = Module("buffer", {
      *     count skips backwards.
      */
     shiftFrameFocus: function shiftFrameFocus(count) {
-        if (!(content.document instanceof HTMLDocument))
+        if (!(this.doc instanceof HTMLDocument))
             return;
 
         let frames = this.allFrames();
@@ -904,7 +909,7 @@ var Buffer = Module("buffer", {
 
         // focus next frame and scroll into view
         dactyl.focus(frames[next]);
-        if (frames[next] != content)
+        if (frames[next] != this.win)
             DOM(frames[next].frameElement).scrollIntoView();
 
         // add the frame indicator
@@ -940,8 +945,8 @@ var Buffer = Module("buffer", {
     showPageInfo: function showPageInfo(verbose, sections) {
         // Ctrl-g single line output
         if (!verbose) {
-            let file = content.location.pathname.split("/").pop() || _("buffer.noName");
-            let title = content.document.title || _("buffer.noTitle");
+            let file = this.win.location.pathname.split("/").pop() || _("buffer.noName");
+            let title = this.win.document.title || _("buffer.noTitle");
 
             let info = template.map(sections || options["pageinfo"],
                 function (opt) template.map(buffer.pageInfo[opt].action(), util.identity, ", "),
@@ -1182,7 +1187,7 @@ var Buffer = Module("buffer", {
     scrollEnd: deprecated("buffer.scrollToPercent", function scrollEnd() buffer.scrollToPercent(100, null)),
     scrollColumns: deprecated("buffer.scrollHorizontal", function scrollColumns(cols) buffer.scrollHorizontal("columns", cols)),
     scrollPages: deprecated("buffer.scrollHorizontal", function scrollPages(pages) buffer.scrollVertical("pages", pages)),
-    scrollTo: deprecated("Buffer.scrollTo", function scrollTo(x, y) content.scrollTo(x, y)),
+    scrollTo: deprecated("Buffer.scrollTo", function scrollTo(x, y) this.win.scrollTo(x, y)),
     textZoom: deprecated("buffer.zoomValue/buffer.fullZoom", function textZoom() config.browser.markupDocumentViewer.textZoom * 100)
 }, {
     PageInfo: Struct("PageInfo", "name", "title", "action")

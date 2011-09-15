@@ -55,7 +55,7 @@ var DOM = Class("DOM", {
         else if ("length" in val)
             for (let i = 0; i < val.length; i++)
                 this[length++] = val[i];
-        else if ("__iterator__" in val)
+        else if ("__iterator__" in val || isinstance(val, ["Iterator", "Generator"]))
             for (let elem in val)
                 this[length++] = elem;
 
