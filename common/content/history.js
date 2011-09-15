@@ -74,6 +74,9 @@ var History = Module("history", {
      *      marks stack. @optional
      */
     stepTo: function stepTo(steps, jumps) {
+        if (dactyl.forceOpen.target == dactyl.NEW_TAB)
+            tabs.cloneTab(tabs.getTab(), true);
+
         if (jumps)
             steps -= marks.jump(steps);
         if (steps == 0)
