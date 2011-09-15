@@ -176,7 +176,7 @@ var IO = Module("io", {
                             help.initialized = false;
                         }
                         catch (e) {
-                            if (e.fileName)
+                            if (e.fileName && !(e instanceof FailedAssertion))
                                 try {
                                     e.fileName = util.fixURI(e.fileName);
                                     if (e.fileName == uri.spec)
@@ -208,7 +208,7 @@ var IO = Module("io", {
                     return context;
                 }
                 catch (e) {
-                    dactyl.reportError(e);
+                    util.reportError(e);
                     let message = _("io.sourcingError", e.echoerr || (file ? file.path : filename) + ": " + e);
                     if (!params.silent)
                         dactyl.echoerr(message);
