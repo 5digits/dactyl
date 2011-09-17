@@ -22,6 +22,18 @@ var EventHive = Class("EventHive", Contexts.Hive, {
         this.unlisten(null);
     },
 
+    _events: function _events(event, callback) {
+        if (!isObject(event))
+            var [self, events] = [null, array.toObject([[event, callback]])];
+        else
+            [self, events] = [event, event[callback || "events"]];
+
+        if (Set.has(events, "input") && !Set.has(events, "dactyl-input"))
+            events["dactyl-input"] = events.input;
+
+        return [self, events];
+    },
+
     /**
      * Adds an event listener for this session and removes it on
      * dactyl shutdown.
@@ -35,22 +47,17 @@ var EventHive = Class("EventHive", Contexts.Hive, {
      *      untrusted events.
      */
     listen: function (target, event, callback, capture, allowUntrusted) {
-        if (!isObject(event))
-            var [self, events] = [null, array.toObject([[event, callback]])];
-        else
-            [self, events] = [event, event[callback || "events"]];
-
-        if (Set.has(events, "input") && !Set.has(events, "dactyl-input"))
-            events["dactyl-input"] = events.input;
+        var [self, events] = this._events(event, callback);
 
         for (let [event, callback] in Iterator(events)) {
             let args = [Cu.getWeakReference(target),
+                        self ? Cu.getWeakReference(self) : { get: function () null },
                         event,
                         this.wrapListener(callback, self),
                         capture,
                         allowUntrusted];
 
-            target.addEventListener.apply(target, args.slice(1));
+            target.addEventListener.apply(target, args.slice(2));
             this.sessionListeners.push(args);
         }
     },
@@ -65,12 +72,21 @@ var EventHive = Class("EventHive", Contexts.Hive, {
      *      phase, otherwise during the bubbling phase.
      */
     unlisten: function (target, event, callback, capture) {
+        if (target != null)
+            var [self, events] = this._events(event, callback);
+
         this.sessionListeners = this.sessionListeners.filter(function (args) {
-            if (target == null || args[0].get() == target && args[1] == event && args[2].wrapped == callback && args[3] == capture) {
-                args[0].get().removeEventListener.apply(args[0].get(), args.slice(1));
+            let elem = args[0].get();
+            if (target == null || elem == target
+                               && self == args[1].get()
+                               && Set.has(events, args[2])
+                               && args[3].wrapped == events[args[2]]
+                               && args[4] == capture) {
+
+                elem.removeEventListener.apply(elem, args.slice(2));
                 return false;
             }
-            return !args[0].get();
+            return elem;
         });
     },
 
@@ -192,7 +208,8 @@ var Events = Module("events", {
      */
     wrapListener: function wrapListener(method, self) {
         self = self || this;
-        method.wrapped = wrappedListener;
+        method.wrapper = wrappedListener;
+        wrappedListener.wrapped = method;
         function wrappedListener(event) {
             try {
                 method.apply(self, arguments);

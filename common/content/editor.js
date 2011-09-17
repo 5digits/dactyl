@@ -187,6 +187,9 @@ var Editor = Module("editor", {
             return;
 
         let textBox = config.isComposeWindow ? null : dactyl.focusedElement;
+        if (!DOM(textBox).isInput)
+            textBox = null;
+
         let line, column;
         let keepFocus = modes.stack.some(function (m) isinstance(m.main, modes.COMMAND_LINE));
 

@@ -307,6 +307,17 @@ var Modes = Module("modes", {
         dactyl.triggerObserver("modes.add", mode);
     },
 
+    removeMode: function removeMode(mode) {
+        if (this[mode.name] == mode)
+            delete this[mode.name];
+        if (this._modeMap[mode.name] == mode)
+            delete this._modeMap[mode.name];
+        if (this._modeMap[mode.mode] == mode)
+            delete this._modeMap[mode.mode];
+
+        this._mainModes = this._mainModes.filter(function (m) m != mode);
+    },
+
     dumpStack: function dumpStack() {
         util.dump("Mode stack:");
         for (let [i, mode] in array.iterItems(this._modeStack))

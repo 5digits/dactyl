@@ -717,7 +717,7 @@ var JavaScript = Module("javascript", {
 
                 try {
                     var result = dactyl.userEval(js, this.context);
-                    var xml = util.objectToString(result, true);
+                    var xml = result === undefined ? "" : util.objectToString(result, true);
                 }
                 catch (e) {
                     util.reportError(e);

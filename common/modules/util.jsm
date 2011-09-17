@@ -823,11 +823,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {nsIURI}
      */
     newURI: function newURI(uri, charset, base) {
-        let idx = uri.lastIndexOf(" -> ");
-        if (~idx)
-            uri = uri.slice(idx + 4);
+        if (uri instanceof Ci.nsIURI)
+            var res = uri.clone();
+        else {
+            let idx = uri.lastIndexOf(" -> ");
+            if (~idx)
+                uri = uri.slice(idx + 4);
 
-        let res = this.withProperErrors("newURI", services.io, uri, charset, base);
+            res = this.withProperErrors("newURI", services.io, uri, charset, base);
+        }
         res instanceof Ci.nsIURL;
         return res;
     },

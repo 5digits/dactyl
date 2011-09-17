@@ -475,7 +475,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     userEval: function (str, context, fileName, lineNumber) {
         let ctxt;
-        if (jsmodules.__proto__ != window)
+        if (jsmodules.__proto__ != window && jsmodules.__proto__ != XPCNativeWrapper(window) &&
+                jsmodules.isPrototypeOf(context))
             str = "with (window) { with (modules) { (this.eval || eval)(" + str.quote() + ") } }";
 
         let info = contexts.context;
@@ -1218,8 +1219,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 util.reportError(error);
             return;
         }
+
         if (error.result == Cr.NS_BINDING_ABORTED)
             return;
+
         if (echo)
             dactyl.echoerr(error, commandline.FORCE_SINGLELINE);
         else

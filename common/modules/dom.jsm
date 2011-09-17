@@ -1399,18 +1399,26 @@ var DOM = Class("DOM", {
      * @param {Node} elem The context element.
      * @param {boolean} asIterator Whether to return the results as an
      *     XPath iterator.
+     * @param {object} namespaces Additional namespaces to recognize.
+     *     @optional
      * @returns {Object} Iterable result of the evaluation.
      */
     XPath: update(
-        function XPath(expression, elem, asIterator) {
+        function XPath(expression, elem, asIterator, namespaces) {
             try {
                 let doc = elem.ownerDocument || elem;
 
                 if (isArray(expression))
                     expression = DOM.makeXPath(expression);
 
+                let resolver = XPath.resolver;
+                if (namespaces) {
+                    namespaces = update({}, DOM.namespaces, namespaces);
+                    resolver = function (prefix) namespaces[prefix] || null;
+                }
+
                 let result = doc.evaluate(expression, elem,
-                    XPath.resolver,
+                    resolver,
                     asIterator ? Ci.nsIDOMXPathResult.ORDERED_NODE_ITERATOR_TYPE : Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
                     null
                 );
