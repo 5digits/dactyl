@@ -292,6 +292,9 @@ var Template = Module("Template", {
             case "boolean":
                 return <span highlight="Boolean">{str}</span>;
             case "function":
+                if (arg instanceof Ci.nsIDOMElement) // wtf?
+                    return util.objectToString(arg, !bw);
+
                 str = str.replace("/* use strict */ \n", "/* use strict */ ");
                 if (processStrings)
                     return <span highlight="Function">{str.replace(/\{(.|\n)*(?:)/g, "{ ... }")}</span>;

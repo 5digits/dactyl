@@ -589,7 +589,7 @@ function isString(val) objproto.toString.call(val) == "[object String]";
  * Returns true if and only if its sole argument may be called
  * as a function. This includes classes and function objects.
  */
-function callable(val) typeof val === "function";
+function callable(val) typeof val === "function" && !(val instanceof Ci.nsIDOMElement);
 
 function call(fn) {
     fn.apply(arguments[1], Array.slice(arguments, 2));
@@ -675,18 +675,18 @@ function update(target) {
             if (desc.value instanceof Class.Property)
                 desc = desc.value.init(k, target) || desc.value;
 
-            if (typeof desc.value === "function" && target.__proto__) {
-                let func = desc.value.wrapped || desc.value;
-                if (!func.superapply) {
-                    func.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
-                    func.superapply = function superapply(self, args)
-                        let (meth = Object.getPrototypeOf(target)[k])
-                            meth && meth.apply(self, args);
-                    func.supercall = function supercall(self)
-                        func.superapply(self, Array.slice(arguments, 1));
-                }
-            }
             try {
+                if (typeof desc.value === "function" && target.__proto__ && !(desc.value instanceof Ci.nsIDOMElement /* wtf? */)) {
+                    let func = desc.value.wrapped || desc.value;
+                    if (!func.superapply) {
+                        func.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
+                        func.superapply = function superapply(self, args)
+                            let (meth = Object.getPrototypeOf(target)[k])
+                                meth && meth.apply(self, args);
+                        func.supercall = function supercall(self)
+                            func.superapply(self, Array.slice(arguments, 1));
+                    }
+                }
                 Object.defineProperty(target, k, desc);
             }
             catch (e) {}
