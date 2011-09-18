@@ -850,7 +850,8 @@ var Events = Module("events", {
                 return;
 
             if (isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
-                modes.push(modes.EMBED);
+                if (!modes.main.passthrough && modes.main != modes.EMBED)
+                    modes.push(modes.EMBED);
                 return;
             }
 

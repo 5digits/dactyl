@@ -141,6 +141,7 @@ var Modes = Module("modes", {
 
         this.addMode("EMBED", {
             description: "Active when an <embed> or <object> element is focused",
+            bases: [modes.MAIN],
             insert: true,
             ownsFocus: true,
             passthrough: true
@@ -308,6 +309,7 @@ var Modes = Module("modes", {
     },
 
     removeMode: function removeMode(mode) {
+        this.remove(mode);
         if (this[mode.name] == mode)
             delete this[mode.name];
         if (this._modeMap[mode.name] == mode)

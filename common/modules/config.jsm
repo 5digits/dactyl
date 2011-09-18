@@ -113,7 +113,7 @@ var ConfigBase = Class("ConfigBase", {
         if (!this.haveGecko("2b"))
             highlight.loadCSS(<![CDATA[
                 !TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex;
-                !TabIconNumber {
+                !TabIconNumber  {
                     font-weight: bold;
                     color: white;
                     text-align: center;

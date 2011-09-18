@@ -177,8 +177,9 @@ var DOM = Class("DOM", {
             val = this.matcher(val);
 
         this.constructor(Array.filter(this, val, self || this));
+        let obj = self || this.Empty();
         for (let i = 0; i < this.length; i++)
-            if (val.call(self, this[i], i))
+            if (val.call(self || update(obj, [this[i]]), this[i], i))
                 res[res.length++] = this[i];
 
         return res;
@@ -292,25 +293,28 @@ var DOM = Class("DOM", {
     get highlight() let (self = this) ({
         toString: function () self.attrNS(NS, "highlight") || "",
 
-        get list() this.toString().trim().split(/\s+/),
-        set list(val) self.attrNS(NS, "highlight", val.join(" ")),
+        get list() let (s = this.toString().trim()) s ? s.split(/\s+/) : [],
+        set list(val) {
+            let str = array.uniq(val).join(" ").trim();
+            self.attrNS(NS, "highlight", str || null);
+        },
 
         has: function has(hl) ~this.list.indexOf(hl),
 
         add: function add(hl) self.each(function () {
             highlight.loaded[hl] = true;
-            this.attrNS(NS, "highlight",
-                        array.uniq(this.highlight.list.concat(hl)).join(" "));
+            this.highlight.list = this.highlight.list.concat(hl);
         }),
 
         remove: function remove(hl) self.each(function () {
-            this.attrNS(NS, "highlight",
-                        this.highlight.list.filter(function (h) h != hl));
+            this.highlight.list = this.highlight.list.filter(function (h) h != hl);
         }),
 
-        toggle: function toggle(hl, val) self.each(function () {
+        toggle: function toggle(hl, val, thisObj) self.each(function (elem, i) {
             let { highlight } = this;
-            highlight[val == null ? highlight.has(hl) : val ? "remove" : "add"](hl)
+            let v = callable(val) ? val.call(thisObj || this, elem, i) : val;
+
+            highlight[(v == null ? highlight.has(hl) : !v) ? "remove" : "add"](hl)
         }),
     }),
 
