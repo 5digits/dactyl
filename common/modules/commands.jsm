@@ -1182,7 +1182,7 @@ var Commands = Module("commands", {
                 (?P<prespace> [:\s]*)
                 (?P<count>    (?:\d+ | %)? )
                 (?P<fullCmd>
-                    (?: (?P<group>   <name>) : )?
+                    (?: (?P<group> <name>) : )?
                     (?P<cmd>      (?:-? [()] | <name> | !)? ))
                 (?P<bang>     !?)
                 (?P<space>    \s*)

@@ -349,9 +349,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      */
     clipboardRead: function clipboardRead(getClipboard) {
         try {
-            const clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
-            const transferable = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
+            const { clipboard } = services;
 
+            let transferable = services.Transferable();
             transferable.addDataFlavor("text/unicode");
 
             let source = clipboard[getClipboard || !clipboard.supportsSelectionClipboard() ?
@@ -373,12 +373,21 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Copies a string to the system clipboard. If *verbose* is specified the
      * copied string is also echoed to the command line.
      *
-     * @param {string} str
-     * @param {boolean} verbose
+     * @param {string} str The string to write.
+     * @param {boolean} verbose If true, the user is notified of the copied data.
+     * @param {string} which Which clipboard to write to. Either
+     *     "global" or "selection". If not provided, both clipboards are
+     *     updated.
+     *     @optional
      */
-    clipboardWrite: function clipboardWrite(str, verbose) {
-        const clipboardHelper = Cc["@mozilla.org/widget/clipboardhelper;1"].getService(Ci.nsIClipboardHelper);
-        clipboardHelper.copyString(str);
+    clipboardWrite: function clipboardWrite(str, verbose, which) {
+        if (!which)
+            services.clipboardHelper.copyString(str);
+        else if (which == "selection" && !services.clipboard.supportsSelectionClipboard())
+            return;
+        else
+            services.clipboardHelper.copyStringToClipboard(str,
+                services.clipboard["k" + util.capitalize(which) + "Clipboard"]);
 
         if (verbose) {
             let message = { message: _("dactyl.yank", str) };
@@ -416,8 +425,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     echoerr: function echoerr(str, flags) {
         flags |= commandline.APPEND_TO_MESSAGES;
 
-        if (isinstance(str, ["DOMException", "Error", "Exception"]) || isinstance(str, ["XPCWrappedNative_NoHelper"]) && /^\[Exception/.test(str))
+        if (isinstance(str, ["DOMException", "Error", "Exception"])
+                || isinstance(str, ["XPCWrappedNative_NoHelper"]) && /^\[Exception/.test(str))
             dactyl.reportError(str);
+
         if (isObject(str) && "echoerr" in str)
             str = str.echoerr;
         else if (isinstance(str, ["Error", FailedAssertion]) && str.fileName)
@@ -1207,7 +1218,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (error instanceof FailedAssertion && error.noTrace || error.message === "Interrupted") {
             let context = contexts.context;
             let prefix = context ? context.file + ":" + context.line + ": " : "";
-            if (error.message && error.message.indexOf(prefix) !== 0)
+            if (error.message && error.message.indexOf(prefix) !== 0 &&
+                    prefix != "[Command Line]:1: ")
                 error.message = prefix + error.message;
 
             if (error.message)

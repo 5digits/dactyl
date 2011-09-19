@@ -29,6 +29,8 @@ var Services = Module("Services", {
         this.add("cache",               "@mozilla.org/network/cache-service;1",             "nsICacheService");
         this.add("charset",             "@mozilla.org/charset-converter-manager;1",         "nsICharsetConverterManager");
         this.add("chromeRegistry",      "@mozilla.org/chrome/chrome-registry;1",            "nsIXULChromeRegistry");
+        this.add("clipboard",           "@mozilla.org/widget/clipboard;1",                  "nsIClipboard");
+        this.add("clipboardHelper",     "@mozilla.org/widget/clipboardhelper;1",            "nsIClipboardHelper");
         this.add("commandLineHandler",  "@mozilla.org/commandlinehandler/general-startup;1?type=dactyl");
         this.add("console",             "@mozilla.org/consoleservice;1",                    "nsIConsoleService");
         this.add("dactyl:",             "@mozilla.org/network/protocol;1?name=dactyl");
@@ -93,6 +95,7 @@ var Services = Module("Services", {
         this.addClass("String",       "@mozilla.org/supports-string;1",            "nsISupportsString", "data");
         this.addClass("StringStream", "@mozilla.org/io/string-input-stream;1",     "nsIStringInputStream", "data");
         this.addClass("Transfer",     "@mozilla.org/transfer;1",                   "nsITransfer", "init");
+        this.addClass("Transferable", "@mozilla.org/widget/transferable;1",        "nsITransferable");
         this.addClass("Timer",        "@mozilla.org/timer;1",                      "nsITimer", "initWithCallback");
         this.addClass("URL",          "@mozilla.org/network/standard-url;1",       ["nsIStandardURL", "nsIURL"], "init");
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   "nsIXMLHttpRequest", "open");
