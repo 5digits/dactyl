@@ -892,9 +892,9 @@
     <strut/>
     <spec>'hinttags' 'ht'</spec>
     <type>&option.hinttags.type;</type>
-    <default>a,area,button,iframe,input:not([type=hidden]),select,textarea,
+    <default>a[href],area,button,iframe,input:not([type=hidden]),select,textarea,
           [onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand],
-          [tabindex],[role=link],[role=button]</default>
+          [tabindex],[role=link],[role=button],[contenteditable=true]</default>
     <description>
         <p>
             A list of CSS selectors or XPath expressions used to select elements

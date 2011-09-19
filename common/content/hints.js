@@ -1281,7 +1281,7 @@ var Hints = Module("hints", {
 
         options.add(["hinttags", "ht"],
             "XPath or CSS selector strings of hintable elements for Hints mode",
-            "stringlist", "input:not([type=hidden]),a[href],area,iframe,textarea,button,select," +
+            "stringlist", "a[href],area,button,iframe,input:not([type=hidden]),select,textarea," +
                           "[onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand]," +
                           "[tabindex],[role=link],[role=button],[contenteditable=true]",
             {
