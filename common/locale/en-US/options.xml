@@ -534,8 +534,9 @@
 <item>
     <tags>'dls' 'dlsort' 'downloadsort'</tags>
     <spec>'downloadsort' 'dlsort' 'dls'</spec>
-    <type>stringlist</type>
-    <default>-active,+filename</default>
+    <strut/>
+    <type>&option.downloadsort.type;</type>
+    <default>&option.downloadsort.default;</default>
     <description>
         <p>
             <ex>:downloads</ex> sort order, in order of precedence.

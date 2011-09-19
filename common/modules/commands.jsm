@@ -1183,7 +1183,7 @@ var Commands = Module("commands", {
                 (?P<count>    (?:\d+ | %)? )
                 (?P<fullCmd>
                     (?: (?P<group>   <name>) : )?
-                    (?P<cmd>      (?:<name> | !)? ))
+                    (?P<cmd>      (?:-? [()] | <name> | !)? ))
                 (?P<bang>     !?)
                 (?P<space>    \s*)
             )
@@ -1402,6 +1402,11 @@ var Commands = Module("commands", {
 
     commands: function initCommands(dactyl, modules, window) {
         const { commands, contexts } = modules;
+
+        commands.add(["(", "-("], "",
+            function (args) { dactyl.echoerr(_("dactyl.cheerUp")); });
+        commands.add([")", "-)"], "",
+            function (args) { dactyl.echoerr(_("dactyl.somberDown")); });
 
         commands.add(["com[mand]"],
             "List or define commands",
