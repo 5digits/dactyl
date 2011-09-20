@@ -361,7 +361,10 @@ var DOM = Class("DOM", {
 
     get isEditable() !!this.editor,
 
-    get isInput() this[0] instanceof Ci.nsIDOMHTMLInputElement && this.isEditable,
+    get isInput() isinstance(this[0], [Ci.nsIDOMHTMLInputElement,
+                                       Ci.nsIDOMHTMLTextAreaElement,
+                                       Ci.nsIDOMXULTextBoxElement])
+                    && this.isEditable,
 
     /**
      * Returns an object representing a Node's computed CSS style.
