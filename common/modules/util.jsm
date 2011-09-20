@@ -428,56 +428,68 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns [string] The resulting strings.
      */
     debrace: function debrace(pattern) {
-        var res = [];
+        try {
+            if (isArray(pattern)) {
+                // Jägermonkey hates us.
+                let obj = ({
+                    res: [],
+                    rec: function rec(acc) {
+                        let vals;
 
-        if (isArray(pattern)) {
+                        while (isString(vals = pattern[acc.length]))
+                            acc.push(vals);
+
+                        if (acc.length == pattern.length)
+                            this.res.push(acc.join(""))
+                        else
+                            for (let val in values(vals))
+                                this.rec(acc.concat(val));
+                    }
+                });
+                obj.rec([]);
+                return obj.res;
+            }
+
+            if (pattern.indexOf("{") == -1)
+                return [pattern];
+
+            let res = [];
+
+            let split = function split(pattern, re, fn, dequote) {
+                let end = 0, match, res = [];
+                while (match = re.exec(pattern)) {
+                    end = match.index + match[0].length;
+                    res.push(match[1]);
+                    if (fn)
+                        fn(match);
+                }
+                res.push(pattern.substr(end));
+                return res.map(function (s) util.dequote(s, dequote));
+            }
+
+            let patterns = [];
+            let substrings = split(pattern, /((?:[^\\{]|\\.)*)\{((?:[^\\}]|\\.)*)\}/gy,
+                function (match) {
+                    patterns.push(split(match[2], /((?:[^\\,]|\\.)*),/gy,
+                        null, ",{}"));
+                }, "{}");
+
             let rec = function rec(acc) {
-                let vals;
-
-                while (isString(vals = pattern[acc.length]))
-                    acc.push(vals);
-
-                if (acc.length == pattern.length)
-                    res.push(acc.join(""))
+                if (acc.length == patterns.length)
+                    res.push(array(substrings).zip(acc).flatten().join(""));
                 else
-                    for (let val in values(vals))
-                        rec(acc.concat(val));
+                    for (let [, pattern] in Iterator(patterns[acc.length]))
+                        rec(acc.concat(pattern));
             }
             rec([]);
             return res;
         }
-
-        if (pattern.indexOf("{") == -1)
-            return [pattern];
-
-        function split(pattern, re, fn, dequote) {
-            let end = 0, match, res = [];
-            while (match = re.exec(pattern)) {
-                end = match.index + match[0].length;
-                res.push(match[1]);
-                if (fn)
-                    fn(match);
-            }
-            res.push(pattern.substr(end));
-            return res.map(function (s) util.dequote(s, dequote));
+        catch (e if e.message && ~e.message.indexOf("res is undefined")) {
+            // prefs.safeSet() would be reset on :rehash
+            prefs.set("javascript.options.methodjit.chrome", false);
+            util.dactyl.warn(_(UTF8("error.damnYouJägermonkey")));
+            return [];
         }
-
-        let patterns = [];
-        let substrings = split(pattern, /((?:[^\\{]|\\.)*)\{((?:[^\\}]|\\.)*)\}/gy,
-            function (match) {
-                patterns.push(split(match[2], /((?:[^\\,]|\\.)*),/gy,
-                    null, ",{}"));
-            }, "{}");
-
-        function rec(acc) {
-            if (acc.length == patterns.length)
-                res.push(array(substrings).zip(acc).flatten().join(""));
-            else
-                for (let [, pattern] in Iterator(patterns[acc.length]))
-                    rec(acc.concat(pattern));
-        }
-        rec([]);
-        return res;
     },
 
     /**

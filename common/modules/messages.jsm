@@ -60,7 +60,10 @@ var Messages = Module("messages", {
     get: function get(value, default_) {
         for (let bundle in values(this.bundles))
             try {
-                return bundle.GetStringFromName(value);
+                let res = bundle.GetStringFromName(value);
+                if (res.slice(0, 2) == "+ ")
+                    return res.slice(2).replace(/\s+/g, " ");
+                return res;
             }
             catch (e) {}
 
@@ -73,7 +76,10 @@ var Messages = Module("messages", {
     format: function format(value, args, default_) {
         for (let bundle in values(this.bundles))
             try {
-                return bundle.formatStringFromName(value, args, args.length);
+                let res = bundle.formatStringFromName(value, args, args.length);
+                if (res.slice(0, 2) == "+ ")
+                    return res.slice(2).replace(/\s+/g, " ");
+                return res;
             }
             catch (e) {}
 
