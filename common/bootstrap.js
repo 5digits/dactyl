@@ -58,6 +58,13 @@ let components = {};
 let resources = [];
 let getURI = null;
 
+function updateLoader() {
+    try {
+        JSMLoader.loader = Cc["@dactyl.googlecode.com/extra/utils"].getService(Ci.dactylIUtils);
+    }
+    catch (e) {};
+}
+
 /**
  * Performs necessary migrations after a version change.
  */
@@ -100,6 +107,8 @@ function startup(data, reason) {
         name = data.id.replace(/@.*/, "");
         AddonManager.getAddonByID(addon.id, function (a) {
             addon = a;
+
+            updateLoader();
             updateVersion();
             if (typeof require !== "undefined")
                 require(global, "main");
@@ -259,6 +268,7 @@ function init() {
     Services.obs.notifyObservers(null, "dactyl-rehash", null);
     updateVersion();
 
+    updateLoader();
     if (addon !== addonData)
         require(global, "main");
 }

@@ -40,6 +40,12 @@
 #ifndef mozJSLoaderUtils_h
 #define mozJSLoaderUtils_h
 
+/*
+ * This is evil. Very evil.
+#define nsString_h___
+#include "nsStringGlue.h"
+ */
+
 #include "nsIStartupCache.h"
 #include "nsStringAPI.h"
 #include "jsapi.h"
@@ -51,10 +57,6 @@ namespace scache {
 class StartupCache;
 }
 }
-
-#include "nsIWeakReferenceUtils.h"
-typedef nsString              nsAFlatString;
-#include "nsScriptLoader.h"
 
 nsresult
 ReadCachedScript(nsIStartupCache* cache, nsACString &uri,

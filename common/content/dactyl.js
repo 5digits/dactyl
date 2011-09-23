@@ -492,38 +492,45 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         let info = contexts.context;
         if (fileName == null)
-            if (info && info.file[0] !== "[")
+            if (info)
                 ({ file: fileName, line: lineNumber, context: ctxt }) = info;
+
+        if (fileName && fileName[0] == "[")
+            fileName = "dactyl://command-line/";
 
         if (!context && fileName && fileName[0] !== "[")
             context = ctxt || _userContext;
 
         if (isinstance(context, ["Sandbox"]))
             return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
-        else
-            try {
-                if (!context)
-                    context = userContext || ctxt;
+        else {
+            if (!context)
+                context = userContext || ctxt;
 
-                context[EVAL_ERROR] = null;
-                context[EVAL_STRING] = str;
-                context[EVAL_RESULT] = null;
-                this.loadScript("resource://dactyl-content/eval.js", context);
-                if (context[EVAL_ERROR]) {
-                    try {
-                        context[EVAL_ERROR].fileName = info.file;
-                        context[EVAL_ERROR].lineNumber += info.line;
+            if (services.has("dactyl") && services.dactyl.evalInContext)
+                return services.dactyl.evalInContext(str, context, fileName, lineNumber);
+            else
+                try {
+                    context[EVAL_ERROR] = null;
+                    context[EVAL_STRING] = str;
+                    context[EVAL_RESULT] = null;
+                    this.loadScript("resource://dactyl-content/eval.js", context);
+                    if (context[EVAL_ERROR]) {
+                        try {
+                            context[EVAL_ERROR].fileName = info.file;
+                            context[EVAL_ERROR].lineNumber += info.line;
+                        }
+                        catch (e) {}
+                        throw context[EVAL_ERROR];
                     }
-                    catch (e) {}
-                    throw context[EVAL_ERROR];
+                    return context[EVAL_RESULT];
                 }
-                return context[EVAL_RESULT];
-            }
-            finally {
-                delete context[EVAL_ERROR];
-                delete context[EVAL_RESULT];
-                delete context[EVAL_STRING];
-            }
+                finally {
+                    delete context[EVAL_ERROR];
+                    delete context[EVAL_RESULT];
+                    delete context[EVAL_STRING];
+                }
+        }
     },
 
     /**

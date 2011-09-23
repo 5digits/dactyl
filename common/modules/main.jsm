@@ -139,7 +139,13 @@ var Modules = function Modules(window) {
         newContext: function newContext(proto, normal) {
             if (normal)
                 return create(proto);
-            let sandbox = Components.utils.Sandbox(window, { sandboxPrototype: proto || modules, wantXrays: false });
+
+            if (services.has("dactyl") && services.dactyl.createGlobal)
+                var sandbox = services.dactyl.createGlobal();
+            else
+                sandbox = Components.utils.Sandbox(window, { sandboxPrototype: proto || modules,
+                                                             wantXrays: false });
+
             // Hack:
             sandbox.Object = jsmodules.Object;
             sandbox.File = jsmodules.File;

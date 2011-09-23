@@ -64,6 +64,16 @@
 #include "nsIScriptSecurityManager.h"
 #include "nsIFileURL.h"
 
+// ConvertToUTF16
+#include "nsICharsetConverterManager.h"
+#include "nsIUnicodeDecoder.h"
+template<class T>
+inline PRBool EnsureStringLength(T& aStr, PRUint32 aLen)
+{
+    aStr.SetLength(aLen);
+    return (aStr.Length() == aLen);
+}
+
 #include "jsapi.h"
 #include "jscntxt.h"
 #include "jsdbgapi.h"
@@ -74,7 +84,6 @@
 #include "mozilla/scache/StartupCacheUtils.h"
 
 using namespace mozilla::scache;
-
 class nsACString_internal : nsACString {};
 
 namespace mozilla {
@@ -95,6 +104,89 @@ namespace mozilla {
 #define LOAD_ERROR_READUNDERFLOW "File Read Error (underflow.)"
 #define LOAD_ERROR_NOPRINCIPALS "Failed to get principals."
 #define LOAD_ERROR_NOSPEC "Failed to get URI spec.  This is bad."
+
+/* Internal linkage, bloody hell... */
+static nsresult
+ConvertToUTF16(nsIChannel* aChannel, const PRUint8* aData,
+               PRUint32 aLength, const nsString& aHintCharset,
+               nsString& aString)
+{
+  if (!aLength) {
+    aString.Truncate();
+    return NS_OK;
+  }
+
+  nsCAutoString characterSet;
+
+  nsresult rv = NS_OK;
+  if (aChannel) {
+    rv = aChannel->GetContentCharset(characterSet);
+  }
+
+  if (!aHintCharset.IsEmpty() && (NS_FAILED(rv) || characterSet.IsEmpty())) {
+    // charset name is always ASCII.
+    LossyCopyUTF16toASCII(aHintCharset, characterSet);
+  }
+
+  if (characterSet.IsEmpty()) {
+    // fall back to ISO-8859-1, see bug 118404
+    characterSet.AssignLiteral("ISO-8859-1");
+  }
+
+  nsCOMPtr<nsICharsetConverterManager> charsetConv =
+    do_GetService(NS_CHARSETCONVERTERMANAGER_CONTRACTID, &rv);
+
+  nsCOMPtr<nsIUnicodeDecoder> unicodeDecoder;
+
+  if (NS_SUCCEEDED(rv) && charsetConv) {
+    rv = charsetConv->GetUnicodeDecoder(characterSet.get(),
+                                        getter_AddRefs(unicodeDecoder));
+    if (NS_FAILED(rv)) {
+      // fall back to ISO-8859-1 if charset is not supported. (bug 230104)
+      rv = charsetConv->GetUnicodeDecoderRaw("ISO-8859-1",
+                                             getter_AddRefs(unicodeDecoder));
+    }
+  }
+
+  // converts from the charset to unicode
+  if (NS_SUCCEEDED(rv)) {
+    PRInt32 unicodeLength = 0;
+
+    rv = unicodeDecoder->GetMaxLength(reinterpret_cast<const char*>(aData),
+                                      aLength, &unicodeLength);
+    if (NS_SUCCEEDED(rv)) {
+      if (!EnsureStringLength(aString, unicodeLength))
+        return NS_ERROR_OUT_OF_MEMORY;
+
+      PRUnichar *ustr = aString.BeginWriting();
+
+      PRInt32 consumedLength = 0;
+      PRInt32 originalLength = aLength;
+      PRInt32 convertedLength = 0;
+      PRInt32 bufferLength = unicodeLength;
+      do {
+        rv = unicodeDecoder->Convert(reinterpret_cast<const char*>(aData),
+                                     (PRInt32 *) &aLength, ustr,
+                                     &unicodeLength);
+        if (NS_FAILED(rv)) {
+          // if we failed, we consume one byte, replace it with U+FFFD
+          // and try the conversion again.
+          ustr[unicodeLength++] = (PRUnichar)0xFFFD;
+          ustr += unicodeLength;
+
+          unicodeDecoder->Reset();
+        }
+        aData += ++aLength;
+        consumedLength += aLength;
+        aLength = originalLength - consumedLength;
+        convertedLength += unicodeLength;
+        unicodeLength = bufferLength - convertedLength;
+      } while (NS_FAILED(rv) && (originalLength > consumedLength) && (bufferLength > convertedLength));
+      aString.SetLength(convertedLength);
+    }
+  }
+  return rv;
+}
 
 // We just use the same reporter as the component loader
 static void
@@ -226,9 +318,9 @@ ReadScript(nsIURI *uri, JSContext *cx, JSObject *target_obj,
 
     if (charset) {
         nsString script;
-        rv = nsScriptLoader::ConvertToUTF16(
+        rv = ConvertToUTF16(
                 nsnull, reinterpret_cast<const PRUint8*>(buf.get()), len,
-                nsDependentString(reinterpret_cast<PRUnichar*>(charset)), nsnull, script);
+                nsDependentString(reinterpret_cast<PRUnichar*>(charset)), script);
 
         if (NS_FAILED(rv)) {
             JSPRINCIPALS_DROP(cx, jsPrincipals);

@@ -39,7 +39,6 @@
 
 #include "mozJSLoaderUtils.h"
 #include "nsAutoPtr.h"
-#include "nsScriptLoader.h"
 
 #include "jsapi.h"
 #include "jsxdrapi.h"
