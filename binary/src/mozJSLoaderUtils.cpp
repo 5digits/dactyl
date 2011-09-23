@@ -35,8 +35,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#define JS_XDRScript JS_XDRScriptObject
-
 #include "mozJSLoaderUtils.h"
 #include "nsAutoPtr.h"
 
@@ -55,7 +53,7 @@ using namespace mozilla::scache;
 
 static nsresult
 ReadScriptFromStream(JSContext *cx, nsIObjectInputStream *stream,
-                     JSScript **script)
+                     JSScriptType **script)
 {
     *script = nsnull;
 
@@ -110,7 +108,7 @@ ReadScriptFromStream(JSContext *cx, nsIObjectInputStream *stream,
 }
 
 static nsresult
-WriteScriptToStream(JSContext *cx, JSScript *script,
+WriteScriptToStream(JSContext *cx, JSScriptType *script,
                     nsIObjectOutputStream *stream)
 {
     JSXDRState *xdr = JS_XDRNewMem(cx, JSXDR_ENCODE);
@@ -152,7 +150,7 @@ WriteScriptToStream(JSContext *cx, JSScript *script,
 }
 
 nsresult
-ReadCachedScript(nsIStartupCache* cache, nsACString &uri, JSContext *cx, JSScript **script)
+ReadCachedScript(nsIStartupCache* cache, nsACString &uri, JSContext *cx, JSScriptType **script)
 {
     nsresult rv;
 
@@ -173,7 +171,7 @@ ReadCachedScript(nsIStartupCache* cache, nsACString &uri, JSContext *cx, JSScrip
 }
 
 nsresult
-WriteCachedScript(nsIStartupCache* cache, nsACString &uri, JSContext *cx, JSScript *script)
+WriteCachedScript(nsIStartupCache* cache, nsACString &uri, JSContext *cx, JSScriptType *script)
 {
     nsresult rv;
 

@@ -40,6 +40,10 @@
 #ifndef mozJSLoaderUtils_h
 #define mozJSLoaderUtils_h
 
+
+#if defined(GECKO_MAJOR) && GECKO_MAJOR < 9
+#endif
+
 /*
  * This is evil. Very evil.
 #define nsString_h___
@@ -49,6 +53,22 @@
 #include "nsIStartupCache.h"
 #include "nsStringAPI.h"
 #include "jsapi.h"
+
+#if defined(GECKO_MAJOR) && GECKO_MAJOR < 9
+#include "jsapi.h"
+#   define JS_XDRScript JS_XDRScriptObject
+    typedef JSObject JSScriptType;
+
+#   define NewObjectInputStreamFromBuffer NS_NewObjectInputStreamFromBuffer
+#   define NewBufferFromStorageStream NS_NewBufferFromStorageStream
+#   if GECKO_MAJOR > 6
+#      define NewObjectOutputWrappedStorageStream NS_NewObjectOutputWrappedStorageStream
+#   else
+#      define NewObjectOutputWrappedStorageStream(a, b, c) NS_NewObjectOutputWrappedStorageStream((a), (b))
+#   endif
+#else
+    typedef JSScript JSScriptType;
+#endif
 
 class nsIURI;
 
@@ -60,9 +80,9 @@ class StartupCache;
 
 nsresult
 ReadCachedScript(nsIStartupCache* cache, nsACString &uri,
-                 JSContext *cx, JSScript **scriptObj);
+                 JSContext *cx, JSScriptType **scriptObj);
 
 nsresult
 WriteCachedScript(nsIStartupCache* cache, nsACString &uri,
-                  JSContext *cx, JSScript *scriptObj);
+                  JSContext *cx, JSScriptType *scriptObj);
 #endif /* mozJSLoaderUtils_h */

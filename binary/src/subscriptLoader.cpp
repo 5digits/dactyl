@@ -271,7 +271,7 @@ static nsresult
 ReadScript(nsIURI *uri, JSContext *cx, JSObject *target_obj,
            jschar *charset, const char *uriStr,
            nsIIOService *serv, nsIPrincipal *principal,
-           JSScript **scriptObjp)
+           JSScriptType **scriptObjp)
 {
     nsCOMPtr<nsIChannel>     chan;
     nsCOMPtr<nsIInputStream> instream;
@@ -518,12 +518,17 @@ dactylUtils::LoadSubScript (const PRUnichar * aURL
     }
 
     bool writeScript = false;
-    JSScript *scriptObj = nsnull;
+    JSScriptType *scriptObj = nsnull;
     JSVersion version = cx->findVersion();
 
     nsCAutoString cachePath;
     cachePath.Append("jssubloader/");
     cachePath.Append(version);
+    if (charset) {
+        cachePath.Append("/");
+        cachePath.Append(NS_ConvertUTF16toUTF8(
+                    nsDependentString(reinterpret_cast<PRUnichar*>(charset))));
+    }
 
     if (false)
         // This is evil. Very evil. Unfortunately, the PathifyURI symbol is

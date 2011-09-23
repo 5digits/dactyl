@@ -1,8 +1,8 @@
 ROOT = ..
 
 XPTDIR          = $(ROOT)/components/
-SODIR           = $(ROOT)/components/$(PLATFORM)/
-OBJDIR          = $(PLATFORM)/
+SODIR           = $(ROOT)/components/$(ABI)/
+OBJDIR          = $(ABI)/
 
 MODULE		= $(SODIR)dactyl
 
@@ -21,7 +21,7 @@ GECKO_CONFIG_INCLUDE = -include mozilla-config.h
 
 GECKO_DEFINES  = -DMOZILLA_STRICT_API
 
-GECKO_INCLUDES = -I$(PLATFORM)/			\
+GECKO_INCLUDES = -I$(ABI)/			\
 		 -I$(GECKO_SDK_PATH)		\
                  -I$(GECKO_SDK_PATH)/idl	\
                  -I$(GECKO_SDK_PATH)/include
@@ -40,13 +40,13 @@ sinclude $(ROOT)/config.local.mk
 
 XPTS = $(XPIDLSRCS:%.idl=$(XPTDIR)%.xpt)
 OBJS = $(CPPSRCS:%.cpp=$(OBJDIR)%.o)
-HEADERS = $(XPIDLSRCS:%.idl=$(PLATFORM)/%.h)
+HEADERS = $(XPIDLSRCS:%.idl=$(ABI)/%.h)
 
 all: build
 
 $(OBJS): $(HEADERS)
 
-$(PLATFORM)/%.h: %.idl
+$(ABI)/%.h: %.idl
 	$(IDL_H) $@ $(GECKO_INCLUDES) $<
 
 $(XPTDIR)%.xpt: %.idl
@@ -71,9 +71,15 @@ dirs: $(XPTDIR) $(SODIR) $(OBJDIR)
 $(XPTDIR) $(SODIR) $(OBJDIR):
 	mkdir -p $@
 
-build: dirs $(XPTS) $(MODULE).so
+module: dirs $(MODULE).so
+
+xpts: $(XPTS)
+
+build: dirs module xpts
 
 clean:
 	rm $(MODULE).so
+
+.PHONY: module xpts build clean all depend
 
 sinclude .depend
