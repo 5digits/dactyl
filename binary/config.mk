@@ -1,13 +1,16 @@
 
 GECKO_MAJOR ?= 9
 GECKO_MINOR ?= 0
-ABI_OS        ?= Linux
-ABI_ARCH      ?= x86_64
-ABI_COMPILER  ?= gcc3
+ABI_OS        := $(shell uname -s)
+ABI_ARCH      := $(shell uname -m)
+ABI_COMPILER  := gcc3
 ABI           ?= $(GECKO_MAJOR).$(GECKO_MINOR)-$(ABI_OS)_$(ABI_ARCH)-$(ABI_COMPILER)
-DEFINES      = -DGECKO_MAJOR=$(GECKO_MAJOR) -DGECKO_MINOR=$(GECKO_MINOR)
+DEFINES        = -DGECKO_MAJOR=$(GECKO_MAJOR) -DGECKO_MINOR=$(GECKO_MINOR)
 
-SED	 ?= sed -r
+SED := $(shell if [ "xoo" = x$$(echo foo | sed -E 's/f(o)/\1/' 2>/dev/null) ];	\
+	       then echo sed -E; else echo sed -r;				\
+	       fi)
+
 
 GECKO_SDK_PATH := $(shell pkg-config --libs libxul | $(SED) 's,([^-]|-[^L])*-L([^ ]+)/lib.*,\2,')
 

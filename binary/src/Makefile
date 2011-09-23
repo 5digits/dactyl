@@ -29,11 +29,14 @@ GECKO_INCLUDES = -I$(ABI)/			\
 GECKO_LDFLAGS =  -L$(GECKO_SDK_PATH)/bin \
 		 -L$(GECKO_SDK_PATH)/lib \
 		 -lxpcomglue_s	\
+		 -lxpcom	\
                  -lnspr4	\
-                 -lplds4	\
-		 -lxul		\
 		 -shared	\
 		 $(NULL)
+
+ifeq "$(shell uname -s)" "Darwin"
+	GECKO_LDFLAGS += -undefined dynamic_lookup
+endif
 
 include $(ROOT)/config.mk
 sinclude $(ROOT)/config.local.mk
@@ -42,7 +45,24 @@ XPTS = $(XPIDLSRCS:%.idl=$(XPTDIR)%.xpt)
 OBJS = $(CPPSRCS:%.cpp=$(OBJDIR)%.o)
 HEADERS = $(XPIDLSRCS:%.idl=$(ABI)/%.h)
 
+
 all: build
+
+dirs: $(XPTDIR) $(SODIR) $(OBJDIR)
+
+depend: .depend
+
+module: dirs $(MODULE).so
+
+dll: dirs $(MODULE).dll
+
+xpts: $(XPTS)
+
+build: dirs module xpts
+
+clean:
+	rm $(MODULE).so
+
 
 $(OBJS): $(HEADERS)
 
@@ -51,8 +71,6 @@ $(ABI)/%.h: %.idl
 
 $(XPTDIR)%.xpt: %.idl
 	$(IDL_XPT) $@ $(GECKO_INCLUDES) $<
-
-depend: .depend
 
 _CPPFLAGS = $(CPPFLAGS) $(CXXFLAGS) $(GECKO_CONFIG_INCLUDE) $(GECKO_DEFINES) $(GECKO_INCLUDES) $(DEFINES)
 
@@ -63,23 +81,14 @@ $(OBJDIR)%.o: %.cpp Makefile
 	$(MKDEP) $(_CPPFLAGS) $(CPPSRCS) | $(SED) 's;^[^ ];$(OBJDIR)&;' >.depend
 
 $(MODULE).so: $(OBJS)
-	$(CXX) -o $@ -Wl,-soname=$(MODULE).so $(OBJS) $(GECKO_LDFLAGS)
+	$(CXX) -o $@ $(OBJS) $(LDFLAGS) $(GECKO_LDFLAGS)
 	chmod +x $@
 
-dirs: $(XPTDIR) $(SODIR) $(OBJDIR)
+$(MODULE).dll: $(OBJS)
+	$(CXX) -o $@ $(OBJS) $(GECKO_LDFLAGS)
 
 $(XPTDIR) $(SODIR) $(OBJDIR):
 	mkdir -p $@
-
-module: dirs $(MODULE).so
-
-xpts: $(XPTS)
-
-build: dirs module xpts
-
-clean:
-	rm $(MODULE).so
-
 .PHONY: module xpts build clean all depend
 
 sinclude .depend

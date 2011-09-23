@@ -142,14 +142,20 @@ install:
 		exit 1; 							\
 	fi; 									\
 										\
-	ext="$$profile/extensions/$(UUID)"; 					\
-	mkdir -p "$$(dirname "$$ext")"; 					\
-	rm -rf "$$ext.xpi" "$$ext"; 						\
-	echo "Installing to $$ext"; 						\
-	if which cygpath >/dev/null 2>&1; 					\
-	then cygpath -wa .; 							\
-	else pwd; 								\
-	fi >"$$ext"
+	install() {								\
+		ext="$$profile/extensions/$$2"; 				\
+		mkdir -p "$$(dirname "$$ext")"; 				\
+		rm -rf "$$ext.xpi" "$$ext"; 					\
+										\
+		echo "Installing $$2 to $$ext";					\
+		if which cygpath >/dev/null 2>&1; 				\
+		then cygpath -wa $$1; 						\
+		else (cd $$1; pwd);						\
+		fi >"$$ext";							\
+	};									\
+	install . $(UUID);							\
+	install ../binary binary@dactyl.googlecode.com;				\
+
 installxpi: xpi
 	$(HOSTAPP) $(XPI)
 
