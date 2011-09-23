@@ -1,0 +1,30 @@
+/* Public Domain */
+
+#include "nsISupports.idl"
+
+%{C++
+#include "jsapi.h"
+%}
+
+
+[scriptable, uuid(29d1c61f-5959-42b3-8a13-4b473b2b47bf)]
+interface dactylIUtils : nsISupports
+{
+    [implicit_jscontext]
+    jsval createGlobal();
+
+    [implicit_jscontext]
+    jsval evalInContext(in AString source,
+                        in jsval target,
+                        [optional] in ACString filename,
+                        [optional] in PRInt32 lineNumber);
+
+    [implicit_jscontext]
+    jsval getGlobalForObject(in jsval object);
+
+    void loadSubScript (in wstring url
+                        /* [optional] in jsval context, */
+                        /* [optional] in wstring charset */);
+};
+
+/* vim:se sts=4 sw=4 et ft=idl: */

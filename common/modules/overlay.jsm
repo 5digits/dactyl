@@ -290,7 +290,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
      * property in *overrides* is added to *object*, replacing any
      * original value. Functions in *overrides* are augmented with the
      * new properties *super*, *supercall*, and *superapply*, in the
-     * same manner as class methods, so that they man call their
+     * same manner as class methods, so that they may call their
      * overridden counterparts.
      *
      * @param {object} object The object to overlay.

@@ -636,7 +636,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 return File(uri);
 
             let channel = services.io.newChannelFromURI(uri);
-            channel.cancel(Cr.NS_BINDING_ABORTED);
+            try { channel.cancel(Cr.NS_BINDING_ABORTED); } catch (e) {}
             if (channel instanceof Ci.nsIFileChannel)
                 return File(channel.file);
         }

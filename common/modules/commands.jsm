@@ -509,7 +509,8 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         let closure = function () self._map[name];
 
         memoize(this._map, name, function () commands.Command(specs, description, action, extra));
-        memoize(this._list, this._list.length, closure);
+        if (!extra.hidden)
+            memoize(this._list, this._list.length, closure);
         for (let alias in values(names.slice(1)))
             memoize(this._map, alias, closure);
 
@@ -1404,9 +1405,11 @@ var Commands = Module("commands", {
         const { commands, contexts } = modules;
 
         commands.add(["(", "-("], "",
-            function (args) { dactyl.echoerr(_("dactyl.cheerUp")); });
+            function (args) { dactyl.echoerr(_("dactyl.cheerUp")); },
+            { hidden: true });
         commands.add([")", "-)"], "",
-            function (args) { dactyl.echoerr(_("dactyl.somberDown")); });
+            function (args) { dactyl.echoerr(_("dactyl.somberDown")); },
+            { hidden: true });
 
         commands.add(["com[mand]"],
             "List or define commands",

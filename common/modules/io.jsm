@@ -344,7 +344,7 @@ var IO = Module("io", {
                 return uri;
 
             let channel = services.io.newChannelFromURI(uri);
-            channel.cancel(Cr.NS_BINDING_ABORTED);
+            try { channel.cancel(Cr.NS_BINDING_ABORTED); } catch (e) {}
             if (channel instanceof Ci.nsIJARChannel)
                 return channel.URI.QueryInterface(Ci.nsIJARURI);
         }

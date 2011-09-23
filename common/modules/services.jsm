@@ -33,6 +33,7 @@ var Services = Module("Services", {
         this.add("clipboardHelper",     "@mozilla.org/widget/clipboardhelper;1",            "nsIClipboardHelper");
         this.add("commandLineHandler",  "@mozilla.org/commandlinehandler/general-startup;1?type=dactyl");
         this.add("console",             "@mozilla.org/consoleservice;1",                    "nsIConsoleService");
+        this.add("dactyl",              "@dactyl.googlecode.com/extra/utils",               "dactylIUtils");
         this.add("dactyl:",             "@mozilla.org/network/protocol;1?name=dactyl");
         this.add("debugger",            "@mozilla.org/js/jsd/debugger-service;1",           "jsdIDebuggerService");
         this.add("directory",           "@mozilla.org/file/directory_service;1",            "nsIProperties");

@@ -1,0 +1,5 @@
+
+interfaces components/dactylIUtils.xpt
+binary-component components/9.0-Linux_x86_64-gcc3/dactyl.so abi=Linux_x86_64-gcc3 platformversion>=9.0 platformversion<9.*
+
+# vim:se tw=0 ft=cfg:
