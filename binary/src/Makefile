@@ -17,8 +17,6 @@ CPPSRCS		= \
 		subscriptLoader.cpp \
 		$(NULL)
 
-GECKO_CONFIG_INCLUDE = -include mozilla-config.h
-
 GECKO_DEFINES  = -DMOZILLA_STRICT_API
 
 GECKO_INCLUDES = -I$(ABI)/			\
@@ -40,6 +38,8 @@ endif
 
 include $(ROOT)/config.mk
 sinclude $(ROOT)/config.local.mk
+
+CPPFLAGS += $(EXCPPFLAGS)
 
 XPTS = $(XPIDLSRCS:%.idl=$(XPTDIR)%.xpt)
 OBJS = $(CPPSRCS:%.cpp=$(OBJDIR)%.o)
@@ -72,20 +72,20 @@ $(ABI)/%.h: %.idl
 $(XPTDIR)%.xpt: %.idl
 	$(IDL_XPT) $@ $(GECKO_INCLUDES) $<
 
-_CPPFLAGS = $(CPPFLAGS) $(CXXFLAGS) $(GECKO_CONFIG_INCLUDE) $(GECKO_DEFINES) $(GECKO_INCLUDES) $(DEFINES)
+_CPPFLAGS = $(CPPFLAGS) $(CXXFLAGS) $(GECKO_DEFINES) $(GECKO_INCLUDES) $(DEFINES)
 
 $(OBJDIR)%.o: %.cpp Makefile
-	$(CXX) -o $@ -c $(_CPPFLAGS) $<
+	$(CXX)$@ -c $(_CPPFLAGS) $<
 
 .depend: $(CPPSRCS) Makefile
 	$(MKDEP) $(_CPPFLAGS) $(CPPSRCS) | $(SED) 's;^[^ ];$(OBJDIR)&;' >.depend
 
 $(MODULE).so: $(OBJS)
-	$(CXX) -o $@ $(OBJS) $(LDFLAGS) $(GECKO_LDFLAGS)
+	$(LINK) -o $@ $(OBJS) $(LDFLAGS) $(GECKO_LDFLAGS)
 	chmod +x $@
 
 $(MODULE).dll: $(OBJS)
-	$(CXX) -o $@ $(OBJS) $(GECKO_LDFLAGS)
+	$(LINK)$@ $(GECKO_LDFLAGS) $(OBJS)
 
 $(XPTDIR) $(SODIR) $(OBJDIR):
 	mkdir -p $@

@@ -40,9 +40,7 @@
 #ifndef mozJSLoaderUtils_h
 #define mozJSLoaderUtils_h
 
-
-#if defined(GECKO_MAJOR) && GECKO_MAJOR < 9
-#endif
+#include "config.h"
 
 /*
  * This is evil. Very evil.
@@ -59,12 +57,14 @@
 #   define JS_XDRScript JS_XDRScriptObject
     typedef JSObject JSScriptType;
 
+#   if GECKO_MAJOR < 8
 #   define NewObjectInputStreamFromBuffer NS_NewObjectInputStreamFromBuffer
 #   define NewBufferFromStorageStream NS_NewBufferFromStorageStream
-#   if GECKO_MAJOR > 6
-#      define NewObjectOutputWrappedStorageStream NS_NewObjectOutputWrappedStorageStream
-#   else
-#      define NewObjectOutputWrappedStorageStream(a, b, c) NS_NewObjectOutputWrappedStorageStream((a), (b))
+#      if GECKO_MAJOR > 6
+#          define NewObjectOutputWrappedStorageStream NS_NewObjectOutputWrappedStorageStream
+#      else
+#          define NewObjectOutputWrappedStorageStream(a, b, c) NS_NewObjectOutputWrappedStorageStream((a), (b))
+#      endif
 #   endif
 #else
     typedef JSScript JSScriptType;

@@ -12,15 +12,17 @@ SED := $(shell if [ "xoo" = x$$(echo foo | sed -E 's/f(o)/\1/' 2>/dev/null) ];	\
 	       fi)
 
 
-GECKO_SDK_PATH := $(shell pkg-config --libs libxul | $(SED) 's,([^-]|-[^L])*-L([^ ]+)/lib.*,\2,')
+PKGCONFIG      ?= pkg-config
+GECKO_SDK_PATH := $(shell $(PKGCONFIG) --libs libxul | $(SED) 's,([^-]|-[^L])*-L([^ ]+)/lib.*,\2,')
 
-CXX      ?= c++
+CXX      ?= c++ -o
+LINK     ?= c++
 
 MKDEP    ?= $(CXX) -M
 
 PYTHON   ?= python2
 
-CPPFLAGS +=     -fno-rtti		\
+EXCPPFLAGS =    -fno-rtti		\
                 -fno-exceptions		\
                 -fshort-wchar		\
 		-fPIC			\

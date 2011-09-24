@@ -168,6 +168,7 @@ dactylUtils::CreateGlobal(JSContext *cx, jsval *out)
                    NS_ERROR_FAILURE);
 
     *out = OBJECT_TO_JSVAL(global);
+    return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -281,7 +282,9 @@ dactylUtils::GetGlobalForObject(const jsval &aObject,
                     NS_ERROR_XPC_BAD_CONVERT_JS);
 
     JSObject *obj = JSVAL_TO_OBJECT(aObject);
+#ifndef WIN32 /* Why? No idea. */
     if (obj->isProxy())
+#endif
         obj = obj->unwrap();
 
     JSObject *global = JS_GetGlobalForObject(cx, obj);

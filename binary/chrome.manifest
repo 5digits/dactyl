@@ -11,4 +11,9 @@ binary-component components/7.0-Darwin_x86_64-gcc3/dactyl.so abi=Darwin_x86_64-g
 binary-component components/8.0-Darwin_x86_64-gcc3/dactyl.so abi=Darwin_x86_64-gcc3 platformversion>=8.0 platformversion<8.*
 binary-component components/9.0-Darwin_x86_64-gcc3/dactyl.so abi=Darwin_x86_64-gcc3 platformversion>=9.0 platformversion<9.*
 
+binary-component components/6.0-WINNT_x86-msvc/dactyl.dll abi=WINNT_x86-msvc appversion>=6.0 appversion<6.*
+binary-component components/7.0-WINNT_x86-msvc/dactyl.dll abi=WINNT_x86-msvc appversion>=7.0 appversion<7.*
+binary-component components/8.0-WINNT_x86-msvc/dactyl.dll abi=WINNT_x86-msvc platformversion>=8.0 platformversion<8.*
+binary-component components/9.0-WINNT_x86-msvc/dactyl.dll abi=WINNT_x86-msvc platformversion>=9.0 platformversion<9.*
+
 # vim:se tw=0 ft=cfg:

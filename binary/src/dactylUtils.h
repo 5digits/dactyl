@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "config.h"
 #include "dactylIUtils.h"
 
 #include "nsISupports.h"

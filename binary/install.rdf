@@ -6,7 +6,8 @@
         em:type="2"
         em:name="Dactyl Binary Utils"
         em:version="0.1"
-        em:description="Binary utilities for dactyl add-ons">
+        em:description="Binary utilities for dactyl add-ons"
+        em:unpack="true">
 
         <em:targetApplication>
             <Description
