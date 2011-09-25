@@ -819,12 +819,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         res.* += <>
             <item>
                 <tags>{template.map(obj.names.slice().reverse(), tag, " ")}</tags>
-                <spec>{
-                    let (name = (obj.specs || obj.names)[0])
-                        spec(template.highlightRegexp(tag(name),
-                                                      /\[(.*?)\]/g,
-                                                      function (m, n0) <oa>{n0}</oa>),
-                             name)
+                <spec>{(obj instanceof Option)
+                    ? template.map(obj.names.slice(), spec, " ")
+                    : let (name = (obj.specs || obj.names)[0])
+                          spec(template.highlightRegexp(tag(name),
+                               /\[(.*?)\]/g,
+                               function (m, n0) <oa>{n0}</oa>),
+                               name)
                 }</spec>{
                 !obj.type ? "" : <>
                 <type>{obj.type}</type>

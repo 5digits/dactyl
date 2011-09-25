@@ -721,7 +721,7 @@
 
 <item>
     <tags>'ff' 'findflags'</tags>
-    <spec>'findflags'</spec>
+    <spec>'findflags' 'ff'</spec>
     <type>&option.findflags.type;</type>
     <default>&option.findflags.default;</default>
     <description>
