@@ -36,13 +36,10 @@
     <li>
         Escape sequences to toggle link-only and case-sensitive find.
     </li>
+    <li>
+        Crude regular expression searches are supported.
+    </li>
 </ul>
-
-<p>
-    Regular expression find, however, is not currently available unless the
-    /Find Bar/ service is installed, in which case it may be toggled on with
-    a find flag.
-</p>
 
 <item>
     <tags><![CDATA[<find-forward> /]]></tags>

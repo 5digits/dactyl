@@ -720,6 +720,25 @@
 </item>
 
 <item>
+    <tags>'ff' 'findflags'</tags>
+    <spec>'findflags'</spec>
+    <type>&option.findflags.type;</type>
+    <default>&option.findflags.default;</default>
+    <description>
+        <p>Default flags for find invocations.</p>
+
+        <dl>
+            <dt>C</dt> <dd>Match case</dd>
+            <dt>L</dt> <dd>Search all text</dd>
+            <dt>R</dt> <dd>Perform a plain string search</dd>
+            <dt>c</dt> <dd>Ignore case</dd>
+            <dt>l</dt> <dd>Search only in links</dd>
+            <dt>r</dt> <dd>Perform a regular expression search</dd>
+        </dl>
+    </description>
+</item>
+
+<item>
     <tags>'fh' 'followhints'</tags>
     <spec>'followhints' 'fh'</spec>
     <type>&option.followhints.type;</type>
@@ -944,7 +963,10 @@
     <type>&option.hlfind.type;</type>
     <default>&option.hlfind.default;</default>
     <description>
-        <p>Highlight previous find pattern matches.</p>
+        <p>
+            Highlight previous find pattern matches. This functionality is not
+            currently available for regular expression searches.
+        </p>
     </description>
 </item>
 

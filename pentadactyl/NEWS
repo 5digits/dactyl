@@ -40,6 +40,7 @@
         backspace.
       - Supports reverse incremental search.
       - Input boxes are not focused when matches are highlighted.
+      - Crude regular expression search is supported. [b8]
     • Ex command parsing improvements, including:
       - Multiple Ex commands may now be separated by | [b1]
       - Commands can continue over multiple lines in RC files by
@@ -202,6 +203,7 @@
       - Added 'banghist' option. [b1]
       - Added 'cookies', 'cookieaccept', and 'cookielifetime' options. [b3]
       - Added 'downloadsort' option. [b7]
+      - Added 'findflags' option. [b8]
       - Replaced 'focuscontent' with 'strictfocus'. [b1]
       - Made 'strictfocus' a [sitemap]. [b7]
       - 'complete' now defaults to "slf" but file completion only

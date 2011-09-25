@@ -64,7 +64,7 @@ var RangeFinder = Module("rangefinder", {
         let matchCase = this.options["findcase"] === "smart"  ? /[A-Z]/.test(str) :
                         this.options["findcase"] === "ignore" ? false : true;
 
-        str = str.replace(/\\(.|$)/g, function (m, n1) {
+        function replacer(m, n1) {
             if (n1 == "c")
                 matchCase = false;
             else if (n1 == "C")
@@ -80,7 +80,11 @@ var RangeFinder = Module("rangefinder", {
             else
                 return m;
             return "";
-        });
+        }
+
+        this.options["findflags"].forEach(function (f) replacer(f, f));
+
+        str = str.replace(/\\(.|$)/g, replacer);
 
         // It's possible, with :tabdetach for instance, for the rangeFind to
         // actually move from one window to another, which breaks things.
@@ -105,6 +109,8 @@ var RangeFinder = Module("rangefinder", {
     find: function (pattern, backwards) {
         this.modules.marks.push();
         let str = this.bootstrap(pattern, backwards);
+        this.backward = this.rangeFind.reverse;
+
         if (!this.rangeFind.find(str))
             this.dactyl.echoerr(_("finder.notFound", pattern),
                                 this.commandline.FORCE_SINGLELINE);
@@ -153,7 +159,7 @@ var RangeFinder = Module("rangefinder", {
     onSubmit: function (command) {
         if (!this.options["incfind"] || !this.rangeFind || !this.rangeFind.found) {
             this.clear();
-            this.find(command || this.lastFindPattern, this.modes.extended & this.modes.FIND_BACKWARD);
+            this.find(command || this.lastFindPattern, this.backward);
         }
 
         if (this.options["hlfind"])
@@ -281,6 +287,20 @@ var RangeFinder = Module("rangefinder", {
                 }
             });
 
+        options.add(["findflags", "ff"],
+            "Default flags for find invocations",
+            "charlist", "",
+            {
+                values: {
+                    "c": "Ignore case",
+                    "C": "Match case",
+                    "r": "Perform a regular expression search",
+                    "R": "Perform a plain string search",
+                    "l": "Search only in links",
+                    "L": "Search all text"
+                }
+            });
+
         options.add(["incfind", "if"],
             "Find a pattern incrementally as it is typed rather than awaiting c_<Return>",
             "boolean", true);
@@ -311,6 +331,7 @@ var RangeFinder = Module("rangefinder", {
  */
 var RangeFind = Class("RangeFind", {
     init: function init(window, matchCase, backward, elementPath, regexp) {
+        util.dumpStack("init " + backward);
         this.window = Cu.getWeakReference(window);
         this.content = window.content;
 
@@ -332,19 +353,10 @@ var RangeFind = Class("RangeFind", {
     get store() this.content.document.dactylStore = this.content.document.dactylStore || {},
 
     get backward() this.finder.findBackwards,
+    set backward(val) this.finder.findBackwards = val,
 
     get matchCase() this.finder.caseSensitive,
     set matchCase(val) this.finder.caseSensitive = Boolean(val),
-
-    get regexp() this.finder.regularExpression || false,
-    set regexp(val) {
-        try {
-            return this.finder.regularExpression = Boolean(val);
-        }
-        catch (e) {
-            return false;
-        }
-    },
 
     get findString() this.lastString,
 
@@ -365,8 +377,10 @@ var RangeFind = Class("RangeFind", {
 
     cancel: function cancel() {
         this.purgeListeners();
-        this.range.deselect();
-        this.range.descroll();
+        if (this.range) {
+            this.range.deselect();
+            this.range.descroll();
+        }
     },
 
     compareRanges: function compareRanges(r1, r2) {
@@ -428,6 +442,9 @@ var RangeFind = Class("RangeFind", {
             this.highlighted = null;
         }
         else {
+            if (this.regexp)
+                return;
+
             this.selections = [];
             let string = this.lastString;
             for (let r in this.iter(string)) {
@@ -586,28 +603,38 @@ var RangeFind = Class("RangeFind", {
         return null;
     },
 
-    find: function (word, reverse, private_) {
+    find: function (pattern, reverse, private_) {
         if (!private_ && this.lastRange && !RangeFind.equal(this.selectedRange, this.lastRange))
             this.reset();
 
         this.wrapped = false;
-        this.finder.findBackwards = reverse ? !this.reverse : this.reverse;
-        let again = word == null;
+        this.backward = reverse ? !this.reverse : this.reverse;
+        let again = pattern == null;
         if (again)
-            word = this.lastString;
+            pattern = this.lastString;
         if (!this.matchCase)
-            word = word.toLowerCase();
+            pattern = pattern.toLowerCase();
 
-        if (!again && (word === "" || word.indexOf(this.lastString) !== 0 || this.backward)) {
+        if (!again && (pattern === "" || pattern.indexOf(this.lastString) !== 0 || this.backward)) {
             if (!private_)
                 this.range.deselect();
-            if (word === "")
+            if (pattern === "")
                 this.range.descroll();
             this.lastRange = this.startRange;
             this.range = this.ranges.first;
         }
 
-        if (word == "")
+        let word = pattern;
+
+        if (this.regexp)
+            try {
+                RegExp(pattern);
+            }
+            catch (e) {
+                pattern = "";
+            }
+
+        if (pattern == "")
             var range = this.startRange;
         else
             for (let i in this.indexIter(private_)) {
@@ -624,6 +651,24 @@ var RangeFind = Class("RangeFind", {
                 if (this.backward && !again)
                     start = RangeFind.endpoint(this.startRange, false);
 
+                if (this.regexp) {
+                    let range = this.range.range.cloneRange();
+                    range[this.backward ? "setEnd" : "setStart"](
+                        start.startContainer, start.startOffset);
+                    range = DOM.stringify(range);
+
+                    if (!this.backward)
+                        var match = RegExp(pattern, "m").exec(range);
+                    else {
+                        match = RegExp("[^]*(?:" + pattern + ")", "m").exec(range);
+                        if (match)
+                            match = RegExp(pattern + "$").exec(match[0]);
+                    }
+                    if (!(match && match[0]))
+                        continue;
+                    word = match[0];
+                }
+
                 var range = this.finder.Find(word, this.range.range, start, this.range.range);
                 if (range)
                     break;
@@ -632,7 +677,7 @@ var RangeFind = Class("RangeFind", {
         if (range)
             this.lastRange = range.cloneRange();
         if (!private_) {
-            this.lastString = word;
+            this.lastString = pattern;
             if (range == null) {
                 this.cancel();
                 this.found = false;
