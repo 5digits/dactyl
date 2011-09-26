@@ -359,6 +359,8 @@ var RangeFind = Class("RangeFind", {
 
     get findString() this.lastString,
 
+    get flags() this.matchCase ? "" : "i",
+
     get selectedRange() {
         let win = this.store.focusedFrame && this.store.focusedFrame.get() || this.content;
 
@@ -441,9 +443,6 @@ var RangeFind = Class("RangeFind", {
             this.highlighted = null;
         }
         else {
-            if (this.regexp)
-                return;
-
             this.selections = [];
             let string = this.lastString;
             for (let r in this.iter(string)) {
@@ -485,14 +484,29 @@ var RangeFind = Class("RangeFind", {
     },
 
     iter: function (word) {
-        let saved = ["lastRange", "lastString", "range"].map(function (s) [s, this[s]], this);
+        let saved = ["lastRange", "lastString", "range", "regexp"].map(function (s) [s, this[s]], this);
+        let res;
         try {
-            this.range = this.ranges[0];
             this.lastRange = null;
-            this.lastString = word;
-            var res;
-            while (res = this.find(null, this.reverse, true))
-                yield res;
+            if (this.regexp) {
+                let re = RegExp(word, "gm" + this.flags);
+                this.regexp = false;
+                for (this.range in array.iterValues(this.ranges)) {
+                    for (let match in util.regexp.iterate(re, DOM.stringify(this.range.range, true))) {
+                        let lastRange = this.lastRange;
+                        if (res = this.find(null, this.reverse, true))
+                            yield res;
+                        else
+                            this.lastRange = lastRange;
+                    }
+                }
+            }
+            else {
+                this.range = this.ranges[0];
+                this.lastString = word;
+                while (res = this.find(null, this.reverse, true))
+                    yield res;
+            }
         }
         finally {
             saved.forEach(function ([k, v]) this[k] = v, this);
@@ -627,7 +641,6 @@ var RangeFind = Class("RangeFind", {
 
         if (this.regexp)
             try {
-                var flags = this.matchCase ? "" : "i";
                 RegExp(pattern);
             }
             catch (e) {
@@ -658,11 +671,11 @@ var RangeFind = Class("RangeFind", {
                     range = DOM.stringify(range);
 
                     if (!this.backward)
-                        var match = RegExp(pattern, "m" + flags).exec(range);
+                        var match = RegExp(pattern, "m" + this.flags).exec(range);
                     else {
-                        match = RegExp("[^]*(?:" + pattern + ")", "m" + flags).exec(range);
+                        match = RegExp("[^]*(?:" + pattern + ")", "m" + this.flags).exec(range);
                         if (match)
-                            match = RegExp(pattern + "$", flags).exec(match[0]);
+                            match = RegExp(pattern + "$", this.flags).exec(match[0]);
                     }
                     if (!(match && match[0]))
                         continue;

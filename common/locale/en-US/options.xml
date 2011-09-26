@@ -976,10 +976,7 @@
     <type>&option.hlfind.type;</type>
     <default>&option.hlfind.default;</default>
     <description>
-        <p>
-            Highlight previous find pattern matches. This functionality is not
-            currently available for regular expression searches.
-        </p>
+        <p>Highlight previous find pattern matches.</p>
     </description>
 </item>
 
