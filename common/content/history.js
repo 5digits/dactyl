@@ -312,7 +312,7 @@ var History = Module("history", {
             context.generate = function () history.get(context.filter, this.maxItems, sort);
         };
 
-        completion.addUrlCompleter("h", "History", completion.history);
+        completion.addUrlCompleter("history", "History", completion.history);
     },
     mappings: function () {
         function bind() mappings.add.apply(mappings, [config.browserModes].concat(Array.slice(arguments)));

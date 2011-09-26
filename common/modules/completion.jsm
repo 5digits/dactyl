@@ -211,6 +211,16 @@ var CompletionContext = Class("CompletionContext", {
         return this;
     },
 
+    __title: Class.Memoize(function () this._title.map(function (s)
+                typeof s == "string" ? messages.get("completion.title." + s, s)
+                                     : s)),
+
+    set title(val) {
+        delete this.__title;
+        return this._title = val;
+    },
+    get title() this.__title,
+
     // Temporary
     /**
      * @property {Object}
@@ -631,7 +641,17 @@ var CompletionContext = Class("CompletionContext", {
         start = Math.max(0, start || 0);
         end = Math.min(items.length, end != null ? end : items.length);
         for (let i in util.range(start, end, step))
-            yield [i, cache[i] = cache[i] || util.xmlToDom(self.createRow(items[i]), doc)];
+            try {
+                yield [i, cache[i] = cache[i] || util.xmlToDom(self.createRow(items[i]), doc)];
+            }
+            catch (e) {
+                util.reportError(e);
+                yield [i, cache[i] = cache[i] || util.xmlToDom(
+                           <div highlight={highlightGroup || "CompItem"} style="white-space: nowrap">
+                               <li highlight="CompResult">{items[i].text}&#xa0;</li>
+                               <li highlight="CompDesc">{e}&#xa0;</li>
+                           </div>, doc)];
+            }
     },
 
     /**
@@ -849,6 +869,7 @@ var Completion = Module("completion", {
     Local: function (dactyl, modules, window) ({
         urlCompleters: {},
 
+        get modules() modules,
         get options() modules.options,
 
         // FIXME
@@ -920,8 +941,9 @@ var Completion = Module("completion", {
         if (/^about:/.test(context.filter))
             context.fork("about", 6, this, function (context) {
                 context.generate = function () {
-                    const PREFIX = "@mozilla.org/network/protocol/about;1?what=";
-                    return [[k.substr(PREFIX.length), ""] for (k in Cc) if (k.indexOf(PREFIX) == 0)];
+                    return [[k.substr(services.ABOUT.length), ""]
+                            for (k in Cc)
+                            if (k.indexOf(services.ABOUT) == 0)];
                 };
             });
 
@@ -930,7 +952,7 @@ var Completion = Module("completion", {
 
         // Will, and should, throw an error if !(c in opts)
         Array.forEach(complete, function (c) {
-            let completer = this.urlCompleters[c];
+            let completer = this.urlCompleters[c] || { args: [], completer: this.autocomplete(c.replace(/^native:/, "")) };
             context.forkapply(c, 0, this, completer.completer, completer.args);
         }, this);
     },
@@ -940,6 +962,64 @@ var Completion = Module("completion", {
         completer.args = Array.slice(arguments, completer.length);
         this.urlCompleters[opt] = completer;
     },
+
+    autocomplete: curry(function autocomplete(provider, context) {
+        let running = context.getCache("autocomplete-search-running", Object);
+
+        let name = "autocomplete:" + provider;
+        if (!services.has(name))
+            services.add(name, services.AUTOCOMPLETE + provider, "nsIAutoCompleteSearch");
+        let service = services[name];
+
+        util.assert(service, _("autocomplete.noSuchProvider", provider), false);
+
+        if (running[provider]) {
+            this.completions = this.completions;
+            this.cancel();
+        }
+
+        context.anchored = false;
+        context.compare = CompletionContext.Sort.unsorted;
+        context.filterFunc = null;
+
+        let words = context.filter.toLowerCase().split(/\s+/g);
+        context.hasItems = true;
+        context.completions = context.completions.filter(function ({ url, title })
+            words.every(function (w) (url + " " + title).toLowerCase().indexOf(w) >= 0))
+        context.incomplete = true;
+
+        context.format = this.modules.bookmarks.format;
+        context.keys.extra = function (item) {
+            try {
+                return bookmarkcache.get(item.url).extra;
+            }
+            catch (e) {}
+            return null;
+        };
+        context.title = [_("autocomplete.title", provider)];
+
+        context.cancel = function () {
+            this.incomplete = false;
+            if (running[provider])
+                service.stopSearch();
+            running[provider] = false;
+        };
+
+        service.startSearch(context.filter, "", context.result, {
+            onSearchResult: function onSearchResult(search, result) {
+                if (result.searchResult <= result.RESULT_SUCCESS)
+                    running[provider] = null;
+
+                context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
+                context.completions = [
+                    { url: result.getValueAt(i), title: result.getCommentAt(i), icon: result.getImageAt(i) }
+                    for (i in util.range(0, result.matchCount))
+                ];
+            },
+            get onUpdateSearchResult() this.onSearchResult
+        });
+        running[provider] = true;
+    }),
 
     urls: function (context, tags) {
         let compare = String.localeCompare;
@@ -1053,8 +1133,32 @@ var Completion = Module("completion", {
 
         options.add(["complete", "cpt"],
             "Items which are completed at the :open prompts",
-            "charlist", config.defaults.complete == null ? "slf" : config.defaults.complete,
-            { get values() values(completion.urlCompleters).toArray() });
+            "stringlist", config.defaults.complete == null ? "slf" : config.defaults.complete,
+            {
+                valueMap: {
+                    S: "suggestion",
+                    b: "bookmark",
+                    f: "file",
+                    h: "history",
+                    l: "location",
+                    s: "search"
+                },
+
+                get values() values(completion.urlCompleters).toArray()
+                                .concat([let (name = k.substr(services.AUTOCOMPLETE.length))
+                                            ["native:" + name, _("autocomplete.description", name)]
+                                         for (k in Cc)
+                                         if (k.indexOf(services.AUTOCOMPLETE) == 0)]),
+
+                setter: function setter(values) {
+                    if (values.length == 1 && !Set.has(values[0], this.values)
+                            && Array.every(values[0], Set.has(this.valueMap)))
+                        return Array.map(values[0], function (v) this[v], this.valueMap);
+                    return values;
+                },
+
+                validator: function validator(values) validator.supercall(this, this.setter(values))
+            });
 
         options.add(["wildanchor", "wia"],
             "Define which completion groups only match at the beginning of their text",

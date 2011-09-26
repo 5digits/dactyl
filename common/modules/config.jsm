@@ -19,7 +19,7 @@ AboutHandler.prototype = {
 
     classID: Components.ID("81495d80-89ee-4c36-a88d-ea7c4e5ac63f"),
 
-    get contractID() "@mozilla.org/network/protocol/about;1?what=" + config.name,
+    get contractID() services.ABOUT + config.name,
 
     QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
 

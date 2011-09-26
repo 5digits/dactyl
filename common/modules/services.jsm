@@ -16,13 +16,16 @@ defineModule("services", {
  * A lazily-instantiated XPCOM class and service cache.
  */
 var Services = Module("Services", {
+    ABOUT: "@mozilla.org/network/protocol/about;1?what=",
+    AUTOCOMPLETE: "@mozilla.org/autocomplete/search;1?name=",
+    PROTOCOL: "@mozilla.org/network/protocol;1?name=",
+
     init: function () {
         this.services = {};
 
         this.add("annotation",          "@mozilla.org/browser/annotation-service;1",        "nsIAnnotationService");
         this.add("appShell",            "@mozilla.org/appshell/appShellService;1",          "nsIAppShellService");
         this.add("appStartup",          "@mozilla.org/toolkit/app-startup;1",               "nsIAppStartup");
-        this.add("autoCompleteSearch",  "@mozilla.org/autocomplete/search;1?name=history",  "nsIAutoCompleteSearch");
         this.add("bookmarks",           "@mozilla.org/browser/nav-bookmarks-service;1",     "nsINavBookmarksService");
         this.add("bootstrap",           "@dactyl.googlecode.com/base/bootstrap");
         this.add("browserSearch",       "@mozilla.org/browser/search-service;1",            "nsIBrowserSearchService");
@@ -34,7 +37,7 @@ var Services = Module("Services", {
         this.add("commandLineHandler",  "@mozilla.org/commandlinehandler/general-startup;1?type=dactyl");
         this.add("console",             "@mozilla.org/consoleservice;1",                    "nsIConsoleService");
         this.add("dactyl",              "@dactyl.googlecode.com/extra/utils",               "dactylIUtils");
-        this.add("dactyl:",             "@mozilla.org/network/protocol;1?name=dactyl");
+        this.add("dactyl:",             this.PROTOCOL + "dactyl");
         this.add("debugger",            "@mozilla.org/js/jsd/debugger-service;1",           "jsdIDebuggerService");
         this.add("directory",           "@mozilla.org/file/directory_service;1",            "nsIProperties");
         this.add("downloadManager",     "@mozilla.org/download-manager;1",                  "nsIDownloadManager");
@@ -43,7 +46,7 @@ var Services = Module("Services", {
         this.add("externalApp",         "@mozilla.org/uriloader/external-helper-app-service;1", "nsPIExternalAppLauncher")
         this.add("externalProtocol",    "@mozilla.org/uriloader/external-protocol-service;1", "nsIExternalProtocolService");
         this.add("favicon",             "@mozilla.org/browser/favicon-service;1",           "nsIFaviconService");
-        this.add("file:",               "@mozilla.org/network/protocol;1?name=file",        "nsIFileProtocolHandler");
+        this.add("file:",               this.PROTOCOL + "file",                             "nsIFileProtocolHandler");
         this.add("focus",               "@mozilla.org/focus-manager;1",                     "nsIFocusManager");
         this.add("history",             "@mozilla.org/browser/global-history;2",
                  ["nsIBrowserHistory", "nsIGlobalHistory2", "nsINavHistoryService", "nsPIPlacesDatabase"]);
@@ -57,7 +60,7 @@ var Services = Module("Services", {
         this.add("pref",                "@mozilla.org/preferences-service;1",               ["nsIPrefBranch2", "nsIPrefService"]);
         this.add("privateBrowsing",     "@mozilla.org/privatebrowsing;1",                   "nsIPrivateBrowsingService");
         this.add("profile",             "@mozilla.org/toolkit/profile-service;1",           "nsIToolkitProfileService");
-        this.add("resource:",           "@mozilla.org/network/protocol;1?name=resource",    ["nsIProtocolHandler", "nsIResProtocolHandler"]);
+        this.add("resource:",           this.PROTOCOL + "resource",                         ["nsIProtocolHandler", "nsIResProtocolHandler"]);
         this.add("runtime",             "@mozilla.org/xre/runtime;1",                       ["nsIXULAppInfo", "nsIXULRuntime"]);
         this.add("rdf",                 "@mozilla.org/rdf/rdf-service;1",                   "nsIRDFService");
         this.add("sessionStore",        "@mozilla.org/browser/sessionstore;1",              "nsISessionStore");

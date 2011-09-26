@@ -706,9 +706,9 @@ var Bookmarks = Module("bookmarks", {
             });
         };
 
-        completion.addUrlCompleter("S", "Suggest engines", completion.searchEngineSuggest);
-        completion.addUrlCompleter("b", "Bookmarks", completion.bookmark);
-        completion.addUrlCompleter("s", "Search engines and keyword URLs", completion.search);
+        completion.addUrlCompleter("suggestion", "Suggest engines", completion.searchEngineSuggest);
+        completion.addUrlCompleter("bookmark", "Bookmarks", completion.bookmark);
+        completion.addUrlCompleter("search", "Search engines and keyword URLs", completion.search);
     }
 });
 

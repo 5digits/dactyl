@@ -128,7 +128,7 @@ var Config = Module("config", ConfigBase, {
     },
 
     defaults: {
-        complete: "slf",
+        complete: "search,location,file",
         guioptions: "bCrs",
         showtabline: "always",
         titlestring: "Pentadactyl"
@@ -280,55 +280,12 @@ var Config = Module("config", ConfigBase, {
         const { CompletionContext, bookmarkcache, completion } = modules;
         const { document } = window;
 
-        var searchRunning = null;
         completion.location = function location(context) {
-            if (!services.autoCompleteSearch)
-                return;
-
-            if (searchRunning) {
-                searchRunning.completions = searchRunning.completions;
-                searchRunning.cancel();
-            }
-
-            context.anchored = false;
-            context.compare = CompletionContext.Sort.unsorted;
-            context.filterFunc = null;
-
-            let words = context.filter.toLowerCase().split(/\s+/g);
-            context.hasItems = true;
-            context.completions = context.completions.filter(function ({ url, title })
-                words.every(function (w) (url + " " + title).toLowerCase().indexOf(w) >= 0))
-            context.incomplete = true;
-
-            context.format = modules.bookmarks.format;
-            context.keys.extra = function (item) (bookmarkcache.get(item.url) || {}).extra;
+            completion.autocomplete("history", context);
             context.title = ["Smart Completions"];
-
-            context.cancel = function () {
-                this.incomplete = false;
-                if (searchRunning === this) {
-                    services.autoCompleteSearch.stopSearch();
-                    searchRunning = null;
-                }
-            };
-
-            services.autoCompleteSearch.startSearch(context.filter, "", context.result, {
-                onSearchResult: function onSearchResult(search, result) {
-                    if (result.searchResult <= result.RESULT_SUCCESS)
-                        searchRunning = null;
-
-                    context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
-                    context.completions = [
-                        { url: result.getValueAt(i), title: result.getCommentAt(i), icon: result.getImageAt(i) }
-                        for (i in util.range(0, result.matchCount))
-                    ];
-                },
-                get onUpdateSearchResult() this.onSearchResult
-            });
-            searchRunning = context;
         };
 
-        completion.addUrlCompleter("l",
+        completion.addUrlCompleter("location",
             "Firefox location bar entries (bookmarks and history sorted in an intelligent way)",
             completion.location);
 

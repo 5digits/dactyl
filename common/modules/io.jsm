@@ -976,7 +976,7 @@ unlet s:cpo_save
             };
         };
 
-        completion.addUrlCompleter("f", "Local files", function (context, full) {
+        completion.addUrlCompleter("file", "Local files", function (context, full) {
             let match = util.regexp(<![CDATA[
                 ^
                 (?P<prefix>

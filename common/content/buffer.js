@@ -1955,7 +1955,7 @@ var Buffer = Module("buffer", {
             dactyl.assert(url, _("error.clipboardEmpty"));
 
             let proto = /^([-\w]+):/.exec(url);
-            if (proto && "@mozilla.org/network/protocol;1?name=" + proto[1] in Cc && !RegExp(options["urlseparator"]).test(url))
+            if (proto && services.PROTOCOL + proto[1] in Cc && !RegExp(options["urlseparator"]).test(url))
                 return url.replace(/\s+/g, "");
             return url;
         }

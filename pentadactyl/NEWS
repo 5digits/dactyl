@@ -168,6 +168,8 @@
       - Boolean options no longer accept an argument. [b4]
       - 'cdpath' and 'runtimepath' no longer treat ",,"
         specially. Use "." instead. [b2]
+      - 'complete' is now a [stringlist] rather than a [charlist]
+        and supports native autocomplete providers. [b8]
       - 'extendedhinttags' is now a [regexpmap] rather than a
         string. [b2]
       - 'guioptions' default value has changed. [b4][b7]

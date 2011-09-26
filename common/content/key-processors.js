@@ -279,9 +279,9 @@ var KeyProcessor = Class("KeyProcessor", {
                 return KeyArgProcessor(this, map, true, "motion");
 
             return this.execute(map, {
-                keyEvents: this.keyEvents,
                 command: this.command,
                 count: this.count,
+                keyEvents: events.keyEvents,
                 keypressEvents: this.events
             });
         }
@@ -313,7 +313,8 @@ var KeyArgProcessor = Class("KeyArgProcessor", KeyProcessor, {
         let args = {
             command: this.parent.command,
             count:   this.count || this.parent.count,
-            events:  this.parent.events.concat(this.events)
+            keyEvents: events.keyEvents,
+            keypressEvents: this.parent.events.concat(this.events)
         };
         args[this.argName] = this.command;
 

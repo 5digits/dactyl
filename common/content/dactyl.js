@@ -1108,7 +1108,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             // If it starts with a valid protocol, pass it through.
             let proto = /^([-\w]+):/.exec(url);
-            if (proto && "@mozilla.org/network/protocol;1?name=" + proto[1] in Cc)
+            if (proto && services.PROTOCOL + proto[1] in Cc)
                 return url;
 
             // Check for a matching search keyword.

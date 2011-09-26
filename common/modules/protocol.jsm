@@ -93,7 +93,7 @@ function ProtocolBase() {
     };
 }
 ProtocolBase.prototype = {
-    get contractID()        "@mozilla.org/network/protocol;1?name=" + this.scheme,
+    get contractID()        services.PROTOCOL + this.scheme,
     get classDescription()  this.scheme + " utility protocol",
     QueryInterface:         XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
 

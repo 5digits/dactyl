@@ -10,7 +10,14 @@ defineModule("bookmarkcache", {
     require: ["services", "storage", "util"]
 }, this);
 
-function newURI(url, charset, base) services.io.newURI(url, charset, base);
+function newURI(url, charset, base) {
+    try {
+        return services.io.newURI(url, charset, base);
+    }
+    catch (e) {
+        throw Error(e);
+    }
+}
 
 var Bookmark = Struct("url", "title", "icon", "post", "keyword", "tags", "charset", "id");
 var Keyword = Struct("keyword", "title", "icon", "url");
