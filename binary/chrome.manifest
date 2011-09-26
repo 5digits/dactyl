@@ -1,5 +1,18 @@
 
-interfaces components/dactylIUtils.xpt
+interraces components/6.0-Linux_x86_64-gcc3/dactylIUtils.xpt abi=Linux_x86_64-gcc3 appversion>=6.0 appversion<6.*
+interraces components/7.0-Linux_x86_64-gcc3/dactylIUtils.xpt abi=Linux_x86_64-gcc3 appversion>=7.0 appversion<7.*
+interraces components/8.0-Linux_x86_64-gcc3/dactylIUtils.xpt abi=Linux_x86_64-gcc3 platformversion>=8.0 platformversion<8.*
+interraces components/9.0-Linux_x86_64-gcc3/dactylIUtils.xpt abi=Linux_x86_64-gcc3 platformversion>=9.0 platformversion<9.*
+
+interraces components/6.0-Darwin_x86_64-gcc3/dactylIUtils.xpt abi=Darwin_x86_64-gcc3 appversion>=6.0 appversion<6.*
+interraces components/7.0-Darwin_x86_64-gcc3/dactylIUtils.xpt abi=Darwin_x86_64-gcc3 appversion>=7.0 appversion<7.*
+interraces components/8.0-Darwin_x86_64-gcc3/dactylIUtils.xpt abi=Darwin_x86_64-gcc3 platformversion>=8.0 platformversion<8.*
+interraces components/9.0-Darwin_x86_64-gcc3/dactylIUtils.xpt abi=Darwin_x86_64-gcc3 platformversion>=9.0 platformversion<9.*
+
+interraces components/6.0-WINNT_x86-msvc/dactylIUtils.xpt abi=WINNT_x86-msvc appversion>=6.0 appversion<6.*
+interraces components/7.0-WINNT_x86-msvc/dactylIUtils.xpt abi=WINNT_x86-msvc appversion>=7.0 appversion<7.*
+interraces components/8.0-WINNT_x86-msvc/dactylIUtils.xpt abi=WINNT_x86-msvc platformversion>=8.0 platformversion<8.*
+interraces components/9.0-WINNT_x86-msvc/dactylIUtils.xpt abi=WINNT_x86-msvc platformversion>=9.0 platformversion<9.*
 
 binary-component components/6.0-Linux_x86_64-gcc3/dactyl.so abi=Linux_x86_64-gcc3 appversion>=6.0 appversion<6.*
 binary-component components/7.0-Linux_x86_64-gcc3/dactyl.so abi=Linux_x86_64-gcc3 appversion>=7.0 appversion<7.*
