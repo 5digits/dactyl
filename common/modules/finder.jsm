@@ -331,7 +331,6 @@ var RangeFinder = Module("rangefinder", {
  */
 var RangeFind = Class("RangeFind", {
     init: function init(window, matchCase, backward, elementPath, regexp) {
-        util.dumpStack("init " + backward);
         this.window = Cu.getWeakReference(window);
         this.content = window.content;
 
@@ -628,6 +627,7 @@ var RangeFind = Class("RangeFind", {
 
         if (this.regexp)
             try {
+                var flags = this.matchCase ? "" : "i";
                 RegExp(pattern);
             }
             catch (e) {
@@ -658,11 +658,11 @@ var RangeFind = Class("RangeFind", {
                     range = DOM.stringify(range);
 
                     if (!this.backward)
-                        var match = RegExp(pattern, "m").exec(range);
+                        var match = RegExp(pattern, "m" + flags).exec(range);
                     else {
-                        match = RegExp("[^]*(?:" + pattern + ")", "m").exec(range);
+                        match = RegExp("[^]*(?:" + pattern + ")", "m" + flags).exec(range);
                         if (match)
-                            match = RegExp(pattern + "$").exec(match[0]);
+                            match = RegExp(pattern + "$", flags).exec(match[0]);
                     }
                     if (!(match && match[0]))
                         continue;

@@ -1,6 +1,6 @@
 ROOT = ..
 
-XPTDIR          = $(ROOT)/components/
+XPTDIR          = $(ROOT)/components/$(ABI)/
 SODIR           = $(ROOT)/components/$(ABI)/
 OBJDIR          = $(ABI)/
 
@@ -87,7 +87,7 @@ $(MODULE).so: $(OBJS)
 $(MODULE).dll: $(OBJS)
 	$(LINK)$@ $(GECKO_LDFLAGS) $(OBJS)
 
-$(XPTDIR) $(SODIR) $(OBJDIR):
+$(sort $(XPTDIR) $(SODIR) $(OBJDIR)):
 	mkdir -p $@
 .PHONY: module xpts build clean all depend
 
