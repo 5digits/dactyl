@@ -15,7 +15,8 @@ SED := $(shell if [ "xoo" = x$$(echo foo | sed -E 's/f(o)/\1/' 2>/dev/null) ];	\
 PKGCONFIG      ?= pkg-config
 GECKO_SDK_PATH := $(shell $(PKGCONFIG) --libs libxul | $(SED) 's,([^-]|-[^L])*-L([^ ]+)/lib.*,\2,')
 
-CXX      ?= c++ -o
+CXX      ?= c++
+CPP       = $(CXX) -o
 LINK     ?= c++
 
 MKDEP    ?= $(CXX) -M

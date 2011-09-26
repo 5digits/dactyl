@@ -204,16 +204,32 @@ var Editor = Module("editor", {
 
         if (textBox) {
             var text = textBox.value;
-            let pre = text.substr(0, textBox.selectionStart);
-            line = 1 + pre.replace(/[^\n]/g, "").length;
-            column = 1 + pre.replace(/[^]*\n/, "").length;
+            var pre = text.substr(0, textBox.selectionStart);
         }
         else {
             var editor_ = window.GetCurrentEditor ? GetCurrentEditor()
                                                   : Editor.getEditor(document.commandDispatcher.focusedWindow);
             dactyl.assert(editor_);
             text = Array.map(editor_.rootElement.childNodes, function (e) DOM.stringify(e, true)).join("");
+
+            util.dump(editor_.selection);
+
+            if (!editor_.selection.rangeCount)
+                var sel = "";
+            else {
+                let range = RangeFind.nodeContents(editor_.rootElement);
+                let end = editor_.selection.getRangeAt(0);
+                range.setEnd(end.startContainer, end.startOffset);
+                pre = DOM.stringify(range, true);
+                if (range.startContainer instanceof Text)
+                    pre = pre.replace(/^(?:<[^>"]+>)+/, "");
+                if (range.endContainer instanceof Text)
+                    pre = pre.replace(/(?:<\/[^>"]+>)+$/, "");
+            }
         }
+
+        line = 1 + pre.replace(/[^\n]/g, "").length;
+        column = 1 + pre.replace(/[^]*\n/, "").length;
 
         let origGroup = textBox && textBox.getAttributeNS(NS, "highlight") || "";
         let cleanup = util.yieldable(function cleanup(error) {

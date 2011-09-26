@@ -75,7 +75,7 @@ $(XPTDIR)%.xpt: %.idl
 _CPPFLAGS = $(CPPFLAGS) $(CXXFLAGS) $(GECKO_DEFINES) $(GECKO_INCLUDES) $(DEFINES)
 
 $(OBJDIR)%.o: %.cpp Makefile
-	$(CXX)$@ -c $(_CPPFLAGS) $<
+	$(CPP)$@ -c $(_CPPFLAGS) $<
 
 .depend: $(CPPSRCS) Makefile
 	$(MKDEP) $(_CPPFLAGS) $(CPPSRCS) | $(SED) 's;^[^ ];$(OBJDIR)&;' >.depend

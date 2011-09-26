@@ -796,7 +796,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             };
         }
         else if (obj instanceof Option) {
-            tag = spec = function (name) <>'{name}'</>;
+            spec = function () template.map(obj.names, tag, " ");
+            tag = function (name) <>'{name}'</>;
             link = function (opt, name) <o>{name}</o>;
             args = { value: "", values: [] };
         }
@@ -819,9 +820,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         res.* += <>
             <item>
                 <tags>{template.map(obj.names.slice().reverse(), tag, " ")}</tags>
-                <spec>{(obj instanceof Option)
-                    ? template.map(obj.names.slice(), spec, " ")
-                    : let (name = (obj.specs || obj.names)[0])
+                <spec>{let (name = (obj.specs || obj.names)[0])
                           spec(template.highlightRegexp(tag(name),
                                /\[(.*?)\]/g,
                                function (m, n0) <oa>{n0}</oa>),
