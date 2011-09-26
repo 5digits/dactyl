@@ -691,6 +691,9 @@ var DOM = Class("DOM", {
     createContents: function createContents()
         this.each(DOM.createContents, this),
 
+    isScrollable: function isScrollable(direction)
+        this.length && DOM.isScrollable(this[0], direction),
+
     getSet: function getSet(args, get, set) {
         if (!args.length)
             return this[0] && get.call(this, this[0]);
@@ -1245,6 +1248,10 @@ var DOM = Class("DOM", {
 
     createContents: Class.Memoize(function () services.has("dactyl") && services.dactyl.createContents
         || function (elem) {}),
+
+    isScrollable: Class.Memoize(function () services.has("dactyl") && services.dactyl.getScrollable
+        ? function (elem, dir) services.dactyl.getScrollable(elem) & (dir ? services.dactyl["DIRECTION_" + dir.toUpperCase()] : ~0)
+        : function (elem, dir) true),
 
     /**
      * The set of input element type attribute values that mark the element as

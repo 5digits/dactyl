@@ -40,6 +40,23 @@
 #include "jsdbgapi.h"
 #include "jsobj.h"
 
+#include "nsStringAPI.h"
+
+/*
+ * Evil. Evil, evil, evil.
+ */
+#define MOZILLA_INTERNAL_API
+#  define nsAString_h___
+#  define nsString_h___
+#  define nsStringFwd_h___
+#  define nsStringGlue_h__
+class nsAFlatCString;
+typedef nsString nsSubstring;
+#  include "nsIScrollableFrame.h"
+#undef MOZILLA_INTERNAL_API
+#include "nsPresContext.h"
+#include "nsQueryFrame.h"
+
 #include "nsIContent.h"
 #include "nsIDOMXULElement.h"
 #include "nsIXULTemplateBuilder.h"
@@ -49,7 +66,6 @@
 
 #include "nsComponentManagerUtils.h"
 #include "nsServiceManagerUtils.h"
-#include "nsStringAPI.h"
 
 
 class autoDropPrincipals {
@@ -318,6 +334,34 @@ dactylUtils::GetGlobalForObject(const jsval &aObject,
     // Outerize if necessary.
     if (JSObjectOp outerize = global->getClass()->ext.outerObject)
         *rval = OBJECT_TO_JSVAL(outerize(cx, global));
+
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+dactylUtils::GetScrollable(nsIDOMElement *aElement, PRUint32 *rval)
+{
+    nsCOMPtr<nsIContent> content = do_QueryInterface(aElement);
+
+    nsIFrame *frame = content->GetPrimaryFrame();
+    nsIScrollableFrame *scrollFrame = do_QueryFrame(frame);
+
+    *rval = 0;
+    if (scrollFrame) {
+        nsPresContext::ScrollbarStyles ss = scrollFrame->GetScrollbarStyles();
+        PRUint32 scrollbarVisibility = scrollFrame->GetScrollbarVisibility();
+        nsRect scrollRange = scrollFrame->GetScrollRange();
+
+        if (ss.mHorizontal != NS_STYLE_OVERFLOW_HIDDEN &&
+             ((scrollbarVisibility & nsIScrollableFrame::HORIZONTAL) ||
+              scrollRange.width > 0))
+            *rval |= dactylIUtils::DIRECTION_HORIZONTAL;
+
+        if (ss.mVertical != NS_STYLE_OVERFLOW_HIDDEN &&
+             ((scrollbarVisibility & nsIScrollableFrame::VERTICAL) ||
+              scrollRange.height > 0))
+            *rval |= dactylIUtils::DIRECTION_VERTICAL;
+    }
 
     return NS_OK;
 }

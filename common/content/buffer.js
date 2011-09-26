@@ -784,9 +784,29 @@ var Buffer = Module("buffer", {
         function find(elem) {
             while (elem && !(elem instanceof Element) && elem.parentNode)
                 elem = elem.parentNode;
-            for (; elem && elem.parentNode instanceof Element; elem = elem.parentNode)
+            for (; elem instanceof Element; elem = elem.parentNode)
                 if (Buffer.isScrollable(elem, dir, horizontal))
                     break;
+
+            if (!(elem instanceof Element))
+                return {
+                    __proto__: elem.documentElement || elem.ownerDocument.documentElement,
+
+                    win: elem.defaultView || elem.ownerDocument.defaultView,
+
+                    get clientWidth() this.win.innerWidth,
+                    get clientHeight() this.win.innerHeight,
+
+                    get scrollWidth() this.win.scrollMaxX + this.win.innerWidth,
+                    get scrollHeight() this.win.scrollMaxY + this.win.innerHeight,
+
+                    get scrollLeft() this.win.scrollX,
+                    set scrollLeft(val) { this.win.scrollTo(val, this.win.scrollY) },
+
+                    get scrollTop() this.win.scrollY,
+                    set scrollTop(val) { this.win.scrollTo(this.win.scrollX, val) }
+                };
+
             return elem;
         }
 
@@ -1263,6 +1283,9 @@ var Buffer = Module("buffer", {
     findScrollable: deprecated("buffer.findScrollable", function findScrollable() buffer.findScrollable.apply(buffer, arguments)),
 
     isScrollable: function isScrollable(elem, dir, horizontal) {
+        if (!DOM(elem).isScrollable(horizontal ? "horizontal" : "vertical"))
+            return false;
+
         let pos = "scrollTop", size = "clientHeight", max = "scrollHeight", layoutSize = "offsetHeight",
             overflow = "overflowX", border1 = "borderTopWidth", border2 = "borderBottomWidth";
         if (horizontal)
@@ -1272,9 +1295,11 @@ var Buffer = Module("buffer", {
         let style = DOM(elem).style;
         let borderSize = Math.round(parseFloat(style[border1]) + parseFloat(style[border2]));
         let realSize = elem[size];
+
         // Stupid Gecko eccentricities. May fail for quirks mode documents.
         if (elem[size] + borderSize == elem[max] || elem[size] == 0) // Stupid, fallible heuristic.
             return false;
+
         if (style[overflow] == "hidden")
             realSize += borderSize;
         return dir < 0 && elem[pos] > 0 || dir > 0 && elem[pos] + realSize < elem[max] || !dir && realSize < elem[max];
