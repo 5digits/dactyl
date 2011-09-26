@@ -647,9 +647,9 @@ var CompletionContext = Class("CompletionContext", {
             catch (e) {
                 util.reportError(e);
                 yield [i, cache[i] = cache[i] || util.xmlToDom(
-                           <div highlight={highlightGroup || "CompItem"} style="white-space: nowrap">
+                           <div highlight="CompItem" style="white-space: nowrap">
                                <li highlight="CompResult">{items[i].text}&#xa0;</li>
-                               <li highlight="CompDesc">{e}&#xa0;</li>
+                               <li highlight="CompDesc ErrorMsg">{e}&#xa0;</li>
                            </div>, doc)];
             }
     },
