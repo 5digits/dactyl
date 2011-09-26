@@ -143,6 +143,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
 
         function addChildren(node, parent) {
+            DOM(node).createContents();
+
             if (~["menu", "menupopup"].indexOf(node.localName) && node.children.length)
                 dispatch(node, "popupshowing");
 

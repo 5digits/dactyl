@@ -1,6 +1,7 @@
 /* Public Domain */
 
 #include "nsISupports.idl"
+#include "nsIDOMElement.idl"
 
 %{C++
 #include "jsapi.h"
@@ -18,6 +19,8 @@ interface dactylIUtils : nsISupports
                         in jsval target,
                         [optional] in ACString filename,
                         [optional] in PRInt32 lineNumber);
+
+    void createContents(in nsIDOMElement element);
 
     [implicit_jscontext]
     jsval getGlobalForObject(in jsval object);

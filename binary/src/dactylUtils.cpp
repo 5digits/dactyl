@@ -40,6 +40,9 @@
 #include "jsdbgapi.h"
 #include "jsobj.h"
 
+#include "nsIContent.h"
+#include "nsIDOMXULElement.h"
+#include "nsIXULTemplateBuilder.h"
 #include "nsIObserverService.h"
 #include "nsIScriptSecurityManager.h"
 #include "nsIXPCScriptable.h"
@@ -269,6 +272,28 @@ dactylUtils::EvalInContext(const nsAString &aSource,
     }
 
     return rv;
+}
+
+NS_IMETHODIMP
+dactylUtils::CreateContents(nsIDOMElement *aElement)
+{
+    nsCOMPtr<nsIContent> content = do_QueryInterface(aElement);
+
+    for (nsIContent *element = content;
+         element;
+         element = element->GetParent()) {
+
+        nsCOMPtr<nsIDOMXULElement> xulelem = do_QueryInterface(element);
+        if (xulelem) {
+            nsCOMPtr<nsIXULTemplateBuilder> builder;
+            xulelem->GetBuilder(getter_AddRefs(builder));
+            if (builder) {
+                builder->CreateContents(content, PR_TRUE);
+                break;
+            }
+        }
+    }
+    return NS_OK;
 }
 
 NS_IMETHODIMP

@@ -688,6 +688,9 @@ var DOM = Class("DOM", {
         }, this);
     },
 
+    createContents: function createContents()
+        this.each(DOM.createContents, this),
+
     getSet: function getSet(args, get, set) {
         if (!args.length)
             return this[0] && get.call(this, this[0]);
@@ -1239,6 +1242,9 @@ var DOM = Class("DOM", {
                     }
                 })
     }),
+
+    createContents: Class.Memoize(function () services.has("dactyl") && services.dactyl.createContents
+        || function (elem) {}),
 
     /**
      * The set of input element type attribute values that mark the element as
