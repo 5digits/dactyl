@@ -665,7 +665,30 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * argument.
      *
      * @param {string} url
-     * @param {function(XMLHttpRequest)} callback
+     * @param {object} params Optional parameters for this request:
+     *    method: {string} The request method. @default "GET"
+     *
+     *    params: {object} Parameters to append to *url*'s query string.
+     *    data: {*} POST data to send to the server. Ordinary objects
+     *              are converted to FormData objects, with one datum
+     *              for each property/value pair.
+     *
+     *    onload:   {function(XMLHttpRequest, Event)} The request's load event handler.
+     *    onerror:  {function(XMLHttpRequest, Event)} The request's error event handler.
+     *    callback: {function(XMLHttpRequest, Event)} An event handler
+     *              called for either error or load events.
+     *
+     *    background: {boolean} Whether to perform the request in the
+     *                background. @default true
+     *
+     *    mimeType: {string} Override the response mime type with the
+     *              given value.
+     *    responseType: {string} Override the type of the "response"
+     *                  property.
+     *
+     *    user: {string} The user name to send via HTTP Authentication.
+     *    pass: {string} The password to send via HTTP Authentication.
+     *
      * @returns {XMLHttpRequest}
      */
     httpGet: function httpGet(url, callback, self) {
@@ -675,13 +698,32 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         try {
             let xmlhttp = services.Xmlhttp();
-            xmlhttp.mozBackgroundRequest = true;
+            xmlhttp.mozBackgroundRequest = Set.has(params, "background") ? params.background : true;
 
             let async = params.callback || params.onload || params.onerror;
             if (async) {
                 xmlhttp.onload = function handler(event) { util.trapErrors(params.onload || params.callback, params, xmlhttp, event) };
                 xmlhttp.onerror = function handler(event) { util.trapErrors(params.onerror || params.callback, params, xmlhttp, event) };
             }
+
+
+            if (isObject(params.params)) {
+                let data = [encodeURIComponent(k) + "=" + encodeURIComponent(v)
+                            for ([k, v] in iter(params.params))];
+                let uri = util.newURI(url);
+                uri.query += (uri.query ? "&" : "") + data.join("&");
+
+                url = uri.spec;
+            }
+
+            if (isObject(params.data) && !(params.data instanceof Ci.nsISupports)) {
+                let data = services.FormData();
+                for (let [k, v] in iter(params.data))
+                    data.append(k, v);
+                params.data = data;
+            }
+
+
             if (params.mimeType)
                 xmlhttp.overrideMimeType(params.mimeType);
 
@@ -691,7 +733,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             xmlhttp.open(params.method || "GET", url, async,
                          params.user, params.pass);
 
-            xmlhttp.send(null);
+            xmlhttp.send(params.data);
             return xmlhttp;
         }
         catch (e) {

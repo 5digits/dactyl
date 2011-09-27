@@ -85,6 +85,7 @@ var Services = Module("Services", {
         this.addClass("FileInStream", "@mozilla.org/network/file-input-stream;1",  "nsIFileInputStream", "init", false);
         this.addClass("FileOutStream","@mozilla.org/network/file-output-stream;1", "nsIFileOutputStream", "init", false);
         this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        "nsIFind");
+        this.addClass("FormData",     "@mozilla.org/files/formdata;1",             "nsIDOMFormData");
         this.addClass("HtmlConverter","@mozilla.org/widget/htmlformatconverter;1", "nsIFormatConverter");
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     "nsIDocumentEncoder");
         this.addClass("InterfacePointer", "@mozilla.org/supports-interface-pointer;1", "nsISupportsInterfacePointer", "data");
@@ -116,7 +117,7 @@ var Services = Module("Services", {
 
             let res = Cc[service.class][service.method || "getService"]();
             if (!service.interfaces.length)
-                return res.wrappedJSObject;
+                return res.wrappedJSObject || res;
 
             service.interfaces.forEach(function (iface) res.QueryInterface(Ci[iface]));
             if (service.init && args.length) {
