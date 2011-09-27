@@ -80,6 +80,7 @@
       - It's now possible to map keys in many more modes, including
         Hint, Multi-line Output, and Menu. [b4]
       - <C-o> and <C-i> now behave more like Vim. [b8]
+      - n_G now uses 'linenumbers' to determine destination if possible. [b8]
       - Add n_s and n_S. [b8]
       - Added Operator mode for motion maps, per Vim. [b8]
       - Added site-specific mapping groups and related command
@@ -211,6 +212,7 @@
       - 'complete' now defaults to "slf" but file completion only
         triggers when the URL begins as above. [b1]
       - Added 'jumptags' option. [b7]
+      - Added 'linenumbers' option. [b8]
       - Added 's' flag to 'pageinfo' and changed default value. [b7]
       - Added 'passkeys' option. [b3]
       - Added 'passunknown' option. [b7]

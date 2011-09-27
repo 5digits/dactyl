@@ -1035,6 +1035,25 @@
 </item>
 
 <item>
+    <tags>'ln' 'linenumbers'</tags>
+    <spec>'linenumbers' 'ln'</spec>
+    <type>&option.linenumbers.type;</type>
+    <default>&option.linenumbers.default;</default>
+    <description>
+        <p>
+            Patterns used to determine line numbers used by <k>G</k>. May be
+            either a selector expression as accepted by <o>hinttags</o>, in
+            which case the first matching element whose text content is equal to
+            the desired line number is used or the <oa>count</oa>th element
+            failing that, or the string <str delim="'">func:</str> followed by a
+            function which, given arguments for the document and desired line
+            number must return the target element.
+        </p>
+    </description>
+</item>
+
+
+<item>
     <tags>'lpl' 'loadplugins'</tags>
     <spec>'loadplugins' 'lpl'</spec>
     <type>&option.loadplugins.type;</type>

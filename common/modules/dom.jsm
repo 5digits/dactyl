@@ -1324,7 +1324,7 @@ var DOM = Class("DOM", {
                         yield elem;
 
                 if (matcher.css)
-                    for (let [, elem] in iter(node.querySelectorAll(matcher.css)))
+                    for (let [, elem] in iter(util.withProperErrors("querySelectorAll", node, matcher.css)))
                         yield elem;
             }, {
                 css: css.join(", "),
@@ -1343,13 +1343,15 @@ var DOM = Class("DOM", {
     validateMatcher: function validateMatcher(list) {
         let evaluator = services.XPathEvaluator();
         let node = services.XMLDocument();
-        return this.testValues(list, function (value) {
-            if (/^xpath:/.test(value))
-                evaluator.createExpression(value.substr(6), DOM.XPath.resolver);
-            else
-                node.querySelector(value);
-            return true;
-        });
+        return this.testValues(list, this.closure.testMatcher);
+    },
+
+    testMatcher: function testMatcher(value) {
+        if (/^xpath:/.test(value))
+            evaluator.createExpression(value.substr(6), DOM.XPath.resolver);
+        else
+            node.querySelector(value);
+        return true;
     },
 
     /**

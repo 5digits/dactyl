@@ -12,8 +12,6 @@ defineModule("finder", {
 
 function equals(a, b) XPCNativeWrapper(a) == XPCNativeWrapper(b);
 
-try {
-
 /** @instance rangefinder */
 var RangeFinder = Module("rangefinder", {
     Local: function (dactyl, modules, window) ({
@@ -265,7 +263,6 @@ var RangeFinder = Module("rangefinder", {
     },
     options: function (dactyl, modules, window) {
         const { options, rangefinder } = modules;
-        const { prefs } = require("prefs");
 
         options.add(["hlfind", "hlf"],
             "Highlight all /find pattern matches on the current page after submission",
@@ -844,9 +841,8 @@ var RangeFind = Class("RangeFind", {
     }
 });
 
-} catch(e){ if (typeof e === "string") e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+// catch(e){ if (typeof e === "string") e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 endModule();
-
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

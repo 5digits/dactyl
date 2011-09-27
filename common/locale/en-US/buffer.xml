@@ -134,7 +134,9 @@
     <description>
         <p>
             Go to the end of the document. With <oa>count</oa>,
-            behaves exactly the same as <oa>gg</oa>.
+            go to the <oa>count</oa>th line as determined by <o>linenumbers</o>,
+            or to the <oa>count</oa>th percent of the document if the line number
+            can't be determined.
         </p>
     </description>
 </item>

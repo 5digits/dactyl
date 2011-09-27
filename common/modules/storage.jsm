@@ -7,8 +7,10 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("storage", {
     exports: ["File", "Storage", "storage"],
-    require: ["services", "util"]
+    require: ["config", "services", "util"]
 }, this);
+
+this.lazyRequire("io", ["IO"]);
 
 var win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 var myObject = JSON.parse("{}").constructor;
@@ -169,6 +171,10 @@ var Storage = Module("Storage", {
         this.observers = {};
     },
 
+    infoPath: Class.Memoize(function ()
+        File(IO.runtimePath.replace(/,.*/, ""))
+            .child("info").child(config.profileName)),
+
     exists: function exists(name) this.infoPath.child(name).exists(),
 
     newObject: function newObject(key, constructor, params) {
@@ -270,12 +276,6 @@ var Storage = Module("Storage", {
         skipXpcom: function skipXpcom(key, val) val instanceof Ci.nsISupports ? null : val
     }
 }, {
-    init: function init(dactyl, modules) {
-        init.superapply(this, arguments);
-        storage.infoPath = File(modules.IO.runtimePath.replace(/,.*/, ""))
-                             .child("info").child(dactyl.profileName);
-    },
-
     cleanup: function (dactyl, modules, window) {
         overlay.setData(window, "storage-refs", null);
         this.removeDeadObservers();

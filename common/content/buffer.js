@@ -1841,7 +1841,15 @@ var Buffer = Module("buffer", {
 
         mappings.add([modes.NORMAL], ["G", "<End>", "<scroll-bottom>"],
             "Go to the end of the document",
-            function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 100); },
+            function (args) {
+                if (args.count)
+                    var elem = options.get("linenumbers").getLine(buffer.focusedFrame.document,
+                                                                  args.count);
+                if (elem)
+                    elem.scrollIntoView(true);
+                else
+                    buffer.scrollToPercent(null, args.count != null ? args.count : 100);
+            },
             { count: true });
 
         mappings.add([modes.NORMAL], ["%", "<scroll-percent>"],
@@ -2130,6 +2138,52 @@ var Buffer = Module("buffer", {
                 },
                 validator: function (value) DOM.validateMatcher.call(this, value)
                     && Object.keys(value).every(function (v) v.length == 1)
+            });
+
+        options.add(["linenumbers", "ln"],
+            "Patterns used to determine line numbers used by G",
+            "sitemap", {
+                "code.google.com": '#nums [id^="nums_table"] a[href^="#"]',
+                "github.com": '.line_numbers>*',
+                "mxr.mozilla.org": 'a.l',
+                "pastebin.com": '#code_frame>div>ol>li'
+            },
+            {
+                getLine: function getLine(doc, line) {
+                    let uri = util.newURI(doc.documentURI);
+                    for (let filter in values(this.value))
+                        if (filter(uri, doc)) {
+                            if (/^func:/.test(filter.result))
+                                var res = dactyl.userEval("(" + Option.dequote(filter.result.substr(5)) + ")")(doc, line);
+                            else
+                                res = iter.nth(filter.matcher(doc),
+                                               function (elem) (elem.nodeValue || elem.textContent).trim() == line && DOM(elem).display != "none",
+                                               0)
+                                   || iter.nth(filter.matcher(doc), util.identity, line - 1);
+                            if (res)
+                                break;
+                        }
+
+                    return res;
+                },
+
+                keepQuotes: true,
+
+                setter: function (vals) {
+                    for (let value in values(vals))
+                        if (!/^func:/.test(value.result))
+                            value.matcher = DOM.compileMatcher(Option.splitList(value.result));
+                    return vals;
+                },
+
+                validate: function validate(values) {
+                    return this.testValues(values, function (value) {
+                        if (/^func:/.test(value))
+                            return callable(dactyl.userEval("(" + Option.dequote(value.substr(5)) + ")"));
+                        else
+                            return DOM.testMatcher(value);
+                    });
+                }
             });
 
         options.add(["nextpattern"],

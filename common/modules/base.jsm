@@ -122,7 +122,12 @@ if (!Object.keys)
 
 let getGlobalForObject = Cu.getGlobalForObject || function (obj) obj.__parent__;
 
-let jsmodules = {};
+let jsmodules = {
+    lazyRequire: function lazyRequire(module, names, target) {
+        for each (let name in names)
+            memoize(target || this, name, function (name) require(module)[name]);
+    }
+};
 let use = {};
 let loaded = {};
 let currentModule;
@@ -229,6 +234,8 @@ defineModule("base", {
     ]
 }, this);
 
+this.lazyRequire("messages", ["_", "Messages"]);
+
 /**
  * Returns a list of all of the top-level properties of an object, by
  * way of the debugger.
@@ -325,7 +332,7 @@ deprecated.warn = function warn(func, name, alternative, frame) {
     let filename = util.fixURI(frame.filename || "unknown");
     if (!Set.add(func.seenCaller, filename))
         util.dactyl(func).warn([util.urlPath(filename), frame.lineNumber, " "].join(":")
-                                   + require("messages")._("warn.deprecated", name, alternative));
+                                   + _("warn.deprecated", name, alternative));
 }
 
 /**
@@ -1242,7 +1249,7 @@ var StructBase = Class("StructBase", Array, {
 
     localize: function localize(key, defaultValue) {
         let i = this.prototype.members[key];
-        Object.defineProperty(this.prototype, i, require("messages").Messages.Localized(defaultValue).init(key, this.prototype));
+        Object.defineProperty(this.prototype, i, Messages.Localized(defaultValue).init(key, this.prototype));
         return this;
     }
 });

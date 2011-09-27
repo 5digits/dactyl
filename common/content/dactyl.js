@@ -111,20 +111,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
     },
 
-    /** @property {string} The name of the current user profile. */
-    profileName: Class.Memoize(function () {
-        // NOTE: services.profile.selectedProfile.name doesn't return
-        // what you might expect. It returns the last _actively_ selected
-        // profile (i.e. via the Profile Manager or -P option) rather than the
-        // current profile. These will differ if the current process was run
-        // without explicitly selecting a profile.
-
-        let dir = services.directory.get("ProfD", Ci.nsIFile);
-        for (let prof in iter(services.profile.profiles))
-            if (prof.QueryInterface(Ci.nsIToolkitProfile).rootDir.path === dir.path)
-                return prof.name;
-        return "unknown";
-    }),
+    profileName: deprecated("config.profileName", { get: function profileName() config.profileName }),
 
     /**
      * @property {Modes.Mode} The current main mode.

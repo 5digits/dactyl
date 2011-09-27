@@ -13,6 +13,10 @@ defineModule("config", {
     require: ["dom", "protocol", "services", "storage", "util", "template"]
 }, this);
 
+this.lazyRequire("addons", ["AddonManager"]);
+this.lazyRequire("highlight", ["highlight"]);
+this.lazyRequire("messages", ["_"]);
+
 function AboutHandler() {}
 AboutHandler.prototype = {
     get classDescription() "About " + config.appName + " Page",
@@ -102,9 +106,6 @@ var ConfigBase = Class("ConfigBase", {
     },
 
     loadStyles: function loadStyles(force) {
-        const { highlight } = require("highlight");
-        const { _ } = require("messages");
-
         highlight.styleableChrome = this.styleableChrome;
 
         highlight.loadCSS(this.CSS.replace(/__MSG_(.*?)__/g, function (m0, m1) _(m1)));
@@ -145,7 +146,7 @@ var ConfigBase = Class("ConfigBase", {
 
     addon: Class.Memoize(function () {
         return (JSMLoader.bootstrap || {}).addon ||
-                    require("addons").AddonManager.getAddonByID(this.addonID);
+                    AddonManager.getAddonByID(this.addonID);
     }),
 
     /**
@@ -311,6 +312,21 @@ var ConfigBase = Class("ConfigBase", {
         return (/pre-hg\d+-(\S*)/.exec(this.version) || [])[1];
     }),
 
+    /** @property {string} The name of the current user profile. */
+    profileName: Class.Memoize(function () {
+        // NOTE: services.profile.selectedProfile.name doesn't return
+        // what you might expect. It returns the last _actively_ selected
+        // profile (i.e. via the Profile Manager or -P option) rather than the
+        // current profile. These will differ if the current process was run
+        // without explicitly selecting a profile.
+
+        let dir = services.directory.get("ProfD", Ci.nsIFile);
+        for (let prof in iter(services.profile.profiles))
+            if (prof.QueryInterface(Ci.nsIToolkitProfile).rootDir.path === dir.path)
+                return prof.name;
+        return "unknown";
+    }),
+
     /** @property {string} The Dactyl version string. */
     version: Class.Memoize(function () {
         if (this.VCSPath)
@@ -375,7 +391,6 @@ var ConfigBase = Class("ConfigBase", {
     helpStyles: /^(Help|StatusLine|REPL)|^(Boolean|Dense|Indicator|MoreMsg|Number|Object|Logo|Key(word)?|String)$/,
     styleHelp: function styleHelp() {
         if (!this.helpStyled) {
-            const { highlight } = require("highlight");
             for (let k in keys(highlight.loaded))
                 if (this.helpStyles.test(k))
                     highlight.loaded[k] = true;
@@ -1064,7 +1079,6 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
         let img = window.Image();
         img.src = this.logo || "resource://dactyl-local-content/logo.png";
         img.onload = util.wrapCallback(function () {
-            const { highlight } = require("highlight");
             highlight.loadCSS(<>{"!Logo  {"}
                      display:    inline-block;
                      background: url({img.src});
