@@ -338,14 +338,19 @@ var Mappings = Module("mappings", {
 
     expand: function expand(keys) {
         keys = keys.replace(/<leader>/i, options["mapleader"]);
-        if (!/<\*-/.test(keys))
-            return keys;
 
-        return util.debrace(DOM.Event.iterKeys(keys).map(function (key) {
-            if (/^<\*-/.test(key))
-                return ["<", this.prefixes, key.slice(3)];
-            return key;
-        }, this).flatten().array).map(function (k) DOM.Event.canonicalKeys(k));
+        if (!/<\*-/.test(keys))
+            var res = keys;
+        else
+            res = util.debrace(DOM.Event.iterKeys(keys).map(function (key) {
+                if (/^<\*-/.test(key))
+                    return ["<", this.prefixes, key.slice(3)];
+                return key;
+            }, this).flatten().array).map(function (k) DOM.Event.canonicalKeys(k));
+
+        if (keys != arguments[0])
+            return [arguments[0]].concat(keys);
+        return keys;
     },
 
     iterate: function (mode) {
