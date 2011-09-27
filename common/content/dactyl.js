@@ -135,31 +135,27 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         set: function mode(val) modes.main = val
     }),
 
-    get menuItems() {
-        function dispatch(node, name) {
-            let event = node.ownerDocument.createEvent("Events");
-            event.initEvent(name, false, false);
-            node.dispatchEvent(event);
-        }
-
+    getMenuItems: function getMenuItems(targetPath) {
         function addChildren(node, parent) {
             DOM(node).createContents();
 
             if (~["menu", "menupopup"].indexOf(node.localName) && node.children.length)
-                dispatch(node, "popupshowing");
+                DOM(node).popupshowing({ bubbles: false });
 
             for (let [, item] in Iterator(node.childNodes)) {
                 if (item.childNodes.length == 0 && item.localName == "menuitem"
                     && !item.hidden
                     && !/rdf:http:/.test(item.getAttribute("label"))) { // FIXME
                     item.dactylPath = parent + item.getAttribute("label");
-                    items.push(item);
+                    if (!targetPath || targetPath.indexOf(item.dactylPath) == 0)
+                        items.push(item);
                 }
                 else {
                     let path = parent;
                     if (item.localName == "menu")
                         path += item.getAttribute("label") + ".";
-                    addChildren(item, path);
+                    if (!targetPath || targetPath.indexOf(path) == 0)
+                        addChildren(item, path);
                 }
             }
         }
@@ -168,6 +164,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         addChildren(document.getElementById(config.guioptions["m"][1]), "");
         return items;
     },
+
+    get menuItems() this.getMenuItems(),
 
     // Global constants
     CURRENT_TAB: "here",
@@ -1510,7 +1508,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             "Execute the specified menu item from the command line",
             function (args) {
                 let arg = args[0] || "";
-                let items = dactyl.menuItems;
+                let items = dactyl.getMenuItems(arg);
 
                 dactyl.assert(items.some(function (i) i.dactylPath == arg),
                               _("emenu.notFound", arg));
