@@ -1047,7 +1047,7 @@
             the desired line number is used or the <oa>count</oa>th element
             failing that, or the string <str delim="'">func:</str> followed by a
             function which, given arguments for the document and desired line
-            number must return the target element.
+            number, must return the target element.
         </p>
     </description>
 </item>
