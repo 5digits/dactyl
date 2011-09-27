@@ -22,7 +22,10 @@ var Group = Class("Group", {
         this.filter = filter || this.constructor.defaultFilter;
         this.persist = persist || false;
         this.hives = [];
+        this.children = [];
     },
+
+    get contexts() this.modules.contexts,
 
     set lastDocument(val) { this._lastDocument = val && Cu.getWeakReference(val); },
     get lastDocument() this._lastDocument && this._lastDocument.get(),
@@ -36,10 +39,14 @@ var Group = Class("Group", {
         this.hives = [];
         for (let hive in keys(this.hiveMap))
             delete this[hive];
+
+        this.children.splice(0).forEach(this.contexts.closure.removeGroup);
     },
     destroy: function destroy() {
         for (let hive in values(this.hives))
             util.trapErrors("destroy", hive);
+
+        this.children.splice(0).forEach(this.contexts.closure.removeGroup);
     },
 
     argsExtra: function argsExtra() ({}),
@@ -330,6 +337,7 @@ var Contexts = Module("contexts", {
 
         if (replace) {
             util.trapErrors("cleanup", group);
+
             if (description)
                 group.description = description;
             if (filter)
@@ -341,7 +349,7 @@ var Contexts = Module("contexts", {
         return group;
     },
 
-    removeGroup: function removeGroup(name, filter) {
+    removeGroup: function removeGroup(name) {
         if (isObject(name)) {
             if (this.groupList.indexOf(name) === -1)
                 return;
@@ -530,8 +538,16 @@ var Contexts = Module("contexts", {
 
                 if (args.context) {
                     args.context.group = group;
-                    if (args.context.context)
+                    if (args.context.context) {
                         args.context.context.group = group;
+
+                        let parent = args.context.context.GROUP;
+                        if (parent && parent != group) {
+                            group.parent = parent;
+                            if (!~parent.children.indexOf(group))
+                                parent.children.push(group);
+                        }
+                    }
                 }
 
                 util.assert(!group.builtin ||
