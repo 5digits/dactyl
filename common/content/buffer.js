@@ -348,7 +348,7 @@ var Buffer = Module("buffer", {
      * @property {number} The buffer's horizontal scroll percentile.
      */
     get scrollXPercent() {
-        let elem = this.findScrollable(0, true);
+        let elem = Buffer.Scrollable(this.findScrollable(0, true));
         if (elem.scrollWidth - elem.clientWidth === 0)
             return 0;
         return elem.scrollLeft * 100 / (elem.scrollWidth - elem.clientWidth);
@@ -358,7 +358,7 @@ var Buffer = Module("buffer", {
      * @property {number} The buffer's vertical scroll percentile.
      */
     get scrollYPercent() {
-        let elem = this.findScrollable(0, false);
+        let elem = Buffer.Scrollable(this.findScrollable(0, false));
         if (elem.scrollHeight - elem.clientHeight === 0)
             return 0;
         return elem.scrollTop * 100 / (elem.scrollHeight - elem.clientHeight);
@@ -788,25 +788,6 @@ var Buffer = Module("buffer", {
                 if (Buffer.isScrollable(elem, dir, horizontal))
                     break;
 
-            if (!(elem instanceof Element))
-                return {
-                    __proto__: elem.documentElement || elem.ownerDocument.documentElement,
-
-                    win: elem.defaultView || elem.ownerDocument.defaultView,
-
-                    get clientWidth() this.win.innerWidth,
-                    get clientHeight() this.win.innerHeight,
-
-                    get scrollWidth() this.win.scrollMaxX + this.win.innerWidth,
-                    get scrollHeight() this.win.scrollMaxY + this.win.innerHeight,
-
-                    get scrollLeft() this.win.scrollX,
-                    set scrollLeft(val) { this.win.scrollTo(val, this.win.scrollY) },
-
-                    get scrollTop() this.win.scrollY,
-                    set scrollTop(val) { this.win.scrollTo(this.win.scrollX, val) }
-                };
-
             return elem;
         }
 
@@ -1213,6 +1194,30 @@ var Buffer = Module("buffer", {
     PageInfo: Struct("PageInfo", "name", "title", "action")
                         .localize("title"),
 
+    Scrollable: function Scrollable(elem) {
+        if (elem instanceof Element)
+            return elem;
+        if (isinstance(elem, [Window, Document]))
+            return {
+                __proto__: elem.documentElement || elem.ownerDocument.documentElement,
+
+                win: elem.defaultView || elem.ownerDocument.defaultView,
+
+                get clientWidth() this.win.innerWidth,
+                get clientHeight() this.win.innerHeight,
+
+                get scrollWidth() this.win.scrollMaxX + this.win.innerWidth,
+                get scrollHeight() this.win.scrollMaxY + this.win.innerHeight,
+
+                get scrollLeft() this.win.scrollX,
+                set scrollLeft(val) { this.win.scrollTo(val, this.win.scrollY) },
+
+                get scrollTop() this.win.scrollY,
+                set scrollTop(val) { this.win.scrollTo(this.win.scrollX, val) }
+            };
+        return elem;
+    },
+
     ZOOM_MIN: Class.Memoize(function () prefs.get("zoom.minPercent")),
     ZOOM_MAX: Class.Memoize(function () prefs.get("zoom.maxPercent")),
 
@@ -1318,9 +1323,10 @@ var Buffer = Module("buffer", {
      *  {@link marks.push}. @optional
      */
     scrollTo: function scrollTo(elem, left, top, reason) {
-        if (elem.ownerDocument == buffer.focusedFrame.document)
+        if (~[elem, elem.document, elem.ownerDocument].indexOf(buffer.focusedFrame.document))
             marks.push(reason);
 
+        elem = Buffer.Scrollable(elem);
         if (left != null)
             elem.scrollLeft = left;
         if (top != null)
@@ -1346,6 +1352,8 @@ var Buffer = Module("buffer", {
      */
     scrollHorizontal: function scrollHorizontal(elem, unit, number) {
         let fontSize = parseInt(DOM(elem).style.fontSize);
+
+        elem = Buffer.Scrollable(elem);
         let increment;
         if (unit == "columns")
             increment = fontSize; // Good enough, I suppose.
@@ -1376,6 +1384,8 @@ var Buffer = Module("buffer", {
      */
     scrollVertical: function scrollVertical(elem, unit, number) {
         let fontSize = parseInt(DOM(elem).style.lineHeight);
+
+        elem = Buffer.Scrollable(elem);
         let increment;
         if (unit == "lines")
             increment = fontSize;
@@ -1405,6 +1415,7 @@ var Buffer = Module("buffer", {
      *   scroll vertically.
      */
     scrollToPercent: function scrollToPercent(elem, horizontal, vertical) {
+        elem = Buffer.Scrollable(elem);
         Buffer.scrollTo(elem,
                         horizontal == null ? null
                                            : (elem.scrollWidth - elem.clientWidth) * (horizontal / 100),
@@ -1423,7 +1434,7 @@ var Buffer = Module("buffer", {
      *      column ordinal to scroll to.
      */
     scrollToPosition: function scrollToPosition(elem, horizontal, vertical) {
-        let style = DOM(elem).style;
+        let style = DOM(elem.body || elem).style;
         Buffer.scrollTo(elem,
                         horizontal == null ? null :
                         horizontal == 0    ? 0    : this._exWidth(elem) * horizontal,
@@ -1438,6 +1449,8 @@ var Buffer = Module("buffer", {
      */
     getScrollPosition: function getPosition(elem) {
         let style = DOM(elem).style;
+
+        elem = Buffer.Scrollable(elem);
         return {
             x: elem.scrollLeft && elem.scrollLeft / this._exWidth(elem),
             y: elem.scrollTop / parseFloat(style.lineHeight)
@@ -1446,7 +1459,7 @@ var Buffer = Module("buffer", {
 
     _exWidth: function _exWidth(elem) {
         let div = DOM(<elem style="width: 1ex !important; position: absolute !important; padding: 0 !important; display: block;"/>,
-                      elem.ownerDocument).appendTo(elem);
+                      elem.ownerDocument).appendTo(elem.body || elem);
         try {
             return parseFloat(div.style.width);
         }
@@ -1847,8 +1860,10 @@ var Buffer = Module("buffer", {
                                                                   args.count);
                 if (elem)
                     elem.scrollIntoView(true);
+                else if (args.count)
+                    buffer.scrollToPosition(null, args.count);
                 else
-                    buffer.scrollToPercent(null, args.count != null ? args.count : 100);
+                    buffer.scrollToPercent(null, 100);
             },
             { count: true });
 

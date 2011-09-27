@@ -372,6 +372,10 @@ var DOM = Class("DOM", {
      */
     get style() {
         let node = this[0];
+        if (node instanceof Ci.nsIDOMWindow)
+            node = node.document;
+        if (node instanceof Ci.nsIDOMDocument)
+            node = node.documentElement;
         while (node && !(node instanceof Ci.nsIDOMElement) && node.parentNode)
             node = node.parentNode;
 
@@ -462,6 +466,8 @@ var DOM = Class("DOM", {
      */
     get xpath() {
         function quote(val) "'" + val.replace(/[\\']/g, "\\$&") + "'";
+        if (!this[0] instanceof Ci.nsIDOMElement)
+            return null;
 
         let res = [];
         let doc = this.document;

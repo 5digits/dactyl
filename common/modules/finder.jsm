@@ -484,10 +484,11 @@ var RangeFind = Class("RangeFind", {
         let saved = ["lastRange", "lastString", "range", "regexp"].map(function (s) [s, this[s]], this);
         let res;
         try {
+            let regexp = this.regexp && word != util.regexp.escape(word);
             this.lastRange = null;
-            if (this.regexp) {
+            this.regexp = false;
+            if (regexp) {
                 let re = RegExp(word, "gm" + this.flags);
-                this.regexp = false;
                 for (this.range in array.iterValues(this.ranges)) {
                     for (let match in util.regexp.iterate(re, DOM.stringify(this.range.range, true))) {
                         let lastRange = this.lastRange;
@@ -635,8 +636,9 @@ var RangeFind = Class("RangeFind", {
         }
 
         let word = pattern;
+        let regexp = this.regexp && word != util.regexp.escape(word);
 
-        if (this.regexp)
+        if (regexp)
             try {
                 RegExp(pattern);
             }
@@ -661,7 +663,7 @@ var RangeFind = Class("RangeFind", {
                 if (this.backward && !again)
                     start = RangeFind.endpoint(this.startRange, false);
 
-                if (this.regexp) {
+                if (regexp) {
                     let range = this.range.range.cloneRange();
                     range[this.backward ? "setEnd" : "setStart"](
                         start.startContainer, start.startOffset);

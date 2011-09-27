@@ -135,8 +135,7 @@
         <p>
             Go to the end of the document. With <oa>count</oa>,
             go to the <oa>count</oa>th line as determined by <o>linenumbers</o>,
-            or to the <oa>count</oa>th percent of the document if the line number
-            can't be determined.
+            or by the line height of the document body otherwise.
         </p>
     </description>
 </item>

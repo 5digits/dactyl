@@ -32,7 +32,7 @@ var Marks = Module("marks", {
                    this._urlMarks
                   ).sort(function (a, b) String.localeCompare(a[0], b[0])),
 
-    get localURI() buffer.focusedFrame.document.documentURI,
+    get localURI() buffer.focusedFrame.document.documentURI.replace(/#.*/, ""),
 
     Mark: function Mark(params) {
         let win = buffer.focusedFrame;
@@ -40,7 +40,7 @@ var Marks = Module("marks", {
 
         params = params || {};
 
-        params.location = doc.documentURI,
+        params.location = doc.documentURI.replace(/#.*/, ""),
         params.offset = buffer.scrollPosition;
         params.path = DOM(buffer.findScrollable(0, params.offset.x)).xpath;
         params.timestamp = Date.now() * 1000;
@@ -175,7 +175,7 @@ var Marks = Module("marks", {
             let tab = mark.tab && mark.tab.get();
             if (!tab || !tab.linkedBrowser || tabs.allTabs.indexOf(tab) == -1)
                 for ([, tab] in iter(tabs.visibleTabs, tabs.allTabs)) {
-                    if (tab.linkedBrowser.contentDocument.documentURI === mark.location)
+                    if (tab.linkedBrowser.contentDocument.documentURI.replace(/#.*/, "") === mark.location)
                         break;
                     tab = null;
                 }
@@ -183,7 +183,7 @@ var Marks = Module("marks", {
             if (tab) {
                 tabs.select(tab);
                 let doc = tab.linkedBrowser.contentDocument;
-                if (doc.documentURI == mark.location) {
+                if (doc.documentURI.replace(/#.*/, "") == mark.location) {
                     dactyl.log(_("mark.jumpingToURL", Marks.markToString(char, mark)), 5);
                     this._scrollTo(mark);
                 }
@@ -231,7 +231,8 @@ var Marks = Module("marks", {
                 break;
 
         util.assert(node);
-        DOM(node).scrollIntoView();
+        if (node instanceof Element)
+            DOM(node).scrollIntoView();
 
         if (mark.offset)
             Buffer.scrollToPosition(node, mark.offset.x, mark.offset.y);
