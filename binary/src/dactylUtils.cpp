@@ -70,8 +70,8 @@ typedef nsString nsSubstring;
 
 class autoDropPrincipals {
 public:
-	autoDropPrincipals(JSContext *context, JSPrincipals *principals) : mContext(context), mJSPrincipals(principals) {}
-	~autoDropPrincipals() {
+    autoDropPrincipals(JSContext *context, JSPrincipals *principals) : mContext(context), mJSPrincipals(principals) {}
+    ~autoDropPrincipals() {
         JSPRINCIPALS_DROP(mContext, mJSPrincipals);
     }
 
@@ -108,9 +108,9 @@ static JSFunctionSpec gGlobalFun[] = {
 static dactylUtils* gService = nsnull;
 
 dactylUtils::dactylUtils()
-	: mRuntime(nsnull)
+    : mRuntime(nsnull)
 {
-	NS_ASSERTION(gService == nsnull, "Service already exists");
+    NS_ASSERTION(gService == nsnull, "Service already exists");
 }
 
 dactylUtils::~dactylUtils()
@@ -122,14 +122,14 @@ dactylUtils::~dactylUtils()
 nsresult
 dactylUtils::Init()
 {
-	nsresult rv;
-	NS_ENSURE_TRUE(!gService, NS_ERROR_UNEXPECTED);
+    nsresult rv;
+    NS_ENSURE_TRUE(!gService, NS_ERROR_UNEXPECTED);
 
     mRuntimeService = do_GetService("@mozilla.org/js/xpc/RuntimeService;1", &rv);
-	NS_ENSURE_SUCCESS(rv, rv);
+    NS_ENSURE_SUCCESS(rv, rv);
 
     rv = mRuntimeService->GetRuntime(&mRuntime);
-	NS_ENSURE_SUCCESS(rv, rv);
+    NS_ENSURE_SUCCESS(rv, rv);
 
     nsCOMPtr<nsIScriptSecurityManager> secman =
         do_GetService(NS_SCRIPTSECURITYMANAGER_CONTRACTID);
@@ -366,4 +366,4 @@ dactylUtils::GetScrollable(nsIDOMElement *aElement, PRUint32 *rval)
     return NS_OK;
 }
 
-/* vim:se sts=4 sw=4 et ft=cpp: */
+/* vim:se sts=4 sw=4 et cin ft=cpp: */

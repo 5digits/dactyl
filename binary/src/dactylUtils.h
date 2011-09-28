@@ -17,19 +17,20 @@
 
 class dactylUtils : public dactylIUtils {
 public:
-	dactylUtils() NS_HIDDEN;
-	~dactylUtils() NS_HIDDEN;
+    dactylUtils() NS_HIDDEN;
+    ~dactylUtils() NS_HIDDEN;
 
-	NS_DECL_ISUPPORTS
-	NS_DECL_DACTYLIUTILS
+    NS_DECL_ISUPPORTS
+    NS_DECL_DACTYLIUTILS
 
-	NS_HIDDEN_(nsresult) Init();
+    NS_HIDDEN_(nsresult) Init();
 
 private:
 
-	nsCOMPtr<nsIJSRuntimeService> mRuntimeService;
-	JSRuntime *mRuntime;
+    nsCOMPtr<nsIJSRuntimeService> mRuntimeService;
+    JSRuntime *mRuntime;
 
-	nsCOMPtr<nsIPrincipal> mSystemPrincipal;
+    nsCOMPtr<nsIPrincipal> mSystemPrincipal;
 };
 
+/* vim:se sts=4 sw=4 et cin ft=cpp: */

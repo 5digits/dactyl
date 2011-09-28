@@ -1,8 +1,8 @@
 ROOT = ..
 
-XPTDIR          = $(ROOT)/components/$(ABI)/
-SODIR           = $(ROOT)/components/$(ABI)/
-OBJDIR          = $(ABI)/
+XPTDIR		= $(ROOT)/components/$(ABI)/
+SODIR		= $(ROOT)/components/$(ABI)/
+OBJDIR		= $(ABI)/
 
 MODULE		= $(SODIR)dactyl
 
@@ -21,14 +21,14 @@ GECKO_DEFINES  = -DMOZILLA_STRICT_API
 
 GECKO_INCLUDES = -I$(ABI)/			\
 		 -I$(GECKO_SDK_PATH)		\
-                 -I$(GECKO_SDK_PATH)/idl	\
-                 -I$(GECKO_SDK_PATH)/include
+		 -I$(GECKO_SDK_PATH)/idl	\
+		 -I$(GECKO_SDK_PATH)/include
 
 GECKO_LDFLAGS =  -L$(GECKO_SDK_PATH)/bin \
 		 -L$(GECKO_SDK_PATH)/lib \
 		 -lxpcomglue_s	\
 		 -lxpcom	\
-                 -lnspr4	\
+		 -lnspr4	\
 		 -shared	\
 		 $(NULL)
 
