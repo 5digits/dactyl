@@ -2161,7 +2161,9 @@ var Buffer = Module("buffer", {
                 "code.google.com": '#nums [id^="nums_table"] a[href^="#"]',
                 "github.com": '.line_numbers>*',
                 "mxr.mozilla.org": 'a.l',
-                "pastebin.com": '#code_frame>div>ol>li'
+                "pastebin.com": '#code_frame>div>ol>li',
+                "addons.mozilla.org": '.gutter>.line>a',
+                "*": '/* Hgweb/Gitweb */ .completecodeline a.codeline, a.linenr'
             },
             {
                 getLine: function getLine(doc, line) {
@@ -2191,12 +2193,12 @@ var Buffer = Module("buffer", {
                     return vals;
                 },
 
-                validate: function validate(values) {
+                validator: function validate(values) {
                     return this.testValues(values, function (value) {
                         if (/^func:/.test(value))
                             return callable(dactyl.userEval("(" + Option.dequote(value.substr(5)) + ")"));
                         else
-                            return DOM.testMatcher(value);
+                            return DOM.testMatcher(Option.dequote(value));
                     });
                 }
             });

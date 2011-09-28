@@ -1347,16 +1347,16 @@ var DOM = Class("DOM", {
      * @returns {boolean} True when the patterns are all valid.
      */
     validateMatcher: function validateMatcher(list) {
-        let evaluator = services.XPathEvaluator();
-        let node = services.XMLDocument();
-        return this.testValues(list, this.closure.testMatcher);
+        return this.testValues(list, DOM.closure.testMatcher);
     },
 
     testMatcher: function testMatcher(value) {
+        let evaluator = services.XPathEvaluator();
+        let node = services.XMLDocument();
         if (/^xpath:/.test(value))
-            evaluator.createExpression(value.substr(6), DOM.XPath.resolver);
+            util.withProperErrors("createExpression", evaluator, value.substr(6), DOM.XPath.resolver);
         else
-            node.querySelector(value);
+            util.withProperErrors("querySelector", node, value);
         return true;
     },
 
