@@ -509,13 +509,13 @@
     <description>
         <p>Items which are completed at the <ex>:open</ex> prompts. Available items:</p>
 
-        <dl dt="width: 6em;">
+        <dl dt="width: 6.5em;">
             <dt>search</dt> <dd>Search engines and keyword URLs</dd>
             <dt>file</dt> <dd>Local files</dd>
             <dt>location</dt> <dd>&dactyl.host; location bar entries (bookmarks and history sorted in an intelligent way)</dd>
             <dt>bookmark</dt> <dd>Bookmarks</dd>
             <dt>history</dt> <dd>History</dd>
-            <dt>suggest</dt> <dd>Search engine suggestions</dd>
+            <dt>suggestion</dt> <dd>Search engine suggestions</dd>
         </dl>
 
         <p>

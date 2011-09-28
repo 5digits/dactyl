@@ -706,7 +706,7 @@ var Bookmarks = Module("bookmarks", {
             });
         };
 
-        completion.addUrlCompleter("suggestion", "Suggest engines", completion.searchEngineSuggest);
+        completion.addUrlCompleter("suggestion", "Search engine suggestions", completion.searchEngineSuggest);
         completion.addUrlCompleter("bookmark", "Bookmarks", completion.bookmark);
         completion.addUrlCompleter("search", "Search engines and keyword URLs", completion.search);
     }
