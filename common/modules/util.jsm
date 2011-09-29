@@ -1476,7 +1476,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             return func.apply(self || this, Array.slice(arguments, 2));
         }
         catch (e) {
-            util.reportError(e);
+            this.reportError(e);
             return undefined;
         }
     },

@@ -145,7 +145,7 @@ function defineModule(name, params, module) {
     defineModule.prefix += "  ";
 
     for (let [, mod] in Iterator(params.require || []))
-        require(jsmodules, mod, null, name);
+        require(module, mod, null, name);
     module.__proto__ = jsmodules;
 
     module._lastModule = currentModule;
@@ -210,6 +210,10 @@ function require(obj, name, from, targetName) {
                                       " into " + (targetName || obj.NAME || caller.filename + ":" + caller.lineNumber));
 
         JSMLoader.load(name + ".jsm", obj);
+
+        if (!loaded[name] && obj != jsmodules)
+            JSMLoader.load(name + ".jsm", jsmodules);
+
         return obj;
     }
     catch (e) {
@@ -235,6 +239,7 @@ defineModule("base", {
 }, this);
 
 this.lazyRequire("messages", ["_", "Messages"]);
+this.lazyRequire("util", ["util"]);
 
 /**
  * Returns a list of all of the top-level properties of an object, by
@@ -627,9 +632,15 @@ function memoize(obj, key, getter) {
             configurable: true,
             enumerable: true,
 
-            get: function g_replaceProperty() (
-                Class.replaceProperty(this.instance || this, key, null),
-                Class.replaceProperty(this.instance || this, key, getter.call(this, key))),
+            get: function g_replaceProperty() {
+                try {
+                    Class.replaceProperty(this.instance || this, key, null);
+                    return Class.replaceProperty(this.instance || this, key, getter.call(this, key));
+                }
+                catch (e) {
+                    util.reportError(e);
+                }
+            },
 
             set: function s_replaceProperty(val)
                 Class.replaceProperty(this.instance || this, key, val)
@@ -881,8 +892,13 @@ Class.Memoize = function Memoize(getter, wait)
             else
                 this.get = function replace() {
                     let obj = this.instance || this;
-                    Class.replaceProperty(obj, key, null);
-                    return Class.replaceProperty(obj, key, getter.call(this, key));
+                    try {
+                        Class.replaceProperty(obj, key, null);
+                        return Class.replaceProperty(obj, key, getter.call(this, key));
+                    }
+                    catch (e) {
+                        util.reportError(e);
+                    }
                 };
 
             this.set = function replace(val) Class.replaceProperty(this.instance || this, val);

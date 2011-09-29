@@ -7,9 +7,10 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("storage", {
     exports: ["File", "Storage", "storage"],
-    require: ["config", "services", "util"]
+    require: ["services", "util"]
 }, this);
 
+this.lazyRequire("config", ["config"]);
 this.lazyRequire("io", ["IO"]);
 
 var win32 = /^win(32|nt)$/i.test(services.runtime.OS);
@@ -17,12 +18,17 @@ var myObject = JSON.parse("{}").constructor;
 
 function loadData(name, store, type) {
     try {
-        let data = storage.infoPath.child(name).read();
-        let result = JSON.parse(data);
-        if (result instanceof type)
-            return result;
+        let file = storage.infoPath.child(name);
+        if (file.exists()) {
+            let data = file.read();
+            let result = JSON.parse(data);
+            if (result instanceof type)
+                return result;
+        }
     }
-    catch (e) {}
+    catch (e) {
+        util.reportError(e);
+    }
 }
 
 function saveData(obj) {

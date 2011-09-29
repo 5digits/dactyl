@@ -15,6 +15,8 @@ defineModule("io", {
     require: ["services"]
 }, this);
 
+this.lazyRequire("config", ["config"]);
+
 // TODO: why are we passing around strings rather than file objects?
 /**
  * Provides a basic interface to common system I/O operations.
