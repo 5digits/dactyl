@@ -615,7 +615,7 @@ var Modes = Module("modes", {
             "Return to the previous mode",
             function () { modes.pop(null, { fromEscape: true }); });
 
-        mappings.add([modes.MENU], ["<C-c>"],
+        mappings.add([modes.AUTOCOMPLETE, modes.MENU], ["<C-c>"],
             "Leave Menu mode",
             function () { modes.pop(); });
 
