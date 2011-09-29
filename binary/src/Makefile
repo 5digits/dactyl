@@ -17,6 +17,12 @@ CPPSRCS		= \
 		subscriptLoader.cpp \
 		$(NULL)
 
+HEADERS		= \
+		  config.h		\
+		  dactylUtils.h		\
+		  mozJSLoaderUtils.h	\
+	 	  $(XPIDLSRCS:%.idl=$(ABI)/%.h)
+
 GECKO_DEFINES  = -DMOZILLA_STRICT_API
 
 GECKO_INCLUDES = -I$(ABI)/			\
@@ -43,14 +49,15 @@ CPPFLAGS += $(EXCPPFLAGS)
 
 XPTS = $(XPIDLSRCS:%.idl=$(XPTDIR)%.xpt)
 OBJS = $(CPPSRCS:%.cpp=$(OBJDIR)%.o)
-HEADERS = $(XPIDLSRCS:%.idl=$(ABI)/%.h)
+MANIFEST = $(SODIR)/components.manifest
 
-
-all: build
+all: build manifest
 
 dirs: $(XPTDIR) $(SODIR) $(OBJDIR)
 
 depend: .depend
+
+manifest: $(MANIFEST)
 
 module: dirs $(MODULE).so
 
@@ -72,6 +79,16 @@ $(ABI)/%.h: %.idl
 $(XPTDIR)%.xpt: %.idl
 	$(IDL_XPT) $@ $(GECKO_INCLUDES) $<
 
+$(MANIFEST): Makefile
+	( echo interfaces $(XPIDLSRCS:.idl=.xpt);	\
+	  echo binary-component $(MODULE:$(SODIR)%=%).$(LIBEXT) )	\
+	    >$@
+	
+	manifest=$(SODIR)/../gecko-$(GECKO_MAJOR).manifest; 			\
+	if [ $(GECKO_MAJOR) -lt 8 ]; then part=app; else part=platform; fi; 	\
+	line="manifest $(ABI)/components.manifest abi=$(ABI_PLATFORM) $${part}version<$(GECKO_MAJOR).*";	\
+	grep >/dev/null 2>&1 "^$$line$$" $$manifest || echo $$line >>$$manifest
+
 _CPPFLAGS = $(CPPFLAGS) $(CXXFLAGS) $(GECKO_DEFINES) $(GECKO_INCLUDES) $(DEFINES)
 
 $(OBJDIR)%.o: %.cpp Makefile
@@ -89,6 +106,6 @@ $(MODULE).dll: $(OBJS)
 
 $(sort $(XPTDIR) $(SODIR) $(OBJDIR)):
 	mkdir -p $@
-.PHONY: module xpts build clean all depend
+.PHONY: module xpts build clean all depend manifest
 
 sinclude .depend
