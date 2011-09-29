@@ -521,7 +521,7 @@ var Editor = Module("editor", {
         addMovementMap(["b", "<C-Left>"],             "Move left one word",
                        true,  "wordMove", false,      "cmd_wordPrevious", "cmd_selectWordPrevious");
         addMovementMap(["w", "<C-Right>"],            "Move right one word",
-                       true,  "wordMove", true,       "cmd_wordNext",     "cmd_selectWordNext");
+                       true,  "wordMove", true,       move(true,  /\w/),  select(true, /\w/));
         addMovementMap(["B"],                         "Move left to the previous white space",
                        true,  "wordMove", false,      move(false, /\S/),  select(false, /\S/));
         addMovementMap(["W"],                         "Move right to just beyond the next white space",
