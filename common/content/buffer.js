@@ -1345,31 +1345,30 @@ var Buffer = Module("buffer", {
      * Like scrollTo, but scrolls more smoothly and does not update
      * marks.
      */
-    smoothScrollTo: function smoothScrollTo(elem, x, y) {
+    smoothScrollTo: function smoothScrollTo(node, x, y) {
         let time = options["scrolltime"];
         let steps = options["scrollsteps"];
 
-        let data = elem;
-        elem = Buffer.Scrollable(elem);
+        let elem = Buffer.Scrollable(node);
 
-        if (data.dactylScrollTimer)
-            data.dactylScrollTimer.cancel();
+        if (node.dactylScrollTimer)
+            node.dactylScrollTimer.cancel();
 
-        x = data.dactylScrollDestX = Math.min(x, elem.scrollWidth  - elem.clientWidth);
-        y = data.dactylScrollDestY = Math.min(y, elem.scrollHeight - elem.clientHeight);
+        x = node.dactylScrollDestX = Math.min(x, elem.scrollWidth  - elem.clientWidth);
+        y = node.dactylScrollDestY = Math.min(y, elem.scrollHeight - elem.clientHeight);
         let [startX, startY] = [elem.scrollLeft, elem.scrollTop];
         let n = 0;
         (function next() {
             if (n++ === steps) {
                 elem.scrollLeft = x;
                 elem.scrollTop  = y;
-                delete data.dactylScrollDestX;
-                delete data.dactylScrollDestY;
+                delete node.dactylScrollDestX;
+                delete node.dactylScrollDestY;
             }
             else {
                 elem.scrollLeft = startX + (x - startX) / steps * n;
                 elem.scrollTop  = startY + (y - startY) / steps * n;
-                data.dactylScrollTimer = util.timeout(next, time / steps);
+                node.dactylScrollTimer = util.timeout(next, time / steps);
             }
         }).call(this);
     },
@@ -1386,11 +1385,10 @@ var Buffer = Module("buffer", {
      * @throws {FailedAssertion} if scrolling is not possible in the
      *   given direction.
      */
-    scrollHorizontal: function scrollHorizontal(elem, unit, number) {
-        let fontSize = parseInt(DOM(elem).style.fontSize);
+    scrollHorizontal: function scrollHorizontal(node, unit, number) {
+        let fontSize = parseInt(DOM(node).style.fontSize);
 
-        let data = elem;
-        elem = Buffer.Scrollable(elem);
+        let elem = Buffer.Scrollable(node);
         let increment;
         if (unit == "columns")
             increment = fontSize; // Good enough, I suppose.
@@ -1401,10 +1399,10 @@ var Buffer = Module("buffer", {
 
         dactyl.assert(number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth);
 
-        let left = data.dactylScrollDestX !== undefined ? data.dactylScrollDestX : elem.scrollLeft;
-        data.dactylScrollDestX = undefined;
+        let left = node.dactylScrollDestX !== undefined ? node.dactylScrollDestX : elem.scrollLeft;
+        node.dactylScrollDestX = undefined;
 
-        Buffer.scrollTo(elem, left + number * increment, null, "h-" + unit);
+        Buffer.scrollTo(node, left + number * increment, null, "h-" + unit);
     },
 
     /**
@@ -1419,11 +1417,10 @@ var Buffer = Module("buffer", {
      * @throws {FailedAssertion} if scrolling is not possible in the
      *   given direction.
      */
-    scrollVertical: function scrollVertical(elem, unit, number) {
-        let fontSize = parseInt(DOM(elem).style.lineHeight);
+    scrollVertical: function scrollVertical(node, unit, number) {
+        let fontSize = parseInt(DOM(node).style.lineHeight);
 
-        let data = elem;
-        elem = Buffer.Scrollable(elem);
+        let elem = Buffer.Scrollable(node);
         let increment;
         if (unit == "lines")
             increment = fontSize;
@@ -1434,10 +1431,10 @@ var Buffer = Module("buffer", {
 
         dactyl.assert(number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight);
 
-        let top = data.dactylScrollDestY !== undefined ? data.dactylScrollDestY : elem.scrollTop;
-        data.dactylScrollDestY = undefined;
+        let top = node.dactylScrollDestY !== undefined ? node.dactylScrollDestY : elem.scrollTop;
+        node.dactylScrollDestY = undefined;
 
-        Buffer.scrollTo(elem, null, top + number * increment, "v-" + unit);
+        Buffer.scrollTo(node, null, top + number * increment, "v-" + unit);
     },
 
     /**
@@ -1452,9 +1449,9 @@ var Buffer = Module("buffer", {
      *   of the current viewport height to scroll to. If null, do not
      *   scroll vertically.
      */
-    scrollToPercent: function scrollToPercent(elem, horizontal, vertical) {
-        elem = Buffer.Scrollable(elem);
-        Buffer.scrollTo(elem,
+    scrollToPercent: function scrollToPercent(node, horizontal, vertical) {
+        let elem = Buffer.Scrollable(node);
+        Buffer.scrollTo(node,
                         horizontal == null ? null
                                            : (elem.scrollWidth - elem.clientWidth) * (horizontal / 100),
                         vertical   == null ? null
