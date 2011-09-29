@@ -1,8 +1,8 @@
 
 manifest components/gecko-6.manifest appversion>=6.0
 manifest components/gecko-7.manifest appversion>=7.0
-manifest components/gecko-8.manifest platformversion>=8.0
-manifest components/gecko-9.manifest platformversion>=9.0
+manifest components/gecko-8.manifest platformversion>7.*
+manifest components/gecko-9.manifest platformversion>8.*
 manifest components/gecko-10.manifest platformversion>9.*
 
 # vim:se tw=0 ft=cfg:
