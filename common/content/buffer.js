@@ -2272,11 +2272,11 @@ var Buffer = Module("buffer", {
                 }
             });
 
-        options.add(["scrolltime", "st"],
+        options.add(["scrolltime", "sct"],
             "The time, in milliseconds, in which to smooth scroll to a new position",
             "number", 100);
 
-        options.add(["scrollsteps", "ss"],
+        options.add(["scrollsteps", "scs"],
             "The number of steps in which to smooth scroll to a new position",
             "number", 5,
             {
