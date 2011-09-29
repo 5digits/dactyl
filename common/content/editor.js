@@ -496,6 +496,13 @@ var Editor = Module("editor", {
             editor.selection.removeAllRanges();
             editor.selection.addRange(range);
         }
+
+        function clear(forward, re)
+            function _clear(editor) {
+                updateRange(editor, forward, re, function (range) {});
+                editor.selection.deleteFromDocument();
+            }
+
         function move(forward, re)
             function _move(editor) {
                 updateRange(editor, forward, re, function (range) { range.collapse(!forward); });
@@ -599,7 +606,12 @@ var Editor = Module("editor", {
                          action, update({ type: "editor" }, params));
 
         bind(["<C-w>"], "Delete previous word",
-             function () { editor.executeCommand("cmd_deleteWordBackward", 1); });
+             function () {
+                 if (DOM(dactyl.focusedElement).isInput)
+                     clear(false, /\w/)(Editor.getEditor(null));
+                 else
+                     editor.executeCommand("cmd_deleteWordBackward", 1);
+             });
 
         bind(["<C-u>"], "Delete until beginning of current line",
              function () {
