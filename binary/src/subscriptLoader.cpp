@@ -523,7 +523,7 @@ dactylUtils::LoadSubScript (const PRUnichar * aURL
 
     nsCAutoString cachePath;
     cachePath.Append("jssubloader/");
-    cachePath.Append(version);
+    cachePath.AppendInt(version);
     if (charset) {
         cachePath.Append("/");
         cachePath.Append(NS_ConvertUTF16toUTF8(

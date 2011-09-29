@@ -329,7 +329,11 @@ var File = Class("File", {
     /**
      * @property {nsIFileURL} Returns the nsIFileURL object for this file.
      */
-    get URI() services.io.newFileURI(this).QueryInterface(Ci.nsIFileURL),
+    URI: Class.Memoize(function () {
+        let uri = services.io.newFileURI(this).QueryInterface(Ci.nsIFileURL);
+        uri.QueryInterface(Ci.nsIMutable).mutable = false;
+        return uri;
+    }),
 
     /**
      * Iterates over the objects in this directory.

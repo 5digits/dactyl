@@ -1316,15 +1316,18 @@ var Buffer = Module("buffer", {
      *
      * @param {Element} elem The element to scroll.
      * @param {number|null} left The left absolute pixel offset. If
-     *   null, to not alter the horizontal scroll offset.
+     *      null, to not alter the horizontal scroll offset.
      * @param {number|null} top The top absolute pixel offset. If
-     *   null, to not alter the vertical scroll offset.
+     *      null, to not alter the vertical scroll offset.
      * @param {string} reason The reason for the scroll event. See
-     *  {@link marks.push}. @optional
+     *      {@link marks.push}. @optional
      */
     scrollTo: function scrollTo(elem, left, top, reason) {
         if (~[elem, elem.document, elem.ownerDocument].indexOf(buffer.focusedFrame.document))
             marks.push(reason);
+
+        if (options["scrollsteps"] > 1)
+            return this.smoothScrollTo(elem, left, top);
 
         elem = Buffer.Scrollable(elem);
         if (left != null)
@@ -1336,6 +1339,39 @@ var Buffer = Module("buffer", {
             elem.ownerDocument.defaultView
                 .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
                 .redraw();
+    },
+
+    /**
+     * Like scrollTo, but scrolls more smoothly and does not update
+     * marks.
+     */
+    smoothScrollTo: function smoothScrollTo(elem, x, y) {
+        let time = options["scrolltime"];
+        let steps = options["scrollsteps"];
+
+        let data = elem;
+        elem = Buffer.Scrollable(elem);
+
+        if (data.dactylScrollTimer)
+            data.dactylScrollTimer.cancel();
+
+        x = data.dactylScrollDestX = Math.min(x, elem.scrollWidth  - elem.clientWidth);
+        y = data.dactylScrollDestY = Math.min(y, elem.scrollHeight - elem.clientHeight);
+        let [startX, startY] = [elem.scrollLeft, elem.scrollTop];
+        let n = 0;
+        (function next() {
+            if (n++ === steps) {
+                elem.scrollLeft = x;
+                elem.scrollTop  = y;
+                delete data.dactylScrollDestX;
+                delete data.dactylScrollDestY;
+            }
+            else {
+                elem.scrollLeft = startX + (x - startX) / steps * n;
+                elem.scrollTop  = startY + (y - startY) / steps * n;
+                data.dactylScrollTimer = util.timeout(next, time / steps);
+            }
+        }).call(this);
     },
 
     /**
@@ -1353,6 +1389,7 @@ var Buffer = Module("buffer", {
     scrollHorizontal: function scrollHorizontal(elem, unit, number) {
         let fontSize = parseInt(DOM(elem).style.fontSize);
 
+        let data = elem;
         elem = Buffer.Scrollable(elem);
         let increment;
         if (unit == "columns")
@@ -1364,8 +1401,8 @@ var Buffer = Module("buffer", {
 
         dactyl.assert(number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth);
 
-        let left = elem.dactylScrollDestX !== undefined ? elem.dactylScrollDestX : elem.scrollLeft;
-        elem.dactylScrollDestX = undefined;
+        let left = data.dactylScrollDestX !== undefined ? data.dactylScrollDestX : elem.scrollLeft;
+        data.dactylScrollDestX = undefined;
 
         Buffer.scrollTo(elem, left + number * increment, null, "h-" + unit);
     },
@@ -1385,6 +1422,7 @@ var Buffer = Module("buffer", {
     scrollVertical: function scrollVertical(elem, unit, number) {
         let fontSize = parseInt(DOM(elem).style.lineHeight);
 
+        let data = elem;
         elem = Buffer.Scrollable(elem);
         let increment;
         if (unit == "lines")
@@ -1396,8 +1434,8 @@ var Buffer = Module("buffer", {
 
         dactyl.assert(number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight);
 
-        let top = elem.dactylScrollDestY !== undefined ? elem.dactylScrollDestY : elem.scrollTop;
-        elem.dactylScrollDestY = undefined;
+        let top = data.dactylScrollDestY !== undefined ? data.dactylScrollDestY : elem.scrollTop;
+        data.dactylScrollDestY = undefined;
 
         Buffer.scrollTo(elem, null, top + number * increment, "v-" + unit);
     },
@@ -2232,6 +2270,28 @@ var Buffer = Module("buffer", {
                     "status": "Show link destinations in the status line",
                     "command": "Show link destinations in the command line"
                 }
+            });
+
+        options.add(["scrolltime", "st"],
+            "The time, in milliseconds, in which to smooth scroll to a new position",
+            "number", 100);
+
+        options.add(["scrollsteps", "ss"],
+            "The number of steps in which to smooth scroll to a new position",
+            "number", 5,
+            {
+                PREF: "general.smoothScroll",
+
+                initValue: function () {},
+
+                getter: function getter(value) !prefs.get(this.PREF) ? 1 : value,
+
+                setter: function setter(value) {
+                    prefs.set(this.PREF, value > 1);
+                    return value > 1 ? value : this.globalValue;
+                },
+
+                validator: function (value) value > 0
             });
 
         options.add(["usermode", "um"],

@@ -1382,6 +1382,28 @@
 </item>
 
 <item>
+    <tags>'ss' 'scrollsteps'</tags>
+    <spec>'scrollsteps' 'ss'</spec>
+    <type>&option.scrollsteps.type;</type>
+    <default>&option.scrollsteps.default;</default>
+    <description>
+        <p>
+            The number of steps in which to smooth scroll to a new position. If
+            set to 1, smooth scrolling is not used.
+        </p>
+    </description>
+</item>
+<item>
+    <tags>'st' 'scrolltime'</tags>
+    <spec>'scrolltime' 'st'</spec>
+    <type>&option.scrolltime.type;</type>
+    <default>&option.scrolltime.default;</default>
+    <description>
+        <p>The time, in milliseconds, in which to smooth scroll to a new position.</p>
+    </description>
+    </item>
+
+<item>
     <tags>'spl' 'spelllang'</tags>
     <spec>'spelllang' 'spl'</spec>
     <type>&option.spelllang.type;</type>

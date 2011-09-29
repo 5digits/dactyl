@@ -73,6 +73,7 @@
     • Improved [macro-string] support, including automatic elision
       of optional elements, and array subscripts. [b4][b7]
     • Add -pentadactyl-remote command-line option. [b8]
+    • Moved the smooth-scroll plugin to the core. [b8]
     • Improvements to marks:
       - Marks are now stored as line and column ordinals rather than percentages. [b8]
       - Marks now store the marked element and ensure its visibility when followed. [b8]
@@ -218,6 +219,7 @@
       - Added 'passunknown' option. [b7]
       - Changed 'urlseparator' default value to "|". [b3]
       - Added "errorconsole", "passwords", and "venkman" dialogs to :dialog. [b2][b8]
+      - Added 'scrollsteps' and 'scrolltime' options. [b8]
       - Added 'spelllang' option. [b8]
       - Make 'showmode' a [stringlist] option. [b7]
       - Added 'wildanchor' option. [b2]
