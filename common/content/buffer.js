@@ -2288,7 +2288,8 @@ var Buffer = Module("buffer", {
 
                 setter: function setter(value) {
                     prefs.set(this.PREF, value > 1);
-                    return value > 1 ? value : this.globalValue;
+                    if (value > 1)
+                        return value;
                 },
 
                 validator: function (value) value > 0

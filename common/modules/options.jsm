@@ -600,6 +600,23 @@ var Option = Class("Option", {
             return null;
         },
 
+        string: function string(operator, values, scope, invert) {
+            if (invert)
+                return values[(values.indexOf(this.value) + 1) % values.length];
+
+            switch (operator) {
+            case "+":
+                return this.value + values;
+            case "-":
+                return this.value.replace(values, "");
+            case "^":
+                return values + this.value;
+            case "=":
+                return values;
+            }
+            return null;
+        },
+
         stringmap: function stringmap(operator, values, scope, invert) {
             let res = update({}, this.value);
 
@@ -657,23 +674,7 @@ var Option = Class("Option", {
         get regexplist() this.stringlist,
         get regexpmap() this.stringlist,
         get sitelist() this.stringlist,
-        get sitemap() this.stringlist,
-
-        string: function string(operator, values, scope, invert) {
-            if (invert)
-                return values[(values.indexOf(this.value) + 1) % values.length];
-            switch (operator) {
-            case "+":
-                return this.value + values;
-            case "-":
-                return this.value.replace(values, "");
-            case "^":
-                return values + this.value;
-            case "=":
-                return values;
-            }
-            return null;
-        }
+        get sitemap() this.stringlist
     },
 
     validIf: function validIf(test, error) {
@@ -1005,7 +1006,8 @@ var Options = Module("options", {
         res.optionValue = res.option.get(res.scope);
 
         try {
-            res.values = res.option.parse(res.value);
+            if (!res.invert || res.option.type != "number") // Hack.
+                res.values = res.option.parse(res.value);
         }
         catch (e) {
             res.error = e;
