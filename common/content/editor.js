@@ -650,7 +650,7 @@ var Editor = Module("editor", {
            ["<C-i>"], "Edit text field with an external editor",
            function () { editor.editFieldExternally(); });
 
-        bind(["<C-t>"], "Edit text field in Vi mode",
+        bind(["<C-t>"], "Edit text field in Text Edit mode",
              function () {
                  dactyl.assert(!editor.isTextEdit && Editor.getEditor(null));
                  dactyl.assert(dactyl.focusedElement ||
@@ -700,7 +700,7 @@ var Editor = Module("editor", {
             },
             { count: true });
 
-        bind(["D"], "Delete the characters under the cursor until the end of the line",
+        bind(["D"], "Delete characters from the cursor to the end of the line",
              function () { editor.executeCommand("cmd_deleteToEndOfLine"); });
 
         mappings.add([modes.TEXT_EDIT],
@@ -792,7 +792,7 @@ var Editor = Module("editor", {
             return pos;
         }
 
-        bind(["f"], "Move to a character on the current line after the cursor",
+        bind(["f"], "Find a character on the current line, forwards",
              function ({ arg, count }) {
                  let pos = editor.findChar(arg, Math.max(count, 1));
                  if (pos >= 0)
@@ -800,7 +800,7 @@ var Editor = Module("editor", {
              },
              { arg: true, count: true, type: "operator" });
 
-        bind(["F"], "Move to a character on the current line before the cursor",
+        bind(["F"], "Find a character on the current line, backwards",
              function ({ arg, count }) {
                  let pos = editor.findChar(arg, Math.max(count, 1), true);
                  if (pos >= 0)
@@ -808,7 +808,7 @@ var Editor = Module("editor", {
              },
              { arg: true, count: true, type: "operator" });
 
-        bind(["t"], "Move before a character on the current line",
+        bind(["t"], "Find a character on the current line, forwards, and move to the character before it",
              function ({ arg, count }) {
                  let pos = editor.findChar(arg, Math.max(count, 1));
                  if (pos >= 0)
@@ -816,7 +816,7 @@ var Editor = Module("editor", {
              },
              { arg: true, count: true, type: "operator" });
 
-        bind(["T"], "Move before a character on the current line, backwards",
+        bind(["T"], "Find a character on the current line, backwards, and move to the character after it",
              function ({ arg, count }) {
                  let pos = editor.findChar(arg, Math.max(count, 1), true);
                  if (pos >= 0)
