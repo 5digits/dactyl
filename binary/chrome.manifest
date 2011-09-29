@@ -1,34 +1,8 @@
 
-interfaces components/6.0-Linux_x86_64-gcc3/dactylIUtils.xpt abi=Linux_x86_64-gcc3 appversion>=6.0 appversion<6.*
-interfaces components/7.0-Linux_x86_64-gcc3/dactylIUtils.xpt abi=Linux_x86_64-gcc3 appversion>=7.0 appversion<7.*
-interfaces components/8.0-Linux_x86_64-gcc3/dactylIUtils.xpt abi=Linux_x86_64-gcc3 platformversion>=8.0 platformversion<8.*
-interfaces components/9.0-Linux_x86_64-gcc3/dactylIUtils.xpt abi=Linux_x86_64-gcc3 platformversion>=9.0 platformversion<9.*
-interfaces components/10.0-Linux_x86_64-gcc3/dactylIUtils.xpt abi=Linux_x86_64-gcc3 platformversion>=10.0 platformversion<10.*
-
-interfaces components/6.0-Darwin_x86_64-gcc3/dactylIUtils.xpt abi=Darwin_x86_64-gcc3 appversion>=6.0 appversion<6.*
-interfaces components/7.0-Darwin_x86_64-gcc3/dactylIUtils.xpt abi=Darwin_x86_64-gcc3 appversion>=7.0 appversion<7.*
-interfaces components/8.0-Darwin_x86_64-gcc3/dactylIUtils.xpt abi=Darwin_x86_64-gcc3 platformversion>=8.0 platformversion<8.*
-interfaces components/9.0-Darwin_x86_64-gcc3/dactylIUtils.xpt abi=Darwin_x86_64-gcc3 platformversion>=9.0 platformversion<9.*
-
-interfaces components/6.0-WINNT_x86-msvc/dactylIUtils.xpt abi=WINNT_x86-msvc appversion>=6.0 appversion<6.*
-interfaces components/7.0-WINNT_x86-msvc/dactylIUtils.xpt abi=WINNT_x86-msvc appversion>=7.0 appversion<7.*
-interfaces components/8.0-WINNT_x86-msvc/dactylIUtils.xpt abi=WINNT_x86-msvc platformversion>=8.0 platformversion<8.*
-interfaces components/9.0-WINNT_x86-msvc/dactylIUtils.xpt abi=WINNT_x86-msvc platformversion>=9.0 platformversion<9.*
-
-binary-component components/6.0-Linux_x86_64-gcc3/dactyl.so abi=Linux_x86_64-gcc3 appversion>=6.0 appversion<6.*
-binary-component components/7.0-Linux_x86_64-gcc3/dactyl.so abi=Linux_x86_64-gcc3 appversion>=7.0 appversion<7.*
-binary-component components/8.0-Linux_x86_64-gcc3/dactyl.so abi=Linux_x86_64-gcc3 platformversion>=8.0 platformversion<8.*
-binary-component components/9.0-Linux_x86_64-gcc3/dactyl.so abi=Linux_x86_64-gcc3 platformversion>=9.0 platformversion<9.*
-binary-component components/10.0-Linux_x86_64-gcc3/dactyl.so abi=Linux_x86_64-gcc3 platformversion>=10.0 platformversion<10.*
-
-binary-component components/6.0-Darwin_x86_64-gcc3/dactyl.so abi=Darwin_x86_64-gcc3 appversion>=6.0 appversion<6.*
-binary-component components/7.0-Darwin_x86_64-gcc3/dactyl.so abi=Darwin_x86_64-gcc3 appversion>=7.0 appversion<7.*
-binary-component components/8.0-Darwin_x86_64-gcc3/dactyl.so abi=Darwin_x86_64-gcc3 platformversion>=8.0 platformversion<8.*
-binary-component components/9.0-Darwin_x86_64-gcc3/dactyl.so abi=Darwin_x86_64-gcc3 platformversion>=9.0 platformversion<9.*
-
-binary-component components/6.0-WINNT_x86-msvc/dactyl.dll abi=WINNT_x86-msvc appversion>=6.0 appversion<6.*
-binary-component components/7.0-WINNT_x86-msvc/dactyl.dll abi=WINNT_x86-msvc appversion>=7.0 appversion<7.*
-binary-component components/8.0-WINNT_x86-msvc/dactyl.dll abi=WINNT_x86-msvc platformversion>=8.0 platformversion<8.*
-binary-component components/9.0-WINNT_x86-msvc/dactyl.dll abi=WINNT_x86-msvc platformversion>=9.0 platformversion<9.*
+manifest components/gecko-6.manifest appversion>=6.0
+manifest components/gecko-7.manifest appversion>=7.0
+manifest components/gecko-8.manifest platformversion>=8.0
+manifest components/gecko-9.manifest platformversion>=9.0
+manifest components/gecko-10.manifest platformversion>9.*
 
 # vim:se tw=0 ft=cfg:
