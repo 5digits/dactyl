@@ -14,6 +14,8 @@ defineModule("prefs", {
     require: ["services", "util"]
 }, this);
 
+this.lazyRequire("messages", ["_"]);
+
 var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     ORIGINAL: "extensions.dactyl.original.",
     RESTORE: "extensions.dactyl.restore.",

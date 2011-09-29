@@ -14,6 +14,8 @@ defineModule("util", {
     require: ["dom", "services"]
 }, this);
 
+this.lazyRequire("overlay", ["overlay"]);
+
 var FailedAssertion = Class("FailedAssertion", ErrorBase, {
     init: function init(message, level, noTrace) {
         if (noTrace !== undefined)

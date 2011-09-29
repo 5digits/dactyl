@@ -1,5 +1,5 @@
 
-GECKO_MAJOR ?= 9
+GECKO_MAJOR ?= 10
 GECKO_MINOR ?= 0
 ABI_OS        := $(shell uname -s)
 ABI_ARCH      := $(shell uname -m)
