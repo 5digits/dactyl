@@ -704,8 +704,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             let async = params.callback || params.onload || params.onerror;
             if (async) {
-                xmlhttp.onload = function handler(event) { util.trapErrors(params.onload || params.callback, params, xmlhttp, event) };
-                xmlhttp.onerror = function handler(event) { util.trapErrors(params.onerror || params.callback, params, xmlhttp, event) };
+                xmlhttp.addEventListener("load",  function handler(event) { util.trapErrors(params.onload  || params.callback, params, xmlhttp, event) }, false);
+                xmlhttp.addEventListener("error", function handler(event) { util.trapErrors(params.onerror || params.callback, params, xmlhttp, event) }, false);
             }
 
 

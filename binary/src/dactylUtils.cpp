@@ -50,6 +50,7 @@
 #  define nsString_h___
 #  define nsStringFwd_h___
 #  define nsStringGlue_h__
+#  define nsContentUtils_h___
 class nsAFlatCString;
 typedef nsString nsSubstring;
 #  include "nsIScrollableFrame.h"

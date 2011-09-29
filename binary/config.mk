@@ -30,6 +30,7 @@ EXCPPFLAGS =    -fno-rtti		\
                 -fno-exceptions		\
                 -fshort-wchar		\
 		-fPIC			\
+		-Os			\
 		$(NULL)
 
 XPIDL   ?= $(PYTHON) $(GECKO_SDK_PATH)/sdk/bin
