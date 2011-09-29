@@ -617,8 +617,13 @@ var Editor = Module("editor", {
              function () {
                  // Deletes the whole line. What the hell.
                  // editor.executeCommand("cmd_deleteToBeginningOfLine", 1);
+                 let editor_ = Editor.getEditor(null);
 
                  editor.executeCommand("cmd_selectBeginLine", 1);
+                 if (editor_ && editor_.selection.isCollapsed) {
+                     editor.executeCommand("cmd_deleteCharBackward", 1);
+                     editor.executeCommand("cmd_selectBeginLine", 1);
+                 }
                  if (Editor.getController().isCommandEnabled("cmd_delete"))
                      editor.executeCommand("cmd_delete", 1);
              });
