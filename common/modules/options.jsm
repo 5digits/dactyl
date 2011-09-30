@@ -794,7 +794,7 @@ var Options = Module("options", {
                     opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
             }, window);
 
-            services["dactyl:"].pages["options.dtd"] = function () [null,
+            modules.cache.register("options.dtd", function ()
                 util.makeDTD(
                     iter(([["option", o.name, "default"].join("."),
                            o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
@@ -804,7 +804,13 @@ var Options = Module("options", {
 
                          ([["option", o.name, "type"].join("."), o.type] for (o in self)),
 
-                         config.dtd))];
+                         config.dtd)));
+        },
+
+        signals: {
+            "io.source": function ioSource(context, file, modTime) {
+                cache.flushEntry("options.dtd", modTime);
+            }
         },
 
         dactyl: dactyl,

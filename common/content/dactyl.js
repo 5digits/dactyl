@@ -111,6 +111,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
     },
 
+    signals: {
+        "io.source": function ioSource(context, file, modTime) {
+            if (context.INFO)
+                help.flush("help/plugins.xml", modTime);
+        }
+    },
+
     profileName: deprecated("config.profileName", { get: function profileName() config.profileName }),
 
     /**
@@ -484,8 +491,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         if (fileName && fileName[0] == "[")
             fileName = "dactyl://command-line/";
-
-        if (!context && fileName && fileName[0] !== "[")
+        else if (!context)
             context = ctxt || _userContext;
 
         if (isinstance(context, ["Sandbox"]))
@@ -659,82 +665,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @private
      * Initialize the help system.
      */
-    initHelp: function initHelp(force) {
+    initHelp: function initHelp() {
         if ("noscriptOverlay" in window)
             noscriptOverlay.safeAllow("dactyl:", true, false);
 
-        if (!force && help.initialized)
-            return;
-
-        help.initialize(force);
-
-        // Process plugin help entries.
-        XML.ignoreWhiteSpace = XML.prettyPrinting = false;
-
-        let body = XML();
-        for (let [, context] in Iterator(plugins.contexts))
-            try {
-                let info = contexts.getDocs(context);
-                if (info instanceof XML) {
-                    if (info.*.@lang.length()) {
-                        let lang = config.bestLocale(String(a) for each (a in info.*.@lang));
-
-                        info.* = info.*.(function::attribute("lang").length() == 0 || @lang == lang);
-
-                        for each (let elem in info.NS::info)
-                            for each (let attr in ["@name", "@summary", "@href"])
-                                if (elem[attr].length())
-                                    info[attr] = elem[attr];
-                    }
-                    body += <h2 xmlns={NS.uri} tag={info.@name + '-plugin'}>{info.@summary}</h2> +
-                        info;
-                }
-            }
-            catch (e) {
-                util.reportError(e);
-            }
-
-        help.files["plugins"] = function () ['text/xml;charset=UTF-8',
-            '<?xml version="1.0"?>\n' +
-            '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
-            '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
-            <document xmlns={NS}
-                name="plugins" title={config.appName + " Plugins"}>
-                <h1 tag="using-plugins">{_("help.title.Using Plugins")}</h1>
-                <toc start="2"/>
-
-                {body}
-            </document>.toXMLString()];
-
-
-        default xml namespace = NS;
-
-        help.overlays["index"] = ['text/xml;charset=UTF-8',
-            '<?xml version="1.0"?>\n' +
-            <overlay xmlns={NS}>{
-            template.map(dactyl.indices, function ([name, iter])
-                <dl insertafter={name + "-index"}>{
-                    template.map(iter(), util.identity)
-                }</dl>, <>{"\n\n"}</>)
-            }</overlay>];
-
-        help.overlays["gui"] = ['text/xml;charset=UTF-8',
-            '<?xml version="1.0"?>\n' +
-            <overlay xmlns={NS}>
-                <dl insertafter="dialog-list">{
-                template.map(config.dialogs, function ([name, val])
-                    (!val[2] || val[2]())
-                        ? <><dt>{name}</dt><dd>{val[0]}</dd></>
-                        : undefined,
-                    <>{"\n"}</>)
-                }</dl>
-            </overlay>];
-
-        help.tags["plugins"] = help.tags["plugins.xml"] = "plugins";
-        help.tags["index"] = help.tags["index.xml"] = "index";
-
-        help.addTags("plugins", util.httpGet("dactyl://help/plugins").responseXML);
-        help.addTags("index", util.httpGet("dactyl://help-overlay/index").responseXML);
+        help.initialize();
     },
 
     stringifyXML: function (xml) {
@@ -1280,6 +1215,73 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 }, {
     toolbarHidden: function hidden(elem) (elem.getAttribute("autohide") || elem.getAttribute("collapsed")) == "true"
 }, {
+    cache: function () {
+        cache.register("help/plugins.xml", function () {
+            // Process plugin help entries.
+            XML.ignoreWhiteSpace = XML.prettyPrinting = false;
+
+            let body = XML();
+            for (let [, context] in Iterator(plugins.contexts))
+                try {
+                    let info = contexts.getDocs(context);
+                    if (info instanceof XML) {
+                        if (info.*.@lang.length()) {
+                            let lang = config.bestLocale(String(a) for each (a in info.*.@lang));
+
+                            info.* = info.*.(function::attribute("lang").length() == 0 || @lang == lang);
+
+                            for each (let elem in info.NS::info)
+                                for each (let attr in ["@name", "@summary", "@href"])
+                                    if (elem[attr].length())
+                                        info[attr] = elem[attr];
+                        }
+                        body += <h2 xmlns={NS.uri} tag={info.@name + '-plugin'}>{info.@summary}</h2> +
+                            info;
+                    }
+                }
+                catch (e) {
+                    util.reportError(e);
+                }
+
+            return '<?xml version="1.0"?>\n' +
+                   '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
+                   '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
+                   <document xmlns={NS}
+                       name="plugins" title={config.appName + " Plugins"}>
+                       <h1 tag="using-plugins">{_("help.title.Using Plugins")}</h1>
+                       <toc start="2"/>
+
+                       {body}
+                   </document>.toXMLString();
+        });
+
+        cache.register("help/index.xml", function () {
+            default xml namespace = NS;
+
+            return '<?xml version="1.0"?>\n' +
+                   <overlay xmlns={NS}>{
+                   template.map(dactyl.indices, function ([name, iter])
+                       <dl insertafter={name + "-index"}>{
+                           template.map(iter(), util.identity)
+                       }</dl>, <>{"\n\n"}</>)
+                   }</overlay>;
+        });
+
+        cache.register("help/gui.xml", function () {
+            default xml namespace = NS;
+
+            return '<?xml version="1.0"?>\n' +
+                   <overlay xmlns={NS}>
+                       <dl insertafter="dialog-list">{
+                       template.map(config.dialogs, function ([name, val])
+                           (!val[2] || val[2]())
+                               ? <><dt>{name}</dt><dd>{val[0]}</dd></>
+                               : undefined,
+                           <>{"\n"}</>)
+                       }</dl>
+                   </overlay>;
+        });
+    },
     events: function () {
         events.listen(window, dactyl, "events", true);
     },

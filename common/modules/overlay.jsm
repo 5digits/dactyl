@@ -371,6 +371,9 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         };
     },
 
+    get activeModules() this.activeWindow && this.activeWindow.dactyl.modules,
+
+    get modules() this.windows.map(function (w) w.dactyl.modules),
 
     /**
      * The most recently active dactyl window.

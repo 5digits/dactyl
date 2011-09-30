@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "dactyl://content/modes.dtd">
+<!DOCTYPE document SYSTEM "dactyl://cache/modes.dtd">
 
 <document
     name="map"

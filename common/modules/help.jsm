@@ -7,21 +7,79 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("help", {
     exports: ["help"],
-    require: ["dom", "javascript", "protocol", "services", "util"]
+    require: ["cache", "dom", "javascript", "protocol", "services", "util"]
 }, this);
+
+var HelpBuilder = Class("HelpBuilder", {
+    init: function init() {
+        try {
+            help._data = this;
+
+            this.files = {};
+            this.tags = {};
+            this.overlays = {};
+
+            // Scrape the list of help files from all.xml
+            this.tags["all"] = this.tags["all.xml"] = "all";
+            let files = this.findHelpFile("all").map(function (doc)
+                    [f.value for (f in DOM.XPath("//dactyl:include/@href", doc))]);
+
+            // Scrape the tags from the rest of the help files.
+            array.flatten(files).forEach(function (file) {
+                this.tags[file + ".xml"] = file;
+                this.findHelpFile(file).forEach(function (doc) {
+                    this.addTags(file, doc);
+                }, this);
+            }, this);
+        }
+        finally {
+            delete help._data;
+        }
+    },
+
+    toJSON: function toJSON() ({
+        files: this.files,
+        overlays: this.overlays,
+        tags: this.tags
+    }),
+
+    // Find the tags in the document.
+    addTags: function addTags(file, doc) {
+        for (let elem in DOM.XPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
+                for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
+            this.tags[tag] = file;
+    },
+
+    bases: ["dactyl://locale-local/", "dactyl://locale/", "dactyl://cache/help/"],
+
+    // Find help and overlay files with the given name.
+    findHelpFile: function findHelpFile(file) {
+        let result = [];
+        for (let base in values(this.bases)) {
+            let url = [base, file, ".xml"].join("");
+            let res = util.httpGet(url);
+            if (res) {
+                if (res.responseXML.documentElement.localName == "document")
+                    this.files[file] = url;
+                if (res.responseXML.documentElement.localName == "overlay")
+                    this.overlays[file] = url;
+                result.push(res.responseXML);
+            }
+        }
+        return result;
+    }
+});
 
 var Help = Module("Help", {
     init: function init() {
         this.initialized = false;
-        this.files = {};
-        this.overlays = {};
-        this.tags = {};
 
         function Loop(fn)
             function (uri, path) {
                 if (!help.initialized)
                     return RedirectChannel(uri.spec, uri, 2,
                                            "Initializing. Please wait...");
+
                 return fn.apply(this, arguments);
             }
 
@@ -36,7 +94,135 @@ var Help = Module("Help", {
                     return RedirectChannel("dactyl://help/" + help.tags[tag] + "#" + tag.replace(/#/g, encodeURIComponent), uri);
             })
         });
+
+        cache.register("help", HelpBuilder);
+
+        cache.register("help/versions.xml", function () {
+            let NEWS = util.httpGet(config.addon.getResourceURI("NEWS").spec,
+                                    { mimeType: "text/plain;charset=UTF-8" })
+                           .responseText;
+
+            let re = util.regexp(UTF8(<![CDATA[
+                  ^ (?P<comment> \s* # .*\n)
+
+                | ^ (?P<space> \s*)
+                    (?P<char>  [-•*+]) \ //
+                  (?P<content> .*\n
+                     (?: \2\ \ .*\n | \s*\n)* )
+
+                | (?P<par>
+                      (?: ^ [^\S\n]*
+                          (?:[^-•*+\s] | [-•*+]\S)
+                          .*\n
+                      )+
+                  )
+
+                | (?: ^ [^\S\n]* \n) +
+            ]]>), "gmxy");
+
+            let betas = util.regexp(/\[(b\d)\]/, "gx");
+
+            let beta = array(betas.iterate(NEWS))
+                        .map(function (m) m[1]).uniq().slice(-1)[0];
+
+
+            default xml namespace = NS;
+            function rec(text, level, li) {
+                XML.ignoreWhitespace = XML.prettyPrinting = false;
+
+                let res = <></>;
+                let list, space, i = 0;
+
+
+                for (let match in re.iterate(text)) {
+                    if (match.comment)
+                        continue;
+                    else if (match.char) {
+                        if (!list)
+                            res += list = <ul/>;
+                        let li = <li/>;
+                        li.* += rec(match.content.replace(RegExp("^" + match.space, "gm"), ""), level + 1, li);
+                        list.* += li;
+                    }
+                    else if (match.par) {
+                        let [, par, tags] = /([^]*?)\s*((?:\[[^\]]+\])*)\n*$/.exec(match.par);
+                        let t = tags;
+                        tags = array(betas.iterate(tags)).map(function (m) m[1]);
+
+                        let group = !tags.length                       ? "" :
+                                    !tags.some(function (t) t == beta) ? "HelpNewsOld" : "HelpNewsNew";
+                        if (i === 0 && li) {
+                            li.@highlight = group;
+                            group = "";
+                        }
+
+                        list = null;
+                        if (level == 0 && /^.*:\n$/.test(match.par)) {
+                            let text = par.slice(0, -1);
+                            res += <h2 tag={"news-" + text}>{template.linkifyHelp(text, true)}</h2>;
+                        }
+                        else {
+                            let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(par);
+                            res += <p highlight={group + " HelpNews"}>{
+                                !tags.length ? "" :
+                                <hl key="HelpNewsTag">{tags.join(" ")}</hl>
+                            }{
+                                a ? <hl key="HelpWarning">{a}</hl> : ""
+                            }{
+                                template.linkifyHelp(b, true)
+                            }</p>;
+                        }
+                    }
+                    i++;
+                }
+                for each (let attr in res..@highlight) {
+                    attr.parent().@NS::highlight = attr;
+                    delete attr.parent().@highlight;
+                }
+                return res;
+            }
+
+            XML.ignoreWhitespace = XML.prettyPrinting = false;
+            let body = rec(NEWS, 0);
+            for each (let li in body..li) {
+                let list = li..li.(@NS::highlight == "HelpNewsOld");
+                if (list.length() && list.length() == li..li.(@NS::highlight != "").length()) {
+                    for each (let li in list)
+                        li.@NS::highlight = "";
+                    li.@NS::highlight = "HelpNewsOld";
+                }
+            }
+
+
+            return '<?xml version="1.0"?>\n' +
+                   '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
+                   '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
+                   <document xmlns={NS} xmlns:dactyl={NS}
+                       name="versions" title={config.appName + " Versions"}>
+                       <h1 tag="versions news NEWS">{config.appName} Versions</h1>
+                       <toc start="2"/>
+
+                       {body}
+                   </document>.toXMLString()
+        });
     },
+
+    initialize: function initialize() {
+        help.initialized = true;
+    },
+
+    flush: function flush(entries, time) {
+        cache.flushEntry("help", time);
+
+        for (let entry in values(Array.concat(entries || [])))
+            cache.flushEntry(entry, time);
+    },
+
+    get data() this._data || cache.get("help"),
+
+    get files() this.data.files,
+    get overlays() this.data.overlays,
+    get tags() this.data.tags,
 
     Local: function Local(dactyl, modules, window) ({
         init: function init() {
@@ -81,6 +267,7 @@ var Help = Module("Help", {
          */
         help: function (topic, consolidated) {
             dactyl.initHelp();
+
             if (!topic) {
                 let helpFile = consolidated ? "all" : modules.options["helpfile"];
 
@@ -210,176 +397,7 @@ var Help = Module("Help", {
                 zip.close();
         }, [function (context, args) completion.file(context)]),
 
-    }),
-
-    // Find the tags in the document.
-    addTags: function addTags(file, doc) {
-        for (let elem in DOM.XPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
-                for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
-            this.tags[tag] = file;
-    },
-
-    namespaces: ["locale-local", "locale"],
-
-    // Find help and overlay files with the given name.
-    findHelpFile: function findHelpFile(file) {
-        let result = [];
-        for (let namespace in values(this.namespaces)) {
-            let url = ["dactyl://", namespace, "/", file, ".xml"].join("");
-            let res = util.httpGet(url);
-            if (res) {
-                if (res.responseXML.documentElement.localName == "document")
-                    this.files[file] = url;
-                if (res.responseXML.documentElement.localName == "overlay")
-                    this.overlays[file] = url;
-                result.push(res.responseXML);
-            }
-        }
-        return result;
-    },
-
-    initialize: function initialize(force) {
-        // Waits for the add-on to become available, if necessary.
-        config.addon;
-        config.version;
-
-        if (force || !this.initialized) {
-
-            this.files["versions"] = function () {
-                let NEWS = util.httpGet(config.addon.getResourceURI("NEWS").spec,
-                                        { mimeType: "text/plain;charset=UTF-8" })
-                               .responseText;
-
-                let re = util.regexp(UTF8(<![CDATA[
-                      ^ (?P<comment> \s* # .*\n)
-
-                    | ^ (?P<space> \s*)
-                        (?P<char>  [-•*+]) \ //
-                      (?P<content> .*\n
-                         (?: \2\ \ .*\n | \s*\n)* )
-
-                    | (?P<par>
-                          (?: ^ [^\S\n]*
-                              (?:[^-•*+\s] | [-•*+]\S)
-                              .*\n
-                          )+
-                      )
-
-                    | (?: ^ [^\S\n]* \n) +
-                ]]>), "gmxy");
-
-                let betas = util.regexp(/\[(b\d)\]/, "gx");
-
-                let beta = array(betas.iterate(NEWS))
-                            .map(function (m) m[1]).uniq().slice(-1)[0];
-
-
-                default xml namespace = NS;
-                function rec(text, level, li) {
-                    XML.ignoreWhitespace = XML.prettyPrinting = false;
-
-                    let res = <></>;
-                    let list, space, i = 0;
-
-
-                    for (let match in re.iterate(text)) {
-                        if (match.comment)
-                            continue;
-                        else if (match.char) {
-                            if (!list)
-                                res += list = <ul/>;
-                            let li = <li/>;
-                            li.* += rec(match.content.replace(RegExp("^" + match.space, "gm"), ""), level + 1, li);
-                            list.* += li;
-                        }
-                        else if (match.par) {
-                            let [, par, tags] = /([^]*?)\s*((?:\[[^\]]+\])*)\n*$/.exec(match.par);
-                            let t = tags;
-                            tags = array(betas.iterate(tags)).map(function (m) m[1]);
-
-                            let group = !tags.length                       ? "" :
-                                        !tags.some(function (t) t == beta) ? "HelpNewsOld" : "HelpNewsNew";
-                            if (i === 0 && li) {
-                                li.@highlight = group;
-                                group = "";
-                            }
-
-                            list = null;
-                            if (level == 0 && /^.*:\n$/.test(match.par)) {
-                                let text = par.slice(0, -1);
-                                res += <h2 tag={"news-" + text}>{template.linkifyHelp(text, true)}</h2>;
-                            }
-                            else {
-                                let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(par);
-                                res += <p highlight={group + " HelpNews"}>{
-                                    !tags.length ? "" :
-                                    <hl key="HelpNewsTag">{tags.join(" ")}</hl>
-                                }{
-                                    a ? <hl key="HelpWarning">{a}</hl> : ""
-                                }{
-                                    template.linkifyHelp(b, true)
-                                }</p>;
-                            }
-                        }
-                        i++;
-                    }
-                    for each (let attr in res..@highlight) {
-                        attr.parent().@NS::highlight = attr;
-                        delete attr.parent().@highlight;
-                    }
-                    return res;
-                }
-
-                XML.ignoreWhitespace = XML.prettyPrinting = false;
-                let body = rec(NEWS, 0);
-                for each (let li in body..li) {
-                    let list = li..li.(@NS::highlight == "HelpNewsOld");
-                    if (list.length() && list.length() == li..li.(@NS::highlight != "").length()) {
-                        for each (let li in list)
-                            li.@NS::highlight = "";
-                        li.@NS::highlight = "HelpNewsOld";
-                    }
-                }
-
-
-                return ["application/xml",
-                    '<?xml version="1.0"?>\n' +
-                    '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
-                    '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
-                    <document xmlns={NS} xmlns:dactyl={NS}
-                        name="versions" title={config.appName + " Versions"}>
-                        <h1 tag="versions news NEWS">{config.appName} Versions</h1>
-                        <toc start="2"/>
-
-                        {body}
-                    </document>.toXMLString()
-                ];
-            }
-
-
-
-            // Scrape the list of help files from all.xml
-            // Manually process main and overlay files, since XSLTProcessor and
-            // XMLHttpRequest don't allow access to chrome documents.
-            this.tags["all"] = this.tags["all.xml"] = "all";
-            let files = this.findHelpFile("all").map(function (doc)
-                    [f.value for (f in DOM.XPath("//dactyl:include/@href", doc))]);
-
-            // Scrape the tags from the rest of the help files.
-            array.flatten(files).forEach(function (file) {
-                this.tags[file + ".xml"] = file;
-                this.findHelpFile(file).forEach(function (doc) {
-                    this.addTags(file, doc);
-                }, this);
-            }, this);
-
-            this.tags["versions"] = this.tags["versions.xml"] = "versions";
-
-            this.addTags("versions", util.httpGet("dactyl://help/versions").responseXML);
-
-            help.initialized = true;
-        }
-    },
+    })
 }, {
 }, {
     commands: function init_commands(dactyl, modules, window) {

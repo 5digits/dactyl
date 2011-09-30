@@ -14,6 +14,7 @@ defineModule("config", {
 }, this);
 
 this.lazyRequire("addons", ["AddonManager"]);
+this.lazyRequire("cache", ["cache"]);
 this.lazyRequire("highlight", ["highlight"]);
 this.lazyRequire("messages", ["_"]);
 
@@ -54,8 +55,10 @@ var ConfigBase = Class("ConfigBase", {
                      "resource://dactyl-content/")));
 
         this.timeout(function () {
-            services["dactyl:"].pages.dtd = function () [null, util.makeDTD(config.dtd)];
+            cache.register("config.dtd", function () util.makeDTD(config.dtd));
         });
+
+        services["dactyl:"].pages["dtd"] = function () [null, cache.get("config.dtd")];
 
         update(services["dactyl:"].providers, {
             "locale": function (uri, path) LocaleChannel("dactyl-locale", config.locale, path, uri),
@@ -101,6 +104,7 @@ var ConfigBase = Class("ConfigBase", {
         global: ["addons",
                  "base",
                  "io",
+                 "cache",
                  "commands",
                  "completion",
                  "config",

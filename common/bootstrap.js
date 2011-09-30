@@ -207,6 +207,7 @@ function init() {
     let pref = "extensions.dactyl.cacheFlushCheck";
     let val  = addon.version + "-" + hardSuffix;
     if (!Services.prefs.prefHasUserValue(pref) || Services.prefs.getCharPref(pref) != val) {
+        var cacheFlush = true;
         Services.obs.notifyObservers(null, "startupcache-invalidate", "");
         Services.prefs.setCharPref(pref, val);
     }
@@ -244,6 +245,7 @@ function init() {
     JSMLoader.load(BOOTSTRAP_JSM, global);
 
     JSMLoader.init(suffix);
+    JSMLoader.cacheFlush = cacheFlush;
     JSMLoader.load("base.jsm", global);
 
     if (!(BOOTSTRAP_CONTRACT in Cc)) {

@@ -213,55 +213,16 @@ var Modes = Module("modes", {
 
             }
         });
-
-        function makeTree() {
-            let list = modes.all.filter(function (m) m.name !== m.description);
-
-            let tree = {};
-
-            for (let mode in values(list))
-                tree[mode.name] = {};
-
-            for (let mode in values(list))
-                for (let base in values(mode.bases))
-                    tree[base.name][mode.name] = tree[mode.name];
-
-            let roots = iter([m.name, tree[m.name]] for (m in values(list)) if (!m.bases.length)).toObject();
-
-            default xml namespace = NS;
-            function rec(obj) {
-                XML.ignoreWhitespace = XML.prettyPrinting = false;
-
-                let res = <ul dactyl:highlight="Dense" xmlns:dactyl={NS}/>;
-                Object.keys(obj).sort().forEach(function (name) {
-                    let mode = modes.getMode(name);
-                    res.* += <li><em>{mode.displayName}</em>: {mode.description}{
-                        rec(obj[name])
-                    }</li>;
-                });
-
-                if (res.*.length())
-                    return res;
-                return <></>;
-            }
-
-            return rec(roots);
-        }
-
-        util.timeout(function () {
-            // Waits for the add-on to become available, if necessary.
-            config.addon;
-            config.version;
-
-            services["dactyl:"].pages["modes.dtd"] = services["dactyl:"].pages["modes.dtd"]();
-        });
-
-        services["dactyl:"].pages["modes.dtd"] = function () [null,
-            util.makeDTD(iter({ "modes.tree": makeTree() },
-                              config.dtd))];
     },
+
     cleanup: function cleanup() {
         modes.reset();
+    },
+
+    signals: {
+        "io.source": function ioSource(context, file, modTime) {
+            cache.flushEntry("modes.dtd", modTime);
+        }
     },
 
     _getModeMessage: function _getModeMessage() {
@@ -604,6 +565,45 @@ var Modes = Module("modes", {
         }, desc));
     }
 }, {
+    cache: function initCache() {
+        function makeTree() {
+            let list = modes.all.filter(function (m) m.name !== m.description);
+
+            let tree = {};
+
+            for (let mode in values(list))
+                tree[mode.name] = {};
+
+            for (let mode in values(list))
+                for (let base in values(mode.bases))
+                    tree[base.name][mode.name] = tree[mode.name];
+
+            let roots = iter([m.name, tree[m.name]] for (m in values(list)) if (!m.bases.length)).toObject();
+
+            default xml namespace = NS;
+            function rec(obj) {
+                XML.ignoreWhitespace = XML.prettyPrinting = false;
+
+                let res = <ul dactyl:highlight="Dense" xmlns:dactyl={NS}/>;
+                Object.keys(obj).sort().forEach(function (name) {
+                    let mode = modes.getMode(name);
+                    res.* += <li><em>{mode.displayName}</em>: {mode.description}{
+                        rec(obj[name])
+                    }</li>;
+                });
+
+                if (res.*.length())
+                    return res;
+                return <></>;
+            }
+
+            return rec(roots);
+        }
+
+        cache.register("modes.dtd", function ()
+            util.makeDTD(iter({ "modes.tree": makeTree() },
+                              config.dtd)));
+    },
     mappings: function initMappings() {
         mappings.add([modes.BASE, modes.NORMAL],
             ["<Esc>", "<C-[>"],

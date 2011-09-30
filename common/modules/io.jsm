@@ -175,7 +175,7 @@ var IO = Module("io", {
                                 util.flushCache();
 
                             dactyl.loadScript(uri.spec, context);
-                            help.initialized = false;
+                            dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
                         }
                         catch (e) {
                             if (e.fileName && !(e instanceof FailedAssertion))
@@ -200,6 +200,7 @@ var IO = Module("io", {
                             group: context.GROUP,
                             line: 1
                         });
+                        dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
                     }
 
                     Set.add(this._scriptNames, file.path);

@@ -1291,6 +1291,10 @@ var Buffer = Module("buffer", {
         if (!DOM(elem).isScrollable(horizontal ? "horizontal" : "vertical"))
             return false;
 
+        return this.canScroll(elem, dir, horizontal);
+    },
+
+    canScroll: function canScroll(elem, dir, horizontal) {
         let pos = "scrollTop", size = "clientHeight", max = "scrollHeight", layoutSize = "offsetHeight",
             overflow = "overflowX", border1 = "borderTopWidth", border2 = "borderBottomWidth";
         if (horizontal)

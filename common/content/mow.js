@@ -21,7 +21,7 @@ var MOW = Module("mow", {
             if (modes.have(modes.OUTPUT_MULTILINE)) {
                 this.resize(true);
 
-                if (options["more"] && this.isScrollable(1)) {
+                if (options["more"] && this.canScroll(1)) {
                     // start the last executed command's output at the top of the screen
                     let elements = this.document.getElementsByClassName("ex-command-output");
                     DOM(elements[elements.length - 1]).scrollIntoView(true);
@@ -219,7 +219,7 @@ var MOW = Module("mow", {
     onKeyPress: function onKeyPress(eventList) {
         const KILL = false, PASS = true;
 
-        if (options["more"] && mow.isScrollable(1))
+        if (options["more"] && mow.canScroll(1))
             this.updateMorePrompt(false, true);
         else {
             modes.pop();
@@ -279,7 +279,7 @@ var MOW = Module("mow", {
 
         if (showHelp)
             this.widgets.message = ["MoreMsg", _("mow.moreHelp")];
-        else if (force || (options["more"] && Buffer.isScrollable(elem, 1)))
+        else if (force || (options["more"] && Buffer.canScroll(elem, 1)))
             this.widgets.message = ["MoreMsg", _("mow.more")];
         else
             this.widgets.message = ["Question", _("mow.continue")];
@@ -341,36 +341,36 @@ var MOW = Module("mow", {
 
         bind(["j", "<C-e>", "<Down>"], "Scroll down one line",
              function ({ count }) { mow.scrollVertical("lines", 1 * (count || 1)); },
-             function () mow.isScrollable(1), BEEP);
+             function () mow.canScroll(1), BEEP);
 
         bind(["k", "<C-y>", "<Up>"], "Scroll up one line",
              function ({ count }) { mow.scrollVertical("lines", -1 * (count || 1)); },
-             function () mow.isScrollable(-1), BEEP);
+             function () mow.canScroll(-1), BEEP);
 
         bind(["<C-j>", "<C-m>", "<Return>"], "Scroll down one line, exit on last line",
              function ({ count }) { mow.scrollVertical("lines", 1 * (count || 1)); },
-             function () mow.isScrollable(1), DROP);
+             function () mow.canScroll(1), DROP);
 
         // half page down
         bind(["<C-d>"], "Scroll down half a page",
              function ({ count }) { mow.scrollVertical("pages", .5 * (count || 1)); },
-             function () mow.isScrollable(1), BEEP);
+             function () mow.canScroll(1), BEEP);
 
         bind(["<C-f>", "<PageDown>"], "Scroll down one page",
              function ({ count }) { mow.scrollVertical("pages", 1 * (count || 1)); },
-             function () mow.isScrollable(1), BEEP);
+             function () mow.canScroll(1), BEEP);
 
         bind(["<Space>"], "Scroll down one page",
              function ({ count }) { mow.scrollVertical("pages", 1 * (count || 1)); },
-             function () mow.isScrollable(1), DROP);
+             function () mow.canScroll(1), DROP);
 
         bind(["<C-u>"], "Scroll up half a page",
              function ({ count }) { mow.scrollVertical("pages", -.5 * (count || 1)); },
-             function () mow.isScrollable(-1), BEEP);
+             function () mow.canScroll(-1), BEEP);
 
         bind(["<C-b>", "<PageUp>"], "Scroll up half a page",
              function ({ count }) { mow.scrollVertical("pages", -1 * (count || 1)); },
-             function () mow.isScrollable(-1), BEEP);
+             function () mow.canScroll(-1), BEEP);
 
         bind(["gg"], "Scroll to the beginning of output",
              function () { mow.scrollToPercent(null, 0); });
