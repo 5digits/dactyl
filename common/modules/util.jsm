@@ -1183,7 +1183,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     rehash: function (args) {
         storage.session.commandlineArgs = args;
         this.timeout(function () {
-            this.flushCache();
+            cache.flushAll();
             this.rehashing = true;
             let addon = config.addon;
             addon.userDisabled = true;

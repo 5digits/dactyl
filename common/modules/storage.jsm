@@ -79,10 +79,13 @@ var ArrayStore = Class("ArrayStore", StoreBase, {
 
     get length() this._object.length,
 
-    set: function set(index, value) {
+    set: function set(index, value, quiet) {
         var orig = this._object[index];
         this._object[index] = value;
-        this.fireEvent("change", index);
+        if (!quiet)
+            this.fireEvent("change", index);
+
+        return orig;
     },
 
     push: function push(value) {

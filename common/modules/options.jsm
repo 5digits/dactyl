@@ -46,35 +46,13 @@ var Option = Class("Option", {
     init: function init(modules, names, description, defaultValue, extraInfo) {
         this.modules = modules;
         this.name = names[0];
-        this.names = names;
         this.realNames = names;
         this.description = description;
 
         if (extraInfo)
             this.update(extraInfo);
 
-        if (Set.has(this.modules.config.optionDefaults, this.name))
-            defaultValue = this.modules.config.optionDefaults[this.name];
-
-        if (defaultValue == null && this.getter)
-            defaultValue = this.getter();
-
-        if (defaultValue !== undefined) {
-            if (this.type === "string")
-                defaultValue = Commands.quote(defaultValue);
-
-            if (isObject(defaultValue))
-                defaultValue = iter(defaultValue).map(function (val) val.map(Option.quote).join(":")).join(",");
-
-            if (isArray(defaultValue))
-                defaultValue = defaultValue.map(Option.quote).join(",");
-
-            this.defaultValue = this.parse(defaultValue);
-        }
-
-        // add no{option} variant of boolean {option} to this.names
-        if (this.type == "boolean")
-            this.names = array([name, "no" + name] for (name in values(names))).flatten().array;
+        this._defaultValue = defaultValue;
 
         if (this.globalValue == undefined && !this.initialValue)
             this.globalValue = this.defaultValue;
@@ -103,8 +81,15 @@ var Option = Class("Option", {
     },
 
     /** @property {value} The option's global value. @see #scope */
-    get globalValue() { try { return options.store.get(this.name, {}).value; } catch (e) { util.reportError(e); throw e; } },
-    set globalValue(val) { options.store.set(this.name, { value: val, time: Date.now() }); },
+    get globalValue() {
+        let val = options.store.get(this.name, {}).value;
+        if (val != null)
+            return val;
+        return this.globalValue = this.defaultValue;
+    },
+    set globalValue(val) {
+        options.store.set(this.name, { value: val, time: Date.now() });
+    },
 
     /**
      * Returns *value* as an array of parsed values if the option type is
@@ -270,8 +255,9 @@ var Option = Class("Option", {
 
     /** @property {string} The option's canonical name. */
     name: null,
+
     /** @property {[string]} All names by which this option is identified. */
-    names: null,
+    names: Class.Memoize(function () this.realNames),
 
     /**
      * @property {string} The option's data type. One of:
@@ -332,7 +318,30 @@ var Option = Class("Option", {
      *     unless the option is explicitly set either interactively or in an RC
      *     file or plugin.
      */
-    defaultValue: null,
+    defaultValue: Class.Memoize(function () {
+        let defaultValue = this._defaultValue;
+        delete this._defaultValue;
+
+        if (Set.has(this.modules.config.optionDefaults, this.name))
+            defaultValue = this.modules.config.optionDefaults[this.name];
+
+        if (defaultValue == null && this.getter)
+            defaultValue = this.getter();
+
+        if (defaultValue == undefined)
+            return null;
+
+        if (this.type === "string")
+            defaultValue = Commands.quote(defaultValue);
+
+        if (isObject(defaultValue))
+            defaultValue = iter(defaultValue).map(function (val) val.map(Option.quote).join(":")).join(",");
+
+        if (isArray(defaultValue))
+            defaultValue = defaultValue.map(Option.quote).join(",");
+
+        return this.parse(defaultValue);
+    }),
 
     /**
      * @property {function} The function called when the option value is read.
@@ -757,6 +766,11 @@ var Option = Class("Option", {
     EXPORTED_SYMBOLS.push(class_.className);
 }, this);
 
+update(BooleanOption.prototype, {
+    names: Class.Memoize(function ()
+                array.flatten([[name, "no" + name] for (name in values(this.realNames))]))
+});
+
 var OptionHive = Class("OptionHive", Contexts.Hive, {
     init: function init(group) {
         init.supercall(this, group);
@@ -881,9 +895,8 @@ var Options = Module("options", {
             if (!util.isDactyl(Components.stack.caller))
                 deprecated.warn(add, "options.add", "group.options.add");
 
-            util.assert(type in Option.types,
-                        _("option.noSuchType", type),
-                        true);
+            util.assert(type in Option.types, _("option.noSuchType", type),
+                        false);
 
             if (!extraInfo)
                 extraInfo = {};

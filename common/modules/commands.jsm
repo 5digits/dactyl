@@ -123,22 +123,17 @@ update(CommandOption, {
 var Command = Class("Command", {
     init: function init(specs, description, action, extraInfo) {
         specs = Array.concat(specs); // XXX
-        let parsedSpecs = extraInfo.parsedSpecs || Command.parseSpecs(specs);
 
         this.specs = specs;
-        this.shortNames = array.compact(parsedSpecs.map(function (n) n[1]));
-        this.longNames = parsedSpecs.map(function (n) n[0]);
-        this.name = this.longNames[0];
-        this.names = array.flatten(parsedSpecs);
         this.description = description;
         this.action = action;
 
+        if (extraInfo.options)
+            this._options = extraInfo.options;
+        delete extraInfo.options;
+
         if (extraInfo)
             this.update(extraInfo);
-        if (this.options)
-            this.options = this.options.map(CommandOption.fromArray, CommandOption);
-        for each (let option in this.options)
-            option.localeName = ["command", this.name, option.names[0]];
     },
 
     get toStringParams() [this.name, this.hive.name],
@@ -220,17 +215,21 @@ var Command = Class("Command", {
      * @property {[string]} All of this command's name specs. e.g., "com[mand]"
      */
     specs: null,
+    parsedSpecs: Class.Memoize(function () Command.parseSpecs(this.specs)),
+
     /** @property {[string]} All of this command's short names, e.g., "com" */
-    shortNames: null,
+    shortNames: Class.Memoize(function () array.compact(this.parsedSpecs.map(function (n) n[1]))),
+
     /**
      * @property {[string]} All of this command's long names, e.g., "command"
      */
-    longNames: null,
+    longNames: Class.Memoize(function () this.parsedSpecs.map(function (n) n[0])),
 
     /** @property {string} The command's canonical name. */
-    name: null,
+    name: Class.Memoize(function () this.longNames[0]),
+
     /** @property {[string]} All of this command's long and short names. */
-    names: null,
+    names: Class.Memoize(function () this.names = array.flatten(this.parsedSpecs)),
 
     /** @property {string} This command's description, as shown in :listcommands */
     description: Messages.Localized(""),
@@ -283,7 +282,13 @@ var Command = Class("Command", {
      * @property {Array} The options this command takes.
      * @see Commands@parseArguments
      */
-    options: [],
+    options: Class.Memoize(function ()
+        this._options.map(function (opt) {
+            let option = CommandOption.fromArray(opt);
+            option.localeName = ["command", this.name, option.names[0]];
+            return option;
+        }, this)),
+    _options: [],
 
     optionMap: Class.Memoize(function () array(this.options)
                 .map(function (opt) opt.names.map(function (name) [name, opt]))
