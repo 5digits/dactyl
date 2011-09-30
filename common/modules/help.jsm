@@ -95,7 +95,7 @@ var Help = Module("Help", {
             })
         });
 
-        cache.register("help", HelpBuilder);
+        cache.register("help.json", HelpBuilder);
 
         cache.register("help/versions.xml", function () {
             let NEWS = util.httpGet(config.addon.getResourceURI("NEWS").spec,
@@ -218,7 +218,7 @@ var Help = Module("Help", {
             cache.flushEntry(entry, time);
     },
 
-    get data() this._data || cache.get("help"),
+    get data() this._data || cache.get("help.json"),
 
     get files() this.data.files,
     get overlays() this.data.overlays,
