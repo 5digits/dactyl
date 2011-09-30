@@ -1382,7 +1382,7 @@
 </item>
 
 <item>
-    <tags>'ss' 'scrollsteps'</tags>
+    <tags>'scs' 'scrollsteps'</tags>
     <spec>'scrollsteps' 'scs'</spec>
     <type>&option.scrollsteps.type;</type>
     <default>&option.scrollsteps.default;</default>
@@ -1394,7 +1394,7 @@
     </description>
 </item>
 <item>
-    <tags>'st' 'scrolltime'</tags>
+    <tags>'sct' 'scrolltime'</tags>
     <spec>'scrolltime' 'sct'</spec>
     <type>&option.scrolltime.type;</type>
     <default>&option.scrolltime.default;</default>

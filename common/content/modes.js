@@ -616,7 +616,7 @@ var Modes = Module("modes", {
             function () { modes.pop(null, { fromEscape: true }); });
 
         mappings.add([modes.AUTOCOMPLETE, modes.MENU], ["<C-c>"],
-            "Leave Menu mode",
+            "Leave Autocomplete or Menu mode",
             function () { modes.pop(); });
 
         mappings.add([modes.MENU], ["<Esc>"],
