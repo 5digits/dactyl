@@ -22,18 +22,20 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
 
         update(services["dactyl:"].providers, {
             "cache": function (uri, path) {
-                // TODO: Return zip reader stream
-
-                let result = cache.force(path);
-                if (isArray(result))
-                    return result;
-
+                let contentType = "text/plain";
                 try {
-                    return [services.mime.getTypeFromURI(uri), result];
+                    contentType = services.mime.getTypeFromURI(uri)
                 }
-                catch (e) {
-                    return ["text/plain", result];
-                }
+                catch (e) {}
+
+                if (!cache.cacheReader || !cache.cacheReader.hasEntry(path))
+                    return [contentType, cache.force(path)];
+
+                let channel = services.StreamChannel(uri);
+                channel.contentStream = cache.cacheReader.getInputStream(path);
+                channel.contentType = contentType;
+                channel.contentCharset = "UTF-8";
+                return channel;
             }
         });
     },
@@ -46,6 +48,18 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
 
         isLocal: true
     }),
+
+    parse: function parse(str) {
+        if (~'{['.indexOf(str[0]))
+            return JSON.parse(str);
+        return str;
+    },
+
+    stringify: function stringify(obj) {
+        if (isString(obj))
+            return obj;
+        return JSON.stringify(obj);
+    },
 
     compression: 9,
 
@@ -71,7 +85,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         return this._cacheReader;
     },
 
-    get inQueue() this._cacheWriter && this._cacheWriter.inQueue(),
+    get inQueue() this._cacheWriter && this._cacheWriter.inQueue,
 
     getCacheWriter: function () {
         if (!this._cacheWriter)
@@ -114,7 +128,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
 
     flush: function flush() {
         cache.cache = {};
-        if (this.cacheFile.eists()) {
+        if (this.cacheFile.exists()) {
             this.closeReader();
 
             this.flushJAR(this.cacheFile);
@@ -148,8 +162,10 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
     },
 
     force: function force(name, localOnly) {
+        util.waitFor(function () !this.inQueue, this);
+
         if (this.cacheReader && this.cacheReader.hasEntry(name)) {
-            return JSON.parse(File.readStream(
+            return this.parse(File.readStream(
                 this.cacheReader.getInputStream(name)));
         }
 
@@ -207,7 +223,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
             this.queue.splice(0).forEach(function ([time, entry]) {
                 if (time && Set.has(this.cache, entry)) {
                     let stream = services.CharsetConv("UTF-8")
-                                         .convertToInputStream(JSON.stringify(this.cache[entry]));
+                                         .convertToInputStream(this.stringify(this.cache[entry]));
 
                     this.getCacheWriter().addEntryStream(entry, time * 1000,
                                                          this.compression, stream,
