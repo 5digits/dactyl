@@ -23,7 +23,7 @@ var Tabs = Module("tabs", {
 
         // hide tabs initially to prevent flickering when 'stal' would hide them
         // on startup
-        if (config.hasTabbrowser)
+        if (config.has("tabbrowser"))
             config.tabStrip.collapsed = true;
 
         this.tabStyle = styles.system.add("tab-strip-hiding", config.styleableChrome,
@@ -762,7 +762,7 @@ var Tabs = Module("tabs", {
             function () { tabs.select(0, false); },
             { argCount: "0" });
 
-        if (config.hasTabbrowser) {
+        if (config.has("tabbrowser")) {
             commands.add(["b[uffer]"],
                 "Switch to a buffer",
                 function (args) { tabs.switchTo(args[0], args.bang, args.count); }, {
@@ -1014,7 +1014,7 @@ var Tabs = Module("tabs", {
             function ({ count }) { tabs.select("-" + (count || 1), true); },
             { count: true });
 
-        if (config.hasTabbrowser) {
+        if (config.has("tabbrowser")) {
             mappings.add([modes.NORMAL], ["b"],
                 "Open a prompt to switch buffers",
                 function ({ count }) {
@@ -1071,7 +1071,7 @@ var Tabs = Module("tabs", {
     options: function () {
         options.add(["showtabline", "stal"],
             "Define when the tab bar is visible",
-            "string", config.defaults["showtabline"],
+            "string", true,
             {
                 setter: function (value) {
                     if (value === "never")
@@ -1099,7 +1099,7 @@ var Tabs = Module("tabs", {
                 }
             });
 
-        if (config.hasTabbrowser) {
+        if (config.has("tabbrowser")) {
             let activateGroups = [
                 ["all", "Activate everything"],
                 ["addons", ":addo[ns] command"],

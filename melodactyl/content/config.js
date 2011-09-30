@@ -182,8 +182,6 @@ const Config = Module("config", ConfigBase, {
         song: "song"
     }, this.__proto__.completers)),
 
-    hasTabbrowser: true,
-
     removeTab: function (tab) {
         if (config.tabbrowser.mTabs.length > 1)
             config.tabbrowser.removeTab(tab);

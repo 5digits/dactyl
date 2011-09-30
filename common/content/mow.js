@@ -67,7 +67,7 @@ var MOW = Module("mow", {
                         </menupopup>
                     </popupset>
                 </window>
-                <vbox id={config.commandContainer}>
+                <vbox id={config.ids.commandContainer}>
                     <vbox class="dactyl-container" id="dactyl-multiline-output-container" hidden="false" collapsed="true">
                         <iframe id="dactyl-multiline-output" src="dactyl://content/buffer.xhtml"
                                 flex="1" hidden="false" collapsed="false" contextmenu="dactyl-contextmenu"

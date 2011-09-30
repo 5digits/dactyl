@@ -1,0 +1,212 @@
+
+InlineHelpLink                              /* A help link shown in the command line or multi-line output area */ \
+                                            font-size: inherit !important; font-family: inherit !important;
+
+Help;;;FontProportional                     /* A help page */ \
+                                            line-height: 1.4em;
+
+HelpInclude                                 /* A help page included in the consolidated help listing */ \
+                                            margin: 2em 0;
+
+HelpArg;;;FontCode                          /* A required command argument indicator */ \
+                                            color: #6A97D4;
+HelpOptionalArg;;;FontCode                  /* An optional command argument indicator */ \
+                                            color: #6A97D4;
+
+HelpBody                                    /* The body of a help page */ \
+                                            display: block; margin: 1em auto; max-width: 100ex; padding-bottom: 1em; margin-bottom: 4em; border-bottom-width: 1px;
+HelpBorder;*;dactyl://help/*                /* The styling of bordered elements */ \
+                                            border-color: silver; border-width: 0px; border-style: solid;
+HelpCode;;;FontCode                         /* Code listings */ \
+                                            display: block; white-space: pre; margin-left: 2em;
+HelpTT;html|tt;dactyl://help/*;FontCode     /* Teletype text */
+
+HelpDefault;;;FontCode                      /* The default value of a help item */ \
+                                            display: inline-block; margin: -1px 1ex 0 0; white-space: pre; vertical-align: text-top;
+
+HelpDescription                             /* The description of a help item */ \
+                                            display: block; clear: right;
+HelpDescription[short]                      clear: none;
+HelpEm;html|em;dactyl://help/*              /* Emphasized text */ \
+                                            font-weight: bold; font-style: normal;
+
+HelpEx;;;FontCode                           /* An Ex command */ \
+                                            display: inline-block; color: #527BBD;
+
+HelpExample                                 /* An example */ \
+                                            display: block; margin: 1em 0;
+HelpExample::before                         content: "__MSG_help.Example__: "; font-weight: bold;
+
+HelpInfo                                    /* Arbitrary information about a help item */ \
+                                            display: block; width: 20em; margin-left: auto;
+HelpInfoLabel                               /* The label for a HelpInfo item */ \
+                                            display: inline-block; width: 6em;  color: magenta; font-weight: bold; vertical-align: text-top;
+HelpInfoValue                               /* The details for a HelpInfo item */ \
+                                            display: inline-block; width: 14em; text-decoration: none;             vertical-align: text-top;
+
+HelpItem                                    /* A help item */ \
+                                            display: block; margin: 1em 1em 1em 10em; clear: both;
+
+HelpKey;;;FontCode                          /* A keyboard key specification */ \
+                                            color: #102663;
+HelpKeyword                                 /* A keyword */ \
+                                            font-weight: bold; color: navy;
+
+HelpLink;html|a;dactyl://help/*             /* A hyperlink */ \
+                                            text-decoration: none !important;
+HelpLink[href]:hover                        text-decoration: underline !important;
+HelpLink[href^="mailto:"]::after            content: "✉"; padding-left: .2em;
+HelpLink[rel=external] {
+    /* A hyperlink to an external resource */
+    /* Thanks, Wikipedia */
+    background: transparent url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAMAAAC67D+PAAAAFVBMVEVmmcwzmcyZzP8AZswAZv////////9E6giVAAAAB3RSTlP///////8AGksDRgAAADhJREFUGFcly0ESAEAEA0Ei6/9P3sEcVB8kmrwFyni0bOeyyDpy9JTLEaOhQq7Ongf5FeMhHS/4AVnsAZubxDVmAAAAAElFTkSuQmCC) no-repeat scroll right center;
+    padding-right: 13px;
+}
+
+ErrorMsg HelpEx       color: inherit; background: inherit; text-decoration: underline;
+ErrorMsg HelpKey      color: inherit; background: inherit; text-decoration: underline;
+ErrorMsg HelpOption   color: inherit; background: inherit; text-decoration: underline;
+ErrorMsg HelpTopic    color: inherit; background: inherit; text-decoration: underline;
+
+HelpTOC               /* The Table of Contents for a help page */
+HelpTOC>ol ol         margin-left: -1em;
+
+HelpOrderedList;ol;dactyl://help/*                          /* Any ordered list */ \
+                                                            margin: 1em 0;
+HelpOrderedList1;ol[level="1"],ol;dactyl://help/*           /* A first-level ordered list */ \
+                                                            list-style: outside decimal; display: block;
+HelpOrderedList2;ol[level="2"],ol ol;dactyl://help/*        /* A second-level ordered list */ \
+                                                            list-style: outside upper-alpha;
+HelpOrderedList3;ol[level="3"],ol ol ol;dactyl://help/*     /* A third-level ordered list */ \
+                                                            list-style: outside lower-roman;
+HelpOrderedList4;ol[level="4"],ol ol ol ol;dactyl://help/*  /* A fourth-level ordered list */ \
+                                                            list-style: outside decimal;
+
+HelpList;html|ul;dactyl://help/*      /* An unordered list */ \
+                                      display: block; list-style-position: outside; margin: 1em 0;
+HelpListItem;html|li;dactyl://help/*  /* A list item, ordered or unordered */ \
+                                      display: list-item;
+
+HelpNote                                    /* The indicator for a note */ \
+                                            color: red; font-weight: bold;
+
+HelpOpt;;;FontCode                          /* An option name */ \
+                                            color: #106326;
+HelpOptInfo;;;FontCode                      /* Information about the type and default values for an option entry */ \
+                                            display: block; margin-bottom: 1ex; padding-left: 4em;
+
+HelpParagraph;html|p;dactyl://help/*        /* An ordinary paragraph */ \
+                                            display: block; margin: 1em 0em;
+HelpParagraph:first-child                   margin-top: 0;
+HelpParagraph:last-child                    margin-bottom: 0;
+HelpSpec;;;FontCode                         /* The specification for a help entry */ \
+                                            display: block; margin-left: -10em; float: left; clear: left; color: #527BBD; margin-right: 1em;
+
+HelpString;;;FontCode                       /* A quoted string */ \
+                                            color: green; font-weight: normal;
+HelpString::before                          content: '"';
+HelpString::after                           content: '"';
+HelpString[delim]::before                   content: attr(delim);
+HelpString[delim]::after                    content: attr(delim);
+
+HelpNews        /* A news item */           position: relative;
+HelpNewsOld     /* An old news item */      opacity: .7;
+HelpNewsNew     /* A new news item */       font-style: italic;
+HelpNewsTag     /* The version tag for a news item */ \
+                font-style: normal; position: absolute; left: 100%; padding-left: 1em; color: #527BBD; opacity: .6; white-space: pre;
+
+HelpHead;html|h1,html|h2,html|h3,html|h4;dactyl://help/* {
+    /* Any help heading */
+    font-weight: bold;
+    color: #527BBD;
+    clear: both;
+}
+HelpHead1;html|h1;dactyl://help/* {
+    /* A first-level help heading */
+    margin: 2em 0 1em;
+    padding-bottom: .2ex;
+    border-bottom-width: 1px;
+    font-size: 2em;
+}
+HelpHead2;html|h2;dactyl://help/* {
+    /* A second-level help heading */
+    margin: 2em 0 1em;
+    padding-bottom: .2ex;
+    border-bottom-width: 1px;
+    font-size: 1.2em;
+}
+HelpHead3;html|h3;dactyl://help/* {
+    /* A third-level help heading */
+    margin: 1em 0;
+    padding-bottom: .2ex;
+    font-size: 1.1em;
+}
+HelpHead4;html|h4;dactyl://help/* {
+    /* A fourth-level help heading */
+}
+
+HelpTab;html|dl;dactyl://help/* {
+    /* A description table */
+    display: table;
+    width: 100%;
+    margin: 1em 0;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+    padding: .5ex 0;
+    table-layout: fixed;
+}
+HelpTabColumn;html|column;dactyl://help/*   display: table-column;
+HelpTabColumn:first-child                   width: 25%;
+HelpTabTitle;html|dt;dactyl://help/*;FontCode  /* The title column of description tables */ \
+                                            display: table-cell; padding: .1ex 1ex; font-weight: bold;
+HelpTabDescription;html|dd;dactyl://help/*  /* The description column of description tables */ \
+                                            display: table-cell; padding: .3ex 1em; text-indent: -1em; border-width: 0px;
+HelpTabDescription>*;;dactyl://help/*       text-indent: 0;
+HelpTabRow;html|dl>html|tr;dactyl://help/*  /* Entire rows in description tables */ \
+                                            display: table-row;
+
+HelpTag;;;FontCode                          /* A help tag */ \
+                                            display: inline-block; color: #527BBD; margin-left: 1ex; font-weight: normal;
+HelpTags                                    /* A group of help tags */ \
+                                            display: block; float: right; clear: right;
+HelpTopic;;;FontCode                        /* A link to a help topic */ \
+                                            color: #102663;
+HelpType;;;FontCode                         /* An option type */ \
+                                            color: #102663 !important; margin-right: 2ex;
+
+HelpWarning                                 /* The indicator for a warning */ \
+                                            color: red; font-weight: bold;
+
+HelpXML;;;FontCode  {
+    /* Highlighted XML */
+    white-space: pre;
+    display: inline-block;
+    color: #C5F779;
+    background-color: #444444;
+    border: 1px dashed #aaaaaa;
+    font-family: Terminus, Fixed, monospace;
+}
+HelpXMLBlock;;;HelpXML {
+    display: block;
+    margin-left: 2em;
+}
+HelpXMLAttribute                            color: #C5F779;
+HelpXMLAttribute::after                     color: #E5E5E5; content: "=";
+HelpXMLComment                              color: #444444;
+HelpXMLComment::before                      content: "<!--";
+HelpXMLComment::after                       content: "-->";
+HelpXMLProcessing                           color: #C5F779;
+HelpXMLProcessing::before                   color: #444444; content: "<?";
+HelpXMLProcessing::after                    color: #444444; content: "?>";
+HelpXMLString                               color: #C5F779; white-space: pre;
+HelpXMLString::before                       content: '"';
+HelpXMLString::after                        content: '"';
+HelpXMLNamespace                            color: #FFF796;
+HelpXMLNamespace::after                     color: #777777; content: ":";
+HelpXMLTagStart                             color: #FFF796; white-space: normal; display: inline-block; text-indent: -1.5em; padding-left: 1.5em;
+HelpXMLTagEnd                               color: #71BEBE;
+HelpXMLText                                 color: #E5E5E5;
+
+CompItem HelpXMLTagStart                    white-space: pre;
+
+// vim:se sts=4 sw=4 et ft=css:

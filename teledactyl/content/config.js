@@ -5,12 +5,6 @@
 "use strict";
 
 var Config = Module("config", ConfigBase, {
-    name: "teledactyl",
-    appName: "Teledactyl",
-    idName: "TELEDACTYL",
-    host: "Thunderbird",
-    hostbin: "thunderbird",
-
     Local: function Local(dactyl, modules, window)
         let ({ config } = modules, { document } = window) {
         init: function init() {
@@ -26,8 +20,6 @@ var Config = Module("config", ConfigBase, {
             let (tabmail = document.getElementById('tabmail'))
                 tabmail && tabmail.tabInfo.length ? tabmail.getBrowserForSelectedTab()
                                                   : document.getElementById("messagepane"),
-
-        get commandContainer() document.documentElement.id,
 
         tabbrowser: {
             __proto__: Class.makeClosure.call(window.document.getElementById("tabmail")),
@@ -47,16 +39,12 @@ var Config = Module("config", ConfigBase, {
             }
         },
 
-        get hasTabbrowser() !this.isComposeWindow,
-
         get tabStip() this.tabbrowser.tabContainer,
-
-        get isComposeWindow() window.wintype == "msgcompose",
 
         get mainWidget() this.isComposeWindow ? document.getElementById("content-frame") : window.GetThreadTree(),
 
-        get mainWindowId() this.isComposeWindow ? "msgcomposeWindow" : "messengerWindow",
         get browserModes() [modules.modes.MESSAGE],
+
         get mailModes() [modules.modes.NORMAL],
 
         // NOTE: as I don't use TB I have no idea how robust this is. --djk
@@ -115,8 +103,13 @@ var Config = Module("config", ConfigBase, {
         focusChange: function focusChange(win) {
             const { modes } = modules;
 
+            if (win.top == window)
+                return;
+
             // we switch to -- MESSAGE -- mode for Teledactyl when the main HTML widget gets focus
-            if (win && win.document instanceof Ci.nsIHTMLDocument || dactyl.focus instanceof Ci.nsIHTMLAnchorElement) {
+            if (win && win.document instanceof Ci.nsIDOMHTMLDocument
+                    || dactyl.focusedElement instanceof Ci.nsIDOMHTMLAnchorElement) {
+
                 if (this.isComposeWindow)
                     modes.set(modes.INSERT, modes.TEXT_EDIT);
                 else if (dactyl.mode != modes.MESSAGE)
@@ -124,54 +117,6 @@ var Config = Module("config", ConfigBase, {
             }
         }
     },
-
-    autocommands: {
-        DOMLoad: "Triggered when a page's DOM content has fully loaded",
-        FolderLoad: "Triggered after switching folders in Thunderbird",
-        PageLoadPre: "Triggered after a page load is initiated",
-        PageLoad: "Triggered when a page gets (re)loaded/opened",
-        Enter: "Triggered after Thunderbird starts",
-        Leave: "Triggered before exiting Thunderbird",
-        LeavePre: "Triggered before exiting Thunderbird"
-    },
-
-    defaults: {
-        guioptions: "bCfrs",
-        complete: "f",
-        showtabline: 1,
-        titlestring: "Teledactyl"
-    },
-
-    /*** optional options, there are checked for existence and a fallback provided  ***/
-    features: Class.Memoize(function () Set(
-        this.isComposeWindow ? ["addressbook"]
-                             : ["hints", "mail", "marks", "addressbook", "tabs"])),
-
-    guioptions: {
-        m: ["MenuBar",            ["mail-toolbar-menubar2"]],
-        T: ["Toolbar" ,           ["mail-bar2"]],
-        f: ["Folder list",        ["folderPaneBox", "folderpane_splitter"]],
-        F: ["Folder list header", ["folderPaneHeader"]]
-    },
-
-    // they are sorted by relevance, not alphabetically
-    helpFiles: ["intro.html", "version.html"],
-
-    modes: [
-        ["MESSAGE", { char: "m" }],
-        ["COMPOSE"]
-    ],
-
-    get scripts() this.isComposeWindow ? ["compose/compose"] : [
-        "addressbook",
-        "mail",
-        "tabs",
-    ],
-
-    overlayChrome: ["chrome://messenger/content/messenger.xul",
-                      "chrome://messenger/content/messengercompose/messengercompose.xul"],
-    styleableChrome: ["chrome://messenger/content/messenger.xul",
-                      "chrome://messenger/content/messengercompose/messengercompose.xul"],
 
     // to allow Vim to :set ft=mail automatically
     tempFile: "teledactyl.eml"

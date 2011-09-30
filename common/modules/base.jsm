@@ -915,6 +915,7 @@ Class.Update = function Update(obj)
     Class.Property({
         configurable: true,
         enumerable: true,
+        writable: true,
         init: function (key, target) {
             this.value = update({}, target[key], obj);
         }

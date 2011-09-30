@@ -1133,7 +1133,7 @@ var Completion = Module("completion", {
 
         options.add(["complete", "cpt"],
             "Items which are completed at the :open prompts",
-            "stringlist", config.defaults.complete == null ? "slf" : config.defaults.complete,
+            "stringlist", "slf",
             {
                 valueMap: {
                     S: "suggestion",

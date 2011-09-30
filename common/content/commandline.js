@@ -20,7 +20,7 @@ var CommandWidgets = Class("CommandWidgets", {
                 eventTarget: commandline
             },
             append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
-                <vbox id={config.commandContainer}>
+                <vbox id={config.ids.commandContainer}>
                     <vbox class="dactyl-container" hidden="false" collapsed="true">
                         <iframe class="dactyl-completions" id="dactyl-completions-dactyl-commandline" src="dactyl://content/buffer.xhtml"
                                 contextmenu="dactyl-contextmenu"

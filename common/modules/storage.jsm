@@ -536,7 +536,7 @@ var File = Class("File", {
 
     pathSplit: Class.Memoize(function () util.regexp("(?:/|" + util.regexp.escape(this.PATH_SEP) + ")", "g")),
 
-    DoesNotExist: function (path, error) ({
+    DoesNotExist: function DoesNotExist(path, error) ({
         path: path,
         exists: function () false,
         __noSuchMethod__: function () { throw error || Error("Does not exist"); }
@@ -559,7 +559,7 @@ var File = Class("File", {
      * @param {boolean} relative Whether the path is relative or absolute.
      * @returns {string}
      */
-    expandPath: function (path, relative) {
+    expandPath: function expandPath(path, relative) {
         function getenv(name) services.environment.get(name);
 
         // expand any $ENV vars - this is naive but so is Vim and we like to be compatible
@@ -595,7 +595,13 @@ var File = Class("File", {
 
     expandPathList: function (list) list.map(this.expandPath),
 
-    readStream: function (ifstream, encoding) {
+    readURL: function readURL(url, encoding) {
+        let channel = services.io.newChannel(url, null, null);
+        channel.contentType = "text/plain";
+        return this.readStream(channel.open(), encoding);
+    },
+
+    readStream: function readStream(ifstream, encoding) {
         try {
             var icstream = services.CharsetStream(
                     ifstream, encoding || File.defaultEncoding, 4096, // buffer size
@@ -613,7 +619,7 @@ var File = Class("File", {
         }
     },
 
-    readLines: function (ifstream, encoding) {
+    readLines: function readLines(ifstream, encoding) {
         try {
             var icstream = services.CharsetStream(
                     ifstream, encoding || File.defaultEncoding, 4096, // buffer size
@@ -630,7 +636,7 @@ var File = Class("File", {
     },
 
 
-    isAbsolutePath: function (path) {
+    isAbsolutePath: function isAbsolutePath(path) {
         try {
             services.File().initWithPath(path);
             return true;
@@ -640,7 +646,7 @@ var File = Class("File", {
         }
     },
 
-    joinPaths: function (head, tail, cwd) {
+    joinPaths: function joinPaths(head, tail, cwd) {
         let path = this(head, cwd);
         try {
             // FIXME: should only expand environment vars and normalize path separators

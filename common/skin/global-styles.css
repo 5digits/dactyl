@@ -1,0 +1,309 @@
+
+Boolean      /* JavaScript booleans */       color: red;
+Function     /* JavaScript functions */      color: navy;
+Null         /* JavaScript null values */    color: blue;
+Number       /* JavaScript numbers */        color: blue;
+Object       /* JavaScript objects */        color: maroon;
+String       /* String values */             color: green; white-space: pre;
+Comment      /* JavaScriptor CSS comments */ color: gray;
+
+Key          /* Keywords */                  font-weight: bold;
+
+Enabled      /* Enabled item indicator text */  color: blue;
+Disabled     /* Disabled item indicator text */ color: red;
+
+FontFixed           /* The font used for fixed-width text */ \
+                    font-family: monospace !important;
+FontCode            /* The font used for code listings */ \
+                    font-size: 9pt;  font-family: monospace !important;
+FontProportional    /* The font used for proportionally spaced text */ \
+                    font-size: 10pt; font-family: "Droid Sans", "Helvetica LT Std", Helvetica, "DejaVu Sans", Verdana, sans-serif !important;
+
+    // Hack to give these groups slightly higher precedence
+    // than their unadorned variants.
+    CmdCmdLine;[dactyl|highlight]>*
+    CmdErrorMsg;[dactyl|highlight]
+    CmdInfoMsg;[dactyl|highlight]
+    CmdModeMsg;[dactyl|highlight]
+    CmdMoreMsg;[dactyl|highlight]
+    CmdNormal;[dactyl|highlight]
+    CmdQuestion;[dactyl|highlight]
+    CmdWarningMsg;[dactyl|highlight]
+
+    StatusCmdLine;[dactyl|highlight]>*
+    StatusErrorMsg;[dactyl|highlight]
+    StatusInfoMsg;[dactyl|highlight]
+    StatusModeMsg;[dactyl|highlight]
+    StatusMoreMsg;[dactyl|highlight]
+    StatusNormal;[dactyl|highlight]
+    StatusQuestion;[dactyl|highlight]
+    StatusWarningMsg;[dactyl|highlight]
+
+Normal            /* Normal text */ \
+                  color: black   !important; background: white       !important; font-weight: normal !important;
+StatusNormal      /* Normal text in the status line */ \
+                  color: inherit !important; background: transparent !important;
+ErrorMsg          /* Error messages */ \
+                  color: white   !important; background: red         !important; font-weight: bold !important;
+InfoMsg           /* Information messages */ \
+                  color: black   !important; background: white       !important;
+StatusInfoMsg     /* Information messages in the status line */ \
+                  color: inherit !important; background: transparent !important;
+LineNr            /* The line number of an error */ \
+                  color: orange  !important; background: white       !important;
+ModeMsg           /* The mode indicator */ \
+                  color: black   !important; background: white       !important;
+StatusModeMsg     /* The mode indicator in the status line */ \
+                  color: inherit !important; background: transparent !important; padding-right: 1em;
+MoreMsg           /* The indicator that there is more text to view */ \
+                  color: green   !important; background: white       !important;
+StatusMoreMsg                                background: transparent !important;
+Message           /* A message as displayed in <ex>:messages</ex> */ \
+                  white-space: pre-wrap !important; min-width: 100%; width: 100%; padding-left: 4em; text-indent: -4em; display: block;
+Message String    /* A message as displayed in <ex>:messages</ex> */ \
+                  white-space: pre-wrap;
+NonText           /* The <em>~</em> indicators which mark blank lines in the completion list */ \
+                  color: blue; background: transparent !important;
+*Preview          /* The completion preview displayed in the &tag.command-line; */ \
+                  color: gray;
+Question          /* A prompt for a decision */ \
+                  color: green   !important; background: white       !important; font-weight: bold !important;
+StatusQuestion    /* A prompt for a decision in the status line */ \
+                  color: green   !important; background: transparent !important;
+WarningMsg        /* A warning message */ \
+                  color: red     !important; background: white       !important;
+StatusWarningMsg  /* A warning message in the status line */ \
+                  color: red     !important; background: transparent !important;
+Disabled          /* Disabled items */ \
+                  color: gray    !important;
+
+CmdLine;>*;;FontFixed   /* The command line */ \
+                        padding: 1px !important;
+CmdPrompt;.dactyl-commandline-prompt  /* The default styling form the command prompt */
+CmdInput;.dactyl-commandline-command
+CmdOutput         /* The output of commands executed by <ex>:run</ex> */ \
+                  white-space: pre;
+
+CompGroup                      /* Item group in completion output */
+CompGroup:not(:first-of-type)  margin-top: .5em;
+CompGroup:last-of-type         padding-bottom: 1.5ex;
+
+CompTitle            /* Completion row titles */ \
+                     color: magenta; background: white; font-weight: bold;
+CompTitle>*          padding: 0 .5ex;
+CompTitleSep         /* The element which separates the completion title from its results */ \
+                     height: 1px; background: magenta; background: -moz-linear-gradient(60deg, magenta, white);
+
+CompMsg              /* The message which may appear at the top of a group of completion results */ \
+                     font-style: italic; margin-left: 16px;
+
+CompItem             /* A single row of output in the completion list */
+CompItem:nth-child(2n+1)    background: rgba(0, 0, 0, .04);
+CompItem[selected]   /* A selected row of completion list */ \
+                     background: yellow;
+CompItem>*           padding: 0 .5ex;
+
+CompIcon             /* The favicon of a completion row */ \
+                     width: 16px; min-width: 16px; display: inline-block; margin-right: .5ex;
+CompIcon>img         max-width: 16px; max-height: 16px; vertical-align: middle;
+
+CompResult           /* The result column of the completion list */ \
+                     width: 36%; padding-right: 1%; overflow: hidden;
+CompDesc             /* The description column of the completion list */ \
+                     color: gray; width: 62%; padding-left: 1em;
+
+CompLess             /* The indicator shown when completions may be scrolled up */ \
+                     text-align: center; height: 0;    line-height: .5ex; padding-top: 1ex;
+CompLess::after      /* The character of indicator shown when completions may be scrolled up */ \
+                     content: "⌃";
+
+CompMore             /* The indicator shown when completions may be scrolled down */ \
+                     text-align: center; height: .5ex; line-height: .5ex; margin-bottom: -.5ex;
+CompMore::after      /* The character of indicator shown when completions may be scrolled down */ \
+                     content: "⌄";
+
+Dense              /* Arbitrary elements which should be packed densely together */\
+                   margin-top: 0; margin-bottom: 0;
+
+EditorEditing;;*   /* Text fields for which an external editor is open */ \
+                   background-color: #bbb !important; -moz-user-input: none !important; -moz-user-modify: read-only !important;
+EditorError;;*     /* Text fields briefly after an error has occurred running the external editor */ \
+                   background: red !important;
+EditorBlink1;;*    /* Text fields briefly after successfully running the external editor, alternated with EditorBlink2 */ \
+                   background: yellow !important;
+EditorBlink2;;*    /* Text fields briefly after successfully running the external editor, alternated with EditorBlink1 */
+
+REPL                /* Read-Eval-Print-Loop output */ \
+                    overflow: auto; max-height: 40em;
+REPL-R;;;Question   /* Prompts in REPL mode */
+REPL-E              /* Evaled input in REPL mode */ \
+                    white-space: pre-wrap;
+REPL-P              /* Evaled output in REPL mode */ \
+                    white-space: pre-wrap; margin-bottom: 1em;
+
+Usage               /* Output from the :*usage commands */ \
+                    width: 100%;
+UsageHead           /* Headings in output from the :*usage commands */
+UsageBody           /* The body of listings in output from the :*usage commands */
+UsageItem           /* Individual items in output from the :*usage commands */
+UsageItem:nth-of-type(2n)    background: rgba(0, 0, 0, .04);
+
+Indicator   /* The <em>#</em> and  <em>%</em> in the <ex>:buffers</ex> list */ \
+            color: blue; width: 1.5em; text-align: center;
+Filter      /* The matching text in a completion list */ \
+            font-weight: bold;
+
+Keyword     /* A bookmark keyword for a URL */ \
+            color: red;
+Tag         /* A bookmark tag for a URL */ \
+            color: blue;
+
+Link                        /* A link with additional information shown on hover */ \
+                            position: relative; padding-right: 2em;
+Link:not(:hover)>LinkInfo   opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
+LinkInfo                    {
+    /* Information shown when hovering over a link */
+    color: black;
+    position: absolute;
+    left: 100%;
+    padding: 1ex;
+    margin: -1ex -1em;
+    background: rgba(255, 255, 255, .8);
+    border-radius: 1ex;
+}
+
+StatusLine;;;FontFixed  {
+    /* The status bar */
+    -moz-appearance: none !important;
+    font-weight: bold;
+    background: transparent !important;
+    border: 0px !important;
+    padding-right: 0px !important;
+    min-height: 18px !important;
+    text-shadow: none !important;
+}
+StatusLineNormal;[dactyl|highlight]    /* The status bar for an ordinary web page */ \
+                                       color: white !important; background: black   !important;
+StatusLineBroken;[dactyl|highlight]    /* The status bar for a broken web page */ \
+                                       color: black !important; background: #FFa0a0 !important; /* light-red */
+StatusLineSecure;[dactyl|highlight]    /* The status bar for a secure web page */ \
+                                       color: black !important; background: #a0a0FF !important; /* light-blue */
+StatusLineExtended;[dactyl|highlight]  /* The status bar for a secure web page with an Extended Validation (EV) certificate */ \
+                                       color: black !important; background: #a0FFa0 !important; /* light-green */
+
+!TabClose;.tab-close-button            /* The close button of a browser tab */ \
+                                       /* The close button of a browser tab */
+!TabIcon;.tab-icon,.tab-icon-image     /* The icon of a browser tab */ \
+                                       /* The icon of a browser tab */
+!TabText;.tab-text                     /* The text of a browser tab */
+TabNumber                              /* The number of a browser tab, next to its icon */ \
+                                       font-weight: bold; margin: 0px; padding-right: .8ex; cursor: default;
+TabIconNumber  {
+    /* The number of a browser tab, over its icon */
+    cursor: default;
+    width: 16px;
+    margin: 0 2px 0 -18px !important;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
+}
+
+Title       /* The title of a listing, including <ex>:pageinfo</ex>, <ex>:jumps</ex> */ \
+            color: magenta; font-weight: bold;
+URL         /* A URL */ \
+            text-decoration: none; color: green; background: inherit;
+URL:hover   text-decoration: underline; cursor: pointer;
+URLExtra    /* Extra information about a URL */ \
+            color: gray;
+
+FrameIndicator;;* {
+    /* The styling applied to briefly indicate the active frame */
+    background-color: red;
+    opacity: 0.5;
+    z-index: 999999;
+    position: fixed;
+    top:      0;
+    bottom:   0;
+    left:     0;
+    right:    0;
+}
+
+Bell          /* &dactyl.appName;’s visual bell */ \
+              background-color: black !important;
+
+Hint;;* {
+    /* A hint indicator. See <ex>:help hints</ex> */
+    font:        bold 10px "Droid Sans Mono", monospace !important;
+    margin:      -.2ex;
+    padding:     0 0 0 1px;
+    outline:     1px solid rgba(0, 0, 0, .5);
+    background:  rgba(255, 248, 231, .8);
+    color:       black;
+}
+Hint[active];;*  background: rgba(255, 253, 208, .8);
+Hint::after;;*   content: attr(text) !important;
+HintElem;;*      /* The hintable element */ \
+                 background-color: yellow  !important; color: black !important;
+HintActive;;*    /* The hint element of link which will be followed by <k name="CR"/> */ \
+                 background-color: #88FF00 !important; color: black !important;
+HintImage;;*     /* The indicator which floats above hinted images */ \
+                 opacity: .5 !important;
+
+Button                  /* A button widget */ \
+                        display: inline-block; font-weight: bold; cursor: pointer; color: black; text-decoration: none;
+Button:hover            text-decoration: underline;
+Button[collapsed]       visibility: collapse; width: 0;
+Button::before          content: "["; color: gray; text-decoration: none !important;
+Button::after           content: "]"; color: gray; text-decoration: none !important;
+Button:not([collapsed]) ~ Button:not([collapsed])::before  content: "/[";
+
+Buttons                 /* A group of buttons */
+
+DownloadCell                    /* A table cell in the :downloads manager */ \
+                                display: table-cell; padding: 0 1ex;
+
+Downloads                       /* The :downloads manager */ \
+                                display: table; margin: 0; padding: 0;
+DownloadHead;;;CompTitle        /* A heading in the :downloads manager */ \
+                                display: table-row;
+DownloadHead>*;;;DownloadCell
+
+Download                        /* A download in the :downloads manager */ \
+                                display: table-row;
+Download:not([active])          color: gray;
+Download:nth-child(2n+1)        background: rgba(0, 0, 0, .04);
+
+Download>*;;;DownloadCell
+DownloadButtons                 /* A button group in the :downloads manager */
+DownloadPercent                 /* The percentage column for a download */
+DownloadProgress                /* The progress column for a download */
+DownloadProgressHave            /* The completed portion of the progress column */
+DownloadProgressTotal           /* The remaining portion of the progress column */
+DownloadSource                  /* The download source column for a download */
+DownloadState                   /* The download state column for a download */
+DownloadTime                    /* The time remaining column for a download */
+DownloadTitle                   /* The title column for a download */
+DownloadTitle>Link>a         max-width: 48ex; overflow: hidden; display: inline-block;
+
+AddonCell                    /* A cell in tell :addons manager */ \
+                             display: table-cell; padding: 0 1ex;
+
+Addons                       /* The :addons manager */ \
+                             display: table; margin: 0; padding: 0;
+AddonHead;;;CompTitle        /* A heading in the :addons manager */ \
+                             display: table-row;
+AddonHead>*;;;AddonCell
+
+Addon                        /* An add-on in the :addons manager */ \
+                             display: table-row;
+Addon:nth-child(2n+1)        background: rgba(0, 0, 0, .04);
+
+Addon>*;;;AddonCell
+AddonButtons
+AddonDescription
+AddonName                    max-width: 48ex; overflow: hidden;
+AddonStatus
+AddonVersion
+
+// vim:se sts=4 sw=4 et ft=css:

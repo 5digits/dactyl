@@ -53,8 +53,8 @@ var Option = Class("Option", {
         if (extraInfo)
             this.update(extraInfo);
 
-        if (Set.has(this.modules.config.defaults, this.name))
-            defaultValue = this.modules.config.defaults[this.name];
+        if (Set.has(this.modules.config.optionDefaults, this.name))
+            defaultValue = this.modules.config.optionDefaults[this.name];
 
         if (defaultValue == null && this.getter)
             defaultValue = this.getter();

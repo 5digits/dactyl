@@ -1377,7 +1377,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         options.add(["guioptions", "go"],
             "Show or hide certain GUI elements like the menu or toolbar",
-            "charlist", config.defaults.guioptions || "", {
+            "charlist", "", {
 
                 // FIXME: cleanup
                 cleanupValue: config.cleanups.guioptions ||
@@ -1406,7 +1406,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         options.add(["titlestring"],
             "The string shown at the end of the window title",
-            "string", config.defaults.titlestring || config.host,
+            "string", config.host,
             {
                 setter: function (value) {
                     let win = document.documentElement;

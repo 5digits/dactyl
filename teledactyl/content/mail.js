@@ -179,9 +179,7 @@ var Mail = Module("mail", {
 
         params.type = Ci.nsIMsgCompType.New;
 
-        const msgComposeService = Cc["@mozilla.org/messengercompose;1"].getService();
-        msgComposeService = msgComposeService.QueryInterface(Ci.nsIMsgComposeService);
-        msgComposeService.OpenComposeWindowWithParams(null, params);
+        services.compose.OpenComposeWindowWithParams(null, params);
     },
 
     // returns an array of nsIMsgFolder objects
@@ -861,8 +859,8 @@ var Mail = Module("mail", {
     },
     services: function initServices(dactyl, modules, window) {
         services.add("smtp", "@mozilla.org/messengercompose/smtp;1", Ci.nsISmtpService);
+        services.add("compose", "@mozilla.org/messengercompose;1", "nsIMsgComposeService");
     },
-
     modes: function initModes(dactyl, modules, window) {
         modes.addMode("MESSAGE", {
             char: "m",

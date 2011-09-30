@@ -168,7 +168,7 @@ var Modules = function Modules(window) {
 
 config.loadStyles();
 
-overlay.overlayWindow(config.overlayChrome, function _overlay(window) ({
+overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
     ready: function onInit(document) {
         const modules = Modules(window);
         window.dactyl = { modules: modules };

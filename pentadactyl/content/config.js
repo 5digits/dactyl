@@ -7,18 +7,8 @@
 "use strict";
 
 var Config = Module("config", ConfigBase, {
-    name: "pentadactyl",
-    appName: "Pentadactyl",
-    idName: "PENTADACTYL",
-    host: "Firefox",
-    hostbin: "firefox",
-
-    commandContainer: "browser-bottombox",
-
     Local: function Local(dactyl, modules, window)
         let ({ config } = modules) ({
-
-        completers: Class.Update({ sidebar: "sidebar", window: "window" }),
 
         dialogs: {
             about: ["About Firefox",
@@ -102,67 +92,8 @@ var Config = Module("config", ConfigBase, {
 
             return prefix + ".tmp";
         }
-    }),
+    })
 
-    overlayChrome: ["chrome://browser/content/browser.xul"],
-
-    styleableChrome: ["chrome://browser/content/browser.xul"],
-
-    autocommands: {
-        BookmarkAdd: "Triggered after a page is bookmarked",
-        BookmarkChange: "Triggered after a page's bookmark is changed",
-        BookmarkRemove: "Triggered after a page's bookmark is removed",
-        ColorScheme: "Triggered after a color scheme has been loaded",
-        DOMLoad: "Triggered when a page's DOM content has fully loaded",
-        DownloadPost: "Triggered when a download has completed",
-        Fullscreen: "Triggered when the browser's fullscreen state changes",
-        LocationChange: "Triggered when changing tabs or when navigation to a new location",
-        PageLoadPre: "Triggered after a page load is initiated",
-        PageLoad: "Triggered when a page gets (re)loaded/opened",
-        PrivateMode: "Triggered when private browsing mode is activated or deactivated",
-        Sanitize: "Triggered when a sanitizeable item is cleared",
-        ShellCmdPost: "Triggered after executing a shell command with :!cmd",
-        Enter: "Triggered after Firefox starts",
-        LeavePre: "Triggered before exiting Firefox, just before destroying each module",
-        Leave: "Triggered before exiting Firefox"
-    },
-
-    defaults: {
-        complete: "search,location,file",
-        guioptions: "bCrs",
-        showtabline: "always",
-        titlestring: "Pentadactyl"
-    },
-
-    features: Set([
-        "bookmarks", "hints", "history", "marks", "quickmarks", "sanitizer",
-        "session", "tabs", "tabs_undo", "windows"
-    ]),
-
-    guioptions: {
-        m: ["Menubar",      ["toolbar-menubar"]],
-        T: ["Toolbar",      ["nav-bar"]],
-        B: ["Bookmark bar", ["PersonalToolbar"]]
-    },
-
-    hasTabbrowser: true,
-
-    scripts: [
-        "browser",
-        "bookmarkcache",
-        "bookmarks",
-        "history",
-        "quickmarks",
-        "sanitizer",
-        "tabs"
-    ],
-
-    sidebars: {
-        viewAddons:      ["Add-ons",     "A", "chrome://mozapps/content/extensions/extensions.xul"],
-        viewConsole:     ["Console",     "C", "chrome://global/content/console.xul"],
-        viewDownloads:   ["Downloads",   "D", "chrome://mozapps/content/downloads/downloads.xul"],
-        viewPreferences: ["Preferences", "P", "about:config"]
-    }
 }, {
 }, {
     commands: function (dactyl, modules, window) {

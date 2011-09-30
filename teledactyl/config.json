@@ -1,0 +1,71 @@
+{
+    "name": "teledactyl",
+    "appName": "Teledactyl",
+    "idName": "TELEDACTYL",
+    "host": "Thunderbird",
+    "hostbin": "thunderbird",
+
+    "autocommands": {
+        "DOMLoad": "Triggered when a page's DOM content has fully loaded",
+        "FolderLoad": "Triggered after switching folders in Thunderbird",
+        "PageLoadPre": "Triggered after a page load is initiated",
+        "PageLoad": "Triggered when a page gets (re)loaded/opened",
+        "Enter": "Triggered after Thunderbird starts",
+        "Leave": "Triggered before exiting Thunderbird",
+        "LeavePre": "Triggered before exiting Thunderbird"
+    },
+
+    "guioptions": {
+        "m": ["MenuBar", ["mail-toolbar-menubar2"]],
+        "T": ["Toolbar", ["mail-bar2"]]
+    },
+
+    "option-defaults": {
+        "complete": "f",
+        "showtabline": 1,
+        "titlestring": "Teledactyl"
+    },
+
+    "overlays": {
+        "chrome://messenger/content/messenger.xul": {
+            "features": [
+                "hints",
+                "mail",
+                "marks",
+                "addressbook",
+                "tabs"
+            ],
+
+            "guioptions": {
+                "f": ["Folder list",        ["folderPaneBox", "folderpane_splitter"]],
+                "F": ["Folder list header", ["folderPaneHeader"]]
+            },
+
+            "option-defaults": {
+                "guioptions": "bCfrs"
+            },
+
+            "scripts": [
+                "addressbook",
+                "mail",
+                "tabs"
+            ]
+        },
+
+        "chrome://messenger/content/messengercompose/messengercompose.xul": {
+            "is-compose-window": true,
+
+            "features": [
+                "addressbook"
+            ],
+
+            "option-defaults": {
+                "guioptions": "bCrs"
+            },
+
+            "scripts": [
+                "compose/compose"
+            ]
+        }
+    }
+}
