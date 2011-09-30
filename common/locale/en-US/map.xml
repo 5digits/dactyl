@@ -418,15 +418,15 @@
 
 <p>Make <k name="A-n" link="false"/> do the same as <k name="Down" link="false"/> in input <t>modes</t>:</p>
 
-<code><ex>map</ex> <em>-b</em> <em>-m</em> input <k name="A-n" link="false"/> <k name="Down" link="false"/></code>
+<code><ex>:map</ex> <em>-b</em> <em>-m</em> input <k name="A-n" link="false"/> <k name="Down" link="false"/></code>
 
 <p>Toggle the tab line with <k name="A-t" link="false"/>:</p>
 
-<code><ex>map</ex> <em>-ex</em> <k name="A-t" link="false"/> <set opt="showtabline" op="!="><str delim="">always</str>,<str delim="">never</str></set></code>
+<code><ex>:map</ex> <em>-ex</em> <k name="A-t" link="false"/> <se opt="showtabline" op="!="><str delim="">always</str>,<str delim="">never</str></se></code>
 
 <p>Make <k name="A-i" link="false"/> toggle image display:</p>
 
-<code><ex>map</ex> <k name="A-i" link="false"/> <em>-js</em> &lt;&lt;<em>EOF</em>
+<code><ex>:map</ex> <k name="A-i" link="false"/> <em>-js</em> &lt;&lt;<em>EOF</em>
 let (pref = <str>permissions.default.image</str>)
     prefs.set(pref, prefs.get(pref) == 1 ? 2 : 1);
 tabs.reload(config.browser.mCurrentTab);
