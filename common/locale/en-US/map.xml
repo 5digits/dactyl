@@ -37,12 +37,18 @@
     For instance,
 </p>
 
-<code><ex>:map <k name="F2" link="false"/></ex> <ex>:echo Date()<k name="CR"/></ex></code>
+<code><ex>:map <k name="F2" link="false"/></ex> <ex>:styletoggle</ex> <em>-name</em> <k name="A-Tab" link="false"/></code>
 
 <p>
-    causes “<ex>:echo Date()<k name="CR"/></ex>” to be typed out
-    whenever <k name="F2" link="false"/> is pressed, thus echoing the full date
-    to the command line.
+    causes “<tt><ex>:styletoggle</ex> <em>-name</em> <k name="A-Tab" link="false"/></tt>” to be typed out
+    whenever <k name="F2" link="false"/> is pressed, providing a way to toggle
+    a tab-completed named user style.
+</p>
+
+<p>
+    You can also map keys to <link topic="ex-scripts">Ex</link> or
+    <link topic=":js">JavaScript</link> commands, see the
+    <link topic="map-examples">examples</link>.
 </p>
 
 <p tag=":map-modes">
@@ -408,6 +414,25 @@
     </description>
 </item>
 
+<h3 tag="map-examples">Mapping examples</h3>
+
+<p>Make <k name="A-n" link="false"/> do the same as <k name="Down" link="false"/> in input <t>modes</t>:</p>
+
+<code><ex>map</ex> <em>-b</em> <em>-m</em> input <k name="A-n" link="false"/> <k name="Down" link="false"/></code>
+
+<p>Toggle the tab line with <k name="A-t" link="false"/>:</p>
+
+<code><ex>map</ex> <em>-ex</em> <k name="A-t" link="false"/> <set opt="showtabline" op="!="><str delim="">always</str>,<str delim="">never</str></set></code>
+
+<p>Make <k name="A-i" link="false"/> toggle image display:</p>
+
+<code><ex>map</ex> <k name="A-i" link="false"/> <em>-js</em> &lt;&lt;<em>EOF</em>
+let (pref = <str>permissions.default.image</str>)
+    prefs.set(pref, prefs.get(pref) == 1 ? 2 : 1);
+tabs.reload(config.browser.mCurrentTab);
+<em>EOF</em></code>
+
+
 <h2 tag="bypassing-&dactyl.name;">Bypassing &dactyl.appName;</h2>
 
 &dactyl.appName; overrides nearly all &dactyl.host; keys in order to
@@ -761,12 +786,21 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-<h2 tag="command-examples">Examples</h2>
+<h3 tag="command-examples">Command examples</h3>
 
-<p>Add a :Google command to search via google:</p>
-<code><ex>:command -nargs=* Google open google &lt;args></ex></code>
+<p>A command to search via DuckDuckGo:</p>
 
-<!-- TODO: add decent examples -->
+<code><ex>:command</ex> <em>-nargs</em>=* <str delim="">ddg</str> open ddg &lt;args></code>
+
+<p>
+    A command to search for contents of the current selection using a
+    tab-completed search engine in the current or a new tab (depending on how
+    much you bang on the keyboard):
+</p>
+
+<code><ex>:com!</ex> <str delim="">search-selection</str>,<str delim="">ss</str> <em>-bang</em> <em>-nargs</em>=? <em>-complete</em> search
+        \ <em>-js</em> commands.execute((bang ? <str>open </str> : <str>tabopen </str>)
+        \ + args + <str> </str> + buffer.currentWord)</code>
 
 </document>
 
