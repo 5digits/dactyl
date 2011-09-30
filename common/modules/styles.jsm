@@ -728,7 +728,7 @@ var Styles = Module("Styles", {
         };
     },
     javascript: function (dactyl, modules, window) {
-        modules.JavaScript.setCompleter(["get", "add", "remove", "find"].map(function (m) styles.user[m]),
+        modules.JavaScript.setCompleter(["get", "add", "remove", "find"].map(function (m) Hive.prototype[m]),
             [ // Prototype: (name, filter, css, index)
                 function (context, obj, args) this.names,
                 function (context, obj, args) Styles.completeSite(context, window.content),

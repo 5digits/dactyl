@@ -198,11 +198,6 @@ var Services = Module("Services", {
      */
     has: function (name) Set.has(this.services, name) && this.services[name].class in Cc &&
         this.services[name].interfaces.every(function (iface) iface in Ci)
-}, {
-}, {
-    javascript: function (dactyl, modules) {
-        modules.JavaScript.setCompleter(this.get, [function () [[k, v] for ([k, v] in Iterator(services)) if (v instanceof Ci.nsISupports)]]);
-    }
 });
 
 endModule();

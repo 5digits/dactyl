@@ -1533,7 +1533,7 @@ var Options = Module("options", {
     },
     javascript: function initJavascript(dactyl, modules, window) {
         const { options, JavaScript } = modules;
-        JavaScript.setCompleter(options.get, [function () ([o.name, o.description] for (o in options))]);
+        JavaScript.setCompleter(Options.prototype.get, [function () ([o.name, o.description] for (o in options))]);
     },
     sanitizer: function initSanitizer(dactyl, modules, window) {
         const { sanitizer } = modules;

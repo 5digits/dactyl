@@ -282,7 +282,7 @@ var AutoCommands = Module("autocommands", {
         };
     },
     javascript: function () {
-        JavaScript.setCompleter(autocommands.user.get, [function () Iterator(config.autocommands)]);
+        JavaScript.setCompleter(AutoCmdHive.prototype.get, [function () Iterator(config.autocommands)]);
     },
     options: function () {
         options.add(["eventignore", "ei"],

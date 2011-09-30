@@ -796,7 +796,7 @@ var Mappings = Module("mappings", {
         };
     },
     javascript: function initJavascript(dactyl, modules, window) {
-        JavaScript.setCompleter([mappings.get, mappings.builtin.get],
+        JavaScript.setCompleter([Mappings.prototype.get, MapHive.prototype.get],
             [
                 null,
                 function (context, obj, args) [[m.names, m.description] for (m in this.iterate(args[0]))]

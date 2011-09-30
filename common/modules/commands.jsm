@@ -1622,9 +1622,9 @@ var Commands = Module("commands", {
     javascript: function initJavascript(dactyl, modules, window) {
         const { JavaScript, commands } = modules;
 
-        JavaScript.setCompleter([commands.user.get, commands.user.remove],
+        JavaScript.setCompleter([CommandHive.prototype.get, CommandHive.prototype.remove],
                                 [function () [[c.names, c.description] for (c in this)]]);
-        JavaScript.setCompleter([commands.get],
+        JavaScript.setCompleter([Commands.prototype.get],
                                 [function () [[c.names, c.description] for (c in this.iterator())]]);
     },
     mappings: function initMappings(dactyl, modules, window) {
