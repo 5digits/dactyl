@@ -72,7 +72,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
 
     __iterator__: function () (val for ([, val] in Iterator(bookmarkcache.bookmarks))),
 
-    get bookmarks() Class.replaceProperty(this, "bookmarks", this.load()),
+    bookmarks: Class.Memoize(function () this.load()),
 
     keywords: Class.Memoize(function () array.toObject([[b.keyword, b] for (b in this) if (b.keyword)])),
 
@@ -88,9 +88,13 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     _loadBookmark: function loadBookmark(node) {
         if (node.uri == null) // How does this happen?
             return false;
+
         let uri = newURI(node.uri);
         let keyword = services.bookmarks.getKeywordForBookmark(node.itemId);
-        let tags = services.tagging.getTagsForURI(uri, {}) || [];
+
+        let tags = tags in node ? (node.tags ? node.tags.split(/, /g) : [])
+                                : services.tagging.getTagsForURI(uri, {}) || [];
+
         let post = BookmarkCache.getAnnotation(node.itemId, this.POST);
         let charset = BookmarkCache.getAnnotation(node.itemId, this.CHARSET);
         return Bookmark(node.uri, node.title, node.icon && node.icon.spec, post, keyword, tags, charset, node.itemId);
@@ -163,27 +167,23 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     load: function load() {
         let bookmarks = {};
 
-        let folders = this.rootFolders.slice();
         let query = services.history.getNewQuery();
         let options = services.history.getNewQueryOptions();
-        while (folders.length > 0) {
-            query.setFolders(folders, 1);
-            folders.shift();
-            let result = services.history.executeQuery(query, options);
-            let folder = result.root;
-            folder.containerOpen = true;
+        options.queryType = options.QUERY_TYPE_BOOKMARKS;
+        options.excludeItemIfParentHasAnnotation = "livemark/feedURI";
 
+        let { root } = services.history.executeQuery(query, options);
+        root.containerOpen = true;
+        try {
             // iterate over the immediate children of this folder
-            for (let i = 0; i < folder.childCount; i++) {
-                let node = folder.getChild(i);
-                if (node.type == node.RESULT_TYPE_FOLDER)   // folder
-                    folders.push(node.itemId);
-                else if (node.type == node.RESULT_TYPE_URI) // bookmark
+            for (let i = 0; i < root.childCount; i++) {
+                let node = root.getChild(i);
+                if (node.type == node.RESULT_TYPE_URI) // bookmark
                     bookmarks[node.itemId] = this._loadBookmark(node);
             }
-
-            // close a container after using it!
-            folder.containerOpen = false;
+        }
+        finally {
+            root.containerOpen = false;
         }
 
         return bookmarks;

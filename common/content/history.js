@@ -35,15 +35,19 @@ var History = Module("history", {
 
         let root = services.history.executeQuery(query, options).root;
         root.containerOpen = true;
-        let items = iter(util.range(0, root.childCount)).map(function (i) {
-            let node = root.getChild(i);
-            return {
-                url: node.uri,
-                title: node.title,
-                icon: node.icon ? node.icon : DEFAULT_FAVICON
-            };
-        }).toArray();
-        root.containerOpen = false;
+        try {
+            let items = iter(util.range(0, root.childCount)).map(function (i) {
+                let node = root.getChild(i);
+                return {
+                    url: node.uri,
+                    title: node.title,
+                    icon: node.icon ? node.icon : DEFAULT_FAVICON
+                };
+            }).toArray();
+        }
+        finally {
+            root.containerOpen = false;
+        }
 
         return items;
     },
