@@ -1843,6 +1843,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     args = dactyl.parseCommandLine(args);
 
                 if (args) {
+                    if (args["+purgecaches"])
+                        cache.flush();
+
                     dactyl.commandLineOptions.rcFile = args["+u"];
                     dactyl.commandLineOptions.noPlugins = "++noplugin" in args;
                     dactyl.commandLineOptions.postCommands = args["+c"];
