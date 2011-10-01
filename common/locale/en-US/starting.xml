@@ -76,6 +76,18 @@
     </description>
 </item>
 
+<item>
+    <tags>+purgecaches</tags>
+    <strut/>
+    <spec>+purgecaches</spec>
+    <description>
+        <p>
+            Purges &dactyl.appName; caches at startup. May occasionally be
+            necessary after making local changes to the source tree.
+        </p>
+    </description>
+</item>
+
 <h2 tag="initialization startup">Initialization</h2>
 
 <p>At startup, &dactyl.appName; completes the following tasks in order. </p>
@@ -182,10 +194,12 @@
             repository, this is a good way to update to the latest version or
             to test your changes.
         </p>
+
         <p>
             Any arguments supplied are parsed as command-line arguments as
             specified in <t>startup-options</t>.
         </p>
+
         <warning>
             Not all plugins are designed to cleanly un-apply during a rehash.
             While official plugins are safe, beware of possible instability
@@ -196,9 +210,14 @@
 
 <item>
     <tags>:res :restart</tags>
-    <spec>:res<oa>tart</oa></spec>
+    <spec>:res<oa>tart</oa> <oa>arg</oa> …</spec>
     <description short="true">
         <p>Force &dactyl.host; to restart. Useful when installing extensions.</p>
+
+        <p>
+            Any arguments supplied are parsed as command-line arguments as
+            specified in <t>startup-options</t>.
+        </p>
     </description>
 </item>
 

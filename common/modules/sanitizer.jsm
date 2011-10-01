@@ -55,7 +55,7 @@ var Item = Class("SanitizeItem", {
     shouldSanitize: function (shutdown) (!shutdown || this.builtin || this.persistent) &&
         prefs.get(shutdown ? this.shutdownPref : this.pref)
 }, {
-    PREFIX: localPrefs.branch.root,
+    PREFIX: config.prefs.branch.root,
     BRANCH: "privacy.cpd.",
     SHUTDOWN_BRANCH: "privacy.clearOnShutdown."
 });
@@ -290,8 +290,8 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         }
     },
 
-    get ranAtShutdown()    localPrefs.get("didSanitizeOnShutdown"),
-    set ranAtShutdown(val) localPrefs.set("didSanitizeOnShutdown", Boolean(val)),
+    get ranAtShutdown()    config.prefs.get("didSanitizeOnShutdown"),
+    set ranAtShutdown(val) config.prefs.set("didSanitizeOnShutdown", Boolean(val)),
     get runAtShutdown()    prefs.get("privacy.sanitize.sanitizeOnShutdown"),
     set runAtShutdown(val) prefs.set("privacy.sanitize.sanitizeOnShutdown", Boolean(val)),
 

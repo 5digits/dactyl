@@ -17,6 +17,7 @@ this.lazyRequire("addons", ["AddonManager"]);
 this.lazyRequire("cache", ["cache"]);
 this.lazyRequire("highlight", ["highlight"]);
 this.lazyRequire("messages", ["_"]);
+this.lazyRequire("prefs", ["localPrefs", "prefs"]);
 
 function AboutHandler() {}
 AboutHandler.prototype = {
@@ -65,6 +66,8 @@ var ConfigBase = Class("ConfigBase", {
             "locale-local": function (uri, path) LocaleChannel("dactyl-local-locale", config.locale, path, uri)
         });
     },
+
+    get prefs() localPrefs,
 
     get has() Set.has(this.features),
 

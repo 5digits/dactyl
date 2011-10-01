@@ -853,7 +853,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {number} level The logging level 0 - 15.
      */
     log: function (msg, level) {
-        let verbose = localPrefs.get("loglevel", 0);
+        let verbose = config.prefs.get("loglevel", 0);
 
         if (!level || level <= verbose) {
             if (isObject(msg) && !isinstance(msg, _))
@@ -1110,9 +1110,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     /**
      * Restart the host application.
      */
-    restart: function () {
+    restart: function (args) {
         if (!this.confirmQuit())
             return;
+
+        config.prefs.set("commandline-args", args);
 
         services.appStartup.quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
     },
@@ -1579,6 +1581,35 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 bang: true
             });
 
+        let startupOptions = [
+            {
+                names: ["+u"],
+                description: "The initialization file to execute at startup",
+                type: CommandOption.STRING
+            },
+            {
+                names: ["++noplugin"],
+                description: "Do not automatically load plugins"
+            },
+            {
+                names: ["++cmd"],
+                description: "Ex commands to execute prior to initialization",
+                type: CommandOption.STRING,
+                multiple: true
+            },
+            {
+                names: ["+c"],
+                description: "Ex commands to execute after initialization",
+                type: CommandOption.STRING,
+                multiple: true
+            },
+            {
+                names: ["+purgecaches"],
+                description: "Purge " + config.appName + " caches at startup",
+                type: CommandOption.NOARG
+            }
+        ];
+
         commands.add(["reh[ash]"],
             "Reload the " + config.appName + " add-on",
             function (args) {
@@ -1589,35 +1620,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             },
             {
                 argCount: "0", // FIXME
-                options: [
-                    {
-                        names: ["+u"],
-                        description: "The initialization file to execute at startup",
-                        type: CommandOption.STRING
-                    },
-                    {
-                        names: ["++noplugin"],
-                        description: "Do not automatically load plugins"
-                    },
-                    {
-                        names: ["++cmd"],
-                        description: "Ex commands to execute prior to initialization",
-                        type: CommandOption.STRING,
-                        multiple: true
-                    },
-                    {
-                        names: ["+c"],
-                        description: "Ex commands to execute after initialization",
-                        type: CommandOption.STRING,
-                        multiple: true
-                    }
-                ]
+                options: startupOptions
             });
 
         commands.add(["res[tart]"],
             "Force " + config.host + " to restart",
-            function () { dactyl.restart(); },
-            { argCount: "0" });
+            function (args) { dactyl.restart(args.string); },
+            {
+                argCount: "0",
+                options: startupOptions
+            });
 
         function findToolbar(name) DOM.XPath(
             "//*[@toolbarname=" + util.escapeString(name, "'") + " or " +
@@ -1821,7 +1833,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.timeout(function () {
             try {
-                var args = storage.session.commandlineArgs || services.commandLineHandler.optionValue;
+                var args = config.prefs.get("commandline-args")
+                        || storage.session.commandlineArgs
+                        || services.commandLineHandler.optionValue;
+
+                config.prefs.reset("commandline-args");
+
                 if (isString(args))
                     args = dactyl.parseCommandLine(args);
 
@@ -1839,9 +1856,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             dactyl.log(_("dactyl.commandlineOpts", util.objectToString(dactyl.commandLineOptions)), 3);
 
-            if (localPrefs.get("first-run", true))
+            if (config.prefs.get("first-run", true))
                 dactyl.timeout(function () {
-                    localPrefs.set("first-run", false);
+                    config.prefs.set("first-run", false);
                     this.withSavedValues(["forceTarget"], function () {
                         this.forceTarget = dactyl.NEW_TAB;
                         help.help();

@@ -57,7 +57,7 @@ var HelpBuilder = Class("HelpBuilder", {
         let result = [];
         for (let base in values(this.bases)) {
             let url = [base, file, ".xml"].join("");
-            let res = util.httpGet(url);
+            let res = util.httpGet(url, { quiet: true });
             if (res) {
                 if (res.responseXML.documentElement.localName == "document")
                     this.files[file] = url;

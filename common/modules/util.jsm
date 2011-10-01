@@ -739,7 +739,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             return xmlhttp;
         }
         catch (e) {
-            util.dactyl.log(_("error.cantOpen", String.quote(url), e), 1);
+            if (!params.quiet)
+                util.dactyl.log(_("error.cantOpen", String.quote(url), e), 1);
             return null;
         }
     },
@@ -1183,7 +1184,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     rehash: function (args) {
         storage.session.commandlineArgs = args;
         this.timeout(function () {
-            cache.flushAll();
+            this.flushCache();
             this.rehashing = true;
             let addon = config.addon;
             addon.userDisabled = true;

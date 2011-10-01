@@ -14,6 +14,8 @@ defineModule("options", {
     require: ["contexts", "messages", "storage"]
 }, this);
 
+this.lazyRequire("config", ["config"]);
+
 /** @scope modules */
 
 let ValueError = Class("ValueError", ErrorBase);
@@ -947,7 +949,7 @@ var Options = Module("options", {
     setPref: deprecated("prefs.set", function setPref() prefs.set.apply(prefs, arguments)),
     withContext: deprecated("prefs.withContext", function withContext() prefs.withContext.apply(prefs, arguments)),
 
-    cleanupPrefs: Class.Memoize(function () localPrefs.Branch("cleanup.option.")),
+    cleanupPrefs: Class.Memoize(function () config.prefs.Branch("cleanup.option.")),
 
     cleanup: function cleanup(reason) {
         if (~["disable", "uninstall"].indexOf(reason))
