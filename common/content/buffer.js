@@ -20,196 +20,13 @@ var Buffer = Module("buffer", {
             this.win = win;
         else
             this.__defineGetter__("win", function () content);
-
-        this.pageInfo = {};
-
-        this.addPageInfoSection("e", "Search Engines", function (verbose) {
-
-            let n = 1;
-            let nEngines = 0;
-            for (let { document: doc } in values(buffer.allFrames())) {
-                let engines = DOM("link[href][rel=search][type='application/opensearchdescription+xml']", doc);
-                nEngines += engines.length;
-
-                if (verbose)
-                    for (let link in engines)
-                        yield [link.title || /*L*/ "Engine " + n++,
-                               <a xmlns={XHTML} href={link.href} onclick="if (event.button == 0) { window.external.AddSearchProvider(this.href); return false; }" highlight="URL">{link.href}</a>];
-            }
-
-            if (!verbose && nEngines)
-                yield nEngines + /*L*/" engine" + (nEngines > 1 ? "s" : "");
-        });
-
-        this.addPageInfoSection("f", "Feeds", function (verbose) {
-            const feedTypes = {
-                "application/rss+xml": "RSS",
-                "application/atom+xml": "Atom",
-                "text/xml": "XML",
-                "application/xml": "XML",
-                "application/rdf+xml": "XML"
-            };
-
-            function isValidFeed(data, principal, isFeed) {
-                if (!data || !principal)
-                    return false;
-
-                if (!isFeed) {
-                    var type = data.type && data.type.toLowerCase();
-                    type = type.replace(/^\s+|\s*(?:;.*)?$/g, "");
-
-                    isFeed = ["application/rss+xml", "application/atom+xml"].indexOf(type) >= 0 ||
-                             // really slimy: general XML types with magic letters in the title
-                             type in feedTypes && /\brss\b/i.test(data.title);
-                }
-
-                if (isFeed) {
-                    try {
-                        window.urlSecurityCheck(data.href, principal,
-                                Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL);
-                    }
-                    catch (e) {
-                        isFeed = false;
-                    }
-                }
-
-                if (type)
-                    data.type = type;
-
-                return isFeed;
-            }
-
-            let nFeed = 0;
-            for (let [i, win] in Iterator(buffer.allFrames())) {
-                let doc = win.document;
-
-                for (let link in DOM("link[href][rel=feed], link[href][rel=alternate][type]", doc)) {
-                    let rel = link.rel.toLowerCase();
-                    let feed = { title: link.title, href: link.href, type: link.type || "" };
-                    if (isValidFeed(feed, doc.nodePrincipal, rel == "feed")) {
-                        nFeed++;
-                        let type = feedTypes[feed.type] || "RSS";
-                        if (verbose)
-                            yield [feed.title, template.highlightURL(feed.href, true) + <span class="extra-info">&#xa0;({type})</span>];
-                    }
-                }
-
-            }
-
-            if (!verbose && nFeed)
-                yield nFeed + /*L*/" feed" + (nFeed > 1 ? "s" : "");
-        });
-
-        this.addPageInfoSection("g", "General Info", function (verbose) {
-            let doc = buffer.focusedFrame.document;
-
-            // get file size
-            const ACCESS_READ = Ci.nsICache.ACCESS_READ;
-            let cacheKey = doc.documentURI;
-
-            for (let proto in array.iterValues(["HTTP", "FTP"])) {
-                try {
-                    var cacheEntryDescriptor = services.cache.createSession(proto, 0, true)
-                                                       .openCacheEntry(cacheKey, ACCESS_READ, false);
-                    break;
-                }
-                catch (e) {}
-            }
-
-            let pageSize = []; // [0] bytes; [1] kbytes
-            if (cacheEntryDescriptor) {
-                pageSize[0] = util.formatBytes(cacheEntryDescriptor.dataSize, 0, false);
-                pageSize[1] = util.formatBytes(cacheEntryDescriptor.dataSize, 2, true);
-                if (pageSize[1] == pageSize[0])
-                    pageSize.length = 1; // don't output "xx Bytes" twice
-            }
-
-            let lastModVerbose = new Date(doc.lastModified).toLocaleString();
-            let lastMod = new Date(doc.lastModified).toLocaleFormat("%x %X");
-
-            if (lastModVerbose == "Invalid Date" || new Date(doc.lastModified).getFullYear() == 1970)
-                lastModVerbose = lastMod = null;
-
-            if (!verbose) {
-                if (pageSize[0])
-                    yield (pageSize[1] || pageSize[0]) + /*L*/" bytes";
-                yield lastMod;
-                return;
-            }
-
-            yield ["Title", doc.title];
-            yield ["URL", template.highlightURL(doc.location.href, true)];
-
-            let ref = "referrer" in doc && doc.referrer;
-            if (ref)
-                yield ["Referrer", template.highlightURL(ref, true)];
-
-            if (pageSize[0])
-                yield ["File Size", pageSize[1] ? pageSize[1] + " (" + pageSize[0] + ")"
-                                                : pageSize[0]];
-
-            yield ["Mime-Type", doc.contentType];
-            yield ["Encoding", doc.characterSet];
-            yield ["Compatibility", doc.compatMode == "BackCompat" ? "Quirks Mode" : "Full/Almost Standards Mode"];
-            if (lastModVerbose)
-                yield ["Last Modified", lastModVerbose];
-        });
-
-        this.addPageInfoSection("m", "Meta Tags", function (verbose) {
-            if (!verbose)
-                return [];
-
-            // get meta tag data, sort and put into pageMeta[]
-            let metaNodes = buffer.focusedFrame.document.getElementsByTagName("meta");
-
-            return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv), template.highlightURL(node.content)])
-                        .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
-        });
-
-        let identity = window.gIdentityHandler;
-        this.addPageInfoSection("s", "Security", function (verbose) {
-            if (!verbose || !identity)
-                return; // For now
-
-            // Modified from Firefox
-            function location(data) array.compact([
-                data.city, data.state, data.country
-            ]).join(", ");
-
-            switch (statusline.security) {
-            case "secure":
-            case "extended":
-                var data = identity.getIdentityData();
-
-                yield ["Host", identity.getEffectiveHost()];
-
-                if (statusline.security === "extended")
-                    yield ["Owner", data.subjectOrg];
-                else
-                    yield ["Owner", _("pageinfo.s.ownerUnverified", data.subjectOrg)];
-
-                if (location(data).length)
-                    yield ["Location", location(data)];
-
-                yield ["Verified by", data.caOrg];
-
-                if (identity._overrideService.hasMatchingOverride(identity._lastLocation.hostname,
-                                                              (identity._lastLocation.port || 443),
-                                                              data.cert, {}, {}))
-                    yield ["User exception", /*L*/"true"];
-                break;
-            }
-        });
-
-        dactyl.commands["buffer.viewSource"] = function (event) {
-            let elem = event.originalTarget;
-            let obj = { url: elem.getAttribute("href"), line: Number(elem.getAttribute("line")) };
-            if (elem.hasAttribute("column"))
-                obj.column = elem.getAttribute("column");
-
-            buffer.viewSource(obj);
-        };
     },
+
+    addPageInfoSection: deprecated("Buffer.addPageInfoSection",
+            { get: function addPageInfoSection() Buffer.closure.addPageInfoSection }),
+
+    pageInfo: deprecated("Buffer.pageInfo",
+            { get: function pageInfo() Buffer.pageInfo }),
 
     // called when the active document is scrolled
     _updateBufferPosition: function _updateBufferPosition() {
@@ -254,12 +71,6 @@ var Buffer = Module("buffer", {
         matches[2] = newNum;
         dactyl.open(matches.slice(1).join(""));
     },
-
-    /**
-     * @property {Object} A map of page info sections to their
-     *     content generating functions.
-     */
-    pageInfo: null,
 
     /**
      * @property {number} True when the buffer is fully loaded.
@@ -369,19 +180,6 @@ var Buffer = Module("buffer", {
      * as reported by {@link Buffer.getScrollPosition}.
      */
     get scrollPosition() Buffer.getScrollPosition(this.findScrollable(0, false)),
-
-    /**
-     * Adds a new section to the page information output.
-     *
-     * @param {string} option The section's value in 'pageinfo'.
-     * @param {string} title The heading for this section's
-     *     output.
-     * @param {function} func The function to generate this
-     *     section's output.
-     */
-    addPageInfoSection: function addPageInfoSection(option, title, func) {
-        this.pageInfo[option] = Buffer.PageInfo(option, title, func);
-    },
 
     /**
      * Returns a list of all frames in the given window or current buffer.
@@ -944,13 +742,15 @@ var Buffer = Module("buffer", {
      * @default The value of 'pageinfo'.
      */
     showPageInfo: function showPageInfo(verbose, sections) {
+        let self = this;
+
         // Ctrl-g single line output
         if (!verbose) {
             let file = this.win.location.pathname.split("/").pop() || _("buffer.noName");
             let title = this.win.document.title || _("buffer.noTitle");
 
             let info = template.map(sections || options["pageinfo"],
-                function (opt) template.map(buffer.pageInfo[opt].action(), util.identity, ", "),
+                function (opt) template.map(Buffer.pageInfo[opt].action.call(self), util.identity, ", "),
                 ", ");
 
             if (bookmarkcache.isBookmarked(this.URL))
@@ -962,9 +762,10 @@ var Buffer = Module("buffer", {
         }
 
         let list = template.map(sections || options["pageinfo"], function (option) {
-            let { action, title } = buffer.pageInfo[option];
-            return template.table(title, action(true));
+            let { action, title } = Buffer.pageInfo[option];
+            return template.table(title, action.call(self, true));
         }, <br/>);
+
         dactyl.echo(list, commandline.FORCE_MULTILINE);
     },
 
@@ -1193,6 +994,21 @@ var Buffer = Module("buffer", {
 }, {
     PageInfo: Struct("PageInfo", "name", "title", "action")
                         .localize("title"),
+
+    pageInfo: {},
+
+    /**
+     * Adds a new section to the page information output.
+     *
+     * @param {string} option The section's value in 'pageinfo'.
+     * @param {string} title The heading for this section's
+     *     output.
+     * @param {function} func The function to generate this
+     *     section's output.
+     */
+    addPageInfoSection: function addPageInfoSection(option, title, func) {
+        this.pageInfo[option] = Buffer.PageInfo(option, title, func);
+    },
 
     Scrollable: function Scrollable(elem) {
         if (elem instanceof Element)
@@ -1513,6 +1329,195 @@ var Buffer = Module("buffer", {
         }).open(elem.value);
     }
 }, {
+    init: function init(dactyl, modules, window) {
+
+        Buffer.addPageInfoSection("e", "Search Engines", function (verbose) {
+
+            let n = 1;
+            let nEngines = 0;
+            for (let { document: doc } in values(this.allFrames())) {
+                let engines = DOM("link[href][rel=search][type='application/opensearchdescription+xml']", doc);
+                nEngines += engines.length;
+
+                if (verbose)
+                    for (let link in engines)
+                        yield [link.title || /*L*/ "Engine " + n++,
+                               <a xmlns={XHTML} href={link.href} onclick="if (event.button == 0) { window.external.AddSearchProvider(this.href); return false; }" highlight="URL">{link.href}</a>];
+            }
+
+            if (!verbose && nEngines)
+                yield nEngines + /*L*/" engine" + (nEngines > 1 ? "s" : "");
+        });
+
+        Buffer.addPageInfoSection("f", "Feeds", function (verbose) {
+            const feedTypes = {
+                "application/rss+xml": "RSS",
+                "application/atom+xml": "Atom",
+                "text/xml": "XML",
+                "application/xml": "XML",
+                "application/rdf+xml": "XML"
+            };
+
+            function isValidFeed(data, principal, isFeed) {
+                if (!data || !principal)
+                    return false;
+
+                if (!isFeed) {
+                    var type = data.type && data.type.toLowerCase();
+                    type = type.replace(/^\s+|\s*(?:;.*)?$/g, "");
+
+                    isFeed = ["application/rss+xml", "application/atom+xml"].indexOf(type) >= 0 ||
+                             // really slimy: general XML types with magic letters in the title
+                             type in feedTypes && /\brss\b/i.test(data.title);
+                }
+
+                if (isFeed) {
+                    try {
+                        window.urlSecurityCheck(data.href, principal,
+                                Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL);
+                    }
+                    catch (e) {
+                        isFeed = false;
+                    }
+                }
+
+                if (type)
+                    data.type = type;
+
+                return isFeed;
+            }
+
+            let nFeed = 0;
+            for (let [i, win] in Iterator(this.allFrames())) {
+                let doc = win.document;
+
+                for (let link in DOM("link[href][rel=feed], link[href][rel=alternate][type]", doc)) {
+                    let rel = link.rel.toLowerCase();
+                    let feed = { title: link.title, href: link.href, type: link.type || "" };
+                    if (isValidFeed(feed, doc.nodePrincipal, rel == "feed")) {
+                        nFeed++;
+                        let type = feedTypes[feed.type] || "RSS";
+                        if (verbose)
+                            yield [feed.title, template.highlightURL(feed.href, true) + <span class="extra-info">&#xa0;({type})</span>];
+                    }
+                }
+
+            }
+
+            if (!verbose && nFeed)
+                yield nFeed + /*L*/" feed" + (nFeed > 1 ? "s" : "");
+        });
+
+        Buffer.addPageInfoSection("g", "General Info", function (verbose) {
+            let doc = this.focusedFrame.document;
+
+            // get file size
+            const ACCESS_READ = Ci.nsICache.ACCESS_READ;
+            let cacheKey = doc.documentURI;
+
+            for (let proto in array.iterValues(["HTTP", "FTP"])) {
+                try {
+                    var cacheEntryDescriptor = services.cache.createSession(proto, 0, true)
+                                                       .openCacheEntry(cacheKey, ACCESS_READ, false);
+                    break;
+                }
+                catch (e) {}
+            }
+
+            let pageSize = []; // [0] bytes; [1] kbytes
+            if (cacheEntryDescriptor) {
+                pageSize[0] = util.formatBytes(cacheEntryDescriptor.dataSize, 0, false);
+                pageSize[1] = util.formatBytes(cacheEntryDescriptor.dataSize, 2, true);
+                if (pageSize[1] == pageSize[0])
+                    pageSize.length = 1; // don't output "xx Bytes" twice
+            }
+
+            let lastModVerbose = new Date(doc.lastModified).toLocaleString();
+            let lastMod = new Date(doc.lastModified).toLocaleFormat("%x %X");
+
+            if (lastModVerbose == "Invalid Date" || new Date(doc.lastModified).getFullYear() == 1970)
+                lastModVerbose = lastMod = null;
+
+            if (!verbose) {
+                if (pageSize[0])
+                    yield (pageSize[1] || pageSize[0]) + /*L*/" bytes";
+                yield lastMod;
+                return;
+            }
+
+            yield ["Title", doc.title];
+            yield ["URL", template.highlightURL(doc.location.href, true)];
+
+            let ref = "referrer" in doc && doc.referrer;
+            if (ref)
+                yield ["Referrer", template.highlightURL(ref, true)];
+
+            if (pageSize[0])
+                yield ["File Size", pageSize[1] ? pageSize[1] + " (" + pageSize[0] + ")"
+                                                : pageSize[0]];
+
+            yield ["Mime-Type", doc.contentType];
+            yield ["Encoding", doc.characterSet];
+            yield ["Compatibility", doc.compatMode == "BackCompat" ? "Quirks Mode" : "Full/Almost Standards Mode"];
+            if (lastModVerbose)
+                yield ["Last Modified", lastModVerbose];
+        });
+
+        this.addPageInfoSection("m", "Meta Tags", function (verbose) {
+            if (!verbose)
+                return [];
+
+            // get meta tag data, sort and put into pageMeta[]
+            let metaNodes = this.focusedFrame.document.getElementsByTagName("meta");
+
+            return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv), template.highlightURL(node.content)])
+                        .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
+        });
+
+        let identity = window.gIdentityHandler;
+        this.addPageInfoSection("s", "Security", function (verbose) {
+            if (!verbose || !identity)
+                return; // For now
+
+            // Modified from Firefox
+            function location(data) array.compact([
+                data.city, data.state, data.country
+            ]).join(", ");
+
+            switch (statusline.security) {
+            case "secure":
+            case "extended":
+                var data = identity.getIdentityData();
+
+                yield ["Host", identity.getEffectiveHost()];
+
+                if (statusline.security === "extended")
+                    yield ["Owner", data.subjectOrg];
+                else
+                    yield ["Owner", _("pageinfo.s.ownerUnverified", data.subjectOrg)];
+
+                if (location(data).length)
+                    yield ["Location", location(data)];
+
+                yield ["Verified by", data.caOrg];
+
+                if (identity._overrideService.hasMatchingOverride(identity._lastLocation.hostname,
+                                                              (identity._lastLocation.port || 443),
+                                                              data.cert, {}, {}))
+                    yield ["User exception", /*L*/"true"];
+                break;
+            }
+        });
+
+        dactyl.commands["buffer.viewSource"] = function (event) {
+            let elem = event.originalTarget;
+            let obj = { url: elem.getAttribute("href"), line: Number(elem.getAttribute("line")) };
+            if (elem.hasAttribute("column"))
+                obj.column = elem.getAttribute("column");
+
+            buffer.viewSource(obj);
+        };
+    },
     commands: function initCommands(dactyl, modules, window) {
         commands.add(["frameo[nly]"],
             "Show only the current frame's page",
@@ -2250,7 +2255,7 @@ var Buffer = Module("buffer", {
         options.add(["pageinfo", "pa"],
             "Define which sections are shown by the :pageinfo command",
             "charlist", "gesfm",
-            { get values() values(buffer.pageInfo).toObject() });
+            { get values() values(Buffer.pageInfo).toObject() });
 
         options.add(["scroll", "scr"],
             "Number of lines to scroll with <C-u> and <C-d> commands",
