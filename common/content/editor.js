@@ -212,8 +212,6 @@ var Editor = Module("editor", {
             dactyl.assert(editor_);
             text = Array.map(editor_.rootElement.childNodes, function (e) DOM.stringify(e, true)).join("");
 
-            util.dump(editor_.selection);
-
             if (!editor_.selection.rangeCount)
                 var sel = "";
             else {
@@ -328,21 +326,95 @@ var Editor = Module("editor", {
         }
     },
 }, {
-    extendRange: function extendRange(range, forward, re, sameWord) {
+    TextsIterator: Class("TextsIterator", {
+        init: function init(root, context) {
+            this.context = context;
+            this.root = root;
+        },
+
+        prevNode: function prevNode() {
+            if (this.context == this.root)
+                return null;
+
+            var node = this.context.previousSibling;
+            if (!node)
+                node = this.context.parentNode;
+            else
+                while (node.lastChild)
+                    node = node.lastChild;
+            return this.context = node;
+        },
+
+        nextNode: function nextNode() {
+            var node = this.context.firstChild;
+            if (!node) {
+                node = this.context;
+                while (node != this.root && !node.nextSibling)
+                    node = node.parentNode;
+
+                node = node.nextSibling;
+            }
+            if (node == this.root || node == null)
+                return null;
+            return this.context = node;
+        },
+
+        getPrev: function getPrev() {
+            return this.filter("prevNode");
+        },
+
+        getNext: function getNext() {
+            return this.filter("nextNode");
+        },
+
+        filter: function filter(meth) {
+            let node;
+            while (node = this[meth]())
+                if (node instanceof Ci.nsIDOMText &&
+                        let ({ style } = DOM(node))
+                            style.MozUserSelect != "none" &&
+                            style.visibility != "hidden" &&
+                            style.visibility != "collapse" &&
+                            style.display != "none")
+                    return node;
+        }
+    }),
+
+    extendRange: function extendRange(range, forward, re, sameWord, root) {
         function advance(positive) {
-            let idx = range.endOffset;
-            while (idx < text.length && re.test(text[idx++]) == positive)
-                range.setEnd(range.endContainer, idx);
+            while (true) {
+                while (idx == text.length && (node = iterator.getNext())) {
+                    offset = text.length;
+                    text += node.textContent;
+                    range.setEnd(node, 0);
+                }
+
+                if (idx >= text.length || re.test(text[idx]) != positive)
+                    break;
+                range.setEnd(range.endContainer, ++idx - offset);
+            }
         }
         function retreat(positive) {
-            let idx = range.startOffset;
-            while (idx > 0 && re.test(text[--idx]) == positive)
-                range.setStart(range.startContainer, idx);
+            while (true) {
+                while (idx == 0 && (node = iterator.getPrev())) {
+                    let str = node.textContent;
+                    idx += str.length;
+                    text = str + text;
+                    range.setStart(node, str.length);
+                }
+                if (idx == 0 || re.test(text[idx - 1]) != positive)
+                    break;
+                range.setStart(range.startContainer, --idx);
+            }
         }
 
-        let nodeRange = range.cloneRange();
-        nodeRange.selectNodeContents(range.startContainer);
-        let text = String(nodeRange);
+        let text = range[forward ? "endContainer" : "startContainer"].textContent;
+        let idx  = range[forward ? "endOffset" : "startOffset"];
+        let offset = 0;
+
+        let node = range.startContainer;
+        let iterator = Editor.TextsIterator(root || node.ownerDocument.documentElement,
+                                            node);
 
         if (forward) {
             advance(true);
@@ -491,7 +563,7 @@ var Editor = Module("editor", {
 
         function updateRange(editor, forward, re, modify) {
             let range = Editor.extendRange(editor.selection.getRangeAt(0),
-                                           forward, re, false);
+                                           forward, re, false, editor.rootElement);
             modify(range);
             editor.selection.removeAllRanges();
             editor.selection.addRange(range);
