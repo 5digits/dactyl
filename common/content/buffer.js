@@ -275,7 +275,7 @@ var Buffer = Module("buffer", {
      */
     get localStore() {
         let doc = content.document;
-        let store = overlay.getData(doc, "buffer");
+        let store = overlay.getData(doc, "buffer", null);
         if (!store || !buffer.localStorePrototype.isPrototypeOf(store))
             store = overlay.setData(doc, "buffer", Object.create(buffer.localStorePrototype));
         return store.instance = store;

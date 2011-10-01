@@ -153,6 +153,8 @@ var CommandWidgets = Class("CommandWidgets", {
             }
         });
         this.updateVisibility();
+
+        this.initialized = true;
     },
     addElement: function addElement(obj) {
         const self = this;
@@ -250,6 +252,9 @@ var CommandWidgets = Class("CommandWidgets", {
             Array.forEach(node.children, check);
         }
         [this.commandbar.container, this.statusbar.container].forEach(check);
+
+        if (this.initialized && loaded.mow && mow.visible)
+            mow.resize(false);
     },
 
     active: Class.Memoize(Object),

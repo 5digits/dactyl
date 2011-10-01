@@ -10,6 +10,8 @@ defineModule("finder", {
     require: ["prefs"]
 }, this);
 
+this.lazyRequire("overlay", ["overlay"]);
+
 function equals(a, b) XPCNativeWrapper(a) == XPCNativeWrapper(b);
 
 /** @instance rangefinder */
@@ -22,13 +24,21 @@ var RangeFinder = Module("rangefinder", {
             this.lastFindPattern = "";
         },
 
+        get content() {
+            let { window } = this.modes.getStack(0).params;
+            return window || this.window.content;
+        },
+
         get rangeFind() {
-            let find = modules.buffer.localStore.rangeFind;
-            if (find && find.stale || !isinstance(find, RangeFind))
+            let find = overlay.getData(this.content.document,
+                                       "range-find", null);
+
+            if (!isinstance(find, RangeFind) || find.stale)
                 return this.rangeFind = null;
             return find;
         },
-        set rangeFind(val) modules.buffer.localStore.rangeFind = val
+        set rangeFind(val) overlay.setData(this.content.document,
+                                           "range-find", val)
     }),
 
     init: function init() {
@@ -44,7 +54,7 @@ var RangeFinder = Module("rangefinder", {
     openPrompt: function (mode) {
         this.modules.marks.push();
         this.commandline;
-        this.CommandMode(mode).open();
+        this.CommandMode(mode, this.content).open();
 
         if (this.rangeFind && equals(this.rangeFind.window.get(), this.window))
             this.rangeFind.reset();
@@ -95,7 +105,7 @@ var RangeFinder = Module("rangefinder", {
 
             if (this.rangeFind)
                 this.rangeFind.cancel();
-            this.rangeFind = RangeFind(this.window, matchCase, backward,
+            this.rangeFind = RangeFind(this.window, this.content, matchCase, backward,
                                        linksOnly && this.options.get("hinttags").matcher,
                                        regexp);
             this.rangeFind.highlighted = highlighted;
@@ -211,8 +221,9 @@ var RangeFinder = Module("rangefinder", {
     commandline: function initCommandline(dactyl, modules, window) {
         const { rangefinder } = modules;
         rangefinder.CommandMode = Class("CommandFindMode", modules.CommandMode, {
-            init: function init(mode) {
+            init: function init(mode, window) {
                 this.mode = mode;
+                this.window = window;
                 init.supercall(this);
             },
 
@@ -327,9 +338,9 @@ var RangeFinder = Module("rangefinder", {
  * large amounts of data are concerned (e.g., for API documents).
  */
 var RangeFind = Class("RangeFind", {
-    init: function init(window, matchCase, backward, elementPath, regexp) {
+    init: function init(window, content, matchCase, backward, elementPath, regexp) {
         this.window = Cu.getWeakReference(window);
-        this.content = window.content;
+        this.content = content;
 
         this.baseDocument = Cu.getWeakReference(this.content.document);
         this.elementPath = elementPath || null;
@@ -346,7 +357,7 @@ var RangeFind = Class("RangeFind", {
         this.lastString = "";
     },
 
-    get store() this.content.document.dactylStore = this.content.document.dactylStore || {},
+    get store() overlay.getData(this.content.document, "buffer", Object),
 
     get backward() this.finder.findBackwards,
     set backward(val) this.finder.findBackwards = val,
@@ -682,7 +693,7 @@ var RangeFind = Class("RangeFind", {
                 }
 
                 var range = this.finder.Find(word, this.range.range, start, this.range.range);
-                if (range)
+                if (range && DOM(range.commonAncestorContainer).isVisible)
                     break;
             }
 

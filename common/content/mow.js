@@ -103,12 +103,15 @@ var MOW = Module("mow", {
         if (modes.main != modes.OUTPUT_MULTILINE) {
             modes.push(modes.OUTPUT_MULTILINE, null, {
                 onKeyPress: this.closure.onKeyPress,
+
                 leave: this.closure(function leave(stack) {
                     if (stack.pop)
                         for (let message in values(this.messages))
                             if (message.leave)
                                 message.leave(stack);
-                })
+                }),
+
+                window: this.window
             });
             this.messages = [];
         }
@@ -241,12 +244,14 @@ var MOW = Module("mow", {
 
         let doc = this.widget.contentDocument;
 
-        let availableHeight = config.outputHeight;
+        let trim = Math.max(0, DOM("#" + config.ids.commandContainer, document).rect.bottom - window.innerHeight);
+        let availableHeight = config.outputHeight - trim;
         if (this.visible)
             availableHeight += parseFloat(this.widgets.mowContainer.height || 0);
         availableHeight -= extra || 0;
 
         doc.body.style.minWidth = this.widgets.commandbar.commandline.scrollWidth + "px";
+
         this.widgets.mowContainer.height = Math.min(doc.body.clientHeight, availableHeight) + "px";
         this.timeout(function ()
             this.widgets.mowContainer.height = Math.min(doc.body.clientHeight, availableHeight) + "px",
