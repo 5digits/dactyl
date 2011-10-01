@@ -424,11 +424,10 @@ var Addons = Module("addons", {
 
                     AddonManager.getAddonsByTypes(args["-types"], dactyl.wrapCallback(function (list) {
                         if (!args.bang || command.bang) {
-                            list = list.filter(function (extension) extension.name == name);
-                            if (list.length == 0)
-                                return void dactyl.echoerr(_("error.invalidArgument", name));
-                            if (!list.every(ok))
-                                return void dactyl.echoerr(_("error.invalidOperation"));
+                            list = list.filter(function (addon) addon.id == name || addon.name == name);
+                            dactyl.assert(list.length, _("error.invalidArgument", name));
+                            dactyl.assert(list.some(ok), _("error.invalidOperation"));
+                            list = list.filter(ok);
                         }
                         if (command.actions)
                             command.actions(list, this.modules);
@@ -439,7 +438,7 @@ var Addons = Module("addons", {
                     argCount: "?", // FIXME: should be "1"
                     bang: true,
                     completer: function (context, args) {
-                        completion.extension(context, args["-types"]);
+                        completion.addon(context, args["-types"]);
                         context.filters.push(function ({ item }) ok(item));
                         if (command.filter)
                             context.filters.push(command.filter);
@@ -477,10 +476,14 @@ var Addons = Module("addons", {
             };
         };
 
-        completion.extension = function extension(context, types) {
-            context.title = ["Extension"];
+        completion.addon = function addon(context, types) {
+            context.title = ["Add-on"];
             context.anchored = false;
-            context.keys = { text: "name", description: "description", icon: "iconURL" },
+            context.keys = {
+                text: function (addon) [addon.name, addon.id],
+                description: "description",
+                icon: "iconURL"
+            };
             context.generate = function () {
                 context.incomplete = true;
                 AddonManager.getAddonsByTypes(types || ["extension"], function (addons) {

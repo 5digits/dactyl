@@ -842,9 +842,10 @@ var CompletionContext = Class("CompletionContext", {
 
     Filter: {
         text: function (item) {
-            let text = Array.concat(item.text);
+            let text = item.texts || Array.concat(item.text);
             for (let [i, str] in Iterator(text)) {
                 if (this.match(String(str))) {
+                    item.texts = text;
                     item.text = String(text[i]);
                     return true;
                 }
