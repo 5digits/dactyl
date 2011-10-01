@@ -420,7 +420,7 @@ var Mappings = Module("mappings", {
     get: function get(mode, cmd) this.hives.map(function (h) h.get(mode, cmd)).compact()[0] || null,
 
     /**
-     * Returns an array of maps with names starting with but not equal to
+     * Returns a count of maps with names starting with but not equal to
      * *prefix*.
      *
      * @param {Modes.Mode} mode The mode to search.
@@ -429,7 +429,7 @@ var Mappings = Module("mappings", {
      */
     getCandidates: function (mode, prefix)
         this.hives.map(function (h) h.getCandidates(mode, prefix))
-                  .flatten(),
+                  .reduce(function (a, b) a + b, 0),
 
     /**
      * Lists all user-defined mappings matching *filter* for the specified

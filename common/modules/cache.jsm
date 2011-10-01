@@ -15,6 +15,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         this.queue = [];
         this.cache = {};
         this.providers = {};
+        this.providing = {};
         this.localProviders = {};
 
         if (JSMLoader.cacheFlush)
@@ -176,8 +177,16 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         }
 
         if (Set.has(this.providers, name)) {
-            let [func, self] = this.providers[name];
-            this.cache[name] = func.call(self || this, name);
+            util.assert(!Set.add(this.providing, name),
+                        "Already generating cache for " + name,
+                        false);
+            try {
+                let [func, self] = this.providers[name];
+                this.cache[name] = func.call(self || this, name);
+            }
+            finally {
+                delete this.providing[name];
+            }
 
             cache.queue.push([Date.now(), name]);
             cache.processQueue();

@@ -32,8 +32,9 @@ MAKE_JAR      = sh $(BASE)/make_jar.sh
 
 # TODO: specify source files manually?
 JAR_BASES     = $(TOP) $(BASE)
+JAR_FILES     = config.json
 JAR_DIRS      = content skin locale modules
-JAR_TEXTS     = js jsm css dtd xml xul html xhtml xsl properties
+JAR_TEXTS     = js jsm css dtd xml xul html xhtml xsl properties json
 JAR_BINS      = png
 
 CHROME	      = $(MANGLE)/

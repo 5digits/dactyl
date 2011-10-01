@@ -13,6 +13,9 @@ defineModule("help", {
 var HelpBuilder = Class("HelpBuilder", {
     init: function init() {
         try {
+            // The versions munger will need to access the tag map
+            // during this process and without this we'll get an
+            // infinite loop.
             help._data = this;
 
             this.files = {};
