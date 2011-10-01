@@ -127,7 +127,7 @@ var Bookmarks = Module("bookmarks", {
 
         let options = { "-title": "Search " + elem.ownerDocument.title };
         if (postData != null)
-            options["-postData"] = postData;
+            options["-post"] = postData;
         if (charset != null && charset !== "UTF-8")
             options["-charset"] = charset;
 
