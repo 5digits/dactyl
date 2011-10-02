@@ -370,7 +370,7 @@ var Buffer = Module("Buffer", {
      * @param {string} path The CSS to use for the search. @optional
      */
     findLink: function findLink(rel, regexps, count, follow, path) {
-        let { dactyl, options } = this.modules;
+        let { Hints, dactyl, options } = this.modules;
 
         let selector = path || options.get("hinttags").stringDefaultValue;
 
