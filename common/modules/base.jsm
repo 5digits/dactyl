@@ -128,6 +128,8 @@ let jsmodules = {
             memoize(target || this, name, function (name) require(module)[name]);
     }
 };
+jsmodules.jsmodules = jsmodules;
+
 let use = {};
 let loaded = {};
 let currentModule;

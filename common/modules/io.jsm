@@ -16,6 +16,7 @@ defineModule("io", {
 }, this);
 
 this.lazyRequire("config", ["config"]);
+this.lazyRequire("contexts", ["Contexts", "contexts"]);
 
 // TODO: why are we passing around strings rather than file objects?
 /**
@@ -167,8 +168,14 @@ var IO = Module("io", {
 
                     let uri = services.io.newFileURI(file);
 
-                    // handle pure JavaScript files specially
-                    if (/\.js$/.test(filename)) {
+                    let sourceJSM = function sourceJSM() {
+                        context = contexts.Module(uri);
+                        dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
+                    }
+
+                    if (/\.js,$/.test(filename))
+                        sourceJSM();
+                    else if (/\.js$/.test(filename)) {
                         try {
                             var context = contexts.Script(file, params.group);
                             if (Set.has(this._scriptNames, file.path))
@@ -178,15 +185,21 @@ var IO = Module("io", {
                             dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
                         }
                         catch (e) {
-                            if (e.fileName && !(e instanceof FailedAssertion))
-                                try {
-                                    e.fileName = util.fixURI(e.fileName);
-                                    if (e.fileName == uri.spec)
-                                        e.fileName = filename;
-                                    e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>;
-                                }
-                                catch (e) {}
-                            throw e;
+                            if (e == Contexts) { // Hack;
+                                context.unload();
+                                sourceJSM();
+                            }
+                            else {
+                                if (e.fileName && !(e instanceof FailedAssertion))
+                                    try {
+                                        e.fileName = util.fixURI(e.fileName);
+                                        if (e.fileName == uri.spec)
+                                            e.fileName = filename;
+                                        e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>;
+                                    }
+                                    catch (e) {}
+                                throw e;
+                            }
                         }
                     }
                     else if (/\.css$/.test(filename))

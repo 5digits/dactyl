@@ -8,8 +8,11 @@ try {
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("contexts", {
-    exports: ["Contexts", "Group", "contexts"]
+    exports: ["Contexts", "Group", "contexts"],
+    require: ["services", "util"]
 }, this);
+
+this.lazyRequire("overlay", ["overlay"]);
 
 var Const = function Const(val) Class.Property({ enumerable: true, value: val });
 
@@ -85,6 +88,17 @@ var Group = Class("Group", {
 });
 
 var Contexts = Module("contexts", {
+    init: function () {
+        this.pluginModules = {};
+    },
+
+    cleanup: function () {
+        for each (let module in this.pluginModules)
+            util.trapErrors("cleanup", module);
+
+        this.pluginModules = {};
+    },
+
     Local: function Local(dactyl, modules, window) ({
         init: function () {
             const contexts = this;
@@ -195,7 +209,7 @@ var Contexts = Module("contexts", {
 
         let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-")
                             : file.leafName;
-        let id   = name.replace(/\.[^.]*$/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase());
+        let id   = util.camelCase(name.replace(/\.[^.]*$/, ""));
 
         let contextPath = file.path;
         let self = Set.has(plugins, contextPath) && plugins.contexts[contextPath];
@@ -205,7 +219,7 @@ var Contexts = Module("contexts", {
 
         if (self) {
             if (Set.has(self, "onUnload"))
-                self.onUnload();
+                util.trapErrors("onUnload", self);
         }
         else {
             self = args && !isArray(args) ? args : newContext.apply(null, args || [userContext]);
@@ -216,10 +230,16 @@ var Contexts = Module("contexts", {
 
                 CONTEXT: Const(self),
 
+                set isGlobalModule(val) {
+                    // Hack.
+                    if (val)
+                        throw Contexts;
+                },
+
                 unload: Const(function unload() {
                     if (plugins[this.NAME] === this || plugins[this.PATH] === this)
                         if (this.onUnload)
-                            this.onUnload();
+                            util.trapErrors("onUnload", this);
 
                     if (plugins[this.NAME] === this)
                         delete plugins[this.NAME];
@@ -268,6 +288,74 @@ var Contexts = Module("contexts", {
 
     Script: function Script(file, group) {
         return this.Context(file, group, [this.modules.userContext, true]);
+    },
+
+    Module: function Module(uri, isPlugin) {
+        const { io, plugins } = this.modules;
+
+        let canonical = uri.spec;
+        if (uri.scheme == "resource")
+            canonical = services["resource:"].resolveURI(uri);
+
+        if (uri instanceof Ci.nsIFileURL)
+            var file = File(uri.file);
+
+        let isPlugin = array.nth(io.getRuntimeDirectories("plugins"),
+                                 function (dir) dir.contains(file, true),
+                                 0);
+
+        let name = isPlugin && file && file.getRelativeDescriptor(isPlugin)
+                                           .replace(File.PATH_SEP, "-");
+        let id   = util.camelCase(name.replace(/\.[^.]*$/, ""));
+
+        let self = Set.has(this.pluginModules, canonical) && this.pluginModules[canonical];
+
+        if (!self) {
+            self = Object.create(jsmodules);
+
+            update(self, {
+                NAME: Const(id),
+
+                PATH: Const(file && file.path),
+
+                CONTEXT: Const(self),
+
+                get isGlobalModule() true,
+                set isGlobalModule(val) {
+                    util.assert(val, "Loading non-global module as global",
+                                false);
+                },
+
+                unload: Const(function unload() {
+                    if (contexts.pluginModules[canonical] == this) {
+                        if (this.onUnload)
+                            util.trapErrors("onUnload", this);
+
+                        delete contexts.pluginModules[canonical];
+                    }
+
+                    for each (let { plugins } in overlay.modules)
+                        if (plugins[this.NAME] == this)
+                            delete plugins[this.name];
+                })
+            });
+
+            JSMLoader.loadSubScript(uri.spec, self, File.defaultEncoding);
+            this.pluginModules[canonical] = self;
+        }
+
+        // This belongs elsewhere
+        if (isPlugin)
+            Object.defineProperty(plugins, self.NAME, {
+                configurable: true,
+                enumerable: true,
+                get: function () self,
+                set: function (val) {
+                    util.dactyl(val).reportError(FailedAssertion(_("plugin.notReplacingContext", self.NAME), 3, false), true);
+                }
+            });
+
+        return self;
     },
 
     context: null,
