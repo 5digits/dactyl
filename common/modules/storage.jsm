@@ -214,7 +214,7 @@ var Storage = Module("Storage", {
         if (ref) {
             let refs = overlay.getData(ref, "storage-refs");
             refs.push(callback);
-            var callbackRef = Cu.getWeakReference(callback);
+            var callbackRef = util.weakReference(callback);
         }
         else {
             callbackRef = { get: function () callback };

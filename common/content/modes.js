@@ -333,7 +333,7 @@ var Modes = Module("modes", {
         if (!(id in this.boundProperties))
             for (let elem in array.iterValues(this._modeStack))
                 elem.saved[id] = { obj: obj, prop: prop, value: obj[prop], test: test };
-        this.boundProperties[id] = { obj: Cu.getWeakReference(obj), prop: prop, test: test };
+        this.boundProperties[id] = { obj: util.weakReference(obj), prop: prop, test: test };
     },
 
     inSet: false,

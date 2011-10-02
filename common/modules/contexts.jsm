@@ -30,7 +30,7 @@ var Group = Class("Group", {
 
     get contexts() this.modules.contexts,
 
-    set lastDocument(val) { this._lastDocument = val && Cu.getWeakReference(val); },
+    set lastDocument(val) { this._lastDocument = util.weakReference(val); },
     get lastDocument() this._lastDocument && this._lastDocument.get(),
 
     modifiable: true,

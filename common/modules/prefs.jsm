@@ -113,7 +113,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         if (!this._observers[pref])
             this._observers[pref] = [];
-        this._observers[pref].push(!strong ? Cu.getWeakReference(callback) : { get: function () callback });
+        this._observers[pref].push(!strong ? util.weakReference(callback) : { get: function () callback });
     },
 
     /**

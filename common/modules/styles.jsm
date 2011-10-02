@@ -96,7 +96,7 @@ var Hive = Class("Hive", {
     get modifiable() this.name !== "system",
 
     addRef: function (obj) {
-        this.refs.push(Cu.getWeakReference(obj));
+        this.refs.push(util.weakReference(obj));
         this.dropRef(null);
     },
     dropRef: function (obj) {

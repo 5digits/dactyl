@@ -74,7 +74,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
             [self, events] = [event, event[callback || "events"]];
 
         for (let [event, callback] in Iterator(events)) {
-            let args = [Cu.getWeakReference(target),
+            let args = [util.weakReference(target),
                         event,
                         util.wrapCallback(callback, self),
                         capture,

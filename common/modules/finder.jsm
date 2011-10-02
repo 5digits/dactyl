@@ -339,10 +339,10 @@ var RangeFinder = Module("rangefinder", {
  */
 var RangeFind = Class("RangeFind", {
     init: function init(window, content, matchCase, backward, elementPath, regexp) {
-        this.window = Cu.getWeakReference(window);
+        this.window = util.weakReference(window);
         this.content = content;
 
-        this.baseDocument = Cu.getWeakReference(this.content.document);
+        this.baseDocument = util.weakReference(this.content.document);
         this.elementPath = elementPath || null;
         this.reverse = Boolean(backward);
 
@@ -381,7 +381,7 @@ var RangeFind = Class("RangeFind", {
         this.range.selectionController.scrollSelectionIntoView(
             this.range.selectionController.SELECTION_NORMAL, 0, false);
 
-        this.store.focusedFrame = Cu.getWeakReference(range.startContainer.ownerDocument.defaultView);
+        this.store.focusedFrame = util.weakReference(range.startContainer.ownerDocument.defaultView);
     },
 
     cancel: function cancel() {

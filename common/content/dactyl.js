@@ -205,7 +205,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     registerObserver: function registerObserver(type, callback, weak) {
         if (!(type in this._observers))
             this._observers[type] = [];
-        this._observers[type].push(weak ? Cu.getWeakReference(callback) : { get: function () callback });
+        this._observers[type].push(weak ? util.weakReference(callback) : { get: function () callback });
     },
 
     registerObservers: function registerObservers(obj, prop) {

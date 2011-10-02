@@ -1551,6 +1551,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     /**
+     * Like Cu.getWeakReference, but won't crash if you pass null.
+     */
+    weakReference: function weakReference(jsval) {
+        if (jsval == null)
+            return { get: function get() null };
+        return Cu.getWeakReference(jsval);
+    },
+
+    /**
      * Wraps native exceptions thrown by the called function so that a
      * proper stack trace may be retrieved from them.
      *

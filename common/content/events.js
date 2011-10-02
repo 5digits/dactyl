@@ -50,8 +50,8 @@ var EventHive = Class("EventHive", Contexts.Hive, {
         var [self, events] = this._events(event, callback);
 
         for (let [event, callback] in Iterator(events)) {
-            let args = [Cu.getWeakReference(target),
-                        self ? Cu.getWeakReference(self) : { get: function () null },
+            let args = [util.weakReference(target),
+                        util.weakReference(self),
                         event,
                         this.wrapListener(callback, self),
                         capture,

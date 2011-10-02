@@ -65,7 +65,7 @@ var Marks = Module("marks", {
         let mark = this.Mark();
 
         if (Marks.isURLMark(name)) {
-            mark.tab = Cu.getWeakReference(tabs.getTab());
+            mark.tab = util.weakReference(tabs.getTab());
             this._urlMarks.set(name, mark);
             var message = "mark.addURL";
         }

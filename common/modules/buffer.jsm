@@ -127,11 +127,12 @@ var Buffer = Module("Buffer", {
      */
     get lastInputField() {
         let field = this.localStore.lastInputField && this.localStore.lastInputField.get();
+
         let doc = field && field.ownerDocument;
         let win = doc && doc.defaultView;
         return win && doc === win.document ? field : null;
     },
-    set lastInputField(value) { this.localStore.lastInputField = value && Cu.getWeakReference(value); },
+    set lastInputField(value) { this.localStore.lastInputField = util.weakReference(value); },
 
     /**
      * @property {nsIURI} The current top-level document.
@@ -241,7 +242,7 @@ var Buffer = Module("Buffer", {
         return frame && frame.get() || this.win;
     },
     set focusedFrame(frame) {
-        this.localStore.focusedFrame = Cu.getWeakReference(frame);
+        this.localStore.focusedFrame = util.weakReference(frame);
     },
 
     /**
