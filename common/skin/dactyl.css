@@ -68,6 +68,10 @@ input[type=file][dactyl|highlight~=HintElem] {
     line-height: 1.5em !important;
 }
 
+.completion-items-container {
+    overflow: hidden;
+}
+
 .td-span {
     display: inline-block;
     overflow: visible;
@@ -191,11 +195,9 @@ statusbarpanel {
 
 /* MOW */
 
-.dactyl-completions,
-#dactyl-multiline-output,
-#dactyl-multiline-input {
-    background-color: white;
-    color: black;
+#dactyl-commandline-prompt *,
+#dactyl-commandline-command {
+    font: inherit;
 }
 
 .dactyl-completions-content,
@@ -204,11 +206,6 @@ statusbarpanel {
     white-space: pre;
     font-family: -moz-fixed;
     margin: 0px;
-}
-
-#dactyl-commandline-prompt *,
-#dactyl-commandline-command {
-    font: inherit;
 }
 
 .dactyl-completions-content table,

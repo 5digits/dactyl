@@ -868,6 +868,7 @@ Class.Memoize = function Memoize(getter, wait)
             let done = false;
 
             if (wait)
+                // Crazy, yeah, I know. -- Kris
                 this.get = function replace() {
                     let obj = this.instance || this;
                     Object.defineProperty(obj, key,  {
@@ -892,7 +893,7 @@ Class.Memoize = function Memoize(getter, wait)
                     return this[key];
                 };
             else
-                this.get = function replace() {
+                this.get = function g_Memoize() {
                     let obj = this.instance || this;
                     try {
                         Class.replaceProperty(obj, key, null);
@@ -903,7 +904,7 @@ Class.Memoize = function Memoize(getter, wait)
                     }
                 };
 
-            this.set = function replace(val) Class.replaceProperty(this.instance || this, val);
+            this.set = function s_Memoize(val) Class.replaceProperty(this.instance || this, key, val);
         }
     });
 
@@ -1226,6 +1227,8 @@ var StructBase = Class("StructBase", Array, {
             if (arguments[i] != undefined)
                 this[i] = arguments[i];
     },
+
+    get toStringParams() this,
 
     clone: function struct_clone() this.constructor.apply(null, this.slice()),
 

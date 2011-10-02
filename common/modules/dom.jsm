@@ -36,9 +36,12 @@ function BooleanAttribute(attr) ({
  * change in the near future.
  */
 var DOM = Class("DOM", {
-    init: function init(val, context) {
+    init: function init(val, context, nodes) {
         let self;
         let length = 0;
+
+        if (nodes)
+            this.nodes = nodes;
 
         if (context instanceof Ci.nsIDOMDocument)
             this.document = context;
@@ -48,7 +51,7 @@ var DOM = Class("DOM", {
 
         if (val == null)
             ;
-        else if (typeof val == "xml")
+        else if (typeof val == "xml" && context instanceof Ci.nsIDOMDocument)
             this[length++] = DOM.fromXML(val, context, this.nodes);
         else if (val instanceof Ci.nsIDOMNode || val instanceof Ci.nsIDOMWindow)
             this[length++] = val;
@@ -58,6 +61,8 @@ var DOM = Class("DOM", {
         else if ("__iterator__" in val || isinstance(val, ["Iterator", "Generator"]))
             for (let elem in val)
                 this[length++] = elem;
+        else
+            this[length++] = val;
 
         this.length = length;
         return self || this;
@@ -130,19 +135,22 @@ var DOM = Class("DOM", {
             }, self || this);
 
         let dom = this;
-        function munge(val) {
+        function munge(val, container, idx) {
             if (val instanceof Ci.nsIDOMRange)
                 return val.extractContents();
             if (val instanceof Ci.nsIDOMNode)
                 return val;
 
-            if (typeof val == "xml")
+            if (typeof val == "xml") {
                 val = dom.constructor(val, dom.document);
+                if (container)
+                    container[idx] = val[0];
+            }
 
             if (isObject(val) && "length" in val) {
                 let frag = dom.document.createDocumentFragment();
                 for (let i = 0; i < val.length; i++)
-                    frag.appendChild(munge(val[i]));
+                    frag.appendChild(munge(val[i], val, i));
                 return frag;
             }
             return val;

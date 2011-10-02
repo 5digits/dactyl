@@ -21,11 +21,9 @@ var MOW = Module("mow", {
             if (modes.have(modes.OUTPUT_MULTILINE)) {
                 this.resize(true);
 
-                if (options["more"] && this.canScroll(1)) {
+                if (options["more"] && this.canScroll(1))
                     // start the last executed command's output at the top of the screen
-                    let elements = this.document.getElementsByClassName("ex-command-output");
-                    DOM(elements[elements.length - 1]).scrollIntoView(true);
-                }
+                    DOM(this.document.body.lastElementChild).scrollIntoView(true);
                 else
                     this.body.scrollTop = this.body.scrollHeight;
 
@@ -122,10 +120,12 @@ var MOW = Module("mow", {
         // after interpolated data.
         XML.ignoreWhitespace = XML.prettyPrinting = false;
 
+        highlightGroup = "CommandOutput " + (highlight || "");
+
         if (isObject(data) && !isinstance(data, _)) {
             this.lastOutput = null;
 
-            var output = DOM(<div class="ex-command-output" style="white-space: nowrap" highlight={highlightGroup}/>,
+            var output = DOM(<div style="white-space: nowrap" highlight={highlightGroup}/>,
                              this.document);
             data.document = this.document;
             try {
@@ -139,7 +139,7 @@ var MOW = Module("mow", {
         }
         else {
             let style = isString(data) ? "pre-wrap" : "nowrap";
-            this.lastOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{data}</div>;
+            this.lastOutput = <div style={"white-space: " + style} highlight={highlightGroup}>{data}</div>;
 
             var output = DOM(this.lastOutput, this.document);
         }

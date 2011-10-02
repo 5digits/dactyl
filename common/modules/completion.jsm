@@ -633,25 +633,33 @@ var CompletionContext = Class("CompletionContext", {
         return iter.map(util.range(start, end, step), function (i) items[i]);
     },
 
+    getRow: function getRow(idx) this.cache.rows && this.cache.rows[idx],
+
     getRows: function getRows(start, end, doc) {
         let self = this;
         let items = this.items;
         let cache = this.cache.rows;
         let step = start > end ? -1 : 1;
+
         start = Math.max(0, start || 0);
         end = Math.min(items.length, end != null ? end : items.length);
-        for (let i in util.range(start, end, step))
-            try {
-                yield [i, cache[i] = cache[i] || util.xmlToDom(self.createRow(items[i]), doc)];
-            }
-            catch (e) {
-                util.reportError(e);
-                yield [i, cache[i] = cache[i] || util.xmlToDom(
-                           <div highlight="CompItem" style="white-space: nowrap">
-                               <li highlight="CompResult">{items[i].text}&#xa0;</li>
-                               <li highlight="CompDesc ErrorMsg">{e}&#xa0;</li>
-                           </div>, doc)];
-            }
+
+        for (let i in util.range(start, end, step)) {
+            if (!cache[i])
+                try {
+                    cache[i] = util.xmlToDom(self.createRow(items[i]), doc);
+                }
+                catch (e) {
+                    util.reportError(e);
+                    cache[i] = util.xmlToDom(
+                               <div highlight="CompItem" style="white-space: nowrap">
+                                   <li highlight="CompResult">{items[i].text}&#xa0;</li>
+                                   <li highlight="CompDesc ErrorMsg">{e}&#xa0;</li>
+                               </div>, doc);
+                }
+
+            yield [i, cache[i]];
+        }
     },
 
     /**

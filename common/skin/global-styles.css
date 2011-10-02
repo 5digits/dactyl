@@ -84,6 +84,9 @@ CmdInput;.dactyl-commandline-command
 CmdOutput         /* The output of commands executed by <ex>:run</ex> */ \
                   white-space: pre;
 
+Comp;;;FontFixed,Normal        /* The completion window */ \
+                               margin: 0; border-top: 1px solid black;
+
 CompGroup                      /* Item group in completion output */
 CompGroup:not(:first-of-type)  margin-top: .5em;
 CompGroup:last-of-type         padding-bottom: 1.5ex;

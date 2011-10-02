@@ -28,7 +28,7 @@ var FailedAssertion = Class("FailedAssertion", ErrorBase, {
     noTrace: true
 });
 
-var Point = Struct("x", "y");
+var Point = Struct("Point", "x", "y");
 
 var wrapCallback = function wrapCallback(fn, isEvent) {
     if (!fn.wrapper)

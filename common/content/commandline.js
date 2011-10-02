@@ -607,7 +607,7 @@ var CommandLine = Module("commandline", {
             let elem = document.getElementById("dactyl-completions-" + node.id);
             util.waitFor(bind(this.widgets._ready, null, elem));
 
-            node.completionList = ItemList(elem.id);
+            node.completionList = ItemList(elem);
         }
         return node.completionList;
     },
@@ -1038,7 +1038,7 @@ var CommandLine = Module("commandline", {
             this.wildmode = options.get("wildmode");
             this.wildtypes = this.wildmode.value;
             this.itemList = commandline.completionList;
-            this.itemList.setItems(this.context);
+            this.itemList.open(this.context);
 
             dactyl.registerObserver("events.doneFeeding", this.closure.onDoneFeeding, true);
 
@@ -1051,9 +1051,13 @@ var CommandLine = Module("commandline", {
                 }
             }, this);
             this.tabTimer = Timer(0, 0, function tabTell(event) {
-                this.tab(event.shiftKey, event.altKey && options["altwildmode"]);
+                let tabCount = this.tabCount;
+                this.tabCount = 0;
+                this.tab(tabCount, event.altKey && options["altwildmode"]);
             }, this);
         },
+
+        tabCount: 0,
 
         cleanup: function () {
             dactyl.unregisterObserver("events.doneFeeding", this.closure.onDoneFeeding);
@@ -1071,8 +1075,15 @@ var CommandLine = Module("commandline", {
             this.ignoredCount = 0;
         },
 
+        onTab: function onTab(event) {
+            this.tabCount += event.shiftKey ? -1 : 1;
+            this.tabTimer.tell(event);
+        },
+
         UP: {},
         DOWN: {},
+        CTXT_UP: {},
+        CTXT_DOWN: {},
         PAGE_UP: {},
         PAGE_DOWN: {},
         RESET: null,
@@ -1162,14 +1173,16 @@ var CommandLine = Module("commandline", {
             let value = this.completion;
             if (util.compareIgnoreCase(value, substring.substr(0, value.length)))
                 return;
+
             substring = substring.substr(value.length);
             this.removeSubstring = substring;
 
-            let node = util.xmlToDom(<span highlight="Preview">{substring}</span>,
-                document);
-            let start = this.caret;
-            this.editor.insertNode(node, this.editor.rootElement, 1);
-            this.caret = start;
+            let node = DOM.fromXML(<span highlight="Preview">{substring}</span>,
+                                   document);
+
+            this.withSavedValues(["caret"], function () {
+                this.editor.insertNode(node, this.editor.rootElement, 1);
+            });
         },
 
         previewClear: function previewClear() {
@@ -1199,7 +1212,7 @@ var CommandLine = Module("commandline", {
             this.suffix = this.context.value.substring(this.caret);
 
             if (show) {
-                this.itemList.reset();
+                this.itemList.update();
                 if (this.haveType("list"))
                     this.itemList.visible = true;
                 this.selected = null;
@@ -1215,25 +1228,25 @@ var CommandLine = Module("commandline", {
             this.value  = value.substring(this.start, this.caret);
             this.suffix = value.substring(this.caret);
 
-            this.itemList.reset();
+            this.itemList.update();
             this.itemList.selectItem(this.selected);
 
             this.preview();
         },
 
-        select: function select(idx) {
+        select: function select(idx, count) {
             switch (idx) {
             case this.UP:
                 if (this.selected == null)
-                    idx = -2;
+                    idx = -1 - count;
                 else
-                    idx = this.selected - 1;
+                    idx = this.selected - count;
                 break;
             case this.DOWN:
                 if (this.selected == null)
-                    idx = 0;
+                    idx = count - 1;
                 else
-                    idx = this.selected + 1;
+                    idx = this.selected + count;
                 break;
             case this.RESET:
                 idx = null;
@@ -1287,7 +1300,7 @@ var CommandLine = Module("commandline", {
 
         tabs: [],
 
-        tab: function tab(reverse, wildmode) {
+        tab: function tab(count, wildmode) {
             this.autocompleteTimer.flush();
             this.ignoredCount = 0;
 
@@ -1299,12 +1312,12 @@ var CommandLine = Module("commandline", {
             if (this.context.waitingForTab || this.wildIndex == -1)
                 this.complete(true, true);
 
-            this.tabs.push([reverse, wildmode || options["wildmode"]]);
+            this.tabs.push([count, wildmode || options["wildmode"]]);
             if (this.waiting)
                 return;
 
             while (this.tabs.length) {
-                [reverse, this.wildtypes] = this.tabs.shift();
+                [count, this.wildtypes] = this.tabs.shift();
 
                 this.wildIndex = Math.min(this.wildIndex, this.wildtypes.length - 1);
                 switch (this.wildtype.replace(/.*:/, "")) {
@@ -1319,7 +1332,7 @@ var CommandLine = Module("commandline", {
                     }
                     // Fallthrough
                 case "full":
-                    this.select(reverse ? this.UP : this.DOWN);
+                    this.select(count < 0 ? this.UP : this.DOWN, Math.abs(count));
                     break;
                 }
 
@@ -1510,13 +1523,13 @@ var CommandLine = Module("commandline", {
         bind(["<A-Tab>", "<Tab>"], "Select the next matching completion item",
              function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
-                 self.completions.tabTimer.tell(keypressEvents[0]);
+                 self.completions.onTab(keypressEvents[0]);
              });
 
         bind(["<A-S-Tab>", "<S-Tab>"], "Select the previous matching completion item",
              function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
-                 self.completions.tabTimer.tell(keypressEvents[0]);
+                 self.completions.onTab(keypressEvents[0]);
              });
 
         bind(["<BS>", "<C-h>"], "Delete the previous character",
@@ -1585,25 +1598,339 @@ var CommandLine = Module("commandline", {
 });
 
 /**
- * The list which is used for the completion box (and QuickFix window in
- * future).
+ * The list which is used for the completion box.
  *
  * @param {string} id The id of the iframe which will display the list. It
  *     must be in its own container element, whose height it will update as
  *     necessary.
  */
-var ItemList = Class("ItemList", {
-    init: function init(id) {
-        this._completionElements = [];
 
-        var iframe = document.getElementById(id);
+var NewItemList = Class("ItemList", {
+    CONTEXT_LINES: 3,
+
+    init: function init(frame) {
+        this.frame = frame;
+
+        this.doc = frame.contentDocument;
+        this.win = frame.contentWindow;
+        this.body = this.doc.body;
+        this.container = frame.parentNode;
+
+        highlight.highlightNode(this.doc.body, "Comp");
+
+        this._resize = Timer(20, 400, function _resize() {
+            if (this.visible)
+                this.resize();
+        }, this);
+    },
+
+    get rootXML() <e4x>
+        <div highlight="Normal" style="white-space: nowrap">
+            <div key="wrapper">
+                <div highlight="Completions" key="noCompletions"><span highlight="Title">{_("completion.noCompletions")}</span></div>
+                <div key="completions"/>
+            </div>
+
+            <div highlight="Completions">{
+            template.map(util.range(0, options["maxitems"] * 2), function (i)
+                <div highlight="CompItem NonText"><li>~</li></div>)
+            }</div>
+        </div>
+    </e4x>.elements(),
+
+    get visible() !this.container.collapsed,
+    set visible(val) this.container.collapsed = !val,
+
+    get activeGroups() this.context.contextList
+                           .filter(function (c) c.message || c.incomplete
+                                             || c.hasItems && c.items.length)
+                           .map(this.getGroup, this),
+
+    open: function open(context) {
+        util.dump("\n\n\n\n");
+        util.dump("OPEN()");
+        this.context = context;
+        this.nodes = {x:1};
+        this.maxItems = options["maxitems"];
+
+        DOM(this.rootXML, this.doc, this.nodes)
+            .appendTo(DOM(this.body).empty());
+
+        this.update();
+        this.visible = true;
+    },
+
+    update: function update() {
+        util.dump("\n\n");
+        util.dump("UPDATE()");
+        DOM(this.nodes.completions).empty();
+
+        let groups = this.activeGroups;
+        let container = DOM(this.nodes.completions);
+        for each (let group in groups) {
+            group.reset();
+            container.append(group.nodes.root);
+        }
+
+        DOM(this.nodes.noCompletions).toggle(!groups.length);
+
+        this.select(groups[0] && groups[0].context, null);
+
+        this._resize.tell();
+    },
+
+    draw: function draw() {
+        util.dump("DRAW()");
+        for each (let group in this.activeGroups)
+            group.draw();
+
+        // We need to collect all of the rescrolling functions in
+        // one go, as the height calculation that they need to do
+        // would force a reflow after each DOM modification.
+        this.activeGroups.filter(function (g) !g.collapsed)
+            .map(function (g) g.rescrollFunc)
+            .forEach(function (f) f());
+    },
+
+    minHeight: 0,
+    resize: function resize() {
+        util.dump("RESIZE()");
+        let { completions, root } = this.nodes;
+
+        if (!this.visible)
+            root.style.minWidth = document.getElementById("dactyl-commandline").scrollWidth + "px";
+
+        this.minHeight = Math.max(this.minHeight,
+                                  this.win.scrollY + DOM(completions).rect.bottom);
+
+        if (!this.visible)
+            root.style.minWidth = "";
+
+        // FIXME: Belongs elsewhere.
+        mow.resize(false, Math.max(0, this.minHeight - this.container.height));
+
+        this.container.height = this.minHeight;
+        this.container.height -= mow.spaceNeeded;
+        mow.resize(false);
+        this.timeout(function () {
+            this.container.height -= mow.spaceNeeded;
+        });
+    },
+
+    select: function select(context, index, position) {
+        util.dump("SELECT()");
+        let group = this.getGroup(context);
+
+        if (this.selectedGroup && (!group || group != this.selectedGroup))
+            this.selectedGroup.selectedIdx = null;
+
+        this.selectedGroup = group;
+
+        if (group)
+            group.selectedIdx = index;
+
+        if (position != null)
+            this.selectionPosition = position;
+
+        let groups = this.activeGroups;
+        if (groups.length) {
+            group = group || groups[0];
+            let idx = groups.indexOf(group);
+
+            let count = this.maxItems;
+            group.count = Math.min((group.selectedIdx || 0) + this.CONTEXT_LINES,
+                                   group.itemCount, count);
+            count -= group.count;
+
+            for (let i = idx - 1; i >= 0; i--) {
+                let group = groups[i];
+                group.count = Math.min(group.itemCount, count);
+                count -= group.count;
+            }
+
+            let n = group.count;
+            group.count = Math.min(group.count + count, group.itemCount);
+            count -= group.count - n;
+
+            for (let i = idx + 1; i < groups.length; i++) {
+                let group = groups[i];
+                group.count = Math.min(group.itemCount, count);
+                count -= group.count;
+            }
+
+            for (let [i, group] in Iterator(groups)) {
+                group.collapsed = group.count == 0;
+                if (i < idx)
+                    group.range = ItemList.Range(group.itemCount - group.count,
+                                                 group.itemCount);
+                else if (i > idx)
+                    group.range = ItemList.Range(0, group.count);
+                else {
+                    let end = Math.max(group.count,
+                                       Math.min(group.selectedIdx + this.CONTEXT_LINES,
+                                                group.itemCount));
+                    group.range = ItemList.Range(end - group.count, end);
+                }
+            }
+        }
+        this.draw();
+    },
+
+    selectItem: function selectItem(idx) {
+        if (idx != null)
+            for each (var group in this.activeGroups) {
+                if (idx < group.itemCount)
+                    break;
+                idx -= group.itemCount;
+            }
+
+        this.select(group && group.context, idx);
+    },
+
+    getGroup: function getGroup(context) context &&
+        context.getCache("itemlist-group", bind("Group", ItemList, this, context))
+}, {
+    WAITING_MESSAGE: _("completion.generating"),
+
+    Group: Class("ItemList.Group", {
+        init: function init(parent, context) {
+            this.parent  = parent;
+            this.context = context;
+        },
+
+        get rootXML()
+            <div key="root" highlight="CompGroup">
+                <div highlight="Completions">
+                    { this.context.createRow(this.context.title || [], "CompTitle") }
+                </div>
+                <div highlight="CompTitleSep"/>
+                <div key="contents">
+                    <div key="up" highlight="CompLess"/>
+                    <div key="message" highlight="CompMsg">{this.context.message}</div>
+                    <div key="itemsContainer" class="completion-items-container">
+                        <div key="items" highlight="Completions"/>
+                    </div>
+                    <div key="waiting" highlight="CompMsg">{ItemList.WAITING_MESSAGE}</div>
+                    <div key="down" highlight="CompMore"/>
+                </div>
+            </div>,
+
+        get doc() this.parent.doc,
+        get win() this.parent.win,
+        get maxItems() this.parent.maxItems,
+
+        get itemCount() this.context.items.length,
+
+        get rescrollFunc() {
+            let container = this.nodes.itemsContainer;
+            let pos    = DOM(container).rect.top;
+            let start  = DOM(this.getItem(this.range.start)).rect.top;
+            let height = DOM(this.getItem(this.range.end - 1)).rect.bottom - start || 0;
+            let scroll = start + container.scrollTop - pos;
+            return function () {
+                container.scrollTop = scroll;
+                container.style.height = height + "px";
+            }
+        },
+
+        draw: function draw() {
+            util.dump("draw(" + [this.collapsed, this.itemCount, this.count] + ") [" +
+                                (!this.collapsed && [this.range.start, this.range.end]) + ") [" +
+                                [this.generatedRange.start,
+                                 this.generatedRange.end] + ") " +
+                                (!this.collapsed && this.generatedRange.contains(this.range)));
+
+            DOM(this.nodes.contents).toggle(!this.collapsed);
+            if (this.collapsed)
+                return;
+
+            DOM(this.nodes.message).toggle(this.context.message && this.range.start == 0);
+            DOM(this.nodes.waiting).toggle(this.context.incomplete && this.range.end < this.itemCount);
+            DOM(this.nodes.up).toggle(this.range.start > 0);
+            DOM(this.nodes.down).toggle(this.range.end < this.itemCount);
+
+            if (!this.generatedRange.contains(this.range)) {
+                if (this.generatedRange.end == 0)
+                    var [start, end] = this.range;
+                else {
+                    start = this.range.start - (this.range.start <= this.generatedRange.start
+                                                    ? this.maxItems / 2 : 0);
+                    end   = this.range.end   + (this.range.end > this.generatedRange.end
+                                                    ? this.maxItems / 2 : 0);
+                }
+                util.dump("  refill [" + [start,end] + ")");
+
+                let range = ItemList.Range(Math.max(0, start), Math.min(this.itemCount, end));
+
+                let first;
+                for (let [i, row] in this.context.getRows(this.generatedRange.start,
+                                                          this.generatedRange.end,
+                                                          this.doc))
+                    if (!range.contains(i))
+                        DOM(row).remove();
+                    else if (!first)
+                        first = row;
+
+                let container = DOM(this.nodes.items);
+                let before    = first ? DOM(first).closure.before
+                                      : DOM(this.nodes.items).closure.append;
+
+                for (let [i, row] in this.context.getRows(range.start, range.end,
+                                                          this.doc))
+                    if (i < this.generatedRange.start)
+                        before(row);
+                    else if (i >= this.generatedRange.end)
+                        container.append(row);
+
+                this.generatedRange = range;
+            }
+        },
+
+        reset: function reset() {
+            this.nodes   = {};
+            this.generatedRange = ItemList.Range(0, 0);
+
+            DOM.fromXML(this.rootXML, this.doc, this.nodes);
+        },
+
+        getItem: function getItem(idx) this.context.getRow(idx),
+
+        get selectedItem() this.getItem(this._selectedIdx),
+
+        get selectedIdx() this._selectedIdx,
+        set selectedIdx(idx) {
+            if (this.selectedItem)
+                DOM(this.selectedItem).attr("selected", null);
+
+            this._selectedIdx = idx;
+
+            if (this.selectedItem)
+                DOM(this.selectedItem).attr("selected", true);
+        }
+    }),
+
+    Range: Class.Memoize(function () {
+        let Range = Struct("ItemList.Range", "start", "end");
+        update(Range.prototype, {
+            contains: function contains(idx)
+                typeof idx == "number" ? idx >= this.start && idx < this.end
+                                       : this.contains(idx.start) &&
+                                         idx.end >= this.start && idx.end <= this.end
+        });
+        return Range;
+    })
+});
+
+var ItemList = Class("ItemList", {
+    init: function init(iframe) {
+        this._completionElements = [];
 
         this._doc = iframe.contentDocument;
         this._win = iframe.contentWindow;
         this._container = iframe.parentNode;
 
-        this._doc.documentElement.id = id + "-top";
-        this._doc.body.id = id + "-content";
+        this._doc.documentElement.id = iframe.id + "-top";
+        this._doc.body.id = iframe.id + "-content";
         this._doc.body.className = iframe.className + "-content";
         this._doc.body.appendChild(this._doc.createTextNode(""));
         this._doc.body.style.borderTop = "1px solid black"; // FIXME: For cases where completions/MOW are shown at once, or ls=0. Should use :highlight.
@@ -1647,7 +1974,7 @@ var ItemList = Class("ItemList", {
 
     _init: function _init() {
         this._div = this._dom(
-            <div class="ex-command-output" highlight="Normal" style="white-space: nowrap">
+            <div highlight="CommandOutput Normal" style="white-space: nowrap">
                 <div key="wrapper">
                     <div highlight="Completions" key="noCompletions"><span highlight="Title">{_("completion.noCompletions")}</span></div>
                     <div key="completions"/>
@@ -1676,7 +2003,9 @@ var ItemList = Class("ItemList", {
                     <div highlight="CompTitleSep"/>
                     <div key="message" highlight="CompMsg"/>
                     <div key="up" highlight="CompLess"/>
-                    <div key="items" highlight="Completions"/>
+                    <div key="itemsContainer">
+                        <div key="items" highlight="Completions"/>
+                    </div>
                     <div key="waiting" highlight="CompMsg">{ItemList.WAITING_MESSAGE}</div>
                     <div key="down" highlight="CompMore"/>
                 </div>, context.cache.nodes);
@@ -1776,7 +2105,7 @@ var ItemList = Class("ItemList", {
     get visible() !this._container.collapsed,
     set visible(val) this._container.collapsed = !val,
 
-    reset: function reset(brief) {
+    update: function reset(brief) {
         this._startIndex = this._endIndex = this._selIndex = -1;
         this._div = null;
         if (!brief)
@@ -1787,20 +2116,22 @@ var ItemList = Class("ItemList", {
     setItems: function setItems(newItems, selectedItem) {
         if (this._selItem > -1)
             this._getCompletion(this._selItem).removeAttribute("selected");
+
         if (this._container.collapsed) {
             this._minHeight = 0;
             this._container.height = 0;
         }
+
         this._startIndex = this._endIndex = this._selIndex = -1;
         this._items = newItems;
-        this.reset(true);
+        this.update(true);
         if (typeof selectedItem == "number") {
             this.selectItem(selectedItem);
             this.visible = true;
         }
     },
+    get open() this.closure.setItems,
 
-    // select index, refill list if necessary
     selectItem: function selectItem(index) {
         //let now = Date.now();
 
@@ -1848,7 +2179,7 @@ var ItemList = Class("ItemList", {
 
     onKeyPress: function onKeyPress(event) false
 }, {
-    WAITING_MESSAGE: _("completion.generating")
+    WAITING_MESSAGE: _("completion.generating"),
 });
 
 // vim: set fdm=marker sw=4 ts=4 et:

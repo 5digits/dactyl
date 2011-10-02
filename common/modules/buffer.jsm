@@ -289,7 +289,7 @@ var Buffer = Module("Buffer", {
      * @param {Node} elem The element to focus.
      */
     focusElement: function focusElement(elem) {
-        let { dactyl } = this.modules;
+        let { Editor, dactyl } = this.modules;
 
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
         overlay.setData(elem, "focus-allowed", true);
