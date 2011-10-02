@@ -221,6 +221,8 @@ var CompletionContext = Class("CompletionContext", {
     },
     get title() this.__title,
 
+    get activeContexts() this.contextList.filter(function (c) c.hasItems && c.items.length),
+
     // Temporary
     /**
      * @property {Object}
@@ -241,9 +243,7 @@ var CompletionContext = Class("CompletionContext", {
             let minStart = Math.min.apply(Math, [context.offset for ([k, context] in Iterator(this.contexts)) if (context.hasItems && context.items.length)]);
             if (minStart == Infinity)
                 minStart = 0;
-            let items = this.contextList.map(function (context) {
-                if (!context.hasItems)
-                    return [];
+            let items = this.activeContexts.map(function (context) {
                 let prefix = self.value.substring(minStart, context.offset);
                 return context.items.map(function (item) ({
                     text: prefix + item.text,
@@ -262,7 +262,7 @@ var CompletionContext = Class("CompletionContext", {
     },
     // Temporary
     get allSubstrings() {
-        let contexts = this.contextList.filter(function (c) c.hasItems && c.items.length);
+        let contexts = this.activeContexts;
         let minStart = Math.min.apply(Math, contexts.map(function (c) c.offset));
         let lists = contexts.map(function (context) {
             let prefix = context.value.substring(minStart, context.offset);
@@ -899,7 +899,7 @@ var Completion = Module("completion", {
             context = context.contexts["/list"];
             context.wait(null, true);
 
-            let contexts = context.contextList.filter(function (c) c.hasItems && c.items.length);
+            let contexts = context.activeContexts;
             if (!contexts.length)
                 contexts = context.contextList.filter(function (c) c.hasItems).slice(0, 1);
             if (!contexts.length)
