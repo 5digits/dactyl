@@ -1754,7 +1754,7 @@ var Buffer = Module("Buffer", {
         events.listen(config.browser, "scroll", buffer.closure._updateBufferPosition, false);
     },
     mappings: function initMappings(dactyl, modules, window) {
-        let { Events, buffer, ex, mappings, modes, options, tabs } = modules;
+        let { Editor, Events, buffer, events, ex, mappings, modes, options, tabs } = modules;
 
         mappings.add([modes.NORMAL],
             ["y", "<yank-location>"], "Yank current location to the clipboard",
@@ -1835,8 +1835,9 @@ var Buffer = Module("Buffer", {
             "Go to the end of the document",
             function (args) {
                 if (args.count)
-                    var elem = options.get("linenumbers").getLine(buffer.focusedFrame.document,
-                                                                  args.count);
+                    var elem = options.get("linenumbers")
+                                      .getLine(buffer.focusedFrame.document,
+                                               args.count);
                 if (elem)
                     elem.scrollIntoView(true);
                 else if (args.count)
@@ -2094,7 +2095,7 @@ var Buffer = Module("Buffer", {
             "string", "UTF-8",
             {
                 scope: Option.SCOPE_LOCAL,
-                getter: function () config.browser.docShell.QueryInterface(Ci.nsIDocCharset).charset,
+                getter: function () buffer.docShell.QueryInterface(Ci.nsIDocCharset).charset,
                 setter: function (val) {
                     if (options["encoding"] == val)
                         return val;

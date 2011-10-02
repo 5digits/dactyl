@@ -296,9 +296,11 @@ overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
         });
     },
 
-    unload: function unload(window) {
+    cleanup: function cleanup(window) {
         overlay.windows = overlay.windows.filter(function (w) w != window);
+    },
 
+    unload: function unload(window) {
         for each (let mod in this.modules.moduleList.reverse()) {
             mod.stale = true;
 
