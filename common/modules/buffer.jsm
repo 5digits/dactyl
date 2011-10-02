@@ -4,9 +4,17 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-"use strict";
+try {"use strict";
 
-/** @scope modules */
+Components.utils.import("resource://dactyl/bootstrap.jsm");
+defineModule("buffer", {
+    exports: ["Buffer", "buffer"],
+    require: ["prefs", "services", "util"]
+}, this);
+
+this.lazyRequire("finder", ["RangeFind"]);
+this.lazyRequire("template", ["template"]);
+this.lazyRequire("overlay", ["overlay"]);
 
 /**
  * A class to manage the primary web content buffer. The name comes
@@ -14,24 +22,33 @@
  * files.
  * @instance buffer
  */
-var Buffer = Module("buffer", {
+var Buffer = Module("Buffer", {
+    Local: function Local(dactyl, modules, window) ({
+        get win() {
+            return window.content;
+
+            let win = services.focus.focusedWindow;
+            if (!win || win == window || util.topWindow(win) != window)
+                return window.content
+            if (win.top == window)
+                return win;
+            return win.top;
+        }
+    }),
+
     init: function init(win) {
         if (win)
             this.win = win;
-        else
-            this.__defineGetter__("win", function () content);
     },
 
-    addPageInfoSection: deprecated("Buffer.addPageInfoSection",
-            { get: function addPageInfoSection() Buffer.closure.addPageInfoSection }),
+    get addPageInfoSection() Buffer.closure.addPageInfoSection,
 
-    pageInfo: deprecated("Buffer.pageInfo",
-            { get: function pageInfo() Buffer.pageInfo }),
+    get pageInfo() Buffer.pageInfo,
 
     // called when the active document is scrolled
     _updateBufferPosition: function _updateBufferPosition() {
-        statusline.updateBufferPosition();
-        commandline.clear(true);
+        this.modules.statusline.updateBufferPosition();
+        this.modules.commandline.clear(true);
     },
 
     /**
@@ -39,7 +56,8 @@ var Buffer = Module("buffer", {
      *     buffer. Only returns style sheets for the 'screen' media type.
      */
     get alternateStyleSheets() {
-        let stylesheets = window.getAllStyleSheets(this.focusedFrame);
+        let stylesheets = array.flatten(
+            this.allFrames().map(function (w) Array.slice(w.document.styleSheets)));
 
         return stylesheets.filter(
             function (stylesheet) /^(screen|all|)$/i.test(stylesheet.media.mediaText) && !/^\s*$/.test(stylesheet.title)
@@ -47,18 +65,22 @@ var Buffer = Module("buffer", {
     },
 
     climbUrlPath: function climbUrlPath(count) {
-        let url = buffer.documentURI.clone();
+        let { dactyl } = this.modules;
+
+        let url = this.documentURI.clone();
         dactyl.assert(url instanceof Ci.nsIURL);
 
         while (count-- && url.path != "/")
             url.path = url.path.replace(/[^\/]+\/*$/, "");
 
-        dactyl.assert(!url.equals(buffer.documentURI));
+        dactyl.assert(!url.equals(this.documentURI));
         dactyl.open(url.spec);
     },
 
     incrementURL: function incrementURL(count) {
-        let matches = buffer.uri.spec.match(/(.*?)(\d+)(\D*)$/);
+        let { dactyl } = this.modules;
+
+        let matches = this.uri.spec.match(/(.*?)(\d+)(\D*)$/);
         dactyl.assert(matches);
         let oldNum = matches[2];
 
@@ -85,10 +107,11 @@ var Buffer = Module("buffer", {
      *     tab.
      */
     get localStore() {
-        let doc = content.document;
+        let { doc } = this;
+
         let store = overlay.getData(doc, "buffer", null);
-        if (!store || !buffer.localStorePrototype.isPrototypeOf(store))
-            store = overlay.setData(doc, "buffer", Object.create(buffer.localStorePrototype));
+        if (!store || !this.localStorePrototype.isPrototypeOf(store))
+            store = overlay.setData(doc, "buffer", Object.create(this.localStorePrototype));
         return store.instance = store;
     },
 
@@ -115,6 +138,13 @@ var Buffer = Module("buffer", {
      */
     get doc() this.win.document,
 
+    get docShell() util.docShell(this.win),
+
+    get modules() this.topWindow.dactyl.modules,
+    set modules(val) {},
+
+    topWindow: Class.Memoize(function () util.topWindow(this.win)),
+
     /**
      * @property {nsIURI} The current top-level document's URI.
      */
@@ -136,19 +166,24 @@ var Buffer = Module("buffer", {
      */
     get pageHeight() this.win.innerHeight,
 
+    get contentViewer() this.docShell.contentViewer
+                                     .QueryInterface(Components.interfaces.nsIMarkupDocumentViewer),
+
     /**
      * @property {number} The current browser's zoom level, as a
      *     percentage with 100 as 'normal'.
      */
-    get zoomLevel() config.browser.markupDocumentViewer[this.fullZoom ? "fullZoom" : "textZoom"] * 100,
+    get zoomLevel() this.contentViewer[this.fullZoom ? "fullZoom" : "textZoom"] * 100,
     set zoomLevel(value) { this.setZoom(value, this.fullZoom); },
 
     /**
      * @property {boolean} Whether the current browser is using full
      *     zoom, as opposed to text zoom.
      */
-    get fullZoom() ZoomManager.useFullZoom,
+    get fullZoom() this.ZoomManager.useFullZoom,
     set fullZoom(value) { this.setZoom(this.zoomLevel, value); },
+
+    get ZoomManager() this.topWindow.ZoomManager,
 
     /**
      * @property {string} The current document's title.
@@ -187,13 +222,14 @@ var Buffer = Module("buffer", {
     allFrames: function allFrames(win, focusedFirst) {
         let frames = [];
         (function rec(frame) {
-            if (true || frame.document.body instanceof HTMLBodyElement)
+            if (true || frame.document.body instanceof Ci.nsIDOMHTMLBodyElement)
                 frames.push(frame);
             Array.forEach(frame.frames, rec);
         })(win || this.win);
+
         if (focusedFirst)
-            return frames.filter(function (f) f === buffer.focusedFrame).concat(
-                    frames.filter(function (f) f !== buffer.focusedFrame));
+            return frames.filter(function (f) f === this.focusedFrame).concat(
+                   frames.filter(function (f) f !== this.focusedFrame));
         return frames;
     },
 
@@ -226,8 +262,10 @@ var Buffer = Module("buffer", {
      * @returns {boolean}
      */
     focusAllowed: function focusAllowed(elem) {
-        if (elem instanceof Window && !Editor.getEditor(elem))
+        if (elem instanceof Ci.nsIDOMWindow && !DOM(elem).isEditable)
             return true;
+
+        let { options } = this.modules;
 
         let doc = elem.ownerDocument || elem.document || elem;
         switch (options.get("strictfocus").getKey(doc.documentURIObject || util.newURI(doc.documentURI), "moderate")) {
@@ -250,28 +288,33 @@ var Buffer = Module("buffer", {
      * @param {Node} elem The element to focus.
      */
     focusElement: function focusElement(elem) {
+        let { dactyl } = this.modules;
+
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
         overlay.setData(elem, "focus-allowed", true);
         overlay.setData(win.document, "focus-allowed", true);
 
-        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
+        if (isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
+                              Ci.nsIDOMHTMLIFrameElement]))
             elem = elem.contentWindow;
+
         if (elem.document)
             overlay.setData(elem.document, "focus-allowed", true);
 
-        if (elem instanceof HTMLInputElement && elem.type == "file") {
+        if (elem instanceof Ci.nsIDOMHTMLInputElement && elem.type == "file") {
             Buffer.openUploadPrompt(elem);
             this.lastInputField = elem;
         }
         else {
-            if (isinstance(elem, [HTMLInputElement, XULTextBoxElement]))
+            if (isinstance(elem, [Ci.nsIDOMHTMLInputElement,
+                                  Ci.nsIDOMXULTextBoxElement]))
                 var flags = services.focus.FLAG_BYMOUSE;
             else
                 flags = services.focus.FLAG_SHOWRING;
 
             if (!overlay.getData(elem, "had-focus", false) &&
                     elem.value &&
-                    elem instanceof HTMLInputElement &&
+                    elem instanceof Ci.nsIDOMHTMLInputElement &&
                     Editor.getEditor(elem) &&
                     elem.selectionStart != null &&
                     elem.selectionStart == elem.selectionEnd)
@@ -279,7 +322,7 @@ var Buffer = Module("buffer", {
 
             dactyl.focus(elem, flags);
 
-            if (elem instanceof Window) {
+            if (elem instanceof Ci.nsIDOMWindow) {
                 let sel = elem.getSelection();
                 if (sel && !sel.rangeCount)
                     sel.addRange(RangeFind.endpoint(
@@ -297,7 +340,7 @@ var Buffer = Module("buffer", {
             }
 
             // for imagemap
-            if (elem instanceof HTMLAreaElement) {
+            if (elem instanceof Ci.nsIDOMHTMLAreaElement) {
                 try {
                     let [x, y] = elem.getAttribute("coords").split(",").map(parseFloat);
 
@@ -326,6 +369,8 @@ var Buffer = Module("buffer", {
      * @param {string} path The CSS to use for the search. @optional
      */
     findLink: function findLink(rel, regexps, count, follow, path) {
+        let { dactyl, options } = this.modules;
+
         let selector = path || options.get("hinttags").stringDefaultValue;
 
         function followFrame(frame) {
@@ -368,6 +413,8 @@ var Buffer = Module("buffer", {
     },
     followDocumentRelationship: deprecated("buffer.findLink",
         function followDocumentRelationship(rel) {
+            let { options } = this.modules;
+
             this.findLink(rel, options[rel + "pattern"], 0, true);
         }),
 
@@ -379,24 +426,30 @@ var Buffer = Module("buffer", {
      *     {@link dactyl.open}.
      */
     followLink: function followLink(elem, where) {
+        let { dactyl } = this.modules;
+
         let doc = elem.ownerDocument;
         let win = doc.defaultView;
         let { left: offsetX, top: offsetY } = elem.getBoundingClientRect();
 
-        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
+        if (isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
+                              Ci.nsIDOMHTMLIFrameElement]))
             return this.focusElement(elem);
-        if (isinstance(elem, HTMLLinkElement))
+
+        if (isinstance(elem, Ci.nsIDOMHTMLLinkElement))
             return dactyl.open(elem.href, where);
 
-        if (elem instanceof HTMLAreaElement) { // for imagemap
+        if (elem instanceof Ci.nsIDOMHTMLAreaElement) { // for imagemap
             let coords = elem.getAttribute("coords").split(",");
             offsetX = Number(coords[0]) + 1;
             offsetY = Number(coords[1]) + 1;
         }
-        else if (elem instanceof HTMLInputElement && elem.type == "file") {
+        else if (elem instanceof Ci.nsIDOMHTMLInputElement && elem.type == "file") {
             Buffer.openUploadPrompt(elem);
             return;
         }
+
+        let { dactyl } = this.modules;
 
         let ctrlKey = false, shiftKey = false;
         switch (dactyl.forceTarget || where) {
@@ -442,11 +495,7 @@ var Buffer = Module("buffer", {
      *
      * @param {Node} elem The context element.
      */
-    openContextMenu: function openContextMenu(elem) {
-        document.popupNode = elem;
-        let menu = document.getElementById("contentAreaContextMenu");
-        menu.showPopup(elem, -1, -1, "context", "bottomleft", "topleft");
-    },
+    openContextMenu: deprecated("DOM#contextmenu", function openContextMenu(elem) DOM(elem).contextmenu()),
 
     /**
      * Saves a page link to disk.
@@ -454,12 +503,16 @@ var Buffer = Module("buffer", {
      * @param {HTMLAnchorElement} elem The page link to save.
      */
     saveLink: function saveLink(elem) {
+        let { completion, dactyl, io } = modules;
+
+        let self = this;
         let doc      = elem.ownerDocument;
         let uri      = util.newURI(elem.href || elem.src, null, util.newURI(elem.baseURI));
         let referrer = util.newURI(doc.documentURI, doc.characterSet);
 
         try {
-            window.urlSecurityCheck(uri.spec, doc.nodePrincipal);
+            services.security.checkLoadURIWithPrincipal(doc.nodePrincipal, uri,
+                        services.security.STANDARD);
 
             io.CommandFileMode(_("buffer.prompt.saveLink") + " ", {
                 onSubmit: function (path) {
@@ -475,7 +528,7 @@ var Buffer = Module("buffer", {
                         util.assert(false, _("save.invalidDestination", e.name));
                     }
 
-                    buffer.saveURI(uri, file);
+                    self.saveURI(uri, file);
                 },
 
                 completer: function (context) completion.savePage(context, elem)
@@ -497,6 +550,7 @@ var Buffer = Module("buffer", {
         persist.persistFlags = persist.PERSIST_FLAGS_FROM_CACHE
                              | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
 
+        let window = this.topWindow;
         let downloadListener = new window.DownloadListener(window,
                 services.Transfer(uri, File(file).URI, "",
                                   null, null, null, persist));
@@ -504,7 +558,7 @@ var Buffer = Module("buffer", {
         persist.progressListener = update(Object.create(downloadListener), {
             onStateChange: util.wrapCallback(function onStateChange(progress, request, flags, status) {
                 if (callback && (flags & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
-                    dactyl.trapErrors(callback, self, uri, file, progress, request, flags, status);
+                    util.trapErrors(callback, self, uri, file, progress, request, flags, status);
 
                 return onStateChange.superapply(this, arguments);
             })
@@ -544,6 +598,8 @@ var Buffer = Module("buffer", {
         Buffer.scrollToPosition(this.findScrollable(0, vertical == null), horizontal, vertical),
 
     _scrollByScrollSize: function _scrollByScrollSize(count, direction) {
+        let { options } = this.modules;
+
         if (count > 0)
             options["scroll"] = count;
         this.scrollByScrollSize(direction);
@@ -558,6 +614,8 @@ var Buffer = Module("buffer", {
      * @optional
      */
     scrollByScrollSize: function scrollByScrollSize(direction, count) {
+        let { options } = this.modules;
+
         direction = direction ? 1 : -1;
         count = count || 1;
 
@@ -580,9 +638,9 @@ var Buffer = Module("buffer", {
      */
     findScrollable: function findScrollable(dir, horizontal) {
         function find(elem) {
-            while (elem && !(elem instanceof Element) && elem.parentNode)
+            while (elem && !(elem instanceof Ci.nsIDOMElement) && elem.parentNode)
                 elem = elem.parentNode;
-            for (; elem instanceof Element; elem = elem.parentNode)
+            for (; elem instanceof Ci.nsIDOMElement; elem = elem.parentNode)
                 if (Buffer.isScrollable(elem, dir, horizontal))
                     break;
 
@@ -605,20 +663,22 @@ var Buffer = Module("buffer", {
         if (elem)
             elem = find(elem);
 
-        if (!(elem instanceof Element)) {
+        if (!(elem instanceof Ci.nsIDOMElement)) {
             let doc = this.findScrollableWindow().document;
             elem = find(doc.body || doc.getElementsByTagName("body")[0] ||
                         doc.documentElement);
         }
         let doc = this.focusedFrame.document;
-        return dactyl.assert(elem || doc.body || doc.documentElement);
+        return util.assert(elem || doc.body || doc.documentElement);
     },
 
     /**
      * Find the best candidate scrollable frame in the current buffer.
      */
     findScrollableWindow: function findScrollableWindow() {
-        let win = window.document.commandDispatcher.focusedWindow;
+        let { document } = this.topWindow;
+
+        let win = document.commandDispatcher.focusedWindow;
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
             return win;
 
@@ -648,12 +708,14 @@ var Buffer = Module("buffer", {
      * @param {boolean} offScreen If true, include only off-screen elements. @optional
      */
     findJump: function findJump(arg, count, reverse, offScreen) {
+        let { options } = this.modules;
+
         const FUDGE = 10;
 
         marks.push();
 
         let path = options["jumptags"][arg];
-        dactyl.assert(path, _("error.invalidArgument", arg));
+        util.assert(path, _("error.invalidArgument", arg));
 
         let distance = reverse ? function (rect) -rect.top : function (rect) rect.top;
         let elems = [[e, distance(e.getBoundingClientRect())] for (e in path.matcher(this.focusedFrame.document))]
@@ -661,10 +723,10 @@ var Buffer = Module("buffer", {
                         .sort(function (a, b) a[1] - b[1])
 
         if (offScreen && !reverse)
-            elems = elems.filter(function (e) e[1] > this, window.innerHeight);
+            elems = elems.filter(function (e) e[1] > this, this.topWindow.innerHeight);
 
         let idx = Math.min((count || 1) - 1, elems.length);
-        dactyl.assert(idx in elems);
+        util.assert(idx in elems);
 
         let elem = elems[idx][0];
         elem.scrollIntoView(true);
@@ -683,7 +745,9 @@ var Buffer = Module("buffer", {
      *     count skips backwards.
      */
     shiftFrameFocus: function shiftFrameFocus(count) {
-        if (!(this.doc instanceof HTMLDocument))
+        let { dactyl } = this.modules;
+
+        if (!(this.doc instanceof Ci.nsIDOMHTMLDocument))
             return;
 
         let frames = this.allFrames();
@@ -692,7 +756,7 @@ var Buffer = Module("buffer", {
             return;
 
         // remove all hidden frames
-        frames = frames.filter(function (frame) !(frame.document.body instanceof HTMLFrameSetElement))
+        frames = frames.filter(function (frame) !(frame.document.body instanceof Ci.nsIDOMHTMLFrameSetElement))
                        .filter(function (frame) !frame.frameElement ||
             let (rect = frame.frameElement.getBoundingClientRect())
                 rect.width && rect.height);
@@ -731,6 +795,8 @@ var Buffer = Module("buffer", {
      * @param {Node} elem The element to query.
      */
     showElementInfo: function showElementInfo(elem) {
+        let { dactyl } = this.modules;
+
         dactyl.echo(<><!--L-->Element:<br/>{util.objectToString(elem, true)}</>, commandline.FORCE_MULTILINE);
     },
 
@@ -742,6 +808,8 @@ var Buffer = Module("buffer", {
      * @default The value of 'pageinfo'.
      */
     showPageInfo: function showPageInfo(verbose, sections) {
+        let { commandline, dactyl, options } = this.modules;
+
         let self = this;
 
         // Ctrl-g single line output
@@ -766,17 +834,19 @@ var Buffer = Module("buffer", {
             return template.table(title, action.call(self, true));
         }, <br/>);
 
-        dactyl.echo(list, commandline.FORCE_MULTILINE);
+        commandline.commandOutput(list);
     },
 
     /**
      * Stops loading and animations in the current content.
      */
     stop: function stop() {
+        let { config } = this.modules;
+
         if (config.stop)
             config.stop();
         else
-            config.browser.mCurrentBrowser.stop();
+            this.docShell.stop(this.docShell.STOP_ALL);
     },
 
     /**
@@ -785,8 +855,10 @@ var Buffer = Module("buffer", {
      */
     viewSelectionSource: function viewSelectionSource() {
         // copied (and tuned somewhat) from browser.jar -> nsContextMenu.js
+        let { document, window } = this.topWindow;
+
         let win = document.commandDispatcher.focusedWindow;
-        if (win == window)
+        if (win == this.topWindow)
             win = this.focusedFrame;
 
         let charset = win ? "charset=" + win.document.characterSet : null;
@@ -814,6 +886,10 @@ var Buffer = Module("buffer", {
      * @param {boolean} useExternalEditor View the source in the external editor.
      */
     viewSource: function viewSource(loc, useExternalEditor) {
+        let { dactyl, options } = this.modules;
+
+        let window = this.topWindow;
+
         let doc = this.focusedFrame.document;
 
         if (isObject(loc)) {
@@ -837,7 +913,7 @@ var Buffer = Module("buffer", {
 
                 let sh = history.session;
                 if (sh[sh.index].URI.spec == url)
-                    window.getWebNavigation().gotoIndex(sh.index);
+                    this.docShell.gotoIndex(sh.index);
                 else
                     dactyl.open(url, { hide: true });
             }
@@ -938,22 +1014,31 @@ var Buffer = Module("buffer", {
      *   closed range [Buffer.ZOOM_MIN, Buffer.ZOOM_MAX].
      */
     setZoom: function setZoom(value, fullZoom) {
-        dactyl.assert(value >= Buffer.ZOOM_MIN || value <= Buffer.ZOOM_MAX,
-                      _("zoom.outOfRange", Buffer.ZOOM_MIN, Buffer.ZOOM_MAX));
+        let { dactyl, statusline } = this.modules;
+        let { ZoomManager } = this;
 
-        if (fullZoom !== undefined)
+        util.assert(value >= Buffer.ZOOM_MIN || value <= Buffer.ZOOM_MAX,
+                    _("zoom.outOfRange", Buffer.ZOOM_MIN, Buffer.ZOOM_MAX));
+
+        if (fullZoom === undefined)
+            fullZoom = ZoomManager.useFullZoom;
+        else
             ZoomManager.useFullZoom = fullZoom;
+
+        value /= 100;
         try {
-            ZoomManager.zoom = value / 100;
+            this.contentViewer.textZoom =  fullZoom ? 1 : value;
+            this.contentViewer.fullZoom = !fullZoom ? 1 : value;
         }
         catch (e if e == Cr.NS_ERROR_ILLEGAL_VALUE) {
             return dactyl.echoerr(_("zoom.illegal"));
         }
 
-        if ("FullZoom" in window)
-            FullZoom._applySettingToPref();
+        if (fullZoom && services.has("contentPrefs"))
+            services.contentPrefs.setPref(this.uri, "browser.content.full-zoom",
+                                          value);
 
-        statusline.updateZoomLevel(value, ZoomManager.useFullZoom);
+        statusline.updateZoomLevel();
     },
 
     /**
@@ -970,6 +1055,8 @@ var Buffer = Module("buffer", {
      *     extreme in the given direction.
      */
     bumpZoomLevel: function bumpZoomLevel(steps, fullZoom) {
+        let { ZoomManager } = this;
+
         if (fullZoom === undefined)
             fullZoom = ZoomManager.useFullZoom;
 
@@ -977,20 +1064,20 @@ var Buffer = Module("buffer", {
         let cur = values.indexOf(ZoomManager.snap(ZoomManager.zoom));
         let i = Math.constrain(cur + steps, 0, values.length - 1);
 
-        dactyl.assert(i != cur || fullZoom != ZoomManager.useFullZoom);
+        util.assert(i != cur || fullZoom != ZoomManager.useFullZoom);
 
         this.setZoom(Math.round(values[i] * 100), fullZoom);
     },
 
     getAllFrames: deprecated("buffer.allFrames", "allFrames"),
-    scrollTop: deprecated("buffer.scrollToPercent", function scrollTop() buffer.scrollToPercent(null, 0)),
-    scrollBottom: deprecated("buffer.scrollToPercent", function scrollBottom() buffer.scrollToPercent(null, 100)),
-    scrollStart: deprecated("buffer.scrollToPercent", function scrollStart() buffer.scrollToPercent(0, null)),
-    scrollEnd: deprecated("buffer.scrollToPercent", function scrollEnd() buffer.scrollToPercent(100, null)),
-    scrollColumns: deprecated("buffer.scrollHorizontal", function scrollColumns(cols) buffer.scrollHorizontal("columns", cols)),
-    scrollPages: deprecated("buffer.scrollHorizontal", function scrollPages(pages) buffer.scrollVertical("pages", pages)),
+    scrollTop: deprecated("buffer.scrollToPercent", function scrollTop() this.scrollToPercent(null, 0)),
+    scrollBottom: deprecated("buffer.scrollToPercent", function scrollBottom() this.scrollToPercent(null, 100)),
+    scrollStart: deprecated("buffer.scrollToPercent", function scrollStart() this.scrollToPercent(0, null)),
+    scrollEnd: deprecated("buffer.scrollToPercent", function scrollEnd() this.scrollToPercent(100, null)),
+    scrollColumns: deprecated("buffer.scrollHorizontal", function scrollColumns(cols) this.scrollHorizontal("columns", cols)),
+    scrollPages: deprecated("buffer.scrollHorizontal", function scrollPages(pages) this.scrollVertical("pages", pages)),
     scrollTo: deprecated("Buffer.scrollTo", function scrollTo(x, y) this.win.scrollTo(x, y)),
-    textZoom: deprecated("buffer.zoomValue/buffer.fullZoom", function textZoom() config.browser.markupDocumentViewer.textZoom * 100)
+    textZoom: deprecated("buffer.zoomValue/buffer.fullZoom", function textZoom() this.contentViewer.markupDocumentViewer.textZoom * 100)
 }, {
     PageInfo: Struct("PageInfo", "name", "title", "action")
                         .localize("title"),
@@ -1011,9 +1098,9 @@ var Buffer = Module("buffer", {
     },
 
     Scrollable: function Scrollable(elem) {
-        if (elem instanceof Element)
+        if (elem instanceof Ci.nsIDOMElement)
             return elem;
-        if (isinstance(elem, [Window, Document]))
+        if (isinstance(elem, [Ci.nsIDOMWindow, Ci.nsIDOMDocument]))
             return {
                 __proto__: elem.documentElement || elem.ownerDocument.documentElement,
 
@@ -1034,11 +1121,13 @@ var Buffer = Module("buffer", {
         return elem;
     },
 
-    ZOOM_MIN: Class.Memoize(function () prefs.get("zoom.minPercent")),
-    ZOOM_MAX: Class.Memoize(function () prefs.get("zoom.maxPercent")),
+    get ZOOM_MIN() prefs.get("zoom.minPercent"),
+    get ZOOM_MAX() prefs.get("zoom.maxPercent"),
 
-    setZoom: deprecated("buffer.setZoom", function setZoom() buffer.setZoom.apply(buffer, arguments)),
-    bumpZoomLevel: deprecated("buffer.bumpZoomLevel", function bumpZoomLevel() buffer.bumpZoomLevel.apply(buffer, arguments)),
+    setZoom: deprecated("buffer.setZoom", function setZoom()
+                        let ({ buffer } = overlay.activeModules) buffer.setZoom.apply(buffer, arguments)),
+    bumpZoomLevel: deprecated("buffer.bumpZoomLevel", function bumpZoomLevel()
+                              let ({ buffer } = overlay.activeModules) buffer.bumpZoomLevel.apply(buffer, arguments)),
 
     /**
      * Returns the currently selected word in *win*. If the selection is
@@ -1047,12 +1136,14 @@ var Buffer = Module("buffer", {
      * @returns {string}
      */
     currentWord: function currentWord(win, select) {
+        let { options } = this.modules;
+
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
             return "";
 
         let range = selection.getRangeAt(0).cloneRange();
-        if (range.collapsed && range.startContainer instanceof Text) {
+        if (range.collapsed && range.startContainer instanceof Ci.nsIDOMText) {
             let re = options.get("iskeyword").regexp;
             Editor.extendRange(range, true,  re, true);
             Editor.extendRange(range, false, re, true);
@@ -1068,7 +1159,8 @@ var Buffer = Module("buffer", {
         let url = node.href || node.src || node.documentURI;
         let currExt = url.replace(/^.*?(?:\.([a-z0-9]+))?$/i, "$1").toLowerCase();
 
-        if (isinstance(node, [Document, HTMLImageElement])) {
+        if (isinstance(node, [Ci.nsIDOMDocument,
+                              Ci.nsIDOMHTMLImageElement])) {
             let type = node.contentType || node.QueryInterface(Ci.nsIImageLoadingContent)
                                                .getRequest(0).mimeType;
 
@@ -1090,7 +1182,7 @@ var Buffer = Module("buffer", {
         if (node.alt)
             names.push([node.alt, /*L*/"Alternate Text"]);
 
-        if (!isinstance(node, Document) && node.textContent)
+        if (!isinstance(node, Ci.nsIDOMDocument) && node.textContent)
             names.push([node.textContent, /*L*/"Link Text"]);
 
         names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")), "File Name"]);
@@ -1100,8 +1192,10 @@ var Buffer = Module("buffer", {
                                                        .replace(re, ext), title]);
     },
 
-    findScrollableWindow: deprecated("buffer.findScrollableWindow", function findScrollableWindow() buffer.findScrollableWindow.apply(buffer, arguments)),
-    findScrollable: deprecated("buffer.findScrollable", function findScrollable() buffer.findScrollable.apply(buffer, arguments)),
+    findScrollableWindow: deprecated("buffer.findScrollableWindow", function findScrollableWindow()
+                                     let ({ buffer } = overlay.activeModules) buffer.findScrollableWindow.apply(buffer, arguments)),
+    findScrollable: deprecated("buffer.findScrollable", function findScrollable()
+                               let ({ buffer } = overlay.activeModules) buffer.findScrollable.apply(buffer, arguments)),
 
     isScrollable: function isScrollable(elem, dir, horizontal) {
         if (!DOM(elem).isScrollable(horizontal ? "horizontal" : "vertical"))
@@ -1143,6 +1237,10 @@ var Buffer = Module("buffer", {
      *      {@link marks.push}. @optional
      */
     scrollTo: function scrollTo(elem, left, top, reason) {
+        let doc = elem.ownerDocument || elem.document || elem;
+
+        let { buffer, marks, options } = util.topWindow(doc.defaultView).dactyl.modules;
+
         if (~[elem, elem.document, elem.ownerDocument].indexOf(buffer.focusedFrame.document))
             marks.push(reason);
 
@@ -1161,6 +1259,8 @@ var Buffer = Module("buffer", {
      * marks.
      */
     smoothScrollTo: function smoothScrollTo(node, x, y) {
+        let { options } = overlay.activeModules;
+
         let time = options["scrolltime"];
         let steps = options["scrollsteps"];
 
@@ -1212,7 +1312,7 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
-        dactyl.assert(number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth);
+        util.assert(number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth);
 
         let left = node.dactylScrollDestX !== undefined ? node.dactylScrollDestX : elem.scrollLeft;
         node.dactylScrollDestX = undefined;
@@ -1221,7 +1321,7 @@ var Buffer = Module("buffer", {
     },
 
     /**
-     * Scrolls the currently given element vertically.
+     * Scrolls the given element vertically.
      *
      * @param {Element} elem The element to scroll.
      * @param {string} unit The increment by which to scroll.
@@ -1244,7 +1344,7 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
-        dactyl.assert(number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight);
+        util.assert(number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight);
 
         let top = node.dactylScrollDestY !== undefined ? node.dactylScrollDestY : elem.scrollTop;
         node.dactylScrollDestY = undefined;
@@ -1319,10 +1419,12 @@ var Buffer = Module("buffer", {
     },
 
     openUploadPrompt: function openUploadPrompt(elem) {
+        let { io } = overlay.activeModules;
+
         io.CommandFileMode(_("buffer.prompt.uploadFile") + " ", {
             onSubmit: function onSubmit(path) {
                 let file = io.File(path);
-                dactyl.assert(file.exists());
+                util.assert(file.exists());
 
                 DOM(elem).val(file.path).change();
             }
@@ -1330,184 +1432,7 @@ var Buffer = Module("buffer", {
     }
 }, {
     init: function init(dactyl, modules, window) {
-
-        Buffer.addPageInfoSection("e", "Search Engines", function (verbose) {
-
-            let n = 1;
-            let nEngines = 0;
-            for (let { document: doc } in values(this.allFrames())) {
-                let engines = DOM("link[href][rel=search][type='application/opensearchdescription+xml']", doc);
-                nEngines += engines.length;
-
-                if (verbose)
-                    for (let link in engines)
-                        yield [link.title || /*L*/ "Engine " + n++,
-                               <a xmlns={XHTML} href={link.href} onclick="if (event.button == 0) { window.external.AddSearchProvider(this.href); return false; }" highlight="URL">{link.href}</a>];
-            }
-
-            if (!verbose && nEngines)
-                yield nEngines + /*L*/" engine" + (nEngines > 1 ? "s" : "");
-        });
-
-        Buffer.addPageInfoSection("f", "Feeds", function (verbose) {
-            const feedTypes = {
-                "application/rss+xml": "RSS",
-                "application/atom+xml": "Atom",
-                "text/xml": "XML",
-                "application/xml": "XML",
-                "application/rdf+xml": "XML"
-            };
-
-            function isValidFeed(data, principal, isFeed) {
-                if (!data || !principal)
-                    return false;
-
-                if (!isFeed) {
-                    var type = data.type && data.type.toLowerCase();
-                    type = type.replace(/^\s+|\s*(?:;.*)?$/g, "");
-
-                    isFeed = ["application/rss+xml", "application/atom+xml"].indexOf(type) >= 0 ||
-                             // really slimy: general XML types with magic letters in the title
-                             type in feedTypes && /\brss\b/i.test(data.title);
-                }
-
-                if (isFeed) {
-                    try {
-                        window.urlSecurityCheck(data.href, principal,
-                                Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL);
-                    }
-                    catch (e) {
-                        isFeed = false;
-                    }
-                }
-
-                if (type)
-                    data.type = type;
-
-                return isFeed;
-            }
-
-            let nFeed = 0;
-            for (let [i, win] in Iterator(this.allFrames())) {
-                let doc = win.document;
-
-                for (let link in DOM("link[href][rel=feed], link[href][rel=alternate][type]", doc)) {
-                    let rel = link.rel.toLowerCase();
-                    let feed = { title: link.title, href: link.href, type: link.type || "" };
-                    if (isValidFeed(feed, doc.nodePrincipal, rel == "feed")) {
-                        nFeed++;
-                        let type = feedTypes[feed.type] || "RSS";
-                        if (verbose)
-                            yield [feed.title, template.highlightURL(feed.href, true) + <span class="extra-info">&#xa0;({type})</span>];
-                    }
-                }
-
-            }
-
-            if (!verbose && nFeed)
-                yield nFeed + /*L*/" feed" + (nFeed > 1 ? "s" : "");
-        });
-
-        Buffer.addPageInfoSection("g", "General Info", function (verbose) {
-            let doc = this.focusedFrame.document;
-
-            // get file size
-            const ACCESS_READ = Ci.nsICache.ACCESS_READ;
-            let cacheKey = doc.documentURI;
-
-            for (let proto in array.iterValues(["HTTP", "FTP"])) {
-                try {
-                    var cacheEntryDescriptor = services.cache.createSession(proto, 0, true)
-                                                       .openCacheEntry(cacheKey, ACCESS_READ, false);
-                    break;
-                }
-                catch (e) {}
-            }
-
-            let pageSize = []; // [0] bytes; [1] kbytes
-            if (cacheEntryDescriptor) {
-                pageSize[0] = util.formatBytes(cacheEntryDescriptor.dataSize, 0, false);
-                pageSize[1] = util.formatBytes(cacheEntryDescriptor.dataSize, 2, true);
-                if (pageSize[1] == pageSize[0])
-                    pageSize.length = 1; // don't output "xx Bytes" twice
-            }
-
-            let lastModVerbose = new Date(doc.lastModified).toLocaleString();
-            let lastMod = new Date(doc.lastModified).toLocaleFormat("%x %X");
-
-            if (lastModVerbose == "Invalid Date" || new Date(doc.lastModified).getFullYear() == 1970)
-                lastModVerbose = lastMod = null;
-
-            if (!verbose) {
-                if (pageSize[0])
-                    yield (pageSize[1] || pageSize[0]) + /*L*/" bytes";
-                yield lastMod;
-                return;
-            }
-
-            yield ["Title", doc.title];
-            yield ["URL", template.highlightURL(doc.location.href, true)];
-
-            let ref = "referrer" in doc && doc.referrer;
-            if (ref)
-                yield ["Referrer", template.highlightURL(ref, true)];
-
-            if (pageSize[0])
-                yield ["File Size", pageSize[1] ? pageSize[1] + " (" + pageSize[0] + ")"
-                                                : pageSize[0]];
-
-            yield ["Mime-Type", doc.contentType];
-            yield ["Encoding", doc.characterSet];
-            yield ["Compatibility", doc.compatMode == "BackCompat" ? "Quirks Mode" : "Full/Almost Standards Mode"];
-            if (lastModVerbose)
-                yield ["Last Modified", lastModVerbose];
-        });
-
-        this.addPageInfoSection("m", "Meta Tags", function (verbose) {
-            if (!verbose)
-                return [];
-
-            // get meta tag data, sort and put into pageMeta[]
-            let metaNodes = this.focusedFrame.document.getElementsByTagName("meta");
-
-            return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv), template.highlightURL(node.content)])
-                        .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
-        });
-
-        let identity = window.gIdentityHandler;
-        this.addPageInfoSection("s", "Security", function (verbose) {
-            if (!verbose || !identity)
-                return; // For now
-
-            // Modified from Firefox
-            function location(data) array.compact([
-                data.city, data.state, data.country
-            ]).join(", ");
-
-            switch (statusline.security) {
-            case "secure":
-            case "extended":
-                var data = identity.getIdentityData();
-
-                yield ["Host", identity.getEffectiveHost()];
-
-                if (statusline.security === "extended")
-                    yield ["Owner", data.subjectOrg];
-                else
-                    yield ["Owner", _("pageinfo.s.ownerUnverified", data.subjectOrg)];
-
-                if (location(data).length)
-                    yield ["Location", location(data)];
-
-                yield ["Verified by", data.caOrg];
-
-                if (identity._overrideService.hasMatchingOverride(identity._lastLocation.hostname,
-                                                              (identity._lastLocation.port || 443),
-                                                              data.cert, {}, {}))
-                    yield ["User exception", /*L*/"true"];
-                break;
-            }
-        });
+        init.superapply(this, arguments);
 
         dactyl.commands["buffer.viewSource"] = function (event) {
             let elem = event.originalTarget;
@@ -1515,10 +1440,12 @@ var Buffer = Module("buffer", {
             if (elem.hasAttribute("column"))
                 obj.column = elem.getAttribute("column");
 
-            buffer.viewSource(obj);
+            modules.buffer.viewSource(obj);
         };
     },
     commands: function initCommands(dactyl, modules, window) {
+        let { buffer, commands, config, options } = modules;
+
         commands.add(["frameo[nly]"],
             "Show only the current frame's page",
             function (args) {
@@ -1583,7 +1510,7 @@ var Buffer = Module("buffer", {
             {
                 argCount: "?",
                 completer: function (context) {
-                    completion.optionValue(context, "pageinfo", "+", "");
+                    modules.completion.optionValue(context, "pageinfo", "+", "");
                     context.title = ["Page Info"];
                 }
             });
@@ -1605,13 +1532,13 @@ var Buffer = Module("buffer", {
             },
             {
                 argCount: "?",
-                completer: function (context) completion.alternateStyleSheet(context),
+                completer: function (context) modules.completion.alternateStyleSheet(context),
                 literal: 0
             });
 
         commands.add(["re[load]"],
             "Reload the current web page",
-            function (args) { tabs.reload(config.browser.mCurrentTab, args.bang); },
+            function (args) { modules.tabs.reload(config.browser.mCurrentTab, args.bang); },
             {
                 argCount: "0",
                 bang: true
@@ -1621,7 +1548,9 @@ var Buffer = Module("buffer", {
         commands.add(["sav[eas]", "w[rite]"],
             "Save current document to disk",
             function (args) {
-                let doc = content.document;
+                let { commandline, io } = modules;
+                let { doc, win } = buffer;
+
                 let chosenData = null;
                 let filename = args[0];
 
@@ -1666,9 +1595,9 @@ var Buffer = Module("buffer", {
                 prefs.set("browser.download.lastDir", io.cwd.path);
 
                 try {
-                    var contentDisposition = content.QueryInterface(Ci.nsIInterfaceRequestor)
-                                                    .getInterface(Ci.nsIDOMWindowUtils)
-                                                    .getDocumentMetadata("content-disposition");
+                    var contentDisposition = win.QueryInterface(Ci.nsIInterfaceRequestor)
+                                                .getInterface(Ci.nsIDOMWindowUtils)
+                                                .getDocumentMetadata("content-disposition");
                 }
                 catch (e) {}
 
@@ -1681,12 +1610,14 @@ var Buffer = Module("buffer", {
                 argCount: "?",
                 bang: true,
                 completer: function (context) {
+                    let { buffer, completion } = modules;
+
                     if (context.filter[0] == "!")
                         return;
                     if (/^>>/.test(context.filter))
                         context.advance(/^>>\s*/.exec(context.filter)[0].length);
 
-                    completion.savePage(context, content.document);
+                    completion.savePage(context, buffer.doc);
                     context.fork("file", 0, completion, "file");
                 },
                 literal: 0
@@ -1703,7 +1634,7 @@ var Buffer = Module("buffer", {
             {
                 argCount: "?",
                 bang: true,
-                completer: function (context) completion.url(context, "bhf")
+                completer: function (context) modules.completion.url(context, "bhf")
             });
 
         commands.add(["zo[om]"],
@@ -1731,6 +1662,8 @@ var Buffer = Module("buffer", {
             });
     },
     completion: function initCompletion(dactyl, modules, window) {
+        let { CompletionContext, buffer, completion } = modules;
+
         completion.alternateStyleSheet = function alternateStylesheet(context) {
             context.title = ["Stylesheet", "Location"];
 
@@ -1745,6 +1678,8 @@ var Buffer = Module("buffer", {
         };
 
         completion.buffer = function buffer(context, visible) {
+            let { tabs } = modules;
+
             let filter = context.filter.toLowerCase();
 
             let defItem = { parent: { getTitle: function () "" } };
@@ -1799,7 +1734,7 @@ var Buffer = Module("buffer", {
                                 tab: tab,
                                 id: i,
                                 url: url,
-                                icon: tab.image || DEFAULT_FAVICON
+                                icon: tab.image || BookmarkCache.DEFAULT_FAVICON
                             };
                         });
                 }, vals);
@@ -1813,9 +1748,13 @@ var Buffer = Module("buffer", {
         };
     },
     events: function initEvents(dactyl, modules, window) {
+        let { buffer, config, events } = modules;
+
         events.listen(config.browser, "scroll", buffer.closure._updateBufferPosition, false);
     },
     mappings: function initMappings(dactyl, modules, window) {
+        let { Events, buffer, ex, mappings, modes, options, tabs } = modules;
+
         mappings.add([modes.NORMAL],
             ["y", "<yank-location>"], "Yank current location to the clipboard",
             function () { dactyl.clipboardWrite(buffer.uri.spec, true); });
@@ -1932,8 +1871,10 @@ var Buffer = Module("buffer", {
         mappings.add([modes.NORMAL], ["<Space>"],
             "Scroll down a full page",
             function (args) {
-                if (isinstance((services.focus.focusedWindow || content).document.activeElement,
-                               [HTMLInputElement, HTMLButtonElement, Ci.nsIDOMXULButtonElement]))
+                if (isinstance((services.focus.focusedWindow || buffer.win).document.activeElement,
+                               [Ci.nsIDOMHTMLInputElement,
+                                Ci.nsIDOMHTMLButtonElement,
+                                Ci.nsIDOMXULButtonElement]))
                     return Events.PASS;
 
                 buffer.scrollVertical("pages", Math.max(args.count, 1));
@@ -2014,7 +1955,8 @@ var Buffer = Module("buffer", {
 
                     let elements = array.flatten(frames.map(function (win) [m for (m in DOM.XPath(xpath, win.document))]))
                                         .filter(function (elem) {
-                        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
+                        if (isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
+                                              Ci.nsIDOMHTMLIFrameElement]))
                             return Editor.getEditor(elem.contentWindow);
 
                         elem = DOM(elem);
@@ -2144,6 +2086,8 @@ var Buffer = Module("buffer", {
             function () { buffer.showPageInfo(true); });
     },
     options: function initOptions(dactyl, modules, window) {
+        let { Option, buffer, completion, config, options } = modules;
+
         options.add(["encoding", "enc"],
             "The current buffer's character encoding",
             "string", "UTF-8",
@@ -2156,9 +2100,9 @@ var Buffer = Module("buffer", {
 
                     // Stolen from browser.jar/content/browser/browser.js, more or less.
                     try {
-                        config.browser.docShell.QueryInterface(Ci.nsIDocCharset).charset = val;
-                        PlacesUtils.history.setCharsetForURI(getWebNavigation().currentURI, val);
-                        window.getWebNavigation().reload(Ci.nsIWebNavigation.LOAD_FLAGS_CHARSET_CHANGE);
+                        buffer.docShell.QueryInterface(Ci.nsIDocCharset).charset = val;
+                        window.PlacesUtils.history.setCharsetForURI(buffer.uri, val);
+                        buffer.docShell.reload(Ci.nsIWebNavigation.LOAD_FLAGS_CHARSET_CHANGE);
                     }
                     catch (e) { dactyl.reportError(e); }
                     return null;
@@ -2300,10 +2244,197 @@ var Buffer = Module("buffer", {
             "Show current website without styling defined by the author",
             "boolean", false,
             {
-                setter: function (value) config.browser.markupDocumentViewer.authorStyleDisabled = value,
-                getter: function () config.browser.markupDocumentViewer.authorStyleDisabled
+                setter: function (value) buffer.contentViewer.authorStyleDisabled = value,
+                getter: function () buffer.contentViewer.authorStyleDisabled
             });
     }
 });
+
+Buffer.addPageInfoSection("e", "Search Engines", function (verbose) {
+    let n = 1;
+    let nEngines = 0;
+
+    for (let { document: doc } in values(this.allFrames())) {
+        let engines = DOM("link[href][rel=search][type='application/opensearchdescription+xml']", doc);
+        nEngines += engines.length;
+
+        if (verbose)
+            for (let link in engines)
+                yield [link.title || /*L*/ "Engine " + n++,
+                       <a xmlns={XHTML} href={link.href}
+                          onclick="if (event.button == 0) { window.external.AddSearchProvider(this.href); return false; }"
+                          highlight="URL">{link.href}</a>];
+    }
+
+    if (!verbose && nEngines)
+        yield nEngines + /*L*/" engine" + (nEngines > 1 ? "s" : "");
+});
+
+Buffer.addPageInfoSection("f", "Feeds", function (verbose) {
+    const feedTypes = {
+        "application/rss+xml": "RSS",
+        "application/atom+xml": "Atom",
+        "text/xml": "XML",
+        "application/xml": "XML",
+        "application/rdf+xml": "XML"
+    };
+
+    function isValidFeed(data, principal, isFeed) {
+        if (!data || !principal)
+            return false;
+
+        if (!isFeed) {
+            var type = data.type && data.type.toLowerCase();
+            type = type.replace(/^\s+|\s*(?:;.*)?$/g, "");
+
+            isFeed = ["application/rss+xml", "application/atom+xml"].indexOf(type) >= 0 ||
+                     // really slimy: general XML types with magic letters in the title
+                     type in feedTypes && /\brss\b/i.test(data.title);
+        }
+
+        if (isFeed) {
+            try {
+                services.security.checkLoadURIStrWithPrincipal(principal, data.href,
+                        services.security.DISALLOW_INHERIT_PRINCIPAL);
+            }
+            catch (e) {
+                isFeed = false;
+            }
+        }
+
+        if (type)
+            data.type = type;
+
+        return isFeed;
+    }
+
+    let nFeed = 0;
+    for (let [i, win] in Iterator(this.allFrames())) {
+        let doc = win.document;
+
+        for (let link in DOM("link[href][rel=feed], link[href][rel=alternate][type]", doc)) {
+            let rel = link.rel.toLowerCase();
+            let feed = { title: link.title, href: link.href, type: link.type || "" };
+            if (isValidFeed(feed, doc.nodePrincipal, rel == "feed")) {
+                nFeed++;
+                let type = feedTypes[feed.type] || "RSS";
+                if (verbose)
+                    yield [feed.title, template.highlightURL(feed.href, true) + <span class="extra-info">&#xa0;({type})</span>];
+            }
+        }
+
+    }
+
+    if (!verbose && nFeed)
+        yield nFeed + /*L*/" feed" + (nFeed > 1 ? "s" : "");
+});
+
+Buffer.addPageInfoSection("g", "General Info", function (verbose) {
+    let doc = this.focusedFrame.document;
+
+    // get file size
+    const ACCESS_READ = Ci.nsICache.ACCESS_READ;
+    let cacheKey = doc.documentURI;
+
+    for (let proto in array.iterValues(["HTTP", "FTP"])) {
+        try {
+            var cacheEntryDescriptor = services.cache.createSession(proto, 0, true)
+                                               .openCacheEntry(cacheKey, ACCESS_READ, false);
+            break;
+        }
+        catch (e) {}
+    }
+
+    let pageSize = []; // [0] bytes; [1] kbytes
+    if (cacheEntryDescriptor) {
+        pageSize[0] = util.formatBytes(cacheEntryDescriptor.dataSize, 0, false);
+        pageSize[1] = util.formatBytes(cacheEntryDescriptor.dataSize, 2, true);
+        if (pageSize[1] == pageSize[0])
+            pageSize.length = 1; // don't output "xx Bytes" twice
+    }
+
+    let lastModVerbose = new Date(doc.lastModified).toLocaleString();
+    let lastMod = new Date(doc.lastModified).toLocaleFormat("%x %X");
+
+    if (lastModVerbose == "Invalid Date" || new Date(doc.lastModified).getFullYear() == 1970)
+        lastModVerbose = lastMod = null;
+
+    if (!verbose) {
+        if (pageSize[0])
+            yield (pageSize[1] || pageSize[0]) + /*L*/" bytes";
+        yield lastMod;
+        return;
+    }
+
+    yield ["Title", doc.title];
+    yield ["URL", template.highlightURL(doc.location.href, true)];
+
+    let ref = "referrer" in doc && doc.referrer;
+    if (ref)
+        yield ["Referrer", template.highlightURL(ref, true)];
+
+    if (pageSize[0])
+        yield ["File Size", pageSize[1] ? pageSize[1] + " (" + pageSize[0] + ")"
+                                        : pageSize[0]];
+
+    yield ["Mime-Type", doc.contentType];
+    yield ["Encoding", doc.characterSet];
+    yield ["Compatibility", doc.compatMode == "BackCompat" ? "Quirks Mode" : "Full/Almost Standards Mode"];
+    if (lastModVerbose)
+        yield ["Last Modified", lastModVerbose];
+});
+
+Buffer.addPageInfoSection("m", "Meta Tags", function (verbose) {
+    if (!verbose)
+        return [];
+
+    // get meta tag data, sort and put into pageMeta[]
+    let metaNodes = this.focusedFrame.document.getElementsByTagName("meta");
+
+    return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv), template.highlightURL(node.content)])
+                .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
+});
+
+Buffer.addPageInfoSection("s", "Security", function (verbose) {
+    let { statusline } = this.modules
+
+    let identity = this.topWindow.gIdentityHandler;
+
+    if (!verbose || !identity)
+        return; // For now
+
+    // Modified from Firefox
+    function location(data) array.compact([
+        data.city, data.state, data.country
+    ]).join(", ");
+
+    switch (statusline.security) {
+    case "secure":
+    case "extended":
+        var data = identity.getIdentityData();
+
+        yield ["Host", identity.getEffectiveHost()];
+
+        if (statusline.security === "extended")
+            yield ["Owner", data.subjectOrg];
+        else
+            yield ["Owner", _("pageinfo.s.ownerUnverified", data.subjectOrg)];
+
+        if (location(data).length)
+            yield ["Location", location(data)];
+
+        yield ["Verified by", data.caOrg];
+
+        if (identity._overrideService.hasMatchingOverride(identity._lastLocation.hostname,
+                                                      (identity._lastLocation.port || 443),
+                                                      data.cert, {}, {}))
+            yield ["User exception", /*L*/"true"];
+        break;
+    }
+});
+
+} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+
+endModule();
 
 // vim: set fdm=marker sw=4 ts=4 et:

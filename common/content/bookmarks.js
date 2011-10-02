@@ -6,8 +6,6 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-var DEFAULT_FAVICON = "chrome://mozapps/skin/places/defaultFavicon.png";
-
 // also includes methods for dealing with keywords and search engines
 var Bookmarks = Module("bookmarks", {
     init: function () {

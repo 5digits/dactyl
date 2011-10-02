@@ -36,6 +36,7 @@ var Services = Module("Services", {
         this.add("clipboardHelper",     "@mozilla.org/widget/clipboardhelper;1",            "nsIClipboardHelper");
         this.add("commandLineHandler",  "@mozilla.org/commandlinehandler/general-startup;1?type=dactyl");
         this.add("console",             "@mozilla.org/consoleservice;1",                    "nsIConsoleService");
+        this.add("contentPrefs",        "@mozilla.org/content-pref/service;1",              "nsIContentPrefService");
         this.add("dactyl",              "@dactyl.googlecode.com/extra/utils",               "dactylIUtils");
         this.add("dactyl:",             this.PROTOCOL + "dactyl");
         this.add("debugger",            "@mozilla.org/js/jsd/debugger-service;1",           "jsdIDebuggerService");
@@ -63,6 +64,7 @@ var Services = Module("Services", {
         this.add("resource:",           this.PROTOCOL + "resource",                         ["nsIProtocolHandler", "nsIResProtocolHandler"]);
         this.add("runtime",             "@mozilla.org/xre/runtime;1",                       ["nsIXULAppInfo", "nsIXULRuntime"]);
         this.add("rdf",                 "@mozilla.org/rdf/rdf-service;1",                   "nsIRDFService");
+        this.add("security",            "@mozilla.org/scriptsecuritymanager;1",             "nsIScriptSecurityManager");
         this.add("sessionStore",        "@mozilla.org/browser/sessionstore;1",              "nsISessionStore");
         this.add("spell",               "@mozilla.org/spellchecker/engine;1",               "mozISpellCheckingEngine");
         this.add("stringBundle",        "@mozilla.org/intl/stringbundle;1",                 "nsIStringBundleService");

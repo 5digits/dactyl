@@ -19,9 +19,8 @@ var HintSession = Class("HintSession", CommandMode, {
 
         this.forceOpen = opts.forceOpen || dactyl.forceOpen;
 
-        // Hack.
-        if (!opts.window && modes.main == modes.OUTPUT_MULTILINE)
-            opts.window = commandline.widgets.multilineOutput.contentWindow;
+        if (!opts.window)
+            opts.window = modes.getStack(0).params.window;
 
         this.hintMode = hints.modes[mode];
         dactyl.assert(this.hintMode);
@@ -760,7 +759,7 @@ var Hints = Module("hints", {
         this.addMode("V", "View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true));
         this.addMode("y", "Yank hint location",                   function (elem, loc) dactyl.clipboardWrite(loc, true));
         this.addMode("Y", "Yank hint description",                function (elem) dactyl.clipboardWrite(elem.textContent || "", true));
-        this.addMode("c", "Open context menu",                    function (elem) buffer.openContextMenu(elem));
+        this.addMode("c", "Open context menu",                    function (elem) DOM(elem).contextmenu());
         this.addMode("i", "Show image",                           function (elem) dactyl.open(elem.src));
         this.addMode("I", "Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB));
 

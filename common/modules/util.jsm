@@ -506,6 +506,17 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         pattern.replace(/\\(.)/, function (m0, m1) chars.indexOf(m1) >= 0 ? m1 : m0),
 
     /**
+     * Returns the nsIDocShell for the given window.
+     *
+     * @param {Window} win The window for which to get the docShell.
+     * @returns {nsIDocShell}
+     */
+
+     docShell: function docShell(win)
+            win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+               .QueryInterface(Ci.nsIDocShell),
+
+    /**
      * Prints a message to the console. If *msg* is an object it is pretty
      * printed.
      *

@@ -227,6 +227,8 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         }
     }
 }, {
+    DEFAULT_FAVICON: "chrome://mozapps/skin/places/defaultFavicon.png",
+
     getAnnotation: function getAnnotation(item, anno)
         services.annotation.itemHasAnnotation(item, anno) ?
         services.annotation.getItemAnnotation(item, anno) : null,

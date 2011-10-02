@@ -215,7 +215,7 @@ var Help = Module("Help", {
     },
 
     flush: function flush(entries, time) {
-        cache.flushEntry("help", time);
+        cache.flushEntry("help.json", time);
 
         for (let entry in values(Array.concat(entries || [])))
             cache.flushEntry(entry, time);

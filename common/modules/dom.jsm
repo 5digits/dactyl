@@ -318,7 +318,7 @@ var DOM = Class("DOM", {
         }),
     }),
 
-    get rect() this[0].getBoundingClientRect(),
+    get rect() this[0] ? this[0].getBoundingClientRect() : {},
 
     get viewport() {
         let r = this.rect;
@@ -760,7 +760,7 @@ var DOM = Class("DOM", {
     dispatch: function dispatch(event, params, extraProps) {
         this.canceled = false;
         return this.each(function (elem) {
-            let evt = DOM.Event(this.document, event, params);
+            let evt = DOM.Event(this.document, event, params, elem);
             if (!DOM.Event.dispatch(elem, evt, extraProps))
                 this.canceled = true;
         }, this);
@@ -825,7 +825,7 @@ var DOM = Class("DOM", {
      * @param {Object} opts The pseudo-event. @optional
      */
     Event: Class("Event", {
-        init: function Event(doc, type, opts) {
+        init: function Event(doc, type, opts, target) {
             const DEFAULTS = {
                 HTML: {
                     type: type, bubbles: true, cancelable: false
@@ -842,8 +842,12 @@ var DOM = Class("DOM", {
                     bubbles: true, cancelable: true,
                     view: doc.defaultView,
                     detail: 1,
-                    screenX: 0, screenY: 0,
-                    clientX: 0, clientY: 0,
+                    get screenX() this.view.mozInnerScreenX
+                                + Math.max(0, this.clientX + (DOM(target || opts.target).rect.left || 0)),
+                    get screenY() this.view.mozInnerScreenY
+                                + Math.max(0, this.clientY + (DOM(target || opts.target).rect.top || 0)),
+                    clientX: 0,
+                    clientY: 0,
                     ctrlKey: false, altKey: false, shiftKey: false, metaKey: false,
                     button: 0,
                     relatedTarget: null
@@ -854,13 +858,12 @@ var DOM = Class("DOM", {
             var t = this.constructor.types[type] || "";
             var evt = doc.createEvent(t + "Events");
 
-            let defaults = DEFAULTS[t || "HTML"];
-            update(defaults, this.constructor.defaults[type]);
+            let params = DEFAULTS[t || "HTML"];
+            let args = Object.keys(params);
+            update(params, this.constructor.defaults[type],
+                   iter.toObject([k, opts[k]] for (k in opts) if (k in params)));
 
-            let args = Object.keys(defaults)
-                             .map(function (k) k in opts ? opts[k] : defaults[k])
-
-            evt["init" + t + "Event"].apply(evt, args);
+            evt["init" + t + "Event"].apply(evt, args.map(function (k) params[k]));
             return evt;
         }
     }, {
@@ -1203,7 +1206,8 @@ var DOM = Class("DOM", {
         types: Class.Memoize(function () iter(
             {
                 Mouse: "click mousedown mouseout mouseover mouseup " +
-                       "popupshowing popupshown popuphiding popuphidden",
+                       "popupshowing popupshown popuphiding popuphidden " +
+                       "contextmenu",
                 Key:   "keydown keypress keyup",
                 "":    "change command dactyl-input input submit " +
                        "load unload pageshow pagehide DOMContentLoaded"
