@@ -1137,7 +1137,7 @@ var Buffer = Module("Buffer", {
      * @returns {string}
      */
     currentWord: function currentWord(win, select) {
-        let { options } = this.modules;
+        let { Editor, options } = Buffer(win).modules;
 
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
