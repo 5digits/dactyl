@@ -1164,7 +1164,6 @@ var CommandLine = Module("commandline", {
         },
 
         nextItem: function nextItem(tuple, offset, noWrap) {
-            util.dumpStack("NEXTITEM(" + [tuple, offset, noWrap] + ")", 2);
             if (!this.activeContexts.length)
                 return null;
 
@@ -1380,6 +1379,9 @@ var CommandLine = Module("commandline", {
 
             while (this.tabs.length) {
                 [count, this.wildtypes] = this.tabs.shift();
+                let dir = count;
+                count = Math.abs(count);
+
                 let steps = Math.constrain(this.wildtypes.length - this.wildIndex, 1, count);
                 count = Math.max(1, count - steps);
 
@@ -1398,7 +1400,7 @@ var CommandLine = Module("commandline", {
                         // Fallthrough
                     case "full":
                         let c = steps ? 1 : count;
-                        this.select(c < 0 ? this.UP : this.DOWN, Math.abs(c), true);
+                        this.select(dir < 0 ? this.UP : this.DOWN, c, true);
                         break;
                     }
 
@@ -2093,8 +2095,6 @@ var ItemList = Class("ItemList", {
 
         get selectedIdx() this._selectedIdx,
         set selectedIdx(idx) {
-            if (idx == null && this._selectedIdx != null)
-                util.dumpStack("get selectedIdx " + this._selectedIdx + " => null " + this.context.name, 4);
             if (this.selectedRow && this._selectedIdx != idx)
                 DOM(this.selectedRow).attr("selected", null);
 
