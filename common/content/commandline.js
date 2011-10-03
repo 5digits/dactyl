@@ -1093,6 +1093,8 @@ var CommandLine = Module("commandline", {
 
         lastSubstring: "",
 
+        get activeContexts() this.context.activeContexts,
+
         get completion() {
             let str = commandline.command;
             return str.substring(this.prefix.length, str.length - this.suffix.length);
@@ -1144,15 +1146,40 @@ var CommandLine = Module("commandline", {
         haveType: function haveType(type)
             this.wildmode.checkHas(this.wildtype, type == "first" ? "" : type),
 
+        getItem: function getItem(tuple) {
+            tuple = tuple || this.selected;
+            return tuple[0].items[tuple[1]];
+        },
+
+        nextItem: function nextItem(tuple, offset, noWrap) {
+            if (!this.activeContexts.length)
+                return null;
+
+            if (tuple === undefined)
+                tuple = this.selected;
+            if (!tuple) {
+                // kludge.
+                noWrap = false;
+                if (offset < 0)
+                    tuple = [this.activeContexts[0], 0];
+                else {
+                    let ctxt = this.activeContexts.slice(-1)[0];
+                    tuple = [ctxt, ctxt.items.length - 1];
+                }
+            }
+
+            return this.itemList.getRelativeItem(offset || 1, tuple, noWrap);
+        },
+
         preview: function preview() {
             this.previewClear();
-            if (this.wildIndex < 0 || this.suffix || !this.items.length)
+            if (this.wildIndex < 0 || this.suffix || !this.activeContexts.length)
                 return;
 
             let substring = "";
             switch (this.wildtype.replace(/.*:/, "")) {
             case "":
-                substring = this.items[0].result;
+                substring = this.getItem(this.nextItem(null)).result;
                 break;
             case "longest":
                 if (this.items.length > 1) {
@@ -1161,9 +1188,9 @@ var CommandLine = Module("commandline", {
                 }
                 // Fallthrough
             case "full":
-                let item = this.items[this.selected != null ? this.selected + 1 : 0];
+                let item = this.nextItem();
                 if (item)
-                    substring = item.result;
+                    substring = this.getItem(item).result;
                 break;
             }
 
@@ -1237,10 +1264,10 @@ var CommandLine = Module("commandline", {
             if (group && group.context == context && this.completion) {
                 this.selected = null;
                 if (group.selectedIdx != null)
-                    this.selected = group.getOffset(group.selectedIdx);
+                    this.selected = [group.context, group.selectedIdx];
 
-                this.completion = this.selected in this.items ? this.items[this.selected].result
-                                                              : this.value;
+                this.completion = this.selected ? this.getItem().result
+                                                : this.value;
             }
 
             this.preview();
@@ -1248,102 +1275,78 @@ var CommandLine = Module("commandline", {
 
         _select: function _select(dir, idx) {
             switch (dir) {
-            case this.CTXT_UP:
-            case this.CTXT_DOWN:
-                let groups = this.itemList.activeGroups;
-                let i = Math.max(0, groups.indexOf(this.itemList.selectedGroup));
-
-                i += dir == this.CTXT_DOWN ? 1 : -1;
-                i %= groups.length;
-                if (i < 0)
-                    i += groups.length;
-
-                var position = 0;
-                var group = groups[i];
-                break;
-
-            case this.PAGE_UP:
-            case this.PAGE_DOWN:
-                [group, idx] = this.itemList.getRelativePage(dir == this.PAGE_DOWN ? 1 : -1);
-                group = this.itemList.getGroup(group);
-                break;
 
             default:
                 return false;
             }
 
-            this.wildIndex = this.wildtypes.length - 1;
-            this.selected  = group.offsets.start + idx;
-            this.completion = this.items[this.selected].result;
+            this.selected   = [group.context, idx];
+            this.completion = this.getItem().result;
 
             this.itemList.select(group.context, idx, position);
             return true;
         },
 
-        select: function select(idx, count) {
+        select: function select(idx, count, fromTab) {
+            count = count || 1;
+
             switch (idx) {
             case this.UP:
-                if (this.selected == null)
-                    idx = -1 - count;
-                else
-                    idx = this.selected - count;
-                break;
             case this.DOWN:
-                if (this.selected == null)
-                    idx = count - 1;
-                else
-                    idx = this.selected + count;
+                idx = this.nextItem(this.selected, idx == this.UP ? -count : count,
+                                    true);
                 break;
+
+            case this.CTXT_UP:
+            case this.CTXT_DOWN:
+                let groups = this.itemList.activeGroups;
+                let i = Math.max(0, groups.indexOf(this.itemList.selectedGroup));
+
+                i += idx == this.CTXT_DOWN ? 1 : -1;
+                i %= groups.length;
+                if (i < 0)
+                    i += groups.length;
+
+                var position = 0;
+                idx = [groups[i].context, 0];
+                break;
+
+            case this.PAGE_UP:
+            case this.PAGE_DOWN:
+                idx = this.itemList.getRelativePage(idx == this.PAGE_DOWN ? 1 : -1);
+                break;
+
             case this.RESET:
                 idx = null;
                 break;
+
             default:
-                if (this._select(idx, 0))
-                    return;
-                idx = Math.constrain(idx, 0, this.items.length - 1);
                 break;
             }
 
-            if (idx == -1 || this.items.length && idx >= this.items.length || idx == null) {
+            if (!fromTab)
+                this.wildIndex  = this.wildtypes.length - 1;
+
+            if (idx == null || !this.activeContexts.length) {
                 // Wrapped. Start again.
                 this.selected = null;
                 this.completion = this.value;
             }
             else {
-                // Wait for contexts to complete if necessary.
-                // FIXME: Need to make idx relative to individual contexts.
-                let list = this.context.contextList;
-                if (idx == -2)
-                    list = list.slice().reverse();
-                let n = 0;
-                try {
-                    this.waiting = true;
-                    for (let [, context] in Iterator(list)) {
-                        let done = function done() !(idx >= n + context.items.length || idx == -2 && !context.items.length);
-
-                        util.waitFor(function () !context.incomplete || done());
-                        if (done())
-                            break;
-
-                        n += context.items.length;
-                    }
-                }
-                finally {
-                    this.waiting = false;
-                }
-
-                // See previous FIXME. This will break if new items in
-                // a previous context come in.
-                if (idx < 0)
-                    idx = this.items.length - 1;
-                if (this.items.length == 0)
-                    return;
-
                 this.selected = idx;
-                this.completion = this.items[idx].result;
+                this.completion = this.getItem().result;
             }
 
-            this.itemList.selectItem(idx);
+            this.itemList.select(idx, null, position);
+
+            this.preview();
+
+            if (this.selected == null)
+                statusline.progress = "";
+            else
+                statusline.progress = _("completion.matchIndex",
+                                        this.itemList.getOffset(idx),
+                                        this.itemList.itemCount);
         },
 
         tabs: [],
@@ -1361,39 +1364,38 @@ var CommandLine = Module("commandline", {
                 this.complete(true, true);
 
             this.tabs.push([count, wildmode || options["wildmode"]]);
-            if (this.waiting)
+            if (this.waiting && false)
                 return;
 
             while (this.tabs.length) {
                 [count, this.wildtypes] = this.tabs.shift();
+                let steps = Math.constrain(this.wildtypes.length - this.wildIndex, 1, count);
+                count = Math.max(1, count - steps);
 
-                this.wildIndex = Math.min(this.wildIndex, this.wildtypes.length - 1);
-                switch (this.wildtype.replace(/.*:/, "")) {
-                case "":
-                    this.select(0);
-                    break;
-                case "longest":
-                    if (this.items.length > 1) {
-                        if (this.substring && this.substring.length > this.completion.length)
-                            this.completion = this.substring;
+                while (steps--) {
+                    this.wildIndex = Math.min(this.wildIndex, this.wildtypes.length - 1);
+                    switch (this.wildtype.replace(/.*:/, "")) {
+                    case "":
+                        this.select(this.nextItem(null));
+                        break;
+                    case "longest":
+                        if (this.items.length > 1) {
+                            if (this.substring && this.substring.length > this.completion.length)
+                                this.completion = this.substring;
+                            break;
+                        }
+                        // Fallthrough
+                    case "full":
+                        let c = steps ? 1 : count;
+                        this.select(c < 0 ? this.UP : this.DOWN, Math.abs(c), true);
                         break;
                     }
-                    // Fallthrough
-                case "full":
-                    this.select(count < 0 ? this.UP : this.DOWN, Math.abs(count));
-                    break;
+
+                    if (this.haveType("list"))
+                        this.itemList.visible = true;
+
+                    this.wildIndex++;
                 }
-
-                if (this.haveType("list"))
-                    this.itemList.visible = true;
-
-                this.wildIndex++;
-                this.preview();
-
-                if (this.selected == null)
-                    statusline.progress = "";
-                else
-                    statusline.progress = _("completion.matchIndex", this.selected + 1, this.items.length);
             }
 
             if (this.items.length == 0)
@@ -1732,30 +1734,43 @@ var ItemList = Class("ItemList", {
                                              || c.hasItems && c.items.length)
                            .map(this.getGroup, this),
 
-    getRelativePage: function getRelativePage(offset) {
+    getRelativeItem: function getRelativeItem(offset, tuple, noWrap) {
         let groups = this.activeGroups;
-        let group  = this.selectedGroup || groups[0];
 
-        let start = group.offsets.start + (group.selectedIdx || 0);
-        start = (start + (this.maxItems * offset)) % this.itemCount;;
+        let group = this.selectedGroup || groups[0];
+        let start = group.selectedIdx || 0;
+        if (tuple)
+            [group, start] = tuple;
+        group = this.getGroup(group);
+
+        start = (group.offsets.start + start + offset);
+        if (!noWrap)
+            start %= this.itemCount;
         if (start < 0)
             start += this.itemCount;
+
+        if (start < 0 || start >= this.itemCount)
+            return null;
 
         group = array.nth(groups, function (g) let (i = start - g.offsets.start) i >= 0 && i < g.itemCount, 0)
         return [group.context, start - group.offsets.start];
     },
 
+    getRelativePage: function getRelativePage(offset, tuple, noWrap) {
+        return this.getRelativeItem(offset * this.maxItems, tuple);
+    },
+
     open: function open(context) {
         this.context = context;
         this.nodes = {};
-        this.maxHeight = 0;
+        this.container.height = 0;
+        this.minHeight = 0;
         this.maxItems  = options["maxitems"];
 
         DOM(this.rootXML, this.doc, this.nodes)
             .appendTo(DOM(this.body).empty());
 
         this.update();
-        this.visible = true;
     },
 
     updateOffsets: function updateOffsets() {
@@ -1853,8 +1868,10 @@ var ItemList = Class("ItemList", {
     },
 
     select: function select(group, index, position) {
-        if (group && !(group instanceof ItemList.Group))
-            group = this.getGroup(group);
+        if (isArray(group))
+            [group, index] = group;
+
+        group = this.getGroup(group);
 
         if (this.selectedGroup && (!group || group != this.selectedGroup))
             this.selectedGroup.selectedIdx = null;
@@ -1915,8 +1932,12 @@ var ItemList = Class("ItemList", {
         this.select(group && group.context, idx);
     },
 
-    getGroup: function getGroup(context) context &&
-        context.getCache("itemlist-group", bind("Group", ItemList, this, context))
+    getGroup: function getGroup(context)
+        context instanceof ItemList.Group ? context
+                                          : context && context.getCache("itemlist-group",
+                                                                        bind("Group", ItemList, this, context)),
+
+    getOffset: function getOffset(tuple) this.getGroup(tuple[0]).getOffset(tuple[1])
 }, {
     RESIZE_BRIEF: 1 << 0,
 
