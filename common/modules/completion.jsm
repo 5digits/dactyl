@@ -304,10 +304,12 @@ var CompletionContext = Class("CompletionContext", {
             this._completions = items;
             this.itemCache[this.key] = items;
         }
+
         if (this._completions)
             this.hasItems = this._completions.length > 0;
+
         if (this.updateAsync && !this.noUpdate)
-            this.onUpdate();
+            util.trapErrors("onUpdate", this);
     },
 
     get createRow() this._createRow || template.completionRow, // XXX
@@ -1015,7 +1017,7 @@ var Completion = Module("completion", {
         };
 
         service.startSearch(context.filter, "", context.result, {
-            onSearchResult: function onSearchResult(search, result) {
+            onSearchResult: util.wrapCallback(function onSearchResult(search, result) {
                 if (result.searchResult <= result.RESULT_SUCCESS)
                     running[provider] = null;
 
@@ -1024,7 +1026,7 @@ var Completion = Module("completion", {
                     { url: result.getValueAt(i), title: result.getCommentAt(i), icon: result.getImageAt(i) }
                     for (i in util.range(0, result.matchCount))
                 ];
-            },
+            }),
             get onUpdateSearchResult() this.onSearchResult
         });
         running[provider] = true;

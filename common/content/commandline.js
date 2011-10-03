@@ -1029,8 +1029,11 @@ var CommandLine = Module("commandline", {
      */
     Completions: Class("Completions", {
         init: function init(input, session) {
+            let self = this;
+
             this.context = CompletionContext(input.QueryInterface(Ci.nsIDOMNSEditableElement).editor);
-            this.context.onUpdate = this.closure._reset;
+            this.context.onUpdate = function onUpdate() { self.asyncUpdate(this); };
+
             this.editor = input.editor;
             this.input = input;
             this.session = session;
@@ -1222,14 +1225,23 @@ var CommandLine = Module("commandline", {
             this.preview();
         },
 
-        _reset: function _reset() {
+        asyncUpdate: function asyncUpdate(context) {
             let value = this.editor.selection.focusNode.textContent;
             this.prefix = value.substring(0, this.start);
             this.value  = value.substring(this.start, this.caret);
             this.suffix = value.substring(this.caret);
 
-            this.itemList.update();
-            this.itemList.selectItem(this.selected);
+            this.itemList.updateContext(context);
+
+            let group = this.itemList.selectedGroup;
+            if (group && group.context == context && this.completion) {
+                this.selected = null;
+                if (group.selectedIdx != null)
+                    this.selected = group.getOffset(group.selectedIdx);
+
+                this.completion = this.selected in this.items ? this.items[this.selected].result
+                                                              : this.value;
+            }
 
             this.preview();
         },
@@ -1746,20 +1758,26 @@ var ItemList = Class("ItemList", {
         this.visible = true;
     },
 
+    updateOffsets: function updateOffsets() {
+        let total = this.itemCount;
+        let count = 0;
+        for each (let group in this.activeGroups) {
+            group.offsets = { start: count, end: total - count - group.itemCount };
+            count += group.itemCount;
+        }
+    },
+
     update: function update() {
         DOM(this.nodes.completions).empty();
 
         let container = DOM(this.nodes.completions);
         let groups = this.activeGroups;
-        let total  = this.itemCount;
-        let count  = 0;
         for each (let group in groups) {
             group.reset();
-            group.offsets = { start: count, end: total - count - group.itemCount };
-            count += group.itemCount;
-
             container.append(group.nodes.root);
         }
+
+        this.updateOffsets();
 
         DOM(this.nodes.noCompletions).toggle(!groups.length);
 
@@ -1767,6 +1785,21 @@ var ItemList = Class("ItemList", {
         this.select(groups[0] && groups[0].context, null);
 
         this._resize.tell();
+    },
+
+    updateContext: function updateContext(context) {
+        let group = this.getGroup(context);
+        this.updateOffsets();
+
+        if (~this.activeGroups.indexOf(group))
+            group.update();
+        else {
+            DOM(group.nodes.root).remove();
+            if (this.selectedGroup == group)
+                this.selectedGroup = null;
+        }
+
+        this.select(this.selectedGroup, this.selectedGroup.selectedIdx);
     },
 
     draw: function draw() {
@@ -1786,7 +1819,7 @@ var ItemList = Class("ItemList", {
     onResize: function onResize() {
         if (this.selectedGroup) {
             this.nodes.root.scrollIntoView(true);
-            DOM(this.selectedGroup.selectItem).scrollIntoView();
+            DOM(this.selectedGroup.selectRow).scrollIntoView();
         }
     },
 
@@ -1819,8 +1852,9 @@ var ItemList = Class("ItemList", {
         }
     },
 
-    select: function select(context, index, position) {
-        let group = this.getGroup(context);
+    select: function select(group, index, position) {
+        if (group && !(group instanceof ItemList.Group))
+            group = this.getGroup(group);
 
         if (this.selectedGroup && (!group || group != this.selectedGroup))
             this.selectedGroup.selectedIdx = null;
@@ -1922,13 +1956,31 @@ var ItemList = Class("ItemList", {
         get rescrollFunc() {
             let container = this.nodes.itemsContainer;
             let pos    = DOM(container).rect.top;
-            let start  = DOM(this.getItem(this.range.start)).rect.top;
-            let height = DOM(this.getItem(this.range.end - 1)).rect.bottom - start || 0;
+            let start  = DOM(this.getRow(this.range.start)).rect.top;
+            let height = DOM(this.getRow(this.range.end - 1)).rect.bottom - start || 0;
             let scroll = start + container.scrollTop - pos;
             return function () {
                 container.style.height = height + "px";
                 container.scrollTop = scroll;
             }
+        },
+
+        reset: function reset() {
+            this.nodes = {};
+            this.generatedRange = ItemList.Range(0, 0);
+
+            DOM.fromXML(this.rootXML, this.doc, this.nodes);
+        },
+
+        update: function update() {
+            this.generatedRange = ItemList.Range(0, 0);
+            DOM(this.nodes.items).empty();
+
+            if (this.context.message)
+                DOM(this.nodes.message).empty().append(<>{this.context.message}</>);
+
+            if (!this.selectedRow)
+                this.selectedIdx = null;
         },
 
         draw: function draw() {
@@ -1980,28 +2032,21 @@ var ItemList = Class("ItemList", {
             }
         },
 
-        reset: function reset() {
-            this.nodes   = {};
-            this.generatedRange = ItemList.Range(0, 0);
-
-            DOM.fromXML(this.rootXML, this.doc, this.nodes);
-        },
-
-        getItem: function getItem(idx) this.context.getRow(idx),
+        getRow: function getRow(idx) this.context.getRow(idx),
 
         getOffset: function getOffset(idx) this.offsets.start + (idx || 0),
 
-        get selectedItem() this.getItem(this._selectedIdx),
+        get selectedRow() this.getRow(this._selectedIdx),
 
         get selectedIdx() this._selectedIdx,
         set selectedIdx(idx) {
-            if (this.selectedItem && this._selectedIdx != idx)
-                DOM(this.selectedItem).attr("selected", null);
+            if (this.selectedRow && this._selectedIdx != idx)
+                DOM(this.selectedRow).attr("selected", null);
 
             this._selectedIdx = idx;
 
-            if (this.selectedItem)
-                DOM(this.selectedItem).attr("selected", true);
+            if (this.selectedRow)
+                DOM(this.selectedRow).attr("selected", true);
         }
     }),
 
