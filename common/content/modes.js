@@ -229,9 +229,12 @@ var Modes = Module("modes", {
         // when recording a macro
         let macromode = "";
         if (this.recording)
-            macromode = "recording";
+            macromode = " recording " + this.recording;
         else if (this.replaying)
-            macromode = "replaying";
+            macromode = " replaying";
+
+        if (!options.get("showmode").getKey(this.main.allBases, false))
+            return macromode;
 
         let val = this._modeMap[this._main].display();
         if (val)
@@ -306,9 +309,7 @@ var Modes = Module("modes", {
         if (!loaded.modes)
             return;
 
-        let msg = null;
-        if (options.get("showmode").getKey(this.main.allBases, false))
-            msg = this._getModeMessage();
+        let msg = this._getModeMessage();
 
         if (msg || loaded.commandline)
             commandline.widgets.mode = msg || null;

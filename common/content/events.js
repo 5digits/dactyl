@@ -244,7 +244,7 @@ var Events = Module("events", {
         dactyl.assert(macro == null || /[a-zA-Z0-9]/.test(macro),
                       _("macro.invalid", macro));
 
-        modes.recording = !!macro;
+        modes.recording = macro;
 
         if (/[A-Z]/.test(macro)) { // uppercase (append)
             macro = macro.toLowerCase();
