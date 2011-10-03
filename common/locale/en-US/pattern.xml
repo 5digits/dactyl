@@ -49,7 +49,7 @@
 
         <p>
             The following escape sequences can be used to modify the
-            behavior of the find. When flags conflict, the last to
+            behavior of the search. When flags conflict, the last to
             appear is the one that takes effect.
         </p>
 
@@ -58,13 +58,6 @@
             <dt>\C</dt> <dd>Perform case sensitive find (default if <o>findcase</o>=<str>match</str>).</dd>
             <dt>\l</dt> <dd>Search only in links, as defined by <o>hinttags</o>.</dd>
             <dt>\L</dt> <dd>Search the entire page.</dd>
-        </dl>
-
-        <p>
-            Additionally, if the /Find Bar/ extension is installed, the
-            following flags may be used,
-        </p>
-        <dl dt="width: 6em;">
             <dt>\r</dt> <dd>Process the entire pattern as a regular expression.</dd>
             <dt>\R</dt> <dd>Process the entire pattern as an ordinary string.</dd>
         </dl>

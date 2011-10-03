@@ -73,14 +73,6 @@
             <h3 tag="faq-lasttab">How can I prevent <k>d</k> on the last tab from closing the window?</h3>
             <p><ex>:set!</ex> <hl key="HelpOpt">browser.tabs.closeWindowWithLastTab</hl>=<hl key="Boolean">false</hl></p>
 
-            <h3 tag="faq-regexpsearch">How can I use regular expressions in the page search?</h3>
-            <p>
-                Regular expression search is possible with the <tt>/Find Bar/</tt>
-                extension installed, in which case it can be toggled with the
-                <em>\r</em> and <em>\R</em> search flags. See also
-                <ex>:help</ex> <t>pattern</t>.
-            </p>
-
             <h3 tag="faq-autocomplete"><strut/>How can I prevent the command line completion list showing until I press <k name="Tab"/>?</h3>
             <p>
                 You can disable it entirely with <se opt="autocomplete"/> or for
