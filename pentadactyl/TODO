@@ -21,7 +21,6 @@ FEATURES:
 8 wherever possible: get rid of dialogs and ask console-like dialog questions
   or write error prompts directly on the webpage or with :echo()
 8 registers
-8 Document Caret and Visual modes.
 8 add support for filename special characters such as %
 8 :redir and 'verbosefile'
 8 middleclick in content == p, and if command line is open, paste there the clipboard buffer

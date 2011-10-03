@@ -255,14 +255,18 @@
 </item>
 
 <item>
-    <tags><![CDATA[<Insert> i]]></tags>
+    <tags><![CDATA[<Insert>]]> i caret-mode visual-mode</tags>
     <strut/>
     <spec>i</spec>
     <description>
         <p>
-            Start Caret mode. This mode resembles the Vim's Normal mode where
-            the text cursor is visible on the web page. The <k link="false">v</k> key
-            enters Visual mode, where text is selected as the cursor moves.
+            Start Caret mode. This mode resembles Vim's Normal mode where the
+            text cursor is visible on the web page. The <k link="false">v</k>
+            key enters Visual mode, where text is selected as the cursor moves.
+        </p>
+        <p>
+            You can see all mappings effective in Caret or Visual mode using
+            the <ex>:listkeys</ex> command.
         </p>
     </description>
 </item>
