@@ -1754,6 +1754,9 @@ var ItemList = Class("ItemList", {
                                              || c.hasItems && c.items.length)
                            .map(this.getGroup, this),
 
+    get selected() let (g = this.selectedGroup) g && g.selectedIdx != null &&
+        [g.context, g.selectedIdx],
+
     getRelativeItem: function getRelativeItem(offset, tuple, noWrap) {
         let groups = this.activeGroups;
         if (!groups.length)
@@ -1777,7 +1780,7 @@ var ItemList = Class("ItemList", {
         start = (group.offsets.start + start + offset);
         if (!noWrap)
             start %= this.itemCount || 1;
-        if (start < 0)
+        if (start < 0 && (!noWrap || arguments[1] === null))
             start += this.itemCount;
 
         if (noWrap && offset > 0) {
@@ -1802,7 +1805,26 @@ var ItemList = Class("ItemList", {
     },
 
     getRelativePage: function getRelativePage(offset, tuple, noWrap) {
-        return this.getRelativeItem(offset * this.maxItems, tuple, noWrap);
+        offset *= this.maxItems;
+        // Try once with wrapping disabled.
+        let res = this.getRelativeItem(offset, tuple, true);
+
+        if (!res) {
+            // Wrapped.
+            let sign = offset / Math.abs(offset);
+
+            let off = this.getOffset(tuple === null ? null : tuple || this.selected);
+            if (off == null)
+                // Unselected. Defer to getRelativeItem.
+                res = this.getRelativeItem(offset, null, noWrap);
+            else if (~[0, this.itemCount - 1].indexOf(off))
+                // At start or end. Jump to other end.
+                res = this.getRelativeItem(sign, null, noWrap);
+            else
+                // Wrapped. Go to beginning or end.
+                res = this.getRelativeItem(-sign, null);
+        }
+        return res;
     },
 
     open: function open(context) {
