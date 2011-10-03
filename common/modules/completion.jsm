@@ -554,9 +554,10 @@ var CompletionContext = Class("CompletionContext", {
                 // item's text.
                 let len = substring.length;
                 let i = 0, n = len;
+                let result = item.result;
                 while (n) {
                     let m = Math.floor(n / 2);
-                    let keep = compare(fixCase(item.text), substring.substring(0, i + m));
+                    let keep = i + m && compare(fixCase(result), substring.substring(0, i + m));
                     if (!keep)
                         len = i + m - 1;
                     if (!keep || m == 0)
