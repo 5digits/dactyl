@@ -80,6 +80,7 @@ var Modes = Module("modes", {
             }
         });
         this.addMode("CARET", {
+            char: "caret",
             description: "Active when the caret is visible in the web content",
             bases: [this.NORMAL]
         }, {

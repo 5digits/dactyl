@@ -1569,6 +1569,7 @@ var Buffer = Module("Buffer", {
                         let file = io.File(filename.replace(/^>>\s*/, ""));
                         dactyl.assert(args.bang || file.exists() && file.isWritable(),
                                       _("io.notWriteable", file.path.quote()));
+
                         return buffer.viewSourceExternally(buffer.focusedFrame.document,
                             function (tmpFile) {
                                 try {
@@ -1580,7 +1581,7 @@ var Buffer = Module("Buffer", {
                             });
                     }
 
-                    let file = io.File(filename.replace(RegExp(File.PATH_SEP + "*$"), ""));
+                    let file = io.File(filename);
 
                     if (filename.substr(-1) === File.PATH_SEP || file.exists() && file.isDirectory())
                         file.append(Buffer.getDefaultNames(doc)[0][0]);

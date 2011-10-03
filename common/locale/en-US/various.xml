@@ -261,7 +261,7 @@
     <description>
         <p>
             Start Caret mode. This mode resembles Vim's Normal mode where the
-            text cursor is visible on the web page. The <k link="false">v</k>
+            text cursor is visible on the web page. The <k mode="caret">v</k>
             key enters Visual mode, where text is selected as the cursor moves.
         </p>
         <p>

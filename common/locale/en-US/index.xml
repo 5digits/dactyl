@@ -26,6 +26,8 @@ This file contains a list of all available commands, mappings and options.
 
 <h2 tag="n-map-index">Normal mode</h2>
 
+<h2 tag="caret-map-index">Caret mode</h2>
+
 <h2 tag="v-map-index">Visual mode</h2>
 
 <h2 tag="c-map-index">Command-line editing</h2>
