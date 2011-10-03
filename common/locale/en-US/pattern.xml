@@ -72,7 +72,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<find-forward> ?]]></tags>
+    <tags><![CDATA[<find-backward> ?]]></tags>
     <spec>?<a>pattern</a><k name="CR"/></spec>
     <description>
         <p>
@@ -99,7 +99,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<find-word-next> *]]></tags>
+    <tags><![CDATA[<find-word-forward> *]]></tags>
     <spec>*</spec>
     <description short="true">
         <p>Search forward for the next occurrence of the word under cursor.</p>
@@ -107,7 +107,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<find-word-previous> #]]></tags>
+    <tags><![CDATA[<find-word-backward> #]]></tags>
     <spec>#</spec>
     <description short="true">
         <p>Search backward for the previous occurrence of the word under cursor.</p>
