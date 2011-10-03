@@ -1877,10 +1877,8 @@ var ItemList = Class("ItemList", {
     },
 
     onResize: function onResize() {
-        if (this.selectedGroup) {
-            this.nodes.root.scrollIntoView(true);
-            DOM(this.selectedGroup.selectRow).scrollIntoView();
-        }
+        if (this.selectedGroup)
+            this.selectedGroup.rescrollFunc();
     },
 
     minHeight: 0,
@@ -1897,14 +1895,15 @@ var ItemList = Class("ItemList", {
         if (!this.visible)
             root.style.minWidth = "";
 
-        if (minHeight <= this.minHeight || !mow.visible)
-            this.container.height = this.minHeight;
+        let height = this.visible ? parseFloat(this.container.height) : 0;
+        if (this.minHeight <= minHeight || !mow.visible)
+            this.container.height = Math.min(this.minHeight,
+                                             height + config.outputHeight - mow.spaceNeeded);
         else {
             // FIXME: Belongs elsewhere.
             mow.resize(false, Math.max(0, this.minHeight - this.container.height));
 
-            this.container.height = this.minHeight;
-            this.container.height -= mow.spaceNeeded;
+            this.container.height = this.minHeight - mow.spaceNeeded;
             mow.resize(false);
             this.timeout(function () {
                 this.container.height -= mow.spaceNeeded;
@@ -2014,9 +2013,19 @@ var ItemList = Class("ItemList", {
             let start  = DOM(this.getRow(this.range.start)).rect.top;
             let height = DOM(this.getRow(this.range.end - 1)).rect.bottom - start || 0;
             let scroll = start + container.scrollTop - pos;
+
+            let win = this.win;
+            let row = this.selectedRow;
+            if (row) {
+                let { rect } = DOM(this.selectedRow);
+                var scrollY = this.win.scrollY + rect.bottom - this.win.innerHeight;
+            }
+
             return function () {
                 container.style.height = height + "px";
                 container.scrollTop = scroll;
+                if (scrollY != null)
+                    win.scrollTo(0, Math.max(scrollY, 0));
             }
         },
 

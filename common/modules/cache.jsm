@@ -80,6 +80,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
             }
             catch (e if e.result == Cr.NS_ERROR_FILE_CORRUPTED) {
                 util.reportError(e);
+                this.closeWriter();
                 this.cacheFile.remove(false);
             }
 

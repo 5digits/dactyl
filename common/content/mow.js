@@ -244,7 +244,7 @@ var MOW = Module("mow", {
 
         let doc = this.widget.contentDocument;
 
-        let trim = Math.max(0, DOM("#" + config.ids.commandContainer, document).rect.bottom - window.innerHeight);
+        let trim = this.spaceNeeded;
         let availableHeight = config.outputHeight - trim;
         if (this.visible)
             availableHeight += parseFloat(this.widgets.mowContainer.height || 0);
@@ -262,11 +262,7 @@ var MOW = Module("mow", {
         this.visible = true;
     },
 
-    get spaceNeeded() {
-        let rect = this.widgets.commandbar.commandline.getBoundingClientRect();
-        let offset = rect.bottom - window.innerHeight;
-        return Math.max(0, offset);
-    },
+    get spaceNeeded() Math.max(0, DOM("#" + config.ids.commandContainer, document).rect.bottom - window.innerHeight),
 
     /**
      * Update or remove the multi-line output widget's "MORE" prompt.
