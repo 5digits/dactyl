@@ -536,12 +536,15 @@
     </xsl:template>
     <xsl:template match="dactyl:xml-block" mode="help-2">
         <div dactyl:highlight="HelpXMLBlock">
-            <xsl:call-template name="xml-highlight"/>
+            <xsl:apply-templates mode="xml-highlight"/>
         </div>
     </xsl:template>
     <xsl:template match="dactyl:xml-highlight" mode="help-2">
-        <xsl:call-template name="xml-highlight"/>
+        <div dactyl:highlight="HelpXMLBlock">
+            <xsl:apply-templates mode="xml-highlight"/>
+        </div>
     </xsl:template>
+
 
     <!-- Plugins {{{1 -->
 
@@ -621,12 +624,6 @@
     </xsl:template>
 
     <!-- XML Highlighting (xsl:import doesn't work in Firefox 3.x) {{{1 -->
-    <xsl:template name="xml-highlight">
-        <div dactyl:highlight="HelpXML">
-            <xsl:apply-templates mode="xml-highlight"/>
-        </div>
-    </xsl:template>
-
     <xsl:template name="xml-namespace">
         <xsl:param name="node" select="."/>
         <xsl:if test="name($node) != local-name($node)">
