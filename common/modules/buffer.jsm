@@ -887,7 +887,7 @@ var Buffer = Module("Buffer", {
      * @param {boolean} useExternalEditor View the source in the external editor.
      */
     viewSource: function viewSource(loc, useExternalEditor) {
-        let { dactyl, options } = this.modules;
+        let { dactyl, history, options } = this.modules;
 
         let window = this.topWindow;
 
