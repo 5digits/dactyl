@@ -570,9 +570,10 @@ var Editor = Module("editor", {
         }
 
         function clear(forward, re)
-            function _clear(editor) {
+            function _clear(editor, elem) {
                 updateRange(editor, forward, re, function (range) {});
                 editor.selection.deleteFromDocument();
+                DOM(elem).input();
             }
 
         function move(forward, re)
@@ -680,7 +681,7 @@ var Editor = Module("editor", {
         bind(["<C-w>"], "Delete previous word",
              function () {
                  if (DOM(dactyl.focusedElement).isInput)
-                     clear(false, /\w/)(Editor.getEditor(null));
+                     clear(false, /\w/)(Editor.getEditor(null), dactyl.focusedElement);
                  else
                      editor.executeCommand("cmd_deleteWordBackward", 1);
              });

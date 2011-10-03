@@ -740,18 +740,18 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (params.mimeType)
                 xmlhttp.overrideMimeType(params.mimeType);
 
-            if (params.responseType)
-                xmlhttp.responseType = params.responseType;
-
             xmlhttp.open(params.method || "GET", url, async,
                          params.user, params.pass);
+
+            if (params.responseType)
+                xmlhttp.responseType = params.responseType;
 
             xmlhttp.send(params.data);
             return xmlhttp;
         }
         catch (e) {
             if (!params.quiet)
-                util.dactyl.log(_("error.cantOpen", String.quote(url), e), 1);
+                util.reportError(e);
             return null;
         }
     },
