@@ -254,7 +254,7 @@ var Events = Module("events", {
         else if (macro) {
             this._macroKeys = [];
         }
-        else {
+        else if (this.recording) {
             this._macros.set(this.recording, {
                 keys: this._macroKeys.join(""),
                 timeRecorded: Date.now()
