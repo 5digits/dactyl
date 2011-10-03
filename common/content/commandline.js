@@ -394,7 +394,6 @@ var CommandMode = Class("CommandMode", {
 
     events: {
         input: function CM_onInput(event) {
-            util.dumpStack();
             if (this.completions) {
                 this.resetCompletions();
 
@@ -1229,9 +1228,6 @@ var CommandLine = Module("commandline", {
         },
 
         nextItem: function nextItem(tuple, offset, noWrap) {
-            if (!this.activeContexts.length)
-                return null;
-
             if (tuple === undefined)
                 tuple = this.selected;
 
@@ -1246,7 +1242,7 @@ var CommandLine = Module("commandline", {
             let substring = "";
             switch (this.wildtype.replace(/.*:/, "")) {
             case "":
-                substring = this.getItem(this.nextItem(null)).result;
+                var cursor = this.nextItem(null);
                 break;
             case "longest":
                 if (this.items.length > 1) {
@@ -1255,11 +1251,11 @@ var CommandLine = Module("commandline", {
                 }
                 // Fallthrough
             case "full":
-                let item = this.nextItem();
-                if (item)
-                    substring = this.getItem(item).result;
+                cursor = this.nextItem();
                 break;
             }
+            if (cursor)
+                substring = this.getItem(cursor).result;
 
             // Don't show 1-character substrings unless we've just hit backspace
             if (substring.length < 2 && this.lastSubstring.indexOf(substring) !== 0)
@@ -1760,6 +1756,8 @@ var ItemList = Class("ItemList", {
 
     getRelativeItem: function getRelativeItem(offset, tuple, noWrap) {
         let groups = this.activeGroups;
+        if (!groups.length)
+            return null;
 
         let group = this.selectedGroup || groups[0];
         let start = group.selectedIdx || 0;
