@@ -1012,6 +1012,16 @@
 </item>
 
 <item>
+    <tags>'isk' 'iskeyword'</tags>
+    <spec>'iskeyword' 'isk'</spec>
+    <type>&option.iskeyword.type;</type>
+    <default>&option.iskeyword.default;</default>
+    <description>
+        <p>Regular expression defining which characters constitute words.</p>
+    </description>
+</item>
+
+<item>
     <tags>'nojsd' 'nojsdebugger'</tags>
     <tags>'jsd' 'jsdebugger'</tags>
     <spec>'jsdebugger' 'jsd'</spec>

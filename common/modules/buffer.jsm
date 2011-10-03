@@ -2113,7 +2113,7 @@ var Buffer = Module("Buffer", {
             });
 
         options.add(["iskeyword", "isk"],
-            "Regular expression defining which characters constitute word characters",
+            "Regular expression defining which characters constitute words",
             "string", '[^\\s.,!?:;/"\'^$%&?()[\\]{}<>#*+|=~_-]',
             {
                 setter: function (value) {
