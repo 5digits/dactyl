@@ -375,13 +375,18 @@ var CommandMode = Class("CommandMode", {
             if (this.history)
                 this.history.save();
 
+            let waiting = this.accepted && this.completions && this.completions.waiting;
+            if (waiting)
+                this.completions.onComplete = bind("onSubmit", this);
+
             this.resetCompletions();
             commandline.hideCompletions();
 
             modes.delay(function () {
                 if (!this.keepCommand || commandline.silent || commandline.quiet)
                     commandline.hide();
-                this[this.accepted ? "onSubmit" : "onCancel"](commandline.command);
+                if (!waiting)
+                    this[this.accepted ? "onSubmit" : "onCancel"](commandline.command);
                 if (commandline.messageCount === this.messageCount)
                     commandline.clearMessage();
             }, this);
@@ -422,11 +427,8 @@ var CommandMode = Class("CommandMode", {
     onSubmit: function (value) {},
 
     resetCompletions: function CM_resetCompletions() {
-        if (this.completions) {
-            this.completions.context.cancelAll();
-            this.completions.wildIndex = -1;
-            this.completions.previewClear();
-        }
+        if (this.completions)
+            this.completions.quit();
         if (this.history)
             this.history.reset();
     },
@@ -1069,6 +1071,14 @@ var CommandLine = Module("commandline", {
             this.autocompleteTimer.reset();
             this.itemList.visible = false;
             this.input.dactylKeyPress = undefined;
+            this.hasQuit = true;
+        },
+
+        quit: function quit() {
+            if (!this.onComplete)
+                this.context.cancelAll();
+            this.wildIndex = -1;
+            this.previewClear();
         },
 
         ignoredCount: 0,
@@ -1093,7 +1103,9 @@ var CommandLine = Module("commandline", {
 
         lastSubstring: "",
 
-        get activeContexts() this.context.activeContexts,
+        get activeContexts() this.context.contextList
+                                 .filter(function (c) c.incomplete
+                                                   || c.hasItems && c.items.length),
 
         get completion() {
             let str = commandline.command;
@@ -1148,32 +1160,23 @@ var CommandLine = Module("commandline", {
 
         getItem: function getItem(tuple) {
             tuple = tuple || this.selected;
-            return tuple[0].items[tuple[1]];
+            return tuple && tuple[0] && tuple[0].items[tuple[1]];
         },
 
         nextItem: function nextItem(tuple, offset, noWrap) {
+            util.dumpStack("NEXTITEM(" + [tuple, offset, noWrap] + ")", 2);
             if (!this.activeContexts.length)
                 return null;
 
             if (tuple === undefined)
                 tuple = this.selected;
-            if (!tuple) {
-                // kludge.
-                noWrap = false;
-                if (offset < 0)
-                    tuple = [this.activeContexts[0], 0];
-                else {
-                    let ctxt = this.activeContexts.slice(-1)[0];
-                    tuple = [ctxt, ctxt.items.length - 1];
-                }
-            }
 
             return this.itemList.getRelativeItem(offset || 1, tuple, noWrap);
         },
 
         preview: function preview() {
             this.previewClear();
-            if (this.wildIndex < 0 || this.suffix || !this.activeContexts.length)
+            if (this.wildIndex < 0 || this.suffix || !this.activeContexts.length || this.waiting)
                 return;
 
             let substring = "";
@@ -1235,6 +1238,7 @@ var CommandLine = Module("commandline", {
         },
 
         reset: function reset(show) {
+            this.waiting = null;
             this.wildIndex = -1;
 
             this.prefix = this.context.value.substring(0, this.start);
@@ -1253,6 +1257,16 @@ var CommandLine = Module("commandline", {
         },
 
         asyncUpdate: function asyncUpdate(context) {
+            if (this.hasQuit) {
+                let item = this.getItem(this.waiting);
+                if (item && this.waiting && this.onComplete) {
+                    this.onComplete(this.prefix + item.result + this.suffix);
+                    this.waiting = null;
+                    this.context.cancelAll();
+                }
+                return;
+            }
+
             let value = this.editor.selection.focusNode.textContent;
             this.prefix = value.substring(0, this.start);
             this.value  = value.substring(this.start, this.caret);
@@ -1260,31 +1274,21 @@ var CommandLine = Module("commandline", {
 
             this.itemList.updateContext(context);
 
-            let group = this.itemList.selectedGroup;
-            if (group && group.context == context && this.completion) {
-                this.selected = null;
-                if (group.selectedIdx != null)
-                    this.selected = [group.context, group.selectedIdx];
+            if (this.waiting && this.waiting[0] == context)
+                this.select(this.waiting);
+            else if (!this.waiting) {
+                let group = this.itemList.selectedGroup;
+                if (group && group.context == context && this.completion) {
+                    this.selected = null;
+                    if (group.selectedIdx != null)
+                        this.selected = [group.context, group.selectedIdx];
 
-                this.completion = this.selected ? this.getItem().result
-                                                : this.value;
+                    this.completion = this.selected ? this.getItem().result
+                                                    : this.value;
+                }
+
+                this.preview();
             }
-
-            this.preview();
-        },
-
-        _select: function _select(dir, idx) {
-            switch (dir) {
-
-            default:
-                return false;
-            }
-
-            this.selected   = [group.context, idx];
-            this.completion = this.getItem().result;
-
-            this.itemList.select(group.context, idx, position);
-            return true;
         },
 
         select: function select(idx, count, fromTab) {
@@ -1293,7 +1297,8 @@ var CommandLine = Module("commandline", {
             switch (idx) {
             case this.UP:
             case this.DOWN:
-                idx = this.nextItem(this.selected, idx == this.UP ? -count : count,
+                idx = this.nextItem(this.waiting || this.selected,
+                                    idx == this.UP ? -count : count,
                                     true);
                 break;
 
@@ -1325,7 +1330,15 @@ var CommandLine = Module("commandline", {
             }
 
             if (!fromTab)
-                this.wildIndex  = this.wildtypes.length - 1;
+                this.wildIndex = this.wildtypes.length - 1;
+
+            if (idx && idx[1] >= idx[0].items.length) {
+                this.waiting = idx;
+                statusline.progress = _("completion.waitingForResults");
+                return;
+            }
+
+            this.waiting = null;
 
             if (idx == null || !this.activeContexts.length) {
                 // Wrapped. Start again.
@@ -1364,8 +1377,6 @@ var CommandLine = Module("commandline", {
                 this.complete(true, true);
 
             this.tabs.push([count, wildmode || options["wildmode"]]);
-            if (this.waiting && false)
-                return;
 
             while (this.tabs.length) {
                 [count, this.wildtypes] = this.tabs.shift();
@@ -1398,7 +1409,7 @@ var CommandLine = Module("commandline", {
                 }
             }
 
-            if (this.items.length == 0)
+            if (this.items.length == 0 && !this.waiting)
                 dactyl.beep();
         }
     }),
@@ -1534,6 +1545,14 @@ var CommandLine = Module("commandline", {
 
         let bind = function bind()
             mappings.add.apply(mappings, [[modes.COMMAND_LINE]].concat(Array.slice(arguments)))
+
+        bind(["<Esc>", "<C-[>"], "Stop waiting for completions or exit Command Line mode",
+             function ({ self }) {
+                 if (self.completions && self.completions.waiting)
+                     self.completions.waiting = null;
+                 else
+                     return Events.PASS;
+             });
 
         // Any "non-keyword" character triggers abbreviation expansion
         // TODO: Add "<CR>" and "<Tab>" to this list
@@ -1739,15 +1758,38 @@ var ItemList = Class("ItemList", {
 
         let group = this.selectedGroup || groups[0];
         let start = group.selectedIdx || 0;
+        if (tuple === null) { // Kludge.
+            if (offset > 0)
+                tuple = [this.activeGroups[0], -1];
+            else {
+                let ctxt = this.activeContexts.slice(-1)[0];
+                tuple = [ctxt, ctxt.items.length];
+            }
+        }
         if (tuple)
             [group, start] = tuple;
+
         group = this.getGroup(group);
 
         start = (group.offsets.start + start + offset);
         if (!noWrap)
-            start %= this.itemCount;
+            start %= this.itemCount || 1;
         if (start < 0)
             start += this.itemCount;
+
+        if (noWrap && offset > 0) {
+            // Check if we've passed any incomplete contexts
+
+            let i = groups.indexOf(group);
+            for (; i < groups.length; i++) {
+                let end = groups[i].offsets.start + groups[i].itemCount;
+                if (start >= end && groups[i].context.incomplete)
+                    return [groups[i].context, start - groups[i].offsets.start];
+
+                if (start >= end);
+                    break;
+            }
+        }
 
         if (start < 0 || start >= this.itemCount)
             return null;
@@ -1814,7 +1856,8 @@ var ItemList = Class("ItemList", {
                 this.selectedGroup = null;
         }
 
-        this.select(this.selectedGroup, this.selectedGroup.selectedIdx);
+        let g = this.selectedGroup;
+        this.select(g, g && g.selectedIdx);
     },
 
     draw: function draw() {
@@ -1921,17 +1964,6 @@ var ItemList = Class("ItemList", {
         this.draw();
     },
 
-    selectItem: function selectItem(idx) {
-        if (idx != null)
-            for each (var group in this.activeGroups) {
-                if (idx < group.itemCount)
-                    break;
-                idx -= group.itemCount;
-            }
-
-        this.select(group && group.context, idx);
-    },
-
     getGroup: function getGroup(context)
         context instanceof ItemList.Group ? context
                                           : context && context.getCache("itemlist-group",
@@ -2000,7 +2032,7 @@ var ItemList = Class("ItemList", {
             if (this.context.message)
                 DOM(this.nodes.message).empty().append(<>{this.context.message}</>);
 
-            if (!this.selectedRow)
+            if (!this.selectedIdx > this.itemCount)
                 this.selectedIdx = null;
         },
 
@@ -2061,6 +2093,8 @@ var ItemList = Class("ItemList", {
 
         get selectedIdx() this._selectedIdx,
         set selectedIdx(idx) {
+            if (idx == null && this._selectedIdx != null)
+                util.dumpStack("get selectedIdx " + this._selectedIdx + " => null " + this.context.name, 4);
             if (this.selectedRow && this._selectedIdx != idx)
                 DOM(this.selectedRow).attr("selected", null);
 
