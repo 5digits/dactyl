@@ -248,8 +248,8 @@ var Events = Module("events", {
 
         if (/[A-Z]/.test(macro)) { // uppercase (append)
             macro = macro.toLowerCase();
-            this._macroKeys = DOM.Event.stringify((this._macros.get(macro) || { keys: "" }).keys, true)
-                                 .map(DOM.Event.closure.stringify);
+            this._macroKeys = DOM.Event.iterKeys((this._macros.get(macro) || { keys: "" }).keys)
+                                 .toArray();
         }
         else if (macro) {
             this._macroKeys = [];
