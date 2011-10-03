@@ -1361,9 +1361,7 @@ var CommandLine = Module("commandline", {
                                         this.itemList.itemCount);
         },
 
-        tabs: [],
-
-        tab: function tab(count, wildmode) {
+        tab: function tab(offset, wildmode) {
             this.autocompleteTimer.flush();
             this.ignoredCount = 0;
 
@@ -1375,40 +1373,34 @@ var CommandLine = Module("commandline", {
             if (this.context.waitingForTab || this.wildIndex == -1)
                 this.complete(true, true);
 
-            this.tabs.push([count, wildmode || options["wildmode"]]);
+            let count = Math.abs(offset);
+            let steps = Math.constrain(this.wildtypes.length - this.wildIndex,
+                                       1, count);
+            count = Math.max(1, count - steps);
 
-            while (this.tabs.length) {
-                [count, this.wildtypes] = this.tabs.shift();
-                let dir = count;
-                count = Math.abs(count);
-
-                let steps = Math.constrain(this.wildtypes.length - this.wildIndex, 1, count);
-                count = Math.max(1, count - steps);
-
-                while (steps--) {
-                    this.wildIndex = Math.min(this.wildIndex, this.wildtypes.length - 1);
-                    switch (this.wildtype.replace(/.*:/, "")) {
-                    case "":
-                        this.select(this.nextItem(null));
-                        break;
-                    case "longest":
-                        if (this.items.length > 1) {
-                            if (this.substring && this.substring.length > this.completion.length)
-                                this.completion = this.substring;
-                            break;
-                        }
-                        // Fallthrough
-                    case "full":
-                        let c = steps ? 1 : count;
-                        this.select(dir < 0 ? this.UP : this.DOWN, c, true);
+            while (steps--) {
+                this.wildIndex = Math.min(this.wildIndex, this.wildtypes.length - 1);
+                switch (this.wildtype.replace(/.*:/, "")) {
+                case "":
+                    this.select(this.nextItem(null));
+                    break;
+                case "longest":
+                    if (this.items.length > 1) {
+                        if (this.substring && this.substring.length > this.completion.length)
+                            this.completion = this.substring;
                         break;
                     }
-
-                    if (this.haveType("list"))
-                        this.itemList.visible = true;
-
-                    this.wildIndex++;
+                    // Fallthrough
+                case "full":
+                    let c = steps ? 1 : count;
+                    this.select(offset < 0 ? this.UP : this.DOWN, c, true);
+                    break;
                 }
+
+                if (this.haveType("list"))
+                    this.itemList.visible = true;
+
+                this.wildIndex++;
             }
 
             if (this.items.length == 0 && !this.waiting)
@@ -1764,8 +1756,8 @@ var ItemList = Class("ItemList", {
             if (offset > 0)
                 tuple = [this.activeGroups[0], -1];
             else {
-                let ctxt = this.activeContexts.slice(-1)[0];
-                tuple = [ctxt, ctxt.items.length];
+                let group = this.activeGroups.slice(-1)[0];
+                tuple = [group, group.itemCount];
             }
         }
         if (tuple)
@@ -1801,7 +1793,7 @@ var ItemList = Class("ItemList", {
     },
 
     getRelativePage: function getRelativePage(offset, tuple, noWrap) {
-        return this.getRelativeItem(offset * this.maxItems, tuple);
+        return this.getRelativeItem(offset * this.maxItems, tuple, noWrap);
     },
 
     open: function open(context) {
