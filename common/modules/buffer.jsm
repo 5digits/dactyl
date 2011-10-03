@@ -2439,4 +2439,4 @@ Buffer.addPageInfoSection("s", "Security", function (verbose) {
 
 endModule();
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
