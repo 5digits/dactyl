@@ -474,7 +474,7 @@ var DOM = Class("DOM", {
      */
     get xpath() {
         function quote(val) "'" + val.replace(/[\\']/g, "\\$&") + "'";
-        if (!this[0] instanceof Ci.nsIDOMElement)
+        if (!(this[0] instanceof Ci.nsIDOMElement))
             return null;
 
         let res = [];
@@ -1218,7 +1218,8 @@ var DOM = Class("DOM", {
                        "contextmenu",
                 Key:   "keydown keypress keyup",
                 "":    "change command dactyl-input input submit " +
-                       "load unload pageshow pagehide DOMContentLoaded"
+                       "load unload pageshow pagehide DOMContentLoaded " +
+                       "resize scroll"
             }
         ).map(function ([k, v]) v.split(" ").map(function (v) [v, k]))
          .flatten()

@@ -120,7 +120,7 @@ var MOW = Module("mow", {
         // after interpolated data.
         XML.ignoreWhitespace = XML.prettyPrinting = false;
 
-        highlightGroup = "CommandOutput " + (highlight || "");
+        highlightGroup = "CommandOutput " + (highlightGroup || "");
 
         if (isObject(data) && !isinstance(data, _)) {
             this.lastOutput = null;

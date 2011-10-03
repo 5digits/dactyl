@@ -1234,6 +1234,40 @@ var CommandLine = Module("commandline", {
             this.preview();
         },
 
+        _select: function _select(dir, idx) {
+            switch (dir) {
+            case this.CTXT_UP:
+            case this.CTXT_DOWN:
+                let groups = this.itemList.activeGroups;
+                let i = Math.max(0, groups.indexOf(this.itemList.selectedGroup));
+
+                i += dir == this.CTXT_DOWN ? 1 : -1;
+                i %= groups.length;
+                if (i < 0)
+                    i += groups.length;
+
+                var position = 0;
+                var group = groups[i];
+                break;
+
+            case this.PAGE_UP:
+            case this.PAGE_DOWN:
+                [group, idx] = this.itemList.getRelativePage(dir == this.PAGE_DOWN ? 1 : -1);
+                group = this.itemList.getGroup(group);
+                break;
+
+            default:
+                return false;
+            }
+
+            this.wildIndex = this.wildtypes.length - 1;
+            this.selected  = group.offsets.start + idx;
+            this.completion = this.items[this.selected].result;
+
+            this.itemList.select(group.context, idx, position);
+            return true;
+        },
+
         select: function select(idx, count) {
             switch (idx) {
             case this.UP:
@@ -1252,6 +1286,8 @@ var CommandLine = Module("commandline", {
                 idx = null;
                 break;
             default:
+                if (this._select(idx, 0))
+                    return;
                 idx = Math.constrain(idx, 0, this.items.length - 1);
                 break;
             }
@@ -1508,10 +1544,10 @@ var CommandLine = Module("commandline", {
              });
 
         [
-            [["<Up>", "<A-p>"],                   "previous matching", true,  true],
-            [["<S-Up>", "<C-p>", "<PageUp>"],     "previous",          true,  false],
-            [["<Down>", "<A-n>"],                 "next matching",     false, true],
-            [["<S-Down>", "<C-n>", "<PageDown>"], "next",              false, false]
+            [["<Up>", "<A-p>", "<cmd-prev-match>"],   "previous matching", true,  true],
+            [["<S-Up>", "<C-p>", "<cmd-prev>"],       "previous",          true,  false],
+            [["<Down>", "<A-n>", "<cmd-next-match>"], "next matching",     false, true],
+            [["<S-Down>", "<C-n>", "<cmd-next>"],     "next",              false, false]
         ].forEach(function ([keys, desc, up, search]) {
             bind(keys, "Recall the " + desc + " command line from the history list",
                  function ({ self }) {
@@ -1520,16 +1556,46 @@ var CommandLine = Module("commandline", {
                  });
         });
 
-        bind(["<A-Tab>", "<Tab>"], "Select the next matching completion item",
+        bind(["<A-Tab>", "<Tab>", "<A-compl-next>", "<compl-next>"],
+             "Select the next matching completion item",
              function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
                  self.completions.onTab(keypressEvents[0]);
              });
 
-        bind(["<A-S-Tab>", "<S-Tab>"], "Select the previous matching completion item",
+        bind(["<A-S-Tab>", "<S-Tab>", "<A-compl-prev>", "<compl-prev>"],
+             "Select the previous matching completion item",
              function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
                  self.completions.onTab(keypressEvents[0]);
+             });
+
+        bind(["<C-Tab>", "<compl-next-group>"], "Select the next matching completion group",
+             function ({ keypressEvents, self }) {
+                 dactyl.assert(self.completions);
+                 self.completions.tabTimer.flush();
+                 self.completions.select(self.completions.CTXT_DOWN);
+             });
+
+        bind(["<C-S-Tab>", "<compl-prev-group>"], "Select the previous matching completion group",
+             function ({ keypressEvents, self }) {
+                 dactyl.assert(self.completions);
+                 self.completions.tabTimer.flush();
+                 self.completions.select(self.completions.CTXT_UP);
+             });
+
+        bind(["<C-f>", "<PageDown>", "<compl-next-page>"], "Select the next page of completions",
+             function ({ keypressEvents, self }) {
+                 dactyl.assert(self.completions);
+                 self.completions.tabTimer.flush();
+                 self.completions.select(self.completions.PAGE_DOWN);
+             });
+
+        bind(["<C-b>", "<PageUp>", "<compl-prev-page>"], "Select the previous page of completions",
+             function ({ keypressEvents, self }) {
+                 dactyl.assert(self.completions);
+                 self.completions.tabTimer.flush();
+                 self.completions.select(self.completions.PAGE_UP);
              });
 
         bind(["<BS>", "<C-h>"], "Delete the previous character",
@@ -1605,8 +1671,8 @@ var CommandLine = Module("commandline", {
  *     necessary.
  */
 
-var NewItemList = Class("ItemList", {
-    CONTEXT_LINES: 3,
+var ItemList = Class("ItemList", {
+    CONTEXT_LINES: 2,
 
     init: function init(frame) {
         this.frame = frame;
@@ -1618,14 +1684,20 @@ var NewItemList = Class("ItemList", {
 
         highlight.highlightNode(this.doc.body, "Comp");
 
-        this._resize = Timer(20, 400, function _resize() {
+        this._onResize = Timer(20, 400, function _onResize(event) {
             if (this.visible)
-                this.resize();
+                this.onResize(event);
         }, this);
+        this._resize = Timer(20, 400, function _resize(flags) {
+            if (this.visible)
+                this.resize(flags);
+        }, this);
+
+        DOM(this.win).resize(this._onResize.closure.tell);
     },
 
     get rootXML() <e4x>
-        <div highlight="Normal" style="white-space: nowrap">
+        <div highlight="Normal" style="white-space: nowrap" key="root">
             <div key="wrapper">
                 <div highlight="Completions" key="noCompletions"><span highlight="Title">{_("completion.noCompletions")}</span></div>
                 <div key="completions"/>
@@ -1638,6 +1710,8 @@ var NewItemList = Class("ItemList", {
         </div>
     </e4x>.elements(),
 
+    get itemCount() this.context.allItems.items.length,
+
     get visible() !this.container.collapsed,
     set visible(val) this.container.collapsed = !val,
 
@@ -1646,12 +1720,24 @@ var NewItemList = Class("ItemList", {
                                              || c.hasItems && c.items.length)
                            .map(this.getGroup, this),
 
+    getRelativePage: function getRelativePage(offset) {
+        let groups = this.activeGroups;
+        let group  = this.selectedGroup || groups[0];
+
+        let start = group.offsets.start + (group.selectedIdx || 0);
+        start = (start + (this.maxItems * offset)) % this.itemCount;;
+        if (start < 0)
+            start += this.itemCount;
+
+        group = array.nth(groups, function (g) let (i = start - g.offsets.start) i >= 0 && i < g.itemCount, 0)
+        return [group.context, start - group.offsets.start];
+    },
+
     open: function open(context) {
-        util.dump("\n\n\n\n");
-        util.dump("OPEN()");
         this.context = context;
-        this.nodes = {x:1};
-        this.maxItems = options["maxitems"];
+        this.nodes = {};
+        this.maxHeight = 0;
+        this.maxItems  = options["maxitems"];
 
         DOM(this.rootXML, this.doc, this.nodes)
             .appendTo(DOM(this.body).empty());
@@ -1661,26 +1747,29 @@ var NewItemList = Class("ItemList", {
     },
 
     update: function update() {
-        util.dump("\n\n");
-        util.dump("UPDATE()");
         DOM(this.nodes.completions).empty();
 
-        let groups = this.activeGroups;
         let container = DOM(this.nodes.completions);
+        let groups = this.activeGroups;
+        let total  = this.itemCount;
+        let count  = 0;
         for each (let group in groups) {
             group.reset();
+            group.offsets = { start: count, end: total - count - group.itemCount };
+            count += group.itemCount;
+
             container.append(group.nodes.root);
         }
 
         DOM(this.nodes.noCompletions).toggle(!groups.length);
 
+        this.startPos = null;
         this.select(groups[0] && groups[0].context, null);
 
         this._resize.tell();
     },
 
     draw: function draw() {
-        util.dump("DRAW()");
         for each (let group in this.activeGroups)
             group.draw();
 
@@ -1690,35 +1779,47 @@ var NewItemList = Class("ItemList", {
         this.activeGroups.filter(function (g) !g.collapsed)
             .map(function (g) g.rescrollFunc)
             .forEach(function (f) f());
+
+        this._resize.tell(ItemList.RESIZE_BRIEF);
+    },
+
+    onResize: function onResize() {
+        if (this.selectedGroup) {
+            this.nodes.root.scrollIntoView(true);
+            DOM(this.selectedGroup.selectItem).scrollIntoView();
+        }
     },
 
     minHeight: 0,
-    resize: function resize() {
-        util.dump("RESIZE()");
+    resize: function resize(flags) {
         let { completions, root } = this.nodes;
 
         if (!this.visible)
             root.style.minWidth = document.getElementById("dactyl-commandline").scrollWidth + "px";
 
+        let { minHeight } = this;
         this.minHeight = Math.max(this.minHeight,
                                   this.win.scrollY + DOM(completions).rect.bottom);
 
         if (!this.visible)
             root.style.minWidth = "";
 
-        // FIXME: Belongs elsewhere.
-        mow.resize(false, Math.max(0, this.minHeight - this.container.height));
+        if (minHeight <= this.minHeight || !mow.visible)
+            this.container.height = this.minHeight;
+        else {
+            // FIXME: Belongs elsewhere.
+            mow.resize(false, Math.max(0, this.minHeight - this.container.height));
 
-        this.container.height = this.minHeight;
-        this.container.height -= mow.spaceNeeded;
-        mow.resize(false);
-        this.timeout(function () {
+            this.container.height = this.minHeight;
             this.container.height -= mow.spaceNeeded;
-        });
+            mow.resize(false);
+            this.timeout(function () {
+                this.container.height -= mow.spaceNeeded;
+            });
+        }
     },
 
     select: function select(context, index, position) {
-        util.dump("SELECT()");
         let group = this.getGroup(context);
 
         if (this.selectedGroup && (!group || group != this.selectedGroup))
@@ -1729,49 +1830,42 @@ var NewItemList = Class("ItemList", {
         if (group)
             group.selectedIdx = index;
 
-        if (position != null)
-            this.selectionPosition = position;
-
         let groups = this.activeGroups;
+
+        if (position != null || !this.startPos && groups.length)
+            this.startPos = [group || groups[0], position || 0];
+
         if (groups.length) {
             group = group || groups[0];
             let idx = groups.indexOf(group);
 
+            let start  = this.startPos[0].getOffset(this.startPos[1]);
+            if (group) {
+                let idx = group.selectedIdx || 0;
+                let off = group.getOffset(idx);
+
+                start = Math.constrain(start,
+                                       off + Math.min(this.CONTEXT_LINES, group.itemCount - idx + group.offsets.end)
+                                           - this.maxItems + 1,
+                                       off - Math.min(this.CONTEXT_LINES, idx + group.offsets.start));
+            }
+
             let count = this.maxItems;
-            group.count = Math.min((group.selectedIdx || 0) + this.CONTEXT_LINES,
-                                   group.itemCount, count);
-            count -= group.count;
+            for each (let group in groups) {
+                let off = Math.max(0, start - group.offsets.start);
 
-            for (let i = idx - 1; i >= 0; i--) {
-                let group = groups[i];
-                group.count = Math.min(group.itemCount, count);
+                group.count = Math.constrain(group.itemCount - off, 0, count);
                 count -= group.count;
-            }
 
-            let n = group.count;
-            group.count = Math.min(group.count + count, group.itemCount);
-            count -= group.count - n;
+                group.collapsed = group.offsets.start >= start + this.maxItems
+                               || group.offsets.start + group.itemCount < start;
 
-            for (let i = idx + 1; i < groups.length; i++) {
-                let group = groups[i];
-                group.count = Math.min(group.itemCount, count);
-                count -= group.count;
-            }
+                group.range = ItemList.Range(off, off + group.count);
 
-            for (let [i, group] in Iterator(groups)) {
-                group.collapsed = group.count == 0;
-                if (i < idx)
-                    group.range = ItemList.Range(group.itemCount - group.count,
-                                                 group.itemCount);
-                else if (i > idx)
-                    group.range = ItemList.Range(0, group.count);
-                else {
-                    let end = Math.max(group.count,
-                                       Math.min(group.selectedIdx + this.CONTEXT_LINES,
-                                                group.itemCount));
-                    group.range = ItemList.Range(end - group.count, end);
-                }
+                if (!startPos)
+                    var startPos = [group, group.range.start];
             }
+            this.startPos = startPos;
         }
         this.draw();
     },
@@ -1790,12 +1884,16 @@ var NewItemList = Class("ItemList", {
     getGroup: function getGroup(context) context &&
         context.getCache("itemlist-group", bind("Group", ItemList, this, context))
 }, {
+    RESIZE_BRIEF: 1 << 0,
+
     WAITING_MESSAGE: _("completion.generating"),
 
     Group: Class("ItemList.Group", {
         init: function init(parent, context) {
             this.parent  = parent;
             this.context = context;
+            this.offsets = {};
+            this.range   = ItemList.Range(0, 0);
         },
 
         get rootXML()
@@ -1828,24 +1926,18 @@ var NewItemList = Class("ItemList", {
             let height = DOM(this.getItem(this.range.end - 1)).rect.bottom - start || 0;
             let scroll = start + container.scrollTop - pos;
             return function () {
-                container.scrollTop = scroll;
                 container.style.height = height + "px";
+                container.scrollTop = scroll;
             }
         },
 
         draw: function draw() {
-            util.dump("draw(" + [this.collapsed, this.itemCount, this.count] + ") [" +
-                                (!this.collapsed && [this.range.start, this.range.end]) + ") [" +
-                                [this.generatedRange.start,
-                                 this.generatedRange.end] + ") " +
-                                (!this.collapsed && this.generatedRange.contains(this.range)));
-
             DOM(this.nodes.contents).toggle(!this.collapsed);
             if (this.collapsed)
                 return;
 
             DOM(this.nodes.message).toggle(this.context.message && this.range.start == 0);
-            DOM(this.nodes.waiting).toggle(this.context.incomplete && this.range.end < this.itemCount);
+            DOM(this.nodes.waiting).toggle(this.context.incomplete && this.range.end <= this.itemCount);
             DOM(this.nodes.up).toggle(this.range.start > 0);
             DOM(this.nodes.down).toggle(this.range.end < this.itemCount);
 
@@ -1858,9 +1950,8 @@ var NewItemList = Class("ItemList", {
                     end   = this.range.end   + (this.range.end > this.generatedRange.end
                                                     ? this.maxItems / 2 : 0);
                 }
-                util.dump("  refill [" + [start,end] + ")");
 
-                let range = ItemList.Range(Math.max(0, start), Math.min(this.itemCount, end));
+                let range = ItemList.Range(Math.max(0, start - start % 2), Math.min(this.itemCount, end));
 
                 let first;
                 for (let [i, row] in this.context.getRows(this.generatedRange.start,
@@ -1876,11 +1967,14 @@ var NewItemList = Class("ItemList", {
                                       : DOM(this.nodes.items).closure.append;
 
                 for (let [i, row] in this.context.getRows(range.start, range.end,
-                                                          this.doc))
+                                                          this.doc)) {
                     if (i < this.generatedRange.start)
                         before(row);
                     else if (i >= this.generatedRange.end)
                         container.append(row);
+                    if (i == this.selectedIdx)
+                        this.selectedIdx = this.selectedIdx;
+                }
 
                 this.generatedRange = range;
             }
@@ -1895,11 +1989,13 @@ var NewItemList = Class("ItemList", {
 
         getItem: function getItem(idx) this.context.getRow(idx),
 
+        getOffset: function getOffset(idx) this.offsets.start + (idx || 0),
+
         get selectedItem() this.getItem(this._selectedIdx),
 
         get selectedIdx() this._selectedIdx,
         set selectedIdx(idx) {
-            if (this.selectedItem)
+            if (this.selectedItem && this._selectedIdx != idx)
                 DOM(this.selectedItem).attr("selected", null);
 
             this._selectedIdx = idx;
@@ -1921,7 +2017,7 @@ var NewItemList = Class("ItemList", {
     })
 });
 
-var ItemList = Class("ItemList", {
+var OldItemList = Class("ItemList", {
     init: function init(iframe) {
         this._completionElements = [];
 

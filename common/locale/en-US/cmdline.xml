@@ -73,7 +73,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[c_<Up>]]></tags>
+    <tags><![CDATA[c_<A-p> c_<Up> c_<cmd-prev-match>]]></tags>
     <strut/>
     <spec>&lt;Up></spec>
     <description>
@@ -85,7 +85,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[c_<Down>]]></tags>
+    <tags><![CDATA[c_<A-n> c_<Down> c_<cmd-next-match>]]></tags>
     <strut/>
     <spec>&lt;Down></spec>
     <description>
@@ -97,7 +97,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[c_<C-p> c_<S-Up> c_<PageUp>]]></tags>
+    <tags><![CDATA[c_<C-p> c_<S-Up> c_<cmd-prev>]]></tags>
     <spec>&lt;S-Up></spec>
     <strut/>
     <spec>&lt;PageUp></spec>
@@ -107,7 +107,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[c_<C-n> c_<S-Down> c_<PageDown>]]></tags>
+    <tags><![CDATA[c_<C-n> c_<S-Down> c_<cmd-next>]]></tags>
     <spec>&lt;S-Down></spec>
     <spec>&lt;PageDown></spec>
     <description>
@@ -118,7 +118,7 @@
 <h2 tag="cmdline-completion">Command-line completion</h2>
 
 <item>
-    <tags><![CDATA[c_<Tab>]]></tags>
+    <tags><![CDATA[c_<Tab> c_<compl-next>]]></tags>
     <strut/>
     <spec>&lt;Tab></spec>
     <description>
@@ -132,7 +132,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[c_<S-Tab>]]></tags>
+    <tags><![CDATA[c_<S-Tab> c_<compl-prev>]]></tags>
     <strut/>
     <spec>&lt;S-Tab></spec>
     <description>
@@ -141,7 +141,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[c_<A-Tab>]]></tags>
+    <tags><![CDATA[c_<A-Tab> c_<A-compl-next>]]></tags>
     <strut/>
     <spec>&lt;A-Tab></spec>
     <description>
@@ -153,7 +153,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[c_<A-S-Tab>]]></tags>
+    <tags><![CDATA[c_<A-S-Tab> c_<A-compl-prev>]]></tags>
     <strut/>
     <spec>&lt;A-S-Tab></spec>
     <description>
