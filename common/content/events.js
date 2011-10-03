@@ -246,15 +246,15 @@ var Events = Module("events", {
 
         modes.recording = macro;
 
-        if (/[A-Z]/.test(macro)) { // uppercase (append)
+        if (/[A-Z]/.test(macro)) { // Append.
             macro = macro.toLowerCase();
             this._macroKeys = DOM.Event.iterKeys((this._macros.get(macro) || { keys: "" }).keys)
                                  .toArray();
         }
-        else if (macro) {
+        else if (macro) { // Record afresh.
             this._macroKeys = [];
         }
-        else if (this.recording) {
+        else if (this.recording) { // Save.
             this._macros.set(this.recording, {
                 keys: this._macroKeys.join(""),
                 timeRecorded: Date.now()
@@ -1050,6 +1050,7 @@ var Events = Module("events", {
         mappings.add([modes.COMMAND],
             ["q", "<record-macro>"], "Record a key sequence into a macro",
             function ({ arg }) {
+                util.assert(arg == null || /^[a-z]$/i.test(arg));
                 events._macroKeys.pop();
                 events.recording = arg;
             },
