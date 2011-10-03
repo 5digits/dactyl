@@ -379,7 +379,6 @@ var CommandMode = Class("CommandMode", {
             if (waiting)
                 this.completions.onComplete = bind("onSubmit", this);
 
-            this.resetCompletions();
             commandline.hideCompletions();
 
             modes.delay(function () {
@@ -395,6 +394,7 @@ var CommandMode = Class("CommandMode", {
 
     events: {
         input: function CM_onInput(event) {
+            util.dumpStack();
             if (this.completions) {
                 this.resetCompletions();
 
@@ -428,7 +428,7 @@ var CommandMode = Class("CommandMode", {
 
     resetCompletions: function CM_resetCompletions() {
         if (this.completions)
-            this.completions.quit();
+            this.completions.clear();
         if (this.history)
             this.history.reset();
     },
@@ -1040,8 +1040,10 @@ var CommandLine = Module("commandline", {
             this.input = input;
             this.session = session;
             this.selected = null;
+
             this.wildmode = options.get("wildmode");
             this.wildtypes = this.wildmode.value;
+
             this.itemList = commandline.completionList;
             this.itemList.open(this.context);
 
@@ -1055,6 +1057,7 @@ var CommandLine = Module("commandline", {
                     this.complete(true, false);
                 }
             }, this);
+
             this.tabTimer = Timer(0, 0, function tabTell(event) {
                 let tabCount = this.tabCount;
                 this.tabCount = 0;
@@ -1063,23 +1066,6 @@ var CommandLine = Module("commandline", {
         },
 
         tabCount: 0,
-
-        cleanup: function () {
-            dactyl.unregisterObserver("events.doneFeeding", this.closure.onDoneFeeding);
-            this.previewClear();
-            this.tabTimer.reset();
-            this.autocompleteTimer.reset();
-            this.itemList.visible = false;
-            this.input.dactylKeyPress = undefined;
-            this.hasQuit = true;
-        },
-
-        quit: function quit() {
-            if (!this.onComplete)
-                this.context.cancelAll();
-            this.wildIndex = -1;
-            this.previewClear();
-        },
 
         ignoredCount: 0,
         onDoneFeeding: function onDoneFeeding() {
@@ -1144,15 +1130,94 @@ var CommandLine = Module("commandline", {
 
         complete: function complete(show, tabPressed) {
             this.session.ignoredCount = 0;
+
             this.context.reset();
             this.context.tabPressed = tabPressed;
+
             this.session.complete(this.context);
             if (!this.session.active)
                 return;
+
             this.context.updateAsync = true;
             this.reset(show, tabPressed);
             this.wildIndex = 0;
             this._caret = this.caret;
+        },
+
+        cleanup: function () {
+            dactyl.unregisterObserver("events.doneFeeding", this.closure.onDoneFeeding);
+            this.previewClear();
+
+            this.tabTimer.reset();
+            this.autocompleteTimer.reset();
+            if (!this.onComplete)
+                this.context.cancelAll();
+
+            this.itemList.visible = false;
+            this.input.dactylKeyPress = undefined;
+            this.hasQuit = true;
+        },
+
+        saveInput: function saveInput() {
+            this.prefix = this.context.value.substring(0, this.start);
+            this.value  = this.context.value.substring(this.start, this.caret);
+            this.suffix = this.context.value.substring(this.caret);
+        },
+
+        clear: function clear() {
+            this.context.cancelAll();
+            this.wildIndex = -1;
+            this.previewClear();
+        },
+
+        reset: function reset(show) {
+            this.waiting = null;
+            this.wildIndex = -1;
+
+            this.saveInput();
+
+            if (show) {
+                this.itemList.update();
+                if (this.haveType("list"))
+                    this.itemList.visible = true;
+                this.selected = null;
+                this.wildIndex = 0;
+            }
+
+            this.preview();
+        },
+
+        asyncUpdate: function asyncUpdate(context) {
+            if (this.hasQuit) {
+                let item = this.getItem(this.waiting);
+                if (item && this.waiting && this.onComplete) {
+                    this.onComplete(this.prefix + item.result + this.suffix);
+                    this.waiting = null;
+                    this.context.cancelAll();
+                }
+                return;
+            }
+
+            let value = this.editor.selection.focusNode.textContent;
+            this.saveInput();
+
+            this.itemList.updateContext(context);
+
+            if (this.waiting && this.waiting[0] == context)
+                this.select(this.waiting);
+            else if (!this.waiting) {
+                let group = this.itemList.selectedGroup;
+                if (group && group.context == context && this.completion) {
+                    this.selected = null;
+                    if (group.selectedIdx != null)
+                        this.selected = [group.context, group.selectedIdx];
+
+                    this.completion = this.selected ? this.getItem().result
+                                                    : this.value;
+                }
+
+                this.preview();
+            }
         },
 
         haveType: function haveType(type)
@@ -1234,60 +1299,6 @@ var CommandLine = Module("commandline", {
                     commandline.widgets.active.command.value = cmd.substr(0, cmd.length - str.length);
             }
             delete this.removeSubstring;
-        },
-
-        reset: function reset(show) {
-            this.waiting = null;
-            this.wildIndex = -1;
-
-            this.prefix = this.context.value.substring(0, this.start);
-            this.value  = this.context.value.substring(this.start, this.caret);
-            this.suffix = this.context.value.substring(this.caret);
-
-            if (show) {
-                this.itemList.update();
-                if (this.haveType("list"))
-                    this.itemList.visible = true;
-                this.selected = null;
-                this.wildIndex = 0;
-            }
-
-            this.preview();
-        },
-
-        asyncUpdate: function asyncUpdate(context) {
-            if (this.hasQuit) {
-                let item = this.getItem(this.waiting);
-                if (item && this.waiting && this.onComplete) {
-                    this.onComplete(this.prefix + item.result + this.suffix);
-                    this.waiting = null;
-                    this.context.cancelAll();
-                }
-                return;
-            }
-
-            let value = this.editor.selection.focusNode.textContent;
-            this.prefix = value.substring(0, this.start);
-            this.value  = value.substring(this.start, this.caret);
-            this.suffix = value.substring(this.caret);
-
-            this.itemList.updateContext(context);
-
-            if (this.waiting && this.waiting[0] == context)
-                this.select(this.waiting);
-            else if (!this.waiting) {
-                let group = this.itemList.selectedGroup;
-                if (group && group.context == context && this.completion) {
-                    this.selected = null;
-                    if (group.selectedIdx != null)
-                        this.selected = [group.context, group.selectedIdx];
-
-                    this.completion = this.selected ? this.getItem().result
-                                                    : this.value;
-                }
-
-                this.preview();
-            }
         },
 
         select: function select(idx, count, fromTab) {

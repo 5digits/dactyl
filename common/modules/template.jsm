@@ -153,6 +153,8 @@ var Template = Module("Template", {
 
                 let obj = params.eventTarget;
                 let events = obj[this.getAttribute("events") || "events"];
+                if (Set.has(events, "input"))
+                    events["dactyl-input"] = events["input"];
 
                 for (let [event, handler] in Iterator(events))
                     node.addEventListener(event, obj.closure(handler), false);
