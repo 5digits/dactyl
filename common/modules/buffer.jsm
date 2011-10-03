@@ -504,7 +504,7 @@ var Buffer = Module("Buffer", {
      * @param {HTMLAnchorElement} elem The page link to save.
      */
     saveLink: function saveLink(elem) {
-        let { completion, dactyl, io } = modules;
+        let { completion, dactyl, io } = this.modules;
 
         let self = this;
         let doc      = elem.ownerDocument;
