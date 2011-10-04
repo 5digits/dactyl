@@ -1399,6 +1399,41 @@ var Commands = Module("commands", {
             }
         };
 
+        completion.exMacro = function exMacro(context, args, cmd) {
+            util.dump(cmd.action.macro, cmd.action);
+            if (!cmd.action.macro)
+                return;
+            let { macro } = cmd.action;
+
+            let start = "«%-d-]'", end = "'[-d-%»";
+
+            let n = /^\d+$/.test(cmd.argCount) ? parseInt(argCount) : 12;
+            for (let i = args.completeArg; i < n; i++)
+                args[i] = start + i + end;
+
+            let params = {
+                args: { __proto__: args, toString: function () this.join(" ") },
+                bang:  args.bang ? "!" : "",
+                count: args.count
+            };
+
+            if (!macro.valid(params))
+                return;
+
+            let str = macro(params);
+            let idx = str.indexOf(start);
+            if (!~idx || !/^(')?(\d+)'/.test(str.substr(idx + start.length))
+                    || RegExp.$2 != args.completeArg)
+                return;
+
+            let quote = RegExp.$2;
+            context.quote = null;
+            context.offset -= idx;
+            context.filter = str.substr(0, idx) + (quote ? Option.quote : util.identity)(context.filter);
+
+            context.fork("ex", 0, completion, "ex");
+        };
+
         completion.userCommand = function userCommand(context, group) {
             context.title = ["User Command", "Definition"];
             context.keys = { text: "name", description: "replacementText" };
@@ -1431,7 +1466,7 @@ var Commands = Module("commands", {
                                 _("group.cantChangeBuiltin", _("command.commands")));
 
                     let completer = args["-complete"];
-                    let completerFunc = null; // default to no completion for user commands
+                    let completerFunc = function (context, args) modules.completion.exMacro(context, args, this);
 
                     if (completer) {
                         if (/^custom,/.test(completer)) {
@@ -1460,7 +1495,7 @@ var Commands = Module("commands", {
                                         function makeParams(args, modifiers) ({
                                             args: {
                                                 __proto__: args,
-                                                toString: function () this.string,
+                                                toString: function () this.string
                                             },
                                             bang:  this.bang && args.bang ? "!" : "",
                                             count: this.count && args.count

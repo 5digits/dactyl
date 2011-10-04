@@ -35,7 +35,7 @@ var Editor = Module("editor", {
         return controllers.getControllerForCommand(cmd || "cmd_beginLine");
     },
 
-    get selection() this.editor && this.editor.selection,
+    get selection() this.editor && this.editor.selection || null,
 
     get isCaret() modes.getStack(1).main == modes.CARET,
     get isTextEdit() modes.getStack(1).main == modes.TEXT_EDIT,

@@ -378,6 +378,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 if (Set.has(defaults, name))
                     stack.top.elements.push(quote(defaults[name]));
                 else {
+                    let index = idx;
                     if (idx) {
                         idx = Number(idx) - 1;
                         stack.top.elements.push(update(
