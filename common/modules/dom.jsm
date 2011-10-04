@@ -326,24 +326,59 @@ var DOM = Class("DOM", {
         }),
     }),
 
-    get rect() this[0] instanceof Ci.nsIDOMWindow ? { get width() this.innerWidth,
-                                                      get height() this.innerHeight,
-                                                      get bottom() this.height,
-                                                      get right() this.width,
-                                                      top: 0, left: 0,
-                                                      __proto__: this[0] } :
+    get rect() this[0] instanceof Ci.nsIDOMWindow ? { width: this[0].scrollMaxX + this[0].innerWidth,
+                                                      height: this[0].scrollMaxY + this[0].innerHeight,
+                                                      get right() this.width + this.left,
+                                                      get bottom() this.height + this.top,
+                                                      top: -this[0].scrollY,
+                                                      left: -this[0].scrollX } :
                this[0]                            ? this[0].getBoundingClientRect() : {},
 
     get viewport() {
+        if (this[0] instanceof Ci.nsIDOMWindow)
+            return {
+                get width() this.right - this.left,
+                get height() this.bottom - this.top,
+                bottom: this[0].innerHeight,
+                right: this[0].innerWidth,
+                top: 0, left: 0
+            };
+
         let r = this.rect;
         return {
             width: this[0].clientWidth,
             height: this[0].clientHeight,
-            top: r.top + this[0].scrollTop + this[0].clientTop,
+            top: r.top + this[0].clientTop,
             get bottom() this.top + this.height,
-            left: r.left + this[0].scrollLeft + this[0].clientLeft,
+            left: r.left + this[0].clientLeft,
             get right() this.left + this.width
         }
+    },
+
+    scrollPos: function scrollPos(left, top) {
+        if (arguments.length == 0) {
+            if (this[0] instanceof Ci.nsIDOMElement)
+                return { top: this[0].scrollTop, left: this[0].scrollLeft };
+            if (this[0] instanceof Ci.nsIDOMWindow)
+                return { top: this[0].scrollY, left: this[0].scrollX };
+            return null;
+        }
+        let func = callable(left) && left;
+
+        return this.each(function (elem, i) {
+            if (func)
+                ({ left, top }) = func.call(this, elem, i);
+
+            if (elem instanceof Ci.nsIDOMWindow)
+                elem.scrollTo(left == null ? elem.scrollX : left,
+                              top  == null ? elem.scrollY : top);
+            else {
+                if (left != null)
+                    elem.scrollLeft = left;
+                if (top != null)
+                    elem.scrollTop = top;
+            }
+        });
     },
 
     /**
@@ -798,32 +833,41 @@ var DOM = Class("DOM", {
      */
     scrollIntoView: function scrollIntoView(alignWithTop) {
         return this.each(function (elem) {
-            let rect = this.rect;
+            function getAlignment(viewport) {
+                if (alignWithTop !== undefined)
+                    return alignWithTop;
+                if (rect.bottom < viewport.top)
+                    return true;
+                if (rect.top > viewport.bottom)
+                    return false;
+                return Math.abs(rect.top) < Math.abs(viewport.bottom - rect.bottom)
+            }
 
-            let force = false;
-            if (rect)
-                for (let parent in this.ancestors.items) {
-                    if (!parent[0].clientWidth || !parent[0].clientHeight)
-                        continue;
+            let rect;
+            function fix(parent) {
+                if (!(parent[0] instanceof Ci.nsIDOMWindow)
+                        && parent.style.overflow == "visible")
+                    return;
 
-                    let isect = util.intersection(rect, parent.viewport);
+                ({ rect }) = DOM(elem);
+                let { viewport } = parent;
+                let isect = util.intersection(rect, viewport);
 
-                    if (parent[0].clientWidth < rect.width && isect.width ||
-                        parent[0].clientHeight < rect.height && isect.height)
-                        continue;
+                if (isect.height < Math.min(viewport.height, rect.height)) {
+                    let { top } = parent.scrollPos();
+                    util.dump("   " + top + " " + (viewport.top - rect.top) + " " + (viewport.bottom - rect.bottom));
+                    if (getAlignment(viewport))
+                        parent.scrollPos(null, top - (viewport.top - rect.top));
+                    else
+                        parent.scrollPos(null, top - (viewport.bottom - rect.bottom));
 
-                    force = Math.round(isect.width - rect.width) || Math.round(isect.height - rect.height);
-                    if (force)
-                        break;
                 }
+            }
 
-            let win = this.document.defaultView;
+            for (let parent in this.ancestors.items)
+                fix(parent);
 
-            if (force || !(rect && rect.bottom <= win.innerHeight && rect.top >= 0 && rect.left < win.innerWidth && rect.right > 0))
-                elem.scrollIntoView(alignWithTop !== undefined ? alignWithTop :
-                                    rect.bottom < 0            ? true         :
-                                    rect.top > win.innerHeight ? false
-                                                               : Math.abs(rect.top) < Math.abs(win.innerHeight - rect.bottom));
+            fix(DOM(this.document.defaultView));
         });
     },
 }, {

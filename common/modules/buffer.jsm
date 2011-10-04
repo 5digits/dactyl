@@ -501,7 +501,7 @@ var Buffer = Module("Buffer", {
 
         let win = this.focusedFrame;
         let sel = win.getSelection();
-        let viewport = DOM(win).rect;
+        let { viewport } = DOM(win);
 
         if (sel.rangeCount) {
             var range = sel.getRangeAt(0);
@@ -509,7 +509,7 @@ var Buffer = Module("Buffer", {
                 return;
 
             var { rect } = DOM(range);
-            var reverse = rect.bottom > win.innerHeight;
+            var reverse = rect.bottom > viewport.bottom;
 
             rect = { x: rect.left, y: 0, width: rect.width, height: win.innerHeight };
         }
