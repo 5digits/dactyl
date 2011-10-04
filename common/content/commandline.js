@@ -1111,6 +1111,7 @@ var CommandLine = Module("commandline", {
             this._caret = this.caret;
 
             this.input.dactylKeyPress = undefined;
+            this._completion = completion;
         },
 
         get caret() this.editor.selection.getRangeAt(0).startOffset,
@@ -1205,14 +1206,12 @@ var CommandLine = Module("commandline", {
             if (this.waiting && this.waiting[0] == context)
                 this.select(this.waiting);
             else if (!this.waiting) {
-                let group = this.itemList.selectedGroup;
-                if (group && group.context == context && this.completion) {
-                    this.selected = null;
-                    if (group.selectedIdx != null)
-                        this.selected = [group.context, group.selectedIdx];
-
-                    this.completion = this.selected ? this.getItem().result
-                                                    : this.value;
+                let cursor = this.selected;
+                if (cursor && cursor[0] == context) {
+                    if (cursor[1] >= context.items.length) {
+                        this.selected = null;
+                        this.itemList.select(null);
+                    }
                 }
 
                 this.preview();
