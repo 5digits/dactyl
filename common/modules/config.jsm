@@ -259,11 +259,14 @@ var ConfigBase = Class("ConfigBase", {
         }
         function processJar(file) {
             let jar = services.ZipReader(file);
-            if (jar) {
-                if (jar.hasEntry("chrome.manifest"))
-                    process(File.readStream(jar.getInputStream("chrome.manifest")));
-                jar.close();
-            }
+            if (jar)
+                try {
+                    if (jar.hasEntry("chrome.manifest"))
+                        process(File.readStream(jar.getInputStream("chrome.manifest")));
+                }
+                finally {
+                    jar.close();
+                }
         }
 
         for each (let dir in ["UChrm", "AChrom"]) {

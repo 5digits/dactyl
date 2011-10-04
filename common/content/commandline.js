@@ -1208,7 +1208,8 @@ var CommandLine = Module("commandline", {
             else if (!this.waiting) {
                 let cursor = this.selected;
                 if (cursor && cursor[0] == context) {
-                    if (cursor[1] >= context.items.length) {
+                    if (cursor[1] >= context.items.length
+                            || this.completion != context.items[cursor[1]].result) {
                         this.selected = null;
                         this.itemList.select(null);
                     }
