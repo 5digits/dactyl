@@ -289,8 +289,6 @@ var Buffer = Module("Buffer", {
      * @param {Node} elem The element to focus.
      */
     focusElement: function focusElement(elem) {
-        let { Editor, dactyl } = this.modules;
-
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
         overlay.setData(elem, "focus-allowed", true);
         overlay.setData(win.document, "focus-allowed", true);
@@ -313,15 +311,17 @@ var Buffer = Module("Buffer", {
             else
                 flags = services.focus.FLAG_SHOWRING;
 
+            // Hack to deal with current versions of Firefox misplacing
+            // the caret
             if (!overlay.getData(elem, "had-focus", false) &&
                     elem.value &&
                     elem instanceof Ci.nsIDOMHTMLInputElement &&
-                    Editor.getEditor(elem) &&
+                    DOM(elem).isEditable &&
                     elem.selectionStart != null &&
                     elem.selectionStart == elem.selectionEnd)
                 elem.selectionStart = elem.selectionEnd = elem.value.length;
 
-            dactyl.focus(elem, flags);
+            DOM(elem).focus(flags);
 
             if (elem instanceof Ci.nsIDOMWindow) {
                 let sel = elem.getSelection();
@@ -813,8 +813,6 @@ var Buffer = Module("Buffer", {
      *     count skips backwards.
      */
     shiftFrameFocus: function shiftFrameFocus(count) {
-        let { dactyl } = this.modules;
-
         if (!(this.doc instanceof Ci.nsIDOMHTMLDocument))
             return;
 
@@ -835,20 +833,21 @@ var Buffer = Module("Buffer", {
         // calculate the next frame to focus
         let next = current + count;
         if (next < 0 || next >= frames.length)
+            util.dactyl.beep();
             dactyl.beep();
         next = Math.constrain(next, 0, frames.length - 1);
 
         // focus next frame and scroll into view
-        dactyl.focus(frames[next]);
+        DOM(frames[next]).focus();
         if (frames[next] != this.win)
             DOM(frames[next].frameElement).scrollIntoView();
 
         // add the frame indicator
         let doc = frames[next].document;
-        let indicator = util.xmlToDom(<div highlight="FrameIndicator"/>, doc);
-        (doc.body || doc.documentElement || doc).appendChild(indicator);
+        let indicator = DOM(<div highlight="FrameIndicator"/>, doc)
+                            .appendTo(doc.body || doc.documentElement || doc);
 
-        util.timeout(function () { doc.body.removeChild(indicator); }, 500);
+        util.timeout(function () { indicator.remove(); }, 500);
 
         // Doesn't unattach
         //doc.body.setAttributeNS(NS.uri, "activeframe", "true");

@@ -358,9 +358,16 @@ var DOM = Class("DOM", {
     scrollPos: function scrollPos(left, top) {
         if (arguments.length == 0) {
             if (this[0] instanceof Ci.nsIDOMElement)
-                return { top: this[0].scrollTop, left: this[0].scrollLeft };
+                return { top: this[0].scrollTop, left: this[0].scrollLeft,
+                         height: this[0].scrollHeight, width: this[0].scrollWidth,
+                         innerHeight: this[0].clientHeight, innerWidth: this[0].innerWidth };
+
             if (this[0] instanceof Ci.nsIDOMWindow)
-                return { top: this[0].scrollY, left: this[0].scrollX };
+                return { top: this[0].scrollY, left: this[0].scrollX,
+                         height: this[0].scrollMaxY + this[0].innerHeight,
+                         width: this[0].scrollMaxX + this[0].innerWidth,
+                         innerHeight: this[0].innerHeight, innerWidth: this[0].innerWidth };
+
             return null;
         }
         let func = callable(left) && left;
@@ -818,7 +825,21 @@ var DOM = Class("DOM", {
     focus: function focus(arg, extra) {
         if (callable(arg))
             return this.listen("focus", arg, extra);
-        services.focus.setFocus(this[0], extra || services.focus.FLAG_BYMOUSE);
+
+        let elem = this[0];
+        let flags = arg || services.focus.FLAG_BYMOUSE;
+        try {
+            if (elem instanceof Ci.nsIDOMDocument)
+                elem = elem.defaultView;
+            if (elem instanceof Ci.nsIDOMElement)
+                services.focus.setFocus(elem, flags);
+            else if (elem instanceof Ci.nsIDOMWindow)
+                services.focus.focusedWindow = elem;
+        }
+        catch (e) {
+            util.dump(elem);
+            util.reportError(e);
+        }
         return this;
     },
     blur: function blur(arg, extra) {
@@ -1556,10 +1577,12 @@ var DOM = Class("DOM", {
 });
 
 Object.keys(DOM.Event.types).forEach(function (event) {
-    DOM.prototype[event.replace(/-(.)/g, function (m, m1) m1.toUpperCase())] =
-        function _event(arg, extra) {
-            return this[callable(arg) ? "listen" : "dispatch"](event, arg, extra);
-        };
+    let name = event.replace(/-(.)/g, function (m, m1) m1.toUpperCase());
+    if (!Set.has(DOM.prototype, name))
+        DOM.prototype[name] =
+            function _event(arg, extra) {
+                return this[callable(arg) ? "listen" : "dispatch"](event, arg, extra);
+            };
 });
 
 var $ = DOM;

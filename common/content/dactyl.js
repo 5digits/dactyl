@@ -565,19 +565,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     focus: function focus(elem, flags) {
-        flags = flags || services.focus.FLAG_BYMOUSE;
-        try {
-            if (elem instanceof Document)
-                elem = elem.defaultView;
-            if (elem instanceof Element)
-                services.focus.setFocus(elem, flags);
-            else if (elem instanceof Window)
-                services.focus.focusedWindow = elem;
-        }
-        catch (e) {
-            util.dump(elem);
-            util.reportError(e);
-        }
+        DOM(elem).focus(flags);
     },
 
     /**
