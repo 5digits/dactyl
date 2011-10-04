@@ -76,7 +76,7 @@ var Modes = Module("modes", {
                         selection.collapseToStart();
                 }
                 else if (stack.pop)
-                    editor.unselectText();
+                    editor.deselectText();
             }
         });
         this.addMode("CARET", {
@@ -670,7 +670,7 @@ var Modes = Module("modes", {
 
         options.add(["passunknown", "pu"],
             "Pass through unknown keys in these modes",
-            "stringlist", "!text_edit,base",
+            "stringlist", "!text_edit,!visual,base",
             opts);
 
         options.add(["showmode", "smd"],

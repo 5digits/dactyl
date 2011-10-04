@@ -1,6 +1,6 @@
-Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
-              2007-2009 by Doug Kearns <dougkearns@gmail.com>
-              2008-2010 by Kris Maglione <maglione.k at Gmail>
+Copyright © 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+Copyright © 2007-2011 by Doug Kearns <dougkearns@gmail.com>
+Copyright © 2008-2011 by Kris Maglione <maglione.k at Gmail>
 
 For a full list of authors, refer the AUTHORS file.
 

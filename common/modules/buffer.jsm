@@ -313,8 +313,7 @@ var Buffer = Module("Buffer", {
 
             // Hack to deal with current versions of Firefox misplacing
             // the caret
-            if (!overlay.getData(elem, "had-focus", false) &&
-                    elem.value &&
+            if (!overlay.getData(elem, "had-focus", false) && elem.value &&
                     elem instanceof Ci.nsIDOMHTMLInputElement &&
                     DOM(elem).isEditable &&
                     elem.selectionStart != null &&

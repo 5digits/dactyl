@@ -12,22 +12,44 @@
 
 /** @instance editor */
 var Editor = Module("editor", {
+    init: function init(elem) {
+        if (elem)
+            this.element = elem;
+        else
+            this.__defineGetter__("element", function () {
+                let elem = dactyl.focusedElement;
+                if (elem)
+                    return elem.inputField || elem;
+
+                let win = document.commandDispatcher.focusedWindow;
+                return DOM(win).isEditable && win;
+            });
+    },
+
+    get editor() DOM(this.element).editor,
+
+    getController: function getController(cmd) {
+        let controllers = this.element && this.element.controllers;
+        dactyl.assert(controllers);
+
+        return controllers.getControllerForCommand(cmd || "cmd_beginLine");
+    },
+
+    get selection() this.editor && this.editor.selection,
+
     get isCaret() modes.getStack(1).main == modes.CARET,
     get isTextEdit() modes.getStack(1).main == modes.TEXT_EDIT,
 
-    unselectText: function (toEnd) {
-        try {
-            Editor.getEditor(null).selection[toEnd ? "collapseToEnd" : "collapseToStart"]();
-        }
-        catch (e) {}
+    deselectText: function () {
+        if (this.selection)
+            this.selection.collapse(this.selection.focusNode,
+                                    this.selection.focusOffset);
     },
 
-    selectedText: function () String(Editor.getEditor(null).selection),
+    get selectedText() String(this.selection),
 
     pasteClipboard: function (clipboard, toStart) {
-        let elem = dactyl.focusedElement;
-        if (elem.inputField)
-            elem = elem.inputField;
+        let elem = this.element;
 
         if (elem.setSelectionRange) {
             let text = dactyl.clipboardRead(clipboard);
@@ -47,7 +69,7 @@ var Editor = Module("editor", {
             elem.value = value;
 
             if (/^(search|text)$/.test(elem.type))
-                Editor.getEditor(elem).rootElement.firstChild.textContent = value;
+                DOM(elem).rootElement.firstChild.textContent = value;
 
             elem.selectionStart = Math.min(start + (toStart ? 0 : text.length), elem.value.length);
             elem.selectionEnd = elem.selectionStart;
@@ -61,8 +83,7 @@ var Editor = Module("editor", {
 
     // count is optional, defaults to 1
     executeCommand: function (cmd, count) {
-        let editor = Editor.getEditor(null);
-        let controller = Editor.getController(cmd);
+        let controller = this.getController(cmd);
         dactyl.assert(callable(cmd) ||
                           controller &&
                           controller.supportsCommand(cmd) &&
@@ -79,7 +100,7 @@ var Editor = Module("editor", {
             // good thing is, we need this code anyway for proper beeping
             try {
                 if (callable(cmd))
-                    cmd(editor, controller);
+                    cmd(this.editor, controller);
                 else
                     controller.doCommand(cmd);
                 didCommand = true;
@@ -92,41 +113,14 @@ var Editor = Module("editor", {
         }
     },
 
-    // This function will move/select up to given "pos"
-    // Simple setSelectionRange() would be better, but we want to maintain the correct
-    // order of selectionStart/End (a Gecko bug always makes selectionStart <= selectionEnd)
-    // Use only for small movements!
-    moveToPosition: function (pos, forward, select) {
-        if (!select) {
-            Editor.getEditor().setSelectionRange(pos, pos);
-            return;
-        }
-
-        if (forward) {
-            if (pos <= Editor.getEditor().selectionEnd || pos > Editor.getEditor().value.length)
-                return;
-
-            do { // TODO: test code for endless loops
-                this.executeCommand("cmd_selectCharNext", 1);
-            }
-            while (Editor.getEditor().selectionEnd != pos);
-        }
-        else {
-            if (pos >= Editor.getEditor().selectionStart || pos < 0)
-                return;
-
-            do { // TODO: test code for endless loops
-                this.executeCommand("cmd_selectCharPrevious", 1);
-            }
-            while (Editor.getEditor().selectionStart != pos);
-        }
+    moveToPosition: function (pos, select) {
+        let node = this.selection.focusNode;
+        this.selection[select ? "extend" : "collapse"](node, pos);
     },
 
     findChar: function (key, count, backward) {
 
-        let editor = Editor.getEditor();
-        if (!editor)
-            return -1;
+        util.assert(DOM(this.element).isInput);
 
         // XXX
         if (count == null)
@@ -134,10 +128,11 @@ var Editor = Module("editor", {
 
         let code = DOM.Event.parse(key)[0].charCode;
         util.assert(code);
+
         let char = String.fromCharCode(code);
 
-        let text = editor.value;
-        let caret = editor.selectionEnd;
+        let text = this.element.value;
+        let caret = this.element.selectionEnd;
         if (backward) {
             let end = text.lastIndexOf("\n", caret);
             while (caret > end && caret >= 0 && count--)
@@ -309,8 +304,8 @@ var Editor = Module("editor", {
      * @see Abbreviation#expand
      */
     expandAbbreviation: function (mode) {
-        let elem = dactyl.focusedElement;
-        if (!(elem && elem.value))
+        let elem = this.element;
+        if (!DOM(elem).isInput && elem.value)
             return;
 
         let text   = elem.value;
@@ -408,13 +403,19 @@ var Editor = Module("editor", {
             }
         }
 
+        let node = range[forward ? "endContainer" : "startContainer"];
+        let iterator = Editor.TextsIterator(root || node.ownerDocument.documentElement,
+                                            node);
+
+        if (!(node instanceof Ci.nsIDOMText)) {
+            node = iterator[forward ? "getNext" : "getPrev"]();
+            range[forward ? "setEnd" : "setStart"](node, forward ? 0 : node.textContent.length);
+        }
+
+
         let text = range[forward ? "endContainer" : "startContainer"].textContent;
         let idx  = range[forward ? "endOffset" : "startOffset"];
         let offset = 0;
-
-        let node = range.startContainer;
-        let iterator = Editor.TextsIterator(root || node.ownerDocument.documentElement,
-                                            node);
 
         if (forward) {
             advance(true);
@@ -440,29 +441,18 @@ var Editor = Module("editor", {
         dactyl.assert(elem);
 
         return DOM(elem).editor;
-    },
-
-    getController: function (cmd) {
-        let win = document.commandDispatcher.focusedWindow;
-        let ed = dactyl.focusedElement || Editor.getEditor(win) && win;
-        if (!ed || !ed.controllers)
-            return null;
-
-        return ed.controllers.getControllerForCommand(cmd || "cmd_beginLine");
     }
 }, {
     mappings: function () {
 
         Map.types["editor"] = {
             preExecute: function preExecute(args) {
-                let editor = Editor.getEditor(null)
-                if (editor)
-                    editor.beginTransaction();
+                if (editor.editor)
+                    editor.editor.beginTransaction();
             },
             postExecute: function preExecute(args) {
-                let editor = Editor.getEditor(null)
-                if (editor)
-                    editor.endTransaction();
+                if (editor.editor)
+                    editor.editor.endTransaction();
             },
         };
         Map.types["operator"] = {
@@ -501,14 +491,14 @@ var Editor = Module("editor", {
                     count = count || 1;
 
                     let caret = !dactyl.focusedElement;
-                    let editor_ = Editor.getEditor(null);
                     let controller = buffer.selectionController;
+
                     while (count-- && modes.main == modes.VISUAL) {
                         if (caret)
                             caretExecute(true, true);
                         else {
                             if (callable(visualTextEditCommand))
-                                visualTextEditCommand(editor_);
+                                visualTextEditCommand(editor.editor);
                             else
                                 editor.executeCommand(visualTextEditCommand);
                         }
@@ -520,7 +510,7 @@ var Editor = Module("editor", {
                 function ({ count }) {
                     count = count || 1;
 
-                    if (Editor.getEditor(null))
+                    if (editor.editor)
                         editor.executeCommand(textEditCommand, count);
                     else {
                         while (count--)
@@ -534,8 +524,7 @@ var Editor = Module("editor", {
         function addBeginInsertModeMap(keys, commands, description) {
             mappings.add([modes.TEXT_EDIT], keys, description || "",
                 function () {
-                    commands.forEach(function (cmd)
-                        editor.executeCommand(cmd, 1));
+                    commands.forEach(function (cmd) { editor.executeCommand(cmd, 1) });
                     modes.push(modes.INSERT);
                 },
                 { type: "editor" });
@@ -543,13 +532,13 @@ var Editor = Module("editor", {
 
         function selectPreviousLine() {
             editor.executeCommand("cmd_selectLinePrevious");
-            if ((modes.extended & modes.LINE) && !editor.selectedText())
+            if ((modes.extended & modes.LINE) && !editor.selectedText)
                 editor.executeCommand("cmd_selectLinePrevious");
         }
 
         function selectNextLine() {
             editor.executeCommand("cmd_selectLineNext");
-            if ((modes.extended & modes.LINE) && !editor.selectedText())
+            if ((modes.extended & modes.LINE) && !editor.selectedText)
                 editor.executeCommand("cmd_selectLineNext");
         }
 
@@ -562,19 +551,23 @@ var Editor = Module("editor", {
         }
 
         function clear(forward, re)
-            function _clear(editor, elem) {
+            function _clear(editor) {
                 updateRange(editor, forward, re, function (range) {});
                 editor.selection.deleteFromDocument();
-                DOM(elem).input();
+                let parent = DOM(editor.rootElement.parentNode);
+                if (parent.isInput)
+                    parent.input();
             }
 
         function move(forward, re)
             function _move(editor) {
-                updateRange(editor, forward, re, function (range) { range.collapse(!forward); });
+                updateRange(editor, forward, re,
+                            function (range) { range.collapse(!forward); });
             }
         function select(forward, re)
             function _select(editor) {
-                updateRange(editor, forward, re, function (range) {});
+                updateRange(editor, forward, re,
+                            function (range) {});
             }
         function beginLine(editor_) {
             editor.executeCommand("cmd_beginLine");
@@ -591,7 +584,7 @@ var Editor = Module("editor", {
         addMovementMap(["l", "<Right>", "<Space>"],   "Move right one character",
                        true,  "characterMove", true,  "cmd_charNext",     "cmd_selectCharNext");
         addMovementMap(["b", "<C-Left>"],             "Move left one word",
-                       true,  "wordMove", false,      "cmd_wordPrevious", "cmd_selectWordPrevious");
+                       true,  "wordMove", false,      move(false,  /\w/), select(false, /\w/));
         addMovementMap(["w", "<C-Right>"],            "Move right one word",
                        true,  "wordMove", true,       move(true,  /\w/),  select(true, /\w/));
         addMovementMap(["B"],                         "Move left to the previous white space",
@@ -637,15 +630,15 @@ var Editor = Module("editor", {
                                 return;
 
                             try {
-                                editor.beginTransaction();
+                                editor_.beginTransaction();
 
                                 let range = RangeFind.union(start, sel.getRangeAt(0));
                                 sel.removeAllRanges();
                                 sel.addRange(select ? range : start);
-                                cmd(editor, range);
+                                cmd(editor_, range);
                             }
                             finally {
-                                editor.endTransaction();
+                                editor_.endTransaction();
                             }
 
                             modes.delay(function () {
@@ -655,9 +648,9 @@ var Editor = Module("editor", {
                         }
                     });
 
-                    let editor = Editor.getEditor(null);
-                    let sel    = editor.selection;
-                    let start  = sel.getRangeAt(0).cloneRange();
+                    let editor_ = editor.editor;
+                    let sel     = editor.selection;
+                    let start   = sel.getRangeAt(0).cloneRange();
                 },
                 { count: true, type: "motion" });
         }
@@ -672,8 +665,8 @@ var Editor = Module("editor", {
 
         bind(["<C-w>"], "Delete previous word",
              function () {
-                 if (DOM(dactyl.focusedElement).isInput)
-                     clear(false, /\w/)(Editor.getEditor(null), dactyl.focusedElement);
+                 if (editor.editor)
+                     clear(false, /\w/)(editor.editor);
                  else
                      editor.executeCommand("cmd_deleteWordBackward", 1);
              });
@@ -682,14 +675,14 @@ var Editor = Module("editor", {
              function () {
                  // Deletes the whole line. What the hell.
                  // editor.executeCommand("cmd_deleteToBeginningOfLine", 1);
-                 let editor_ = Editor.getEditor(null);
 
                  editor.executeCommand("cmd_selectBeginLine", 1);
-                 if (editor_ && editor_.selection.isCollapsed) {
+                 if (editor.selection && editor.selection.isCollapsed) {
                      editor.executeCommand("cmd_deleteCharBackward", 1);
                      editor.executeCommand("cmd_selectBeginLine", 1);
                  }
-                 if (Editor.getController().isCommandEnabled("cmd_delete"))
+
+                 if (editor.getController("cmd_delete").isCommandEnabled("cmd_delete"))
                      editor.executeCommand("cmd_delete", 1);
              });
 
@@ -717,8 +710,13 @@ var Editor = Module("editor", {
 
         bind(["<C-t>"], "Edit text field in Text Edit mode",
              function () {
-                 dactyl.assert(!editor.isTextEdit && Editor.getEditor(null));
+                 dactyl.assert(!editor.isTextEdit && editor.editor);
                  dactyl.assert(dactyl.focusedElement ||
+                               // Sites like Google like to use a
+                               // hidden, editable window for keyboard
+                               // focus and use their own WYSIWYG editor
+                               // implementations for the visible area,
+                               // which we can't handle.
                                let (f = document.commandDispatcher.focusedWindow.frameElement)
                                     f && Hints.isVisible(f, true));
 
@@ -753,7 +751,7 @@ var Editor = Module("editor", {
             ["u"], "Undo changes",
             function (args) {
                 editor.executeCommand("cmd_undo", Math.max(args.count, 1));
-                editor.unselectText();
+                editor.deselectText();
             },
             { count: true });
 
@@ -761,7 +759,7 @@ var Editor = Module("editor", {
             ["<C-r>"], "Redo undone changes",
             function (args) {
                 editor.executeCommand("cmd_redo", Math.max(args.count, 1));
-                editor.unselectText();
+                editor.deselectText();
             },
             { count: true });
 
@@ -845,7 +843,8 @@ var Editor = Module("editor", {
             { count: true });
 
         let bind = function bind(names, description, action, params)
-            mappings.add([modes.TEXT_EDIT, modes.OPERATOR], names, description,
+            mappings.add([modes.TEXT_EDIT, modes.OPERATOR, modes.VISUAL],
+                         names, description,
                          action, update({ type: "editor" }, params));
 
         // finding characters
@@ -861,7 +860,8 @@ var Editor = Module("editor", {
              function ({ arg, count }) {
                  let pos = editor.findChar(arg, Math.max(count, 1));
                  if (pos >= 0)
-                     editor.moveToPosition(offset(false, false, pos), true, modes.main == modes.VISUAL);
+                     editor.moveToPosition(offset(false, false, pos),
+                                           modes.main == modes.VISUAL);
              },
              { arg: true, count: true, type: "operator" });
 
@@ -869,7 +869,8 @@ var Editor = Module("editor", {
              function ({ arg, count }) {
                  let pos = editor.findChar(arg, Math.max(count, 1), true);
                  if (pos >= 0)
-                     editor.moveToPosition(offset(true, false, pos), false, modes.main == modes.VISUAL);
+                     editor.moveToPosition(offset(true, false, pos),
+                                           modes.main == modes.VISUAL);
              },
              { arg: true, count: true, type: "operator" });
 
@@ -877,7 +878,8 @@ var Editor = Module("editor", {
              function ({ arg, count }) {
                  let pos = editor.findChar(arg, Math.max(count, 1));
                  if (pos >= 0)
-                     editor.moveToPosition(offset(false, true, pos), true, modes.main == modes.VISUAL);
+                     editor.moveToPosition(offset(false, true, pos),
+                                           modes.main == modes.VISUAL);
              },
              { arg: true, count: true, type: "operator" });
 
@@ -885,30 +887,50 @@ var Editor = Module("editor", {
              function ({ arg, count }) {
                  let pos = editor.findChar(arg, Math.max(count, 1), true);
                  if (pos >= 0)
-                     editor.moveToPosition(offset(true, true, pos), false, modes.main == modes.VISUAL);
+                     editor.moveToPosition(offset(true, true, pos),
+                                           modes.main == modes.VISUAL);
              },
              { arg: true, count: true, type: "operator" });
+
+        function mungeRange(range, munger) {
+            let text = munger(range);
+            let { startOffset, endOffset } = range;
+            let root = range.startContainer.parentNode;
+
+            range.deleteContents();
+            range.insertNode(range.startContainer.ownerDocument
+                                  .createTextNode(text));
+            root.normalize();
+            range.setStart(root.firstChild, startOffset);
+            range.setEnd(root.firstChild, endOffset);
+        }
 
         // text edit and visual mode
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["~"], "Switch case of the character under the cursor and move the cursor to the right",
             function ({ count }) {
-                if (modes.main == modes.VISUAL)
-                    count = Editor.getEditor().selectionEnd - Editor.getEditor().selectionStart;
-                count = Math.max(count, 1);
+                function munger(range)
+                    String(range).replace(/./g, function (c) {
+                        let lc = c.toLocaleLowerCase();
+                        return c == lc ? c.toLocaleUpperCase() : lc;
+                    });
 
-                // FIXME: do this in one pass?
-                while (count-- > 0) {
-                    let text = Editor.getEditor().value;
-                    let pos = Editor.getEditor().selectionStart;
-                    dactyl.assert(pos < text.length);
-
-                    let chr = text[pos];
-                    Editor.getEditor().value = text.substring(0, pos) +
-                        (chr == chr.toLocaleLowerCase() ? chr.toLocaleUpperCase() : chr.toLocaleLowerCase()) +
-                        text.substring(pos + 1);
-                    editor.moveToPosition(pos + 1, true, false);
+                var range = editor.selection.getRangeAt(0);
+                // Ugh. TODO: Utility.
+                if (!(range.startContainer instanceof Ci.nsIDOMText)) {
+                    range = RangeFind.nodeContants(node.startContainer);
+                    range.collapse(false);
                 }
+
+                if (range.collapsed) {
+                    count = count || 1;
+
+                    range.setEnd(range.startContainer,
+                                 range.startOffset + count);
+                }
+                mungeRange(range, munger);
+                editor.selection.collapse(range.startContainer, range.endOffset);
+
                 modes.pop(modes.TEXT_EDIT);
             },
             { count: true });
