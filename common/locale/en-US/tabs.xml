@@ -316,10 +316,6 @@
 <item>
     <tags>d</tags>
     <tags>:tabc :tabclose</tags>
-    <tags>:bun :bunload :bw :bwipeout :bd :bdelete</tags>
-    <spec>:<oa>count</oa>bd<oa>elete</oa><oa>!</oa> <oa>arg</oa></spec>
-    <spec>:<oa>count</oa>bun<oa>load</oa><oa>!</oa> <oa>arg</oa></spec>
-    <spec>:<oa>count</oa>bw<oa>ipeout</oa><oa>!</oa> <oa>arg</oa></spec>
     <spec>:<oa>count</oa>tabc<oa>lose</oa><oa>!</oa> <oa>arg</oa></spec>
     <spec><oa>count</oa>d</spec>
     <description>
@@ -329,9 +325,20 @@
         </p>
 
         <p>
-            When used with <oa>arg</oa>, remove all tabs which contain <oa>arg</oa> in the
-            currently opened hostname. With <oa>!</oa>, remove all tabs for which
-            the currently opened page's URL or title contains <oa>arg</oa>.
+            When used with <oa>arg</oa>, remove all visible tabs which match the
+            <t>site-filter</t> <oa>arg</oa>. With <oa>!</oa>, remove all tabs
+            for which the currently opened page's URL or title matches the
+            regular expression <oa>arg</oa>.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>:bd :bdelete</tags>
+    <spec>:<oa>count</oa>bd<oa>elete</oa><oa>!</oa> <oa>arg</oa></spec>
+    <description>
+        <p>
+            Like <ex>:tabclose</ex> but include hidden tabs.
         </p>
     </description>
 </item>

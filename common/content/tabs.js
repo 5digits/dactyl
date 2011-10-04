@@ -333,6 +333,60 @@ var Tabs = Module("tabs", {
         completion.listCompleter("buffer", filter);
     },
 
+
+    /**
+     * Return an iterator of tabs matching the given filter. If no
+     * filter or count is provided, returns the currently selected
+     * tab. If *filter* is a number or begins with a number followed
+     * by a colon, the tab of that ordinal is returned. Otherwise,
+     * tabs matching the filter as below are returned.
+     *
+     * @param {string} filter The filter. If *regex*, this is a
+     *      regular expression against which the tab's URL or title
+     *      must match. Otherwise, it is a site filter.
+     *      @optional
+     * @param {number|null} count If non-null, return only the
+     *      *count*th matching tab.
+     *      @optional
+     * @param {boolean} regexp Whether to interpret *filter* as a
+     *      regular expression.
+     * @param {boolean} all If true, match against all tabs. If
+     *      false, match only tabs in the current tab group.
+     */
+    match: function match(filter, count, regexp, all) {
+        if (!filter && count == null)
+            yield tabs.getTab();
+        else if (!filter)
+            yield dactyl.assert(tabs.getTab(count - 1));
+        else {
+            let matches = /^(\d+)(?:$|:)/.exec(filter);
+            if (matches)
+                yield dactyl.assert(count == null &&
+                                    tabs.getTab(parseInt(matches[1], 10) - 1, !all));
+            else {
+                if (regexp)
+                    regexp = util.regexp(filter, "i");
+                else
+                    var matcher = Styles.matchFilter(filter);
+
+                for (let tab in values(tabs[all ? "allTabs" : "visibleTabs"])) {
+                    let browser = tab.linkedBrowser;
+                    let uri = browser.currentURI;
+                    let title;
+                    if (uri.spec == "about:blank")
+                        title = "(Untitled)";
+                    else
+                        title = browser.contentTitle;
+
+                    if (matcher && matcher(uri)
+                        || regexp && (regexp.test(title) || regexp.test(uri.spec)))
+                        if (count == null || --count == 0)
+                            yield tab;
+                }
+            }
+        }
+    },
+
     /**
      * Moves a tab to a new position in the tab list.
      *
@@ -548,71 +602,45 @@ var Tabs = Module("tabs", {
         tabs.updateTabCount();
     },
     commands: function () {
-        commands.add(["bd[elete]", "bw[ipeout]", "bun[load]", "tabc[lose]"],
-            "Delete current buffer",
-            function (args) {
-                let removed = 0;
-                for (let tab in matchTabs(args, args.bang, true)) {
-                    config.removeTab(tab);
-                    removed++;
-                }
-
-                if (args[0])
-                    if (removed > 0)
-                        dactyl.echomsg(_("buffer.fewerTab" + (removed == 1 ? "" : "s"), removed), 9);
-                    else
-                        dactyl.echoerr(_("buffer.noMatching", arg));
-            }, {
-                argCount: "?",
-                bang: true,
-                count: true,
-                completer: function (context) completion.buffer(context),
-                literal: 0,
-                privateData: true
-            });
-
-        function matchTabs(args, substr, all) {
-            let filter = args[0];
-
-            if (!filter && args.count == null)
-                yield tabs.getTab();
-            else if (!filter)
-                yield dactyl.assert(tabs.getTab(args.count - 1));
-            else {
-                let matches = /^(\d+)(?:$|:)/.exec(filter);
-                if (matches)
-                    yield dactyl.assert(args.count == null &&
-                                        tabs.getTab(parseInt(matches[1], 10) - 1, !all));
-                else {
-                    let str = filter.toLowerCase();
-                    for (let tab in values(tabs[all ? "allTabs" : "visibleTabs"])) {
-                        let host, title;
-                        let browser = tab.linkedBrowser;
-                        let uri = browser.currentURI.spec;
-                        if (browser.currentURI.schemeIs("about")) {
-                            host = "";
-                            title = "(Untitled)";
-                        }
-                        else {
-                            host = browser.currentURI.host;
-                            title = browser.contentTitle;
-                        }
-
-                        [host, title, uri] = [host, title, uri].map(String.toLowerCase);
-
-                        if (host.indexOf(str) >= 0 || uri == str ||
-                            (substr && (title.indexOf(str) >= 0 || uri.indexOf(str) >= 0)))
-                            if (args.count == null || --args.count == 0)
-                                yield tab;
-                    }
-                }
+        [
+            {
+                name: ["bd[elete]"],
+                description: "Delete matching buffers",
+                visible: false
+            },
+            {
+                name: ["tabc[lose]"],
+                description: "Delete matching tabs",
+                visible: true
             }
-        }
+        ].forEach(function (params) {
+            commands.add(params.name, params.description,
+                function (args) {
+                    let removed = 0;
+                    for (let tab in tabs.match(args[0], args.count, args.bang, !params.visible)) {
+                        config.removeTab(tab);
+                        removed++;
+                    }
+
+                    if (args[0])
+                        if (removed > 0)
+                            dactyl.echomsg(_("buffer.fewerTab" + (removed == 1 ? "" : "s"), removed), 9);
+                        else
+                            dactyl.echoerr(_("buffer.noMatching", args[0]));
+                }, {
+                    argCount: "?",
+                    bang: true,
+                    count: true,
+                    completer: function (context) completion.buffer(context),
+                    literal: 0,
+                    privateData: true
+                });
+        });
 
         commands.add(["pin[tab]"],
             "Pin tab as an application tab",
             function (args) {
-                for (let tab in matchTabs(args))
+                for (let tab in tabs.match(args[0], args.count))
                     config.browser[!args.bang || !tab.pinned ? "pinTab" : "unpinTab"](tab);
             },
             {
@@ -629,7 +657,7 @@ var Tabs = Module("tabs", {
         commands.add(["unpin[tab]"],
             "Unpin tab as an application tab",
             function (args) {
-                for (let tab in matchTabs(args))
+                for (let tab in tabs.match(args[0], args.count))
                     config.browser.unpinTab(tab);
             },
             {
@@ -805,7 +833,7 @@ var Tabs = Module("tabs", {
                     let arg = args[0];
 
                     if (tabs.indexFromSpec(arg) == -1) {
-                        let tabs = [tab for (tab in matchTabs(args, true))];
+                        let tabs = [tab for (tab in tabs.match(args[0], args.count, true))];
                         dactyl.assert(tabs.length, _("error.invalidArgument", arg));
                         dactyl.assert(tabs.length == 1, _("buffer.multipleMatching", arg));
                         arg = tabs[0];

@@ -108,6 +108,8 @@
       - :style now supports regexp site-filters on Firefox 6+. [b7]
       - :qa closes only the current window, per Vim. [b7]
       - Added :background command. [b8]
+      - Removed :bwipeout and :bunload. Changed the semantics of :bdelete
+        and :tabclose slightly. [b8]
       - Added -id flag to :bmark command and changed updating semantics. [b8]
       - Added :exit command. [b7]
       - Added :dlclear command. [b7]

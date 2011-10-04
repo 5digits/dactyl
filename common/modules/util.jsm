@@ -1098,7 +1098,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         expr = String.replace(expr, /\\(.)/, function (m, m1) {
             if (m1 === "c")
                 flags = flags.replace(/i/g, "") + "i";
-            else if (m === "C")
+            else if (m1 === "C")
                 flags = flags.replace(/i/g, "");
             else
                 return m;

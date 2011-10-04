@@ -16,14 +16,14 @@ FEATURES:
 9 <C-o>/<C-i> should work as in Vim (i.e., save page positions as well as
   locations in the history list).
 9 clean up error message codes and document
-9 option groups, including buffer-local and site-specific
+9 option groups
+9 global, window-local, tab-local, buffer-local, script-local groups
 9 add [count] support to :b* and :tab* commands where missing
 8 wherever possible: get rid of dialogs and ask console-like dialog questions
   or write error prompts directly on the webpage or with :echo()
 8 registers
 8 add support for filename special characters such as %
 8 :redir and 'verbosefile'
-8 middleclick in content == p, and if command line is open, paste there the clipboard buffer
 8 Add information to dactyl/HACKING file about testing and optimization
 7 describe-key command (prompt for a key and display its binding with documentation)
 7 use ctrl-n/p in insert mode for word completion
