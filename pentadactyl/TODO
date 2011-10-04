@@ -24,7 +24,6 @@ FEATURES:
 8 add support for filename special characters such as %
 8 :redir and 'verbosefile'
 8 middleclick in content == p, and if command line is open, paste there the clipboard buffer
-8 all search commands should start searching from the top of the visible viewport
 8 Add information to dactyl/HACKING file about testing and optimization
 7 describe-key command (prompt for a key and display its binding with documentation)
 7 use ctrl-n/p in insert mode for word completion

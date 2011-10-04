@@ -177,18 +177,21 @@ HelpType;;;FontCode                         /* An option type */ \
 HelpWarning                                 /* The indicator for a warning */ \
                                             color: red; font-weight: bold;
 
-HelpXML;;;FontCode  {
-    /* Highlighted XML */
+HelpXMLBase;;;FontCode  {
     white-space: pre;
-    display: inline-block;
     color: #C5F779;
     background-color: #444444;
-    border: 1px dashed #aaaaaa;
     font-family: Terminus, Fixed, monospace;
 }
-HelpXMLBlock;;;HelpXML {
+HelpXML;;;HelpXMLBase  {
+    /* Highlighted XML */
+    display: inline-block;
+    border: 1px dashed #aaaaaa;
+}
+HelpXMLBlock;;;HelpXMLBase {
     display: block;
     margin-left: 2em;
+    border: 1px dashed #aaaaaa;
 }
 HelpXMLAttribute                            color: #C5F779;
 HelpXMLAttribute::after                     color: #E5E5E5; content: "=";

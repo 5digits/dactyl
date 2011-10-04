@@ -93,6 +93,8 @@ var Modes = Module("modes", {
                     modes.pop();
                 else if (!stack.pop && !this.pref)
                     this.pref = true;
+                if (!stack.pop)
+                    buffer.resetCaret();
             },
 
             leave: function (stack) {

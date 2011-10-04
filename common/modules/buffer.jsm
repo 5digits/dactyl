@@ -486,6 +486,75 @@ var Buffer = Module("Buffer", {
     },
 
     /**
+     * Resets the caret position so that it resides within the current
+     * viewport.
+     */
+    resetCaret: function resetCaret() {
+        function visible(range) util.intersection(DOM(range).rect, viewport);
+
+        function getRanges(rect) {
+            let nodes = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                           .nodesFromRect(rect.x, rect.y, 0, rect.width, rect.height, 0, false, false);
+            return Array.filter(nodes, function (n) n instanceof Ci.nsIDOMText)
+                        .map(RangeFind.nodeContents);
+        }
+
+        let win = this.focusedFrame;
+        let sel = win.getSelection();
+        let viewport = DOM(win).rect;
+
+        if (sel.rangeCount) {
+            var range = sel.getRangeAt(0);
+
+            let vis = visible(range);
+            if (vis.width > 0 && vis.height > 0)
+                return;
+
+            var { rect } = DOM(range);
+            var reverse = rect.bottom > win.innerHeight;
+
+            rect = { x: rect.left, y: 0, width: rect.width, height: win.innerHeight };
+        }
+        else {
+            rect = { x: 0, y: 0, width: win.innerWidth, height: 0 };
+        }
+
+        var reduce = function (a, b) DOM(a).rect.top < DOM(b).rect.top ? a : b;
+        var dir = "forward";
+        var y = 0;
+        if (reverse) {
+            reduce = function (a, b) DOM(b).rect.bottom > DOM(a).rect.bottom ? b : a;
+            dir = "backward";
+            y = win.innerHeight - 1;
+        }
+
+        let ranges = getRanges(rect);
+        if (!ranges.length)
+            ranges = getRanges({ x: 0, y: y, width: win.innerWidth, height: 0 });
+        if (!ranges.length)
+            return;
+
+        range = ranges.reduce(reduce);
+
+        if (range) {
+            range.collapse(!reverse);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            do {
+                if (visible(range).height > 0)
+                    break;
+
+                var { startContainer, startOffset } = range;
+                sel.modify("move", dir, "line");
+                range = sel.getRangeAt(0);
+            }
+            while (startContainer != range.startContainer || startOffset != range.startOffset);
+
+            sel.modify("move", reverse ? "forward" : "backward", "lineboundary");
+        }
+    },
+
+    /**
      * @property {nsISelectionController} The current document's selection
      *     controller.
      */
@@ -887,7 +956,7 @@ var Buffer = Module("Buffer", {
      * @param {boolean} useExternalEditor View the source in the external editor.
      */
     viewSource: function viewSource(loc, useExternalEditor) {
-        let { dactyl, history, options } = this.modules;
+        let { dactyl, editor, history, options } = this.modules;
 
         let window = this.topWindow;
 
@@ -940,6 +1009,8 @@ var Buffer = Module("Buffer", {
         init: function init(doc, callback) {
             this.callback = callable(callback) ? callback :
                 function (file, temp) {
+                    let { editor } = overlay.activeModules;
+
                     editor.editFileExternally(update({ file: file.path }, callback || {}),
                                               function () { temp && file.remove(false); });
                     return true;

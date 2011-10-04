@@ -326,7 +326,13 @@ var DOM = Class("DOM", {
         }),
     }),
 
-    get rect() this[0] ? this[0].getBoundingClientRect() : {},
+    get rect() this[0] instanceof Ci.nsIDOMWindow ? { get width() this.innerWidth,
+                                                      get height() this.innerHeight,
+                                                      get bottom() this.height,
+                                                      get right() this.width,
+                                                      top: 0, left: 0,
+                                                      __proto__: this[0] } :
+               this[0]                            ? this[0].getBoundingClientRect() : {},
 
     get viewport() {
         let r = this.rect;

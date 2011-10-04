@@ -10,6 +10,7 @@ defineModule("finder", {
     require: ["prefs"]
 }, this);
 
+this.lazyRequire("buffer", ["Buffer"]);
 this.lazyRequire("overlay", ["overlay"]);
 
 function equals(a, b) XPCNativeWrapper(a) == XPCNativeWrapper(b);
@@ -55,6 +56,8 @@ var RangeFinder = Module("rangefinder", {
         this.modules.marks.push();
         this.commandline;
         this.CommandMode(mode, this.content).open();
+
+        Buffer(this.content).resetCaret();
 
         if (this.rangeFind && equals(this.rangeFind.window.get(), this.window))
             this.rangeFind.reset();

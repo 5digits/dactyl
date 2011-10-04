@@ -187,7 +187,7 @@
 <xml-block><escape><hl key="HelpXMLString">use strict</hl>;
 XML.ignoreWhitespace = <hl key="Boolean">false</hl>;
 XML.prettyPrinting   = <hl key="Boolean">false</hl>;
-<hl key="HelpXML">var</hl> INFO = <!-- Cursed manual XML highlighting! -->
+<hl key="HelpXMLBase">var</hl> INFO = <!-- Cursed manual XML highlighting! -->
 <hl key="HelpXMLTagStart">&lt;plugin
     <hl key="HelpXMLAttribute">name</hl><hl key="HelpXMLString">flashblock</hl>
     <hl key="HelpXMLAttribute">version</hl><hl key="HelpXMLString">1.0</hl>
