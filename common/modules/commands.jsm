@@ -1254,10 +1254,8 @@ var Commands = Module("commands", {
                 return;
             }
 
-            if (complete) {
-                complete.fork(command.name);
-                var context = complete.fork("args", len);
-            }
+            if (complete)
+                var context = complete.fork(command.name).fork("opts", len);;
 
             if (!complete || /(\w|^)[!\s]/.test(str))
                 args = command.parseArgs(args, context, { count: count, bang: bang });
@@ -1382,7 +1380,7 @@ var Commands = Module("commands", {
                 return;
             }
 
-            let cmdContext = context.fork(command.name, match.fullCmd.length + match.bang.length + match.space.length);
+            let cmdContext = context.fork(command.name + "/args", match.fullCmd.length + match.bang.length + match.space.length);
             try {
                 if (!cmdContext.waitingForTab) {
                     if (!args.completeOpt && command.completer && args.completeStart != null) {
