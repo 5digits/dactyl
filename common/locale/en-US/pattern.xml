@@ -70,7 +70,7 @@
     <description>
         <p>
             Find a pattern backward of the current caret position in exactly the
-            same manner as <k>/</k>
+            same manner as <k>/</k>.
         </p>
     </description>
 </item>

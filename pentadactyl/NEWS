@@ -47,6 +47,9 @@
         prefixing the continuation lines with a \ [b3]
       - The \ character is no longer treated specially within single
         quotes, i.e., 'fo\o''bar' ⇒ fo\o'bar [b1]
+    • IMPORTANT: Command script files now use the *.penta file extension. [b2]
+    • IMPORTANT: Plugins are now loaded from the 'plugins/'
+      directory in 'runtimepath' rather than 'plugin/'. [b1]
     • The command line is now hidden by default. Added c, C, and M to
       'guioptions'. [b4]
     • Hints mode improvements, including:
@@ -72,7 +75,7 @@
       editing input fields with i_<C-i>. See :h 'editor'. [b4]
     • Improved [macro-string] support, including automatic elision
       of optional elements, and array subscripts. [b4][b7]
-    • Add -pentadactyl-remote command-line option. [b8]
+    • Added -pentadactyl-remote command-line option. [b8]
     • Moved the smooth-scroll plugin to the core. [b8]
     • Improvements to marks:
       - Marks are now stored as line and column ordinals rather than percentages. [b8]
@@ -102,14 +105,15 @@
         :listoptions and :listcommands, providing more powerful and
         consistent interactive help facility (improvements include
         listing keys for modes other than Normal, filtering the output,
-        and linking to source code locations). [b4]
+        and linking to source code definitions). [b4]
       - :downloads now opens a download list in the multi-line output
         buffer. Added -sort flag. [b6][b7]
       - :style now supports regexp site-filters on Firefox 6+. [b7]
       - :qa closes only the current window, per Vim. [b7]
       - Added :background command. [b8]
-      - Removed :bwipeout and :bunload. Changed the semantics of :bdelete
-        and :tabclose slightly. [b8]
+      - Removed :bwipeout and :bunload aliases. Changed :bdelete and
+        :tabclose semantics slightly. The latter now only operates on
+        visible tabs. [b8]
       - Added -id flag to :bmark command and changed updating semantics. [b8]
       - Added :exit command. [b7]
       - Added :dlclear command. [b7]
@@ -151,6 +155,9 @@
       - :command now accepts comma-separated alternative command names. [b4]
       - :command -complete custom now also accepts a completions array, see
         :h :command-completion-custom. [b4]
+      - Removed :beep. [b2]
+      - Removed :edit, :tabedit, and :winedit aliases. [b2]
+      - Removed :play. [b2]
     • Improvements to :style and :highlight:
       - Added -link flag to :highlight. [b4]
       - Added -agent flag to :style. [b2]
@@ -194,10 +201,7 @@
       - The precise format of 'sanitizeitems' has changed slightly. [b8]
       - 'showmode' is now a [regexplist]. [b6]
       - 'showstatuslinks' and 'showtabline' are now [string] options. [b4]
-    • IMPORTANT: Command script files now use the *.penta file extension. [b2]
-    • IMPORTANT: Plugins are now loaded from the 'plugins/'
-      directory in 'runtimepath' rather than 'plugin/'. [b1]
-    • Option changes:
+    • Other option changes:
       - Added [stringmap], [regexplist], and [regexpmap] option
         types. [b1]
       - Added [sitelist] and [sitemap] option types. [b6]
@@ -242,8 +246,5 @@
       - The help system is newly modularized and features significant
         updates, rewrites, and formatting improvements. [b1]
       - Added <A-F1> to open the single, consolidated help page. [b5]
-    • Removed :beep. [b2]
-    • Removed :edit, :tabedit, and :winedit aliases. [b2]
-    • Removed :play. [b2]
 
 # vim:set ft=conf sts=2 sw=2 et fo=tcn2 tw=68:

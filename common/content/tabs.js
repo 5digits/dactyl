@@ -336,12 +336,12 @@ var Tabs = Module("tabs", {
 
     /**
      * Return an iterator of tabs matching the given filter. If no
-     * filter or count is provided, returns the currently selected
+     * *filter* or *count* is provided, returns the currently selected
      * tab. If *filter* is a number or begins with a number followed
      * by a colon, the tab of that ordinal is returned. Otherwise,
      * tabs matching the filter as below are returned.
      *
-     * @param {string} filter The filter. If *regex*, this is a
+     * @param {string} filter The filter. If *regexp*, this is a
      *      regular expression against which the tab's URL or title
      *      must match. Otherwise, it is a site filter.
      *      @optional
