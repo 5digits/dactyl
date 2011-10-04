@@ -601,7 +601,7 @@ var CompletionContext = Class("CompletionContext", {
         }
         this.offset += count;
         if (this._filter)
-            this._filter = this._filter.substr(advance);
+            this._filter = this._filter.substr(arguments[0] || 0);
     },
 
     /**

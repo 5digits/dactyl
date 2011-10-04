@@ -41,7 +41,7 @@ var Editor = Module("editor", {
     get isTextEdit() modes.getStack(1).main == modes.TEXT_EDIT,
 
     deselectText: function () {
-        if (this.selection)
+        if (this.selection && this.selection.focusNode)
             this.selection.collapse(this.selection.focusNode,
                                     this.selection.focusOffset);
     },

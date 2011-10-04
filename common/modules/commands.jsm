@@ -1400,7 +1400,6 @@ var Commands = Module("commands", {
         };
 
         completion.exMacro = function exMacro(context, args, cmd) {
-            util.dump(cmd.action.macro, cmd.action);
             if (!cmd.action.macro)
                 return;
             let { macro } = cmd.action;
