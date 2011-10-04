@@ -348,7 +348,7 @@ var Highlights = Module("Highlight", {
                              "text-align: center"],
                             ([h.class,
                               <span style={"text-align: center; line-height: 1em;" + h.value + style}>XXX</span>,
-                              template.map(h.extends, function (s) template.highlight(s)),
+                              template.map(h.extends, function (s) template.highlight(s), <>,</>),
                               template.highlightRegexp(h.value, /\b[-\w]+(?=:)|\/\*.*?\*\//g,
                                                        function (match) <span highlight={match[0] == "/" ? "Comment" : "Key"}>{match}</span>)
                              ]

@@ -290,9 +290,8 @@ var CommandWidgets = Class("CommandWidgets", {
     }),
 
     multilineOutput: Class.Memoize(function () this._whenReady("dactyl-multiline-output", function (elem) {
-        elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
-        elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
-        elem.contentDocument.body.id = "dactyl-multiline-output-content";
+        elem.contentWindow.addEventListener("beforeunload", function (event) { event.preventDefault(); }, true);
+        highlight.highlightNode(elem.contentDocument.body, "MOW");
     }), true),
 
     multilineInput: Class.Memoize(function () document.getElementById("dactyl-multiline-input")),
@@ -609,6 +608,8 @@ var CommandLine = Module("commandline", {
             util.waitFor(bind(this.widgets._ready, null, elem));
 
             node.completionList = ItemList(elem);
+            node.completionList.isAboveMow = node.id ==
+                this.widgets.statusbar.commandline.id
         }
         return node.completionList;
     },
@@ -1912,8 +1913,11 @@ var ItemList = Class("ItemList", {
             root.style.minWidth = document.getElementById("dactyl-commandline").scrollWidth + "px";
 
         let { minHeight } = this;
-        this.minHeight = Math.max(this.minHeight,
-                                  this.win.scrollY + DOM(completions).rect.bottom);
+        if (mow.visible && this.isAboveMow) // Kludge.
+            minHeight -= mow.wantedHeight;
+
+        let needed = this.win.scrollY + DOM(completions).rect.bottom;
+        this.minHeight = Math.max(minHeight, needed);
 
         if (!this.visible)
             root.style.minWidth = "";
@@ -2090,7 +2094,8 @@ var ItemList = Class("ItemList", {
                                                     ? this.maxItems / 2 : 0);
                 }
 
-                let range = ItemList.Range(Math.max(0, start - start % 2), Math.min(this.itemCount, end));
+                let range = ItemList.Range(Math.max(0, start - start % 2),
+                                           Math.min(this.itemCount, end));
 
                 let first;
                 for (let [i, row] in this.context.getRows(this.generatedRange.start,

@@ -252,10 +252,13 @@ var MOW = Module("mow", {
 
         doc.body.style.minWidth = this.widgets.commandbar.commandline.scrollWidth + "px";
 
-        this.widgets.mowContainer.height = Math.min(doc.body.clientHeight, availableHeight) + "px";
-        this.timeout(function ()
-            this.widgets.mowContainer.height = Math.min(doc.body.clientHeight, availableHeight) + "px",
-            0);
+        function adjust() {
+            let wantedHeight = doc.body.clientHeight;
+            this.widgets.mowContainer.height = Math.min(wantedHeight, availableHeight) + "px",
+            this.wantedHeight = Math.max(0, wantedHeight - availableHeight);
+        }
+        adjust.call(this);
+        this.timeout(adjust);
 
         doc.body.style.minWidth = "";
 

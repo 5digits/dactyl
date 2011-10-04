@@ -84,6 +84,12 @@ CmdInput;.dactyl-commandline-command
 CmdOutput         /* The output of commands executed by <ex>:run</ex> */ \
                   white-space: pre;
 
+MOW;;;FontFixed,Normal         /* The Multiline Output Window */ \
+                               margin: 0; white-space: pre;
+
+MOW table                      white-space: inherit; border-spacing: 0px;
+MOW :-moz-any(td, th)          padding: 0px 2px;
+
 Comp;;;FontFixed,Normal        /* The completion window */ \
                                margin: 0; border-top: 1px solid black;
 

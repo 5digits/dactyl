@@ -200,27 +200,6 @@ statusbarpanel {
     font: inherit;
 }
 
-.dactyl-completions-content,
-#dactyl-multiline-output-content,
-#dactyl-multiline-input {
-    white-space: pre;
-    font-family: -moz-fixed;
-    margin: 0px;
-}
-
-.dactyl-completions-content table,
-#dactyl-multiline-output-content table {
-    white-space: inherit;
-    border-spacing: 0px;
-}
-
-.dactyl-completions-content td,
-#dactyl-multiline-output-content td,
-.dactyl-completions-content th,
-#dactyl-multiline-output-content th {
-    padding: 0px 2px;
-}
-
 /* for Teledactyl's composer */
 #content-frame, #appcontent {
     border: 0px;

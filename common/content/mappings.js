@@ -128,13 +128,10 @@ var Map = Class("Map", {
         if (this.names[0] != ".") // FIXME: Kludge.
             mappings.repeat = repeat;
 
-        if (this.executing) {
-            if (args.keypressEvents[0].isMacro) {
-                util.dumpStack(_("map.recursive", args.command));
-                throw FailedAssertion(_("map.recursive", args.command));
-            }
-            this.executing = false;
-        }
+        if (this.executing)
+            util.assert(!args.keypressEvents[0].isMacro,
+                        _("map.recursive", args.command),
+                        false);
 
         try {
             this.preExecute(args);
