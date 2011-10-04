@@ -409,6 +409,7 @@ var Editor = Module("editor", {
 
         if (!(node instanceof Ci.nsIDOMText)) {
             node = iterator[forward ? "getNext" : "getPrev"]();
+            dactyl.assert(node);
             range[forward ? "setEnd" : "setStart"](node, forward ? 0 : node.textContent.length);
         }
 
@@ -553,6 +554,7 @@ var Editor = Module("editor", {
         function clear(forward, re)
             function _clear(editor) {
                 updateRange(editor, forward, re, function (range) {});
+                dactyl.assert(!editor.selection.isCollapsed);
                 editor.selection.deleteFromDocument();
                 let parent = DOM(editor.rootElement.parentNode);
                 if (parent.isInput)
