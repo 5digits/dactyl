@@ -290,7 +290,6 @@ var CommandWidgets = Class("CommandWidgets", {
     }),
 
     multilineOutput: Class.Memoize(function () this._whenReady("dactyl-multiline-output", function (elem) {
-        elem.contentWindow.addEventListener("beforeunload", function (event) { event.preventDefault(); }, true);
         highlight.highlightNode(elem.contentDocument.body, "MOW");
     }), true),
 

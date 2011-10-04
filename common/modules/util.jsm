@@ -381,13 +381,23 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     if (idx) {
                         idx = Number(idx) - 1;
                         stack.top.elements.push(update(
-                            function (obj) obj[name] != null && idx in obj[name] ? quote(obj[name][idx]) : Set.has(obj, name) ? "" : unknown(full),
-                            { test: function (obj) obj[name] != null && idx in obj[name] && obj[name][idx] !== false && (!flags.e || obj[name][idx] != "") }));
+                            function (obj) obj[name] != null && idx in obj[name] ? quote(obj[name][idx])
+                                                                                 : Set.has(obj, name) ? "" : unknown(full),
+                            {
+                                test: function (obj) obj[name] != null && idx in obj[name]
+                                                  && obj[name][idx] !== false
+                                                  && (!flags.e || obj[name][idx] != "")
+                            }));
                     }
                     else {
                         stack.top.elements.push(update(
-                            function (obj) obj[name] != null ? quote(obj[name]) : Set.has(obj, name) ? "" : unknown(full),
-                            { test: function (obj) obj[name] != null && obj[name] !== false && (!flags.e || obj[name] != "") }));
+                            function (obj) obj[name] != null ? quote(obj[name])
+                                                             : Set.has(obj, name) ? "" : unknown(full),
+                            {
+                                test: function (obj) obj[name] != null
+                                                  && obj[name] !== false
+                                                  && (!flags.e || obj[name] != "")
+                            }));
                     }
 
                     for (let elem in array.iterValues(stack))
