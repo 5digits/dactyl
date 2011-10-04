@@ -1381,7 +1381,7 @@ var CommandLine = Module("commandline", {
             if (this.context.waitingForTab || this.wildIndex == -1)
                 this.complete(true, true);
 
-            this.wildtypes = wildmode;
+            this.wildtypes = wildmode || options["wildmode"];
             let count = Math.abs(offset);
             let steps = Math.constrain(this.wildtypes.length - this.wildIndex,
                                        1, count);
