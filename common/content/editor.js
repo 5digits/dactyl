@@ -479,33 +479,26 @@ var Editor = Module("editor", {
                 type: "operator"
             };
 
-            function caretExecute(arg, again) {
-                function fixSelection() {
-                    sel.removeAllRanges();
-                    sel.addRange(RangeFind.endpoint(
-                        RangeFind.nodeRange(buffer.focusedFrame.document.documentElement),
-                        true));
-                }
-
-                let controller = util.selectionController(document.commandDispatcher.focusedWindow);
+            function caretExecute(arg) {
+                let win = document.commandDispatcher.focusedWindow;
+                let controller = util.selectionController(win);
                 let sel = controller.getSelection(controller.SELECTION_NORMAL);
-                if (!sel.rangeCount) // Hack.
-                    fixSelection();
 
-                try {
+                let buffer = Buffer(win);
+                if (!sel.rangeCount) // Hack.
+                    buffer.resetCaret();
+
+                if (caretModeMethod == "pageMove") { // Grr.
+                    buffer.scrollVertical("pages", caretModeArg ? 1 : -1);
+                    buffer.resetCaret();
+                }
+                else
                     controller[caretModeMethod](caretModeArg, arg);
-                }
-                catch (e) {
-                    dactyl.assert(again && e.result === Cr.NS_ERROR_FAILURE);
-                    fixSelection();
-                    caretExecute(arg, false);
-                }
             }
 
             mappings.add([modes.VISUAL], keys, description,
                 function ({ count }) {
-                    if (!count)
-                        count = 1;
+                    count = count || 1;
 
                     let caret = !dactyl.focusedElement;
                     let editor_ = Editor.getEditor(null);
@@ -525,14 +518,13 @@ var Editor = Module("editor", {
 
             mappings.add([modes.CARET, modes.TEXT_EDIT, modes.OPERATOR], keys, description,
                 function ({ count }) {
-                    if (!count)
-                        count = 1;
+                    count = count || 1;
 
                     if (Editor.getEditor(null))
                         editor.executeCommand(textEditCommand, count);
                     else {
                         while (count--)
-                            caretExecute(false, true);
+                            caretExecute(false);
                     }
                 },
                 extraInfo);

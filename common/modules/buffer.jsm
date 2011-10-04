@@ -505,9 +505,7 @@ var Buffer = Module("Buffer", {
 
         if (sel.rangeCount) {
             var range = sel.getRangeAt(0);
-
-            let vis = visible(range);
-            if (vis.width > 0 && vis.height > 0)
+            if (visible(range).height > 0)
                 return;
 
             var { rect } = DOM(range);
