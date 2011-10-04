@@ -594,40 +594,6 @@ var RangeFind = Class("RangeFind", {
         this.found = false;
     },
 
-    // This doesn't work yet.
-    resetCaret: function () {
-        let equal = RangeFind.equal;
-        let selection = this.win.getSelection();
-        if (selection.rangeCount == 0)
-            selection.addRange(this.pageStart);
-        function getLines() {
-            let orig = selection.getRangeAt(0);
-            function getRanges(forward) {
-                selection.removeAllRanges();
-                selection.addRange(orig);
-                let cur = orig;
-                while (true) {
-                    var last = cur;
-                    this.sel.lineMove(forward, false);
-                    cur = selection.getRangeAt(0);
-                    if (equal(cur, last))
-                        break;
-                    yield cur;
-                }
-            }
-            yield orig;
-            for (let range in getRanges(true))
-                yield range;
-            for (let range in getRanges(false))
-                yield range;
-        }
-        for (let range in getLines()) {
-            if (this.sel.checkVisibility(range.startContainer, range.startOffset, range.startOffset))
-                return range;
-        }
-        return null;
-    },
-
     find: function (pattern, reverse, private_) {
         if (!private_ && this.lastRange && !RangeFind.equal(this.selectedRange, this.lastRange))
             this.reset();
