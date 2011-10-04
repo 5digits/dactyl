@@ -129,8 +129,11 @@ var Map = Class("Map", {
             mappings.repeat = repeat;
 
         if (this.executing) {
-            util.dumpStack(_("map.recursive", args.command));
-            throw FailedAssertion(_("map.recursive", args.command));
+            if (args.keypressEvents[0].isMacro) {
+                util.dumpStack(_("map.recursive", args.command));
+                throw FailedAssertion(_("map.recursive", args.command));
+            }
+            this.executing = false;
         }
 
         try {
