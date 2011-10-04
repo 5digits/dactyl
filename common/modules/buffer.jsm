@@ -516,7 +516,7 @@ var Buffer = Module("Buffer", {
             rect = { x: rect.left, y: 0, width: rect.width, height: win.innerHeight };
         }
         else {
-            rect = { x: 0, y: 0, width: win.innerWidth, height: 0 };
+            rect = { x: win.innerWidth / 2, y: 0, width: 0, height: 0 };
         }
 
         var reduce = function (a, b) DOM(a).rect.top < DOM(b).rect.top ? a : b;
