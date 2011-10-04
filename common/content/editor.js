@@ -22,7 +22,7 @@ var Editor = Module("editor", {
                     return elem.inputField || elem;
 
                 let win = document.commandDispatcher.focusedWindow;
-                return DOM(win).isEditable && win;
+                return DOM(win).isEditable && win || null;
             });
     },
 
