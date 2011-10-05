@@ -123,7 +123,7 @@ var Messages = Module("messages", {
                           .concat(foo("hintmode", values(hints.modes), "prompt"))
                           .concat(foo("pageinfo", values(Buffer.pageInfo), "title"))
                           .concat(foo("sanitizeitem", values(sanitizer.itemMap)))
-                .flatten().uniq().join("\n"))
+                .flatten().uniq().join("\n"));
     }
 }, {
     Localized: Class("Localized", Class.Property, {
