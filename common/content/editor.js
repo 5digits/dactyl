@@ -457,7 +457,7 @@ var Editor = Module("editor", {
                 while (idx == 0 && (node = iterator.getPrev())) {
                     let str = node.textContent;
                     if (node == iterator.start)
-                        idx = range.endOffset;
+                        idx = range.startOffset;
                     else
                         idx = str.length;
 
@@ -904,6 +904,19 @@ var Editor = Module("editor", {
                 dactyl.assert(editor.isTextEdit);
                 editor.executeCommand("cmd_cut");
                 modes.push(modes.INSERT);
+            });
+
+        mappings.add([modes.VISUAL],
+            ["o"], "Focus the other end of the selection",
+            function () {
+                if (editor.isTextEdit)
+                    var selection = editor.selection;
+                else
+                    selection = buffer.focusedFrame.getSelection();
+                util.assert(selection.focusOffset);
+                let { focusOffset, anchorOffset, focusNode, anchorNode } = selection;
+                selection.collapse(focusNode, focusOffset);
+                selection.extend(anchorNode, anchorOffset);
             });
 
         bind(["p"], "Paste clipboard contents",
