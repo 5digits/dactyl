@@ -10,6 +10,9 @@ defineModule("help", {
     require: ["cache", "dom", "javascript", "protocol", "services", "util"]
 }, this);
 
+this.lazyRequire("completion", ["completion"]);
+this.lazyRequire("overlay", ["overlay"]);
+
 var HelpBuilder = Class("HelpBuilder", {
     init: function init() {
         try {
@@ -398,7 +401,7 @@ var Help = Module("Help", {
 
             if (zip)
                 zip.close();
-        }, [function (context, args) completion.file(context)]),
+        }, [function (context, args) overlay.activeModules.completion.file(context)]),
 
     })
 }, {

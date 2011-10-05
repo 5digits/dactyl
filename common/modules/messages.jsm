@@ -87,8 +87,44 @@ var Messages = Module("messages", {
         if (arguments.length < 3) // Do *not* localize these strings
             util.reportError(Error("Invalid locale string: " + value));
         return arguments.length > 2 ? default_ : value;
-    }
+    },
 
+    export: function export_(file) {
+        let { Buffer, commands, hints, io, mappings, modes, options, sanitizer } = overlay.activeModules;
+        file = io.File(file);
+
+        function foo(base, iter_, prop) iter(function _foo() {
+            function key() [base, obj.identifier || obj.name].concat(Array.slice(arguments)).join(".").replace(/[:=]/g, "\\$&");
+
+            prop = prop || "description";
+            for (var obj in iter_) {
+                if (!obj.hive || obj.hive.name !== "user") {
+                    yield key(prop) + " = " + obj[prop];
+
+                    if (iter_.values)
+                        for (let [k, v] in isArray(obj.values) ? array.iterValues(obj.values) : iter(obj.values))
+                            yield key("values", k) + " = " + v;
+
+                    for (let opt in values(obj.options))
+                        yield key("options", opt.names[0]) + " = " + opt.description;
+
+                    if (obj.deprecated)
+                        yield key("deprecated") + " = " + obj.deprecated;
+                }
+            }
+        }()).toArray();
+
+        file.write(
+            array(commands.allHives.map(function (h) foo("command", h)))
+                          .concat(modes.all.map(function (m) foo("map", values(mappings.builtin.getStack(m)
+                                                                                       .filter(function (map) map.modes[0] == m)))))
+                          .concat(foo("mode", values(modes.all.filter(function (m) !m.hidden))))
+                          .concat(foo("option", options))
+                          .concat(foo("hintmode", values(hints.modes), "prompt"))
+                          .concat(foo("pageinfo", values(Buffer.pageInfo), "title"))
+                          .concat(foo("sanitizeitem", values(sanitizer.itemMap)))
+                .flatten().uniq().join("\n"))
+    }
 }, {
     Localized: Class("Localized", Class.Property, {
         init: function init(prop, obj) {
@@ -141,9 +177,17 @@ var Messages = Module("messages", {
     })
 }, {
     javascript: function initJavascript(dactyl, modules, window) {
-        modules.JavaScript.setCompleter([this._, this.get, this.format], [
+        let { JavaScript } = modules;
+
+        JavaScript.setCompleter([this._, this.get, this.format], [
             function (context) messages.iterate()
         ]);
+
+        JavaScript.setCompleter([this.export],
+            [function (context, obj, args) {
+                context.quote[2] = "";
+                modules.completion.file(context, true);
+            }]);
     }
 });
 
