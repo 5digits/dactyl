@@ -909,6 +909,10 @@ var Events = Module("events", {
     }),
 
     onSelectionChange: function onSelectionChange(event) {
+        // Ignore selection events caused by editor commands.
+        if (editor.inEditMap || modes.main == modes.OPERATOR)
+            return;
+
         let controller = document.commandDispatcher.getControllerForCommand("cmd_copy");
         let couldCopy = controller && controller.isCommandEnabled("cmd_copy");
 

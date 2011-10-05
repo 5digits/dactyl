@@ -520,8 +520,10 @@ var Editor = Module("editor", {
             preExecute: function preExecute(args) {
                 if (editor.editor)
                     editor.editor.beginTransaction();
+                editor.inEditMap = true;
             },
             postExecute: function preExecute(args) {
+                editor.inEditMap = false;
                 if (editor.editor)
                     editor.editor.endTransaction();
             },
@@ -703,19 +705,25 @@ var Editor = Module("editor", {
 
             mappings.add([modes.TEXT_EDIT], key,
                 desc,
-                function ({ count,  motion }) {
+                function ({ command, count, motion }) {
                     let start = editor.selectionRange.cloneRange();
 
                     modes.push(modes.OPERATOR, null, {
+                        forCommand: command,
+
                         count: count,
 
                         leave: function leave(stack) {
                             if (stack.push || stack.fromEscape)
                                 return;
 
-                            let range = RangeFind.union(start, editor.selectionRange);
-                            editor.selectionRange = select ? range : start;
-                            doTxn(range, editor);
+                            editor.withSavedValues(["inEditMap"], function () {
+                                this.inEditMap = true;
+
+                                let range = RangeFind.union(start, editor.selectionRange);
+                                editor.selectionRange = select ? range : start;
+                                doTxn(range, editor);
+                            });
 
                             modes.delay(function () {
                                 if (mode)
@@ -737,7 +745,7 @@ var Editor = Module("editor", {
 
         addMotionMap(["d", "x"], "Delete text", true,  function (editor) { editor.editor.cut(); });
         addMotionMap(["c"],      "Change text", true,  function (editor) { editor.editor.cut(); }, modes.INSERT);
-        addMotionMap(["y"],      "Yank text",   false, function (editor, range) { dactyl.clipboardWrite(DOM.stringify(range)) });
+        addMotionMap(["y"],      "Yank text",   false, function (editor, range) { dactyl.clipboardWrite(String(range)) });
 
         addMotionMap(["gu"], "Lowercase text", false,
              function (editor, range) {
@@ -748,6 +756,20 @@ var Editor = Module("editor", {
             function (editor, range) {
                 editor.mungeRange(range, String.toLocaleUpperCase);
             });
+
+        mappings.add([modes.OPERATOR],
+            ["c", "d", "y"], "Select the entire line",
+            function ({ command, count }) {
+                dactyl.assert(command == modes.getStack(0).params.forCommand);
+                editor.executeCommand("cmd_beginLine", 1);
+                editor.executeCommand("cmd_selectLineNext", count || 1);
+                let range = editor.selectionRange;
+                if (command == "c" && !range.collapsed) // Hack.
+                    if (range.endContainer instanceof Text &&
+                          range.endContainer.textContent[range.endOffset - 1] == "\n")
+                        editor.executeCommand("cmd_selectCharPrevious", 1);
+            },
+            { count: true, type: "operator" });
 
         let bind = function bind(names, description, action, params)
             mappings.add([modes.INPUT], names, description,
