@@ -28,7 +28,7 @@ var IO = Module("io", {
         this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);
         this._cwd = this._processDir.path;
         this._oldcwd = null;
-        this.config = config;
+        lazyRequire("config", ["config"], this);
     },
 
     Local: function Local(dactyl, modules, window) let ({ io, plugins } = modules) ({

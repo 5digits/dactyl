@@ -10,7 +10,7 @@ let global = this;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
-    require: ["dom", "protocol", "services", "storage", "util", "template"]
+    require: ["dom", "io", "protocol", "services", "util", "template"]
 }, this);
 
 this.lazyRequire("addons", ["AddonManager"]);
@@ -18,6 +18,7 @@ this.lazyRequire("cache", ["cache"]);
 this.lazyRequire("highlight", ["highlight"]);
 this.lazyRequire("messages", ["_"]);
 this.lazyRequire("prefs", ["localPrefs", "prefs"]);
+this.lazyRequire("storage", ["storage", "File"]);
 
 function AboutHandler() {}
 AboutHandler.prototype = {

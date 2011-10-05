@@ -7,7 +7,7 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("help", {
     exports: ["help"],
-    require: ["cache", "dom", "javascript", "protocol", "services", "util"]
+    require: ["cache", "dom", "protocol", "services", "util"]
 }, this);
 
 this.lazyRequire("completion", ["completion"]);
@@ -290,7 +290,7 @@ var Help = Module("Help", {
             dactyl.open("dactyl://help/" + page, { from: "help" });
         },
 
-        exportHelp: JavaScript.setCompleter(function (path) {
+        exportHelp: function (path) {
             const FILE = io.File(path);
             const PATH = FILE.leafName.replace(/\..*/, "") + "/";
             const TIME = Date.now();
@@ -401,7 +401,7 @@ var Help = Module("Help", {
 
             if (zip)
                 zip.close();
-        }, [function (context, args) overlay.activeModules.completion.file(context)]),
+        }
 
     })
 }, {
@@ -455,6 +455,10 @@ var Help = Module("Help", {
         mappings.add([modes.MAIN], ["<open-single-help>", "<A-F1>"],
             "Open the single, consolidated help page",
             function () { modules.ex.helpall(); });
+    },
+    javascript: function init_javascript(dactyl, modules, window) {
+        modules.JavaScript.setCompleter([this.exportHelp],
+            [function (context, args) overlay.activeModules.completion.file(context)]);
     }
 });
 

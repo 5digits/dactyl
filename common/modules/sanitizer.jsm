@@ -15,10 +15,12 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
-    require: ["config", "prefs", "services", "storage", "template", "util"]
+    require: ["config", "prefs", "services", "util"]
 }, this);
 
 this.lazyRequire("messages", ["_"]);
+this.lazyRequire("storage", ["storage"]);
+this.lazyRequire("template", ["teplate"]);
 
 let tmp = {};
 JSMLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);

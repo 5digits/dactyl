@@ -7,8 +7,10 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("bookmarkcache", {
     exports: ["Bookmark", "BookmarkCache", "Keyword", "bookmarkcache"],
-    require: ["services", "storage", "util"]
+    require: ["services", "util"]
 }, this);
+
+this.lazyRequire("storage", ["storage"]);
 
 function newURI(url, charset, base) {
     try {

@@ -37,8 +37,6 @@ var Config = Module("config", ConfigBase, {
                 function () { window.toErrorConsole(); }],
             history: ["List your history",
                 function () { window.openDialog("chrome://browser/content/history/history-panel.xul", "History", "dialog,centerscreen,width=600,height=600"); }],
-            import: ["Import Preferences, Bookmarks, History, etc. from other browsers",
-                function () { window.BrowserImport(); }],
             openfile: ["Open the file selector dialog",
                 function () { window.BrowserOpenFileWindow(); }],
             pageinfo: ["Show information about the current page",

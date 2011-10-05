@@ -9,7 +9,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("main", {
     exports: ["ModuleBase"],
-    require: ["config", "help", "highlight", "io", "overlay", "services", "util"]
+    require: ["config", "overlay", "services", "util"]
 }, this);
 
 var BASE = "resource://dactyl-content/";
