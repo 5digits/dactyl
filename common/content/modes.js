@@ -57,28 +57,6 @@ var Modes = Module("modes", {
             description: "Active when nothing is focused",
             bases: [this.COMMAND]
         });
-        this.addMode("OPERATOR", {
-            char: "o",
-            description: "Mappings which move the cursor",
-            bases: []
-        });
-        this.addMode("VISUAL", {
-            char: "v",
-            description: "Active when text is selected",
-            display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : ""),
-            bases: [this.COMMAND],
-            ownsFocus: true
-        }, {
-            leave: function (stack, newMode) {
-                if (newMode.main == modes.CARET) {
-                    let selection = content.getSelection();
-                    if (selection && !selection.isCollapsed)
-                        selection.collapseToStart();
-                }
-                else if (stack.pop)
-                    editor.deselectText();
-            }
-        });
         this.addMode("CARET", {
             char: "caret",
             description: "Active when the caret is visible in the web content",
@@ -102,44 +80,12 @@ var Modes = Module("modes", {
                     this.pref = false;
             }
         });
-        this.addMode("TEXT_EDIT", {
-            char: "t",
-            description: "Vim-like editing of input elements",
-            bases: [this.COMMAND],
-            ownsFocus: true
-        }, {
-            onKeyPress: function (eventList) {
-                const KILL = false, PASS = true;
-
-                // Hack, really.
-                if (eventList[0].charCode || /^<(?:.-)*(?:BS|Del|C-h|C-w|C-u|C-k)>$/.test(DOM.Event.stringify(eventList[0]))) {
-                    dactyl.beep();
-                    return KILL;
-                }
-                return PASS;
-            }
-        });
-        this.addMode("OUTPUT_MULTILINE", {
-            description: "Active when the multi-line output buffer is open",
-            bases: [this.NORMAL]
-        });
 
         this.addMode("INPUT", {
             char: "I",
             description: "The base mode for input modes, including Insert and Command Line",
             bases: [this.MAIN],
             insert: true
-        });
-        this.addMode("INSERT", {
-            char: "i",
-            description: "Active when an input element is focused",
-            insert: true,
-            ownsFocus: true
-        });
-        this.addMode("AUTOCOMPLETE", {
-            description: "Active when an input autocomplete pop-up is active",
-            display: function () "AUTOCOMPLETE (insert)",
-            bases: [this.INSERT]
         });
 
         this.addMode("EMBED", {

@@ -307,6 +307,12 @@ var MOW = Module("mow", {
     })
 }, {
 }, {
+    modes: function initModes() {
+        modes.addMode("OUTPUT_MULTILINE", {
+            description: "Active when the multi-line output buffer is open",
+            bases: [modes.NORMAL]
+        });
+    },
     mappings: function initMappings() {
         const PASS = true;
         const DROP = false;

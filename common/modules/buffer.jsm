@@ -1837,11 +1837,11 @@ var Buffer = Module("Buffer", {
                         notificationCallbacks: Class(XPCOM([Ci.nsIChannelEventSink, Ci.nsIInterfaceRequestor]), {
                             getInterface: function getInterface(iid) this.QueryInterface(iid),
 
-                            asyncOnChannelRedirect: util.wrapCallback(function (oldChannel, newChannel, flags, callback) {
+                            asyncOnChannelRedirect: function (oldChannel, newChannel, flags, callback) {
                                 if (newChannel instanceof Ci.nsIHttpChannel)
                                     newChannel.requestMethod = "HEAD";
                                 callback.onRedirectVerifyCallback(Cr.NS_OK);
-                            })
+                            }
                         })()
                     });
                 };

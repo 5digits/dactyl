@@ -99,8 +99,8 @@ var Messages = Module("messages", {
         let { Buffer, commands, hints, io, mappings, modes, options, sanitizer } = overlay.activeModules;
         file = io.File(file);
 
-        function foo(base, iter_, prop) iter(function _foo() {
-            function key() [base, obj.identifier || obj.name].concat(Array.slice(arguments)).join(".").replace(/[:=]/g, "\\$&");
+        function properties(base, iter_, prop) iter(function _properties() {
+            function key() [base, obj.identifier || obj.name].concat(Array.slice(arguments)).join(".").replace(/[\\:=]/g, "\\$&");
 
             prop = prop || "description";
             for (var obj in iter_) {
@@ -121,14 +121,15 @@ var Messages = Module("messages", {
         }()).toArray();
 
         file.write(
-            array(commands.allHives.map(function (h) foo("command", h)))
-                          .concat(modes.all.map(function (m) foo("map", values(mappings.builtin.getStack(m)
-                                                                                       .filter(function (map) map.modes[0] == m)))))
-                          .concat(foo("mode", values(modes.all.filter(function (m) !m.hidden))))
-                          .concat(foo("option", options))
-                          .concat(foo("hintmode", values(hints.modes), "prompt"))
-                          .concat(foo("pageinfo", values(Buffer.pageInfo), "title"))
-                          .concat(foo("sanitizeitem", values(sanitizer.itemMap)))
+            array(commands.allHives.map(function (h) properties("command", h)))
+                          .concat(modes.all.map(function (m)
+                              properties("map", values(mappings.builtin.getStack(m)
+                                                               .filter(function (map) map.modes[0] == m)))))
+                          .concat(properties("mode", values(modes.all.filter(function (m) !m.hidden))))
+                          .concat(properties("option", options))
+                          .concat(properties("hintmode", values(hints.modes), "prompt"))
+                          .concat(properties("pageinfo", values(Buffer.pageInfo), "title"))
+                          .concat(properties("sanitizeitem", values(sanitizer.itemMap)))
                 .flatten().uniq().join("\n"));
     }
 }, {
@@ -154,7 +155,10 @@ var Messages = Module("messages", {
                         function getter(key, default_) function getter() messages.get([name, key].join("."), default_);
 
                         if (value != null) {
-                            var name = [this.constructor.className.toLowerCase(), this.identifier || this.name, prop].join(".");
+                            var name = [this.constructor.className.toLowerCase(),
+                                        this.identifier || this.name,
+                                        prop].join(".");
+
                             if (!isObject(value))
                                 value = messages.get(name, value);
                             else if (isArray(value))

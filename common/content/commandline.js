@@ -1502,6 +1502,8 @@ var CommandLine = Module("commandline", {
             });
     },
     modes: function initModes() {
+        initModes.require("editor");
+
         modes.addMode("COMMAND_LINE", {
             char: "c",
             description: "Active when the command line is focused",

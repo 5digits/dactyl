@@ -36,6 +36,7 @@ var Editor = Module("editor", {
     },
 
     get selection() this.editor && this.editor.selection || null,
+    get selectionController() this.editor && this.editor.selectionController || null,
 
     get isCaret() modes.getStack(1).main == modes.CARET,
     get isTextEdit() modes.getStack(1).main == modes.TEXT_EDIT,
@@ -514,7 +515,64 @@ var Editor = Module("editor", {
         return DOM(elem).editor;
     }
 }, {
-    mappings: function () {
+    modes: function init_modes() {
+        modes.addMode("OPERATOR", {
+            char: "o",
+            description: "Mappings which move the cursor",
+            bases: []
+        });
+        modes.addMode("VISUAL", {
+            char: "v",
+            description: "Active when text is selected",
+            display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : ""),
+            bases: [modes.COMMAND],
+            ownsFocus: true
+        }, {
+            enter: function (stack) {
+                if (editor.selectionController)
+                    editor.selectionController.setCaretVisibilityDuringSelection(true);
+            },
+            leave: function (stack, newMode) {
+                if (newMode.main == modes.CARET) {
+                    let selection = content.getSelection();
+                    if (selection && !selection.isCollapsed)
+                        selection.collapseToStart();
+                }
+                else if (stack.pop)
+                    editor.deselectText();
+            }
+        });
+        modes.addMode("TEXT_EDIT", {
+            char: "t",
+            description: "Vim-like editing of input elements",
+            bases: [modes.COMMAND],
+            ownsFocus: true
+        }, {
+            onKeyPress: function (eventList) {
+                const KILL = false, PASS = true;
+
+                // Hack, really.
+                if (eventList[0].charCode || /^<(?:.-)*(?:BS|Del|C-h|C-w|C-u|C-k)>$/.test(DOM.Event.stringify(eventList[0]))) {
+                    dactyl.beep();
+                    return KILL;
+                }
+                return PASS;
+            }
+        });
+
+        modes.addMode("INSERT", {
+            char: "i",
+            description: "Active when an input element is focused",
+            insert: true,
+            ownsFocus: true
+        });
+        modes.addMode("AUTOCOMPLETE", {
+            description: "Active when an input autocomplete pop-up is active",
+            display: function () "AUTOCOMPLETE (insert)",
+            bases: [modes.INSERT]
+        });
+    },
+    mappings: function init_mappings() {
 
         Map.types["editor"] = {
             preExecute: function preExecute(args) {
@@ -1039,8 +1097,7 @@ var Editor = Module("editor", {
         bind(["<C-n>"], "Select the next autocomplete result",
              function () { events.feedkeys("<Down>", { skipmap: true }); });
     },
-
-    options: function () {
+    options: function init_options() {
         options.add(["editor"],
             "The external text editor",
             "string", 'gvim -f +<line> +"sil! call cursor(0, <column>)" <file>', {
