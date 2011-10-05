@@ -457,7 +457,7 @@ var Help = Module("Help", {
             function () { modules.ex.helpall(); });
     },
     javascript: function init_javascript(dactyl, modules, window) {
-        modules.JavaScript.setCompleter([this.exportHelp],
+        modules.JavaScript.setCompleter([modules.help.exportHelp],
             [function (context, args) overlay.activeModules.completion.file(context)]);
     }
 });

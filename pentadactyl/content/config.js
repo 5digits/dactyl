@@ -32,7 +32,7 @@ var Config = Module("config", ConfigBase, {
                 function () { window.inspectDOMDocument(window.content.document); },
                 function () "inspectDOMDocument" in window],
             downloads: ["Manage Downloads",
-                function () { window.toOpenWindowByType("Download:Manager", "chrome://mozapps/content/downloads/downloads.xul", "chrome,dialog=no,resizable"); }],
+                function () { window.BrowserDownloadsUI(); }],
             history: ["List your history",
                 function () { window.openDialog("chrome://browser/content/history/history-panel.xul", "History", "dialog,centerscreen,width=600,height=600"); }],
             openfile: ["Open the file selector dialog",
