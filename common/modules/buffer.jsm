@@ -499,6 +499,7 @@ var Buffer = Module("Buffer", {
         }
 
         let win = this.focusedFrame;
+        let doc = win.document;
         let sel = win.getSelection();
         let { viewport } = DOM(win);
 
@@ -528,6 +529,8 @@ var Buffer = Module("Buffer", {
         let ranges = getRanges(rect);
         if (!ranges.length)
             ranges = getRanges({ x: 0, y: y, width: win.innerWidth, height: 0 });
+        if (!ranges.length && !sel.rangeCount)
+            ranges = [RangeFind.nodeContents(doc.body || doc.querySelector("body") || doc.documentElement)];
         if (!ranges.length)
             return;
 
