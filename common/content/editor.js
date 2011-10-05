@@ -363,7 +363,7 @@ var Editor = Module("editor", {
             range.setStart(range.startContainer, range.endOffset - abbrev.lhs.length);
             this.mungeRange(range, function () abbrev.expand(this.element), true);
         }
-    },
+    }
 }, {
     TextsIterator: Class("TextsIterator", {
         init: function init(range, context, after) {

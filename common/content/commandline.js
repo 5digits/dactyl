@@ -1609,14 +1609,14 @@ var CommandLine = Module("commandline", {
                  self.completions.onTab(keypressEvents[0]);
              });
 
-        bind(["<C-Tab>", "<compl-next-group>"], "Select the next matching completion group",
+        bind(["<C-Tab>", "<A-f>", "<compl-next-group>"], "Select the next matching completion group",
              function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
                  self.completions.tabTimer.flush();
                  self.completions.select(self.completions.CTXT_DOWN);
              });
 
-        bind(["<C-S-Tab>", "<compl-prev-group>"], "Select the previous matching completion group",
+        bind(["<C-S-Tab>", "<A-S-f>", "<compl-prev-group>"], "Select the previous matching completion group",
              function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
                  self.completions.tabTimer.flush();
@@ -2128,7 +2128,7 @@ var ItemList = Class("ItemList", {
             }
         },
 
-        getRow: function getRow(idx) this.context.getRow(idx),
+        getRow: function getRow(idx) this.context.getRow(idx, this.doc),
 
         getOffset: function getOffset(idx) this.offsets.start + (idx || 0),
 

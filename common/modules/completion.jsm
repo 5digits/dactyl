@@ -349,11 +349,15 @@ var CompletionContext = Class("CompletionContext", {
      * The prototype object for items returned by {@link items}.
      */
     get itemPrototype() {
+        let self = this;
         let res = { highlight: "" };
+
         function result(quote) {
+            yield ["context", function () self];
             yield ["result", quote ? function () quote[0] + util.trapErrors(1, quote, this.text) + quote[2]
                                    : function () this.text];
         };
+
         for (let i in iter(this.keys, result(this.quote))) {
             let [k, v] = i;
             if (typeof v == "string" && /^[.[]/.test(v))
@@ -361,7 +365,7 @@ var CompletionContext = Class("CompletionContext", {
                 // reference any variables. Don't bother with eval context.
                 v = Function("i", "return i" + v);
             if (typeof v == "function")
-                res.__defineGetter__(k, function () Class.replaceProperty(this, k, v.call(this, this.item)));
+                res.__defineGetter__(k, function () Class.replaceProperty(this, k, v.call(this, this.item, self)));
             else
                 res.__defineGetter__(k, function () Class.replaceProperty(this, k, this.item[v]));
             res.__defineSetter__(k, function (val) Class.replaceProperty(this, k, val));
@@ -636,7 +640,25 @@ var CompletionContext = Class("CompletionContext", {
         return iter.map(util.range(start, end, step), function (i) items[i]);
     },
 
-    getRow: function getRow(idx) this.cache.rows && this.cache.rows[idx],
+    getRow: function getRow(idx, doc) {
+        let cache = this.cache.rows;
+        if (cache) {
+            if (!(idx in this.cache.rows))
+                try {
+                    cache[idx] = util.xmlToDom(this.createRow(this.items[idx]),
+                                               doc || this.doc);
+                }
+                catch (e) {
+                    util.reportError(e);
+                    cache[idx] = util.xmlToDom(
+                        <div highlight="CompItem" style="white-space: nowrap">
+                            <li highlight="CompResult">{this.text}&#xa0;</li>
+                            <li highlight="CompDesc ErrorMsg">{e}&#xa0;</li>
+                        </div>, doc || this.doc);
+                }
+            return cache[idx];
+        }
+    },
 
     getRows: function getRows(start, end, doc) {
         let self = this;
@@ -647,22 +669,9 @@ var CompletionContext = Class("CompletionContext", {
         start = Math.max(0, start || 0);
         end = Math.min(items.length, end != null ? end : items.length);
 
-        for (let i in util.range(start, end, step)) {
-            if (!cache[i])
-                try {
-                    cache[i] = util.xmlToDom(self.createRow(items[i]), doc);
-                }
-                catch (e) {
-                    util.reportError(e);
-                    cache[i] = util.xmlToDom(
-                               <div highlight="CompItem" style="white-space: nowrap">
-                                   <li highlight="CompResult">{items[i].text}&#xa0;</li>
-                                   <li highlight="CompDesc ErrorMsg">{e}&#xa0;</li>
-                               </div>, doc);
-                }
-
-            yield [i, cache[i]];
-        }
+        this.doc = doc;
+        for (let i in util.range(start, end, step))
+            yield [i, this.getRow(i)];
     },
 
     /**
