@@ -68,37 +68,13 @@ var Editor = Module("editor", {
             this.editor.setShouldTxnSetSelection(!val);
     },
 
-    pasteClipboard: function (clipboard, toStart) {
+    pasteClipboard: function pasteClipboard(clipboard) {
         let elem = this.element;
 
-        if (elem.setSelectionRange) {
-            let text = dactyl.clipboardRead(clipboard);
-            if (!text)
-                return;
-            if (isinstance(elem, [HTMLInputElement, XULTextBoxElement]))
-                text = text.replace(/\n+/g, "");
+        let text = dactyl.clipboardRead(clipboard);
+        dactyl.assert(text && this.editor instanceof Ci.nsIPlaintextEditor);
 
-            // This is a hacky fix - but it works.
-            // <s-insert> in the bottom of a long textarea bounces up
-            let top = elem.scrollTop;
-            let left = elem.scrollLeft;
-
-            let start = elem.selectionStart; // caret position
-            let end = elem.selectionEnd;
-            let value = elem.value.substring(0, start) + text + elem.value.substring(end);
-            elem.value = value;
-
-            if (/^(search|text)$/.test(elem.type))
-                DOM(elem).editor.rootElement.firstChild.textContent = value;
-
-            elem.selectionStart = Math.min(start + (toStart ? 0 : text.length), elem.value.length);
-            elem.selectionEnd = elem.selectionStart;
-
-            elem.scrollTop = top;
-            elem.scrollLeft = left;
-
-            DOM(elem).input();
-        }
+        this.editor.insertText(text);
     },
 
     // count is optional, defaults to 1
@@ -137,7 +113,6 @@ var Editor = Module("editor", {
         let node = this.selection.focusNode;
         this.selection[select ? "extend" : "collapse"](node, pos);
     },
-
 
     mungeRange: function mungeRange(range, munger, selectEnd) {
         let { editor } = this;
@@ -187,6 +162,7 @@ var Editor = Module("editor", {
     },
 
     findChar: function (key, count, backward) {
+        // TODO: Use extendRange, return range.
 
         util.assert(DOM(this.element).isInput);
 
