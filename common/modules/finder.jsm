@@ -476,7 +476,7 @@ var RangeFind = Class("RangeFind", {
         }
     },
 
-    indexIter: function (private_) {
+    indexIter: function indexIter(private_) {
         let idx = this.range.index;
         if (this.backward)
             var groups = [util.range(idx + 1, 0, -1), util.range(this.ranges.length, idx, -1)];
@@ -494,7 +494,7 @@ var RangeFind = Class("RangeFind", {
         }
     },
 
-    iter: function (word) {
+    iter: function iter(word) {
         let saved = ["lastRange", "lastString", "range", "regexp"].map(function (s) [s, this[s]], this);
         let res;
         try {
@@ -525,7 +525,7 @@ var RangeFind = Class("RangeFind", {
         }
     },
 
-    makeFrameList: function (win) {
+    makeFrameList: function makeFrameList(win) {
         const self = this;
         win = win.top;
         let frames = [];
@@ -581,7 +581,7 @@ var RangeFind = Class("RangeFind", {
         return frames;
     },
 
-    reset: function () {
+    reset: function reset() {
         this.ranges = this.makeFrameList(this.content);
 
         this.startRange = this.selectedRange;
@@ -594,7 +594,7 @@ var RangeFind = Class("RangeFind", {
         this.found = false;
     },
 
-    find: function (pattern, reverse, private_) {
+    find: function find(pattern, reverse, private_) {
         if (!private_ && this.lastRange && !RangeFind.equal(this.selectedRange, this.lastRange))
             this.reset();
 
@@ -685,18 +685,18 @@ var RangeFind = Class("RangeFind", {
     get stale() this._stale || this.baseDocument.get() != this.content.document,
     set stale(val) this._stale = val,
 
-    addListeners: function () {
+    addListeners: function addListeners() {
         for (let range in array.iterValues(this.ranges))
             range.window.addEventListener("unload", this.closure.onUnload, true);
     },
-    purgeListeners: function () {
+    purgeListeners: function purgeListeners() {
         for (let range in array.iterValues(this.ranges))
             try {
                 range.window.removeEventListener("unload", this.closure.onUnload, true);
             }
             catch (e if e.result === Cr.NS_ERROR_FAILURE) {}
     },
-    onUnload: function (event) {
+    onUnload: function onUnload(event) {
         this.purgeListeners();
         if (this.highlighted)
             this.highlight(true);
@@ -704,7 +704,7 @@ var RangeFind = Class("RangeFind", {
     }
 }, {
     Range: Class("RangeFind.Range", {
-        init: function (range, index) {
+        init: function init(range, index) {
             this.index = index;
 
             this.range = range;
@@ -720,7 +720,7 @@ var RangeFind = Class("RangeFind", {
 
         intersects: function (range) RangeFind.intersects(this.range, range),
 
-        save: function () {
+        save: function save() {
             this.scroll = Point(this.window.pageXOffset, this.window.pageYOffset);
 
             this.initialSelection = null;
@@ -728,11 +728,11 @@ var RangeFind = Class("RangeFind", {
                 this.initialSelection = this.selection.getRangeAt(0);
         },
 
-        descroll: function () {
+        descroll: function descroll() {
             this.window.scrollTo(this.scroll.x, this.scroll.y);
         },
 
-        deselect: function () {
+        deselect: function deselect() {
             if (this.selection) {
                 this.selection.removeAllRanges();
                 if (this.initialSelection)
@@ -752,17 +752,19 @@ var RangeFind = Class("RangeFind", {
             }
         }
     }),
-    contains: function (range, r) {
+    contains: function contains(range, r, quiet) {
         try {
             return range.compareBoundaryPoints(range.START_TO_END, r) >= 0 &&
                    range.compareBoundaryPoints(range.END_TO_START, r) <= 0;
         }
         catch (e) {
-            util.reportError(e, true);
+            if (e.result != Cr.NS_ERROR_DOM_WRONG_DOCUMENT_ERR && !quiet)
+                util.reportError(e, true);
             return false;
         }
     },
-    intersects: function (range, r) {
+    containsNode: function containsNode(range, n, quiet) n.ownerDocument && this.contains(range, RangeFind.nodeRange(n), quiet),
+    intersects: function intersects(range, r) {
         try {
             return r.compareBoundaryPoints(range.START_TO_END, range) >= 0 &&
                    r.compareBoundaryPoints(range.END_TO_START, range) <= 0;
@@ -772,12 +774,12 @@ var RangeFind = Class("RangeFind", {
             return false;
         }
     },
-    endpoint: function (range, before) {
+    endpoint: function endpoint(range, before) {
         range = range.cloneRange();
         range.collapse(before);
         return range;
     },
-    equal: function (r1, r2) {
+    equal: function equal(r1, r2) {
         try {
             return !r1.compareBoundaryPoints(r1.START_TO_START, r2) && !r1.compareBoundaryPoints(r1.END_TO_END, r2);
         }
@@ -785,7 +787,7 @@ var RangeFind = Class("RangeFind", {
             return false;
         }
     },
-    nodeContents: function (node) {
+    nodeContents: function nodeContents(node) {
         let range = node.ownerDocument.createRange();
         try {
             range.selectNodeContents(node);
@@ -793,7 +795,7 @@ var RangeFind = Class("RangeFind", {
         catch (e) {}
         return range;
     },
-    nodeRange: function (node) {
+    nodeRange: function nodeRange(node) {
         let range = node.ownerDocument.createRange();
         try {
             range.selectNode(node);
@@ -801,7 +803,7 @@ var RangeFind = Class("RangeFind", {
         catch (e) {}
         return range;
     },
-    sameDocument: function (r1, r2) {
+    sameDocument: function sameDocument(r1, r2) {
         if (!(r1 && r2 && r1.endContainer.ownerDocument == r2.endContainer.ownerDocument))
             return false;
         try {

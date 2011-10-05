@@ -46,7 +46,27 @@ var Editor = Module("editor", {
                                     this.selection.focusOffset);
     },
 
+    get selectionRange() {
+        if (!this.selection.rangeCount) {
+            let range = RangeFind.nodeContents(this.editor.rootElement.ownerDocument);
+            range.collapse(true);
+            this.selectionRange = range;
+        }
+        return this.selection.getRangeAt(0);
+    },
+    set selectionRange(range) {
+        this.selection.removeAllRanges();
+        if (range != null)
+            this.selection.addRange(range);
+    },
+
     get selectedText() String(this.selection),
+
+    get preserveSelection() this.editor && !this.editor.shouldTxnSetSelection,
+    set preserveSelection(val) {
+        if (this.editor)
+            this.editor.setShouldTxnSetSelection(!val);
+    },
 
     pasteClipboard: function (clipboard, toStart) {
         let elem = this.element;
@@ -69,7 +89,7 @@ var Editor = Module("editor", {
             elem.value = value;
 
             if (/^(search|text)$/.test(elem.type))
-                DOM(elem).rootElement.firstChild.textContent = value;
+                DOM(elem).editor.rootElement.firstChild.textContent = value;
 
             elem.selectionStart = Math.min(start + (toStart ? 0 : text.length), elem.value.length);
             elem.selectionEnd = elem.selectionStart;
@@ -116,6 +136,51 @@ var Editor = Module("editor", {
     moveToPosition: function (pos, select) {
         let node = this.selection.focusNode;
         this.selection[select ? "extend" : "collapse"](node, pos);
+    },
+
+
+    mungeRange: function mungeRange(range, munger, selectEnd) {
+        let { editor } = this;
+        editor.beginPlaceHolderTransaction(null);
+
+        let [container, offset] = ["startContainer", "startOffset"];
+        if (selectEnd)
+            [container, offset] = ["endContainer", "endOffset"];
+
+        try {
+            // :(
+            let idx = range[offset];
+            let parent = range[container].parentNode;
+            let parentIdx = Array.indexOf(parent.childNodes,
+                                          range[container]);
+
+            for (let node in Editor.TextsIterator(range)) {
+                let text = node.textContent;
+                let start = 0, end = text.length;
+                if (node == range.startContainer)
+                    start = range.startOffset;
+                if (node == range.endContainer)
+                    end = range.endOffset;
+
+                if (start != 0 || end != text.length)
+                    text = text.slice(0, start)
+                         + munger(text.slice(start, end))
+                         + text.slice(end);
+                else
+                    text = munger(text);
+
+                if (editor instanceof Ci.nsIPlaintextEditor) {
+                    this.selectionRange = RangeFind.nodeContents(node);
+                    editor.insertText(text);
+                }
+                else
+                    node.textContent = text;
+            }
+            this.selection.collapse(parent.childNodes[parentIdx], idx);
+        }
+        finally {
+            editor.endPlaceHolderTransaction();
+        }
     },
 
     findChar: function (key, count, backward) {
@@ -322,35 +387,58 @@ var Editor = Module("editor", {
     },
 }, {
     TextsIterator: Class("TextsIterator", {
-        init: function init(root, context) {
-            this.context = context;
-            this.root = root;
+        init: function init(range, context, after) {
+            this.after = after;
+            this.start = context || range[after ? "endContainer" : "startContainer"];
+            if (after)
+                this.context = this.start;
+            this.range = range;
+        },
+
+        __iterator__: function __iterator__() {
+            while (this.nextNode())
+                yield this.context;
         },
 
         prevNode: function prevNode() {
-            if (this.context == this.root)
-                return null;
+            if (!this.context)
+                return this.context = this.start;
 
-            var node = this.context.previousSibling;
+            var node = this.context;
+            if (!this.after)
+                node = node.previousSibling;
+
             if (!node)
                 node = this.context.parentNode;
             else
                 while (node.lastChild)
                     node = node.lastChild;
+
+            if (!node || !RangeFind.containsNode(this.range, node, true))
+                return null;
+            this.after = false;
             return this.context = node;
         },
 
         nextNode: function nextNode() {
-            var node = this.context.firstChild;
+            if (!this.context)
+                return this.context = this.start;
+
+            if (!this.after)
+                var node = this.context.firstChild;
+
             if (!node) {
                 node = this.context;
-                while (node != this.root && !node.nextSibling)
+                while (node.parentNode && node != this.range.endContainer
+                        && !node.nextSibling)
                     node = node.parentNode;
 
                 node = node.nextSibling;
             }
-            if (node == this.root || node == null)
+
+            if (!node || !RangeFind.containsNode(this.range, node, true))
                 return null;
+            this.after = false;
             return this.context = node;
         },
 
@@ -379,9 +467,12 @@ var Editor = Module("editor", {
         function advance(positive) {
             while (true) {
                 while (idx == text.length && (node = iterator.getNext())) {
+                    if (node == iterator.start)
+                        idx = range.endOffset;
+
                     offset = text.length;
                     text += node.textContent;
-                    range.setEnd(node, 0);
+                    range.setEnd(node, idx - offset);
                 }
 
                 if (idx >= text.length || re.test(text[idx]) != positive)
@@ -393,9 +484,13 @@ var Editor = Module("editor", {
             while (true) {
                 while (idx == 0 && (node = iterator.getPrev())) {
                     let str = node.textContent;
-                    idx += str.length;
+                    if (node == iterator.start)
+                        idx = range.endOffset;
+                    else
+                        idx = str.length;
+
                     text = str + text;
-                    range.setStart(node, str.length);
+                    range.setStart(node, idx);
                 }
                 if (idx == 0 || re.test(text[idx - 1]) != positive)
                     break;
@@ -403,19 +498,22 @@ var Editor = Module("editor", {
             }
         }
 
+        if (!root)
+            for (root = range.startContainer;
+                 root.parentNode instanceof Element && !DOM(root).isEditable;
+                 root = root.parentNode)
+                ;
+        if (root instanceof Ci.nsIDOMNSEditableElement)
+            root = root.editor;
+        if (root instanceof Ci.nsIEditor)
+            root = root.rootElement;
+
         let node = range[forward ? "endContainer" : "startContainer"];
-        let iterator = Editor.TextsIterator(root || node.ownerDocument.documentElement,
-                                            node);
+        let iterator = Editor.TextsIterator(RangeFind.nodeContents(root),
+                                            node, !forward);
 
-        if (!(node instanceof Ci.nsIDOMText)) {
-            node = iterator[forward ? "getNext" : "getPrev"]();
-            dactyl.assert(node);
-            range[forward ? "setEnd" : "setStart"](node, forward ? 0 : node.textContent.length);
-        }
-
-
-        let text = range[forward ? "endContainer" : "startContainer"].textContent;
-        let idx  = range[forward ? "endOffset" : "startOffset"];
+        let text = "";
+        let idx  = 0;
         let offset = 0;
 
         if (forward) {
@@ -621,9 +719,21 @@ var Editor = Module("editor", {
         addBeginInsertModeMap(["C"],             ["cmd_deleteToEndOfLine"], "Delete from the cursor to the end of the line and start insert");
 
         function addMotionMap(key, desc, select, cmd, mode) {
-            mappings.add([modes.TEXT_EDIT], [key],
+            function doTxn(range, editor) {
+                try {
+                    editor.editor.beginTransaction();
+                    cmd(editor, range, editor.editor);
+                }
+                finally {
+                    editor.editor.endTransaction();
+                }
+            }
+
+            mappings.add([modes.TEXT_EDIT], key,
                 desc,
                 function ({ count,  motion }) {
+                    let start = editor.selectionRange.cloneRange();
+
                     modes.push(modes.OPERATOR, null, {
                         count: count,
 
@@ -631,17 +741,9 @@ var Editor = Module("editor", {
                             if (stack.push || stack.fromEscape)
                                 return;
 
-                            try {
-                                editor_.beginTransaction();
-
-                                let range = RangeFind.union(start, sel.getRangeAt(0));
-                                sel.removeAllRanges();
-                                sel.addRange(select ? range : start);
-                                cmd(editor_, range);
-                            }
-                            finally {
-                                editor_.endTransaction();
-                            }
+                            let range = RangeFind.union(start, editor.selectionRange);
+                            editor.selectionRange = select ? range : start;
+                            doTxn(range, editor);
 
                             modes.delay(function () {
                                 if (mode)
@@ -649,17 +751,31 @@ var Editor = Module("editor", {
                             });
                         }
                     });
-
-                    let editor_ = editor.editor;
-                    let sel     = editor.selection;
-                    let start   = sel.getRangeAt(0).cloneRange();
                 },
                 { count: true, type: "motion" });
+
+        mappings.add([modes.VISUAL], key,
+            desc,
+            function ({ count,  motion }) {
+                dactyl.assert(editor.isTextEdit);
+                doTxn(editor.selectionRange, editor);
+            },
+            { count: true, type: "motion" });
         }
 
-        addMotionMap("d", "Delete motion", true,  function (editor) { editor.cut(); });
-        addMotionMap("c", "Change motion", true,  function (editor) { editor.cut(); }, modes.INSERT);
-        addMotionMap("y", "Yank motion",   false, function (editor, range) { dactyl.clipboardWrite(DOM.stringify(range)) });
+        addMotionMap(["d", "x"], "Delete text", true,  function (editor) { editor.editor.cut(); });
+        addMotionMap(["c"],      "Change text", true,  function (editor) { editor.editor.cut(); }, modes.INSERT);
+        addMotionMap(["y"],      "Yank text",   false, function (editor, range) { dactyl.clipboardWrite(DOM.stringify(range)) });
+
+        addMotionMap(["gu"], "Lowercase text", false,
+             function (editor, range) {
+                 editor.mungeRange(range, String.toLocaleLowerCase);
+             });
+
+        addMotionMap(["gU"], "Uppercase text", false,
+            function (editor, range) {
+                editor.mungeRange(range, String.toLocaleUpperCase);
+            });
 
         let bind = function bind(names, description, action, params)
             mappings.add([modes.INPUT], names, description,
@@ -811,29 +927,11 @@ var Editor = Module("editor", {
             });
 
         mappings.add([modes.VISUAL],
-            ["c", "s"], "Change selected text",
+            ["s"], "Change selected text",
             function () {
                 dactyl.assert(editor.isTextEdit);
                 editor.executeCommand("cmd_cut");
                 modes.push(modes.INSERT);
-            });
-
-        mappings.add([modes.VISUAL],
-            ["d", "x"], "Delete selected text",
-            function () {
-                dactyl.assert(editor.isTextEdit);
-                editor.executeCommand("cmd_cut");
-            });
-
-        mappings.add([modes.VISUAL],
-            ["y"], "Yank selected text",
-            function () {
-                if (editor.isTextEdit) {
-                    editor.executeCommand("cmd_copy");
-                    modes.pop();
-                }
-                else
-                    dactyl.clipboardWrite(buffer.currentWord, true);
             });
 
         bind(["p"], "Paste clipboard contents",
@@ -894,19 +992,6 @@ var Editor = Module("editor", {
              },
              { arg: true, count: true, type: "operator" });
 
-        function mungeRange(range, munger) {
-            let text = munger(range);
-            let { startOffset, endOffset } = range;
-            let root = range.startContainer.parentNode;
-
-            range.deleteContents();
-            range.insertNode(range.startContainer.ownerDocument
-                                  .createTextNode(text));
-            root.normalize();
-            range.setStart(root.firstChild, startOffset);
-            range.setEnd(root.firstChild, endOffset);
-        }
-
         // text edit and visual mode
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["~"], "Switch case of the character under the cursor and move the cursor to the right",
@@ -917,21 +1002,14 @@ var Editor = Module("editor", {
                         return c == lc ? c.toLocaleUpperCase() : lc;
                     });
 
-                var range = editor.selection.getRangeAt(0);
-                // Ugh. TODO: Utility.
-                if (!(range.startContainer instanceof Ci.nsIDOMText)) {
-                    range = RangeFind.nodeContants(node.startContainer);
-                    range.collapse(false);
-                }
-
+                var range = editor.selectionRange;
                 if (range.collapsed) {
                     count = count || 1;
 
                     range.setEnd(range.startContainer,
                                  range.startOffset + count);
                 }
-                mungeRange(range, munger);
-                editor.selection.collapse(range.startContainer, range.endOffset);
+                editor.mungeRange(range, munger, count != null);
 
                 modes.pop(modes.TEXT_EDIT);
             },

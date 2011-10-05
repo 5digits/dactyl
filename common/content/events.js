@@ -867,7 +867,7 @@ var Events = Module("events", {
                 if (!haveInput)
                     if (options["insertmode"])
                         modes.push(modes.INSERT);
-                    else {
+                    else if (!isinstance(modes.main, [modes.TEXT_EDIT, modes.VISUAL])) {
                         modes.push(modes.TEXT_EDIT);
                         if (elem.selectionEnd - elem.selectionStart > 0)
                             modes.push(modes.VISUAL);

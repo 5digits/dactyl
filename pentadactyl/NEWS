@@ -30,17 +30,44 @@
         everywhere from command-line and message history to option
         values and cookies. [b1]
     • New and much more powerful incremental search implementation.
-      Improvements over the standard Firefox find include: [b1]
+      Improvements over the standard Firefox find include:
       - Starts at the cursor position in the currently selected
         frame, unlike Firefox, which always starts at the start of
-        the first frame.
+        the first frame. [b1]
       - Returns the cursor and viewport to their original position
-        on cancel.
+        on cancel. [b1]
       - Backtracks to the first successful match after pressing
-        backspace.
-      - Supports reverse incremental search.
-      - Input boxes are not focused when matches are highlighted.
+        backspace. [b1]
+      - Supports reverse incremental search. [b1]
+      - Input boxes are not focused when matches are highlighted. [b1]
       - Crude regular expression search is supported. [b8]
+      - New searches now start within the current viewport where possible. [b8]
+    • Text editing improvements, including:
+      - Added t_gu and t_gU. [b8]
+      - Added operator modes and proper first class motion maps. [b8]
+      - Improved undo support for most mappings. [b8]
+    • General completion improvements
+      - Greatly improved completion rendering performance, especially
+        while scrolling. [b8]
+      - Added c_<C-f>, c_<C-b>, c_<C-Tab>, and c_<C-S-Tab> for scrolling
+        the completion list in increments larger than one line. [b8]
+      - Improved handling of asynchronous completions, including: [b8]
+        + Pressing <Return> after tabbing past the end of already received
+          completions will execute the command after the desired result has
+          arrived.
+        + Tabbing past the end of available completions more reliably selects
+          the desired completion when it is available.
+        + Late arriving completion results no longer interfere with typing.
+        + It is now possible to skip past the end of incomplete completion
+          groups via the c_<C-f> and c_<C-Tab> keys.
+      - JavaScript completion improvements, including: [b2]
+        + The prototype of the function whose arguments are currently
+          being typed is displayed during completion.
+        + Non-enumerable global properties are now completed for the
+          global object, including XMLHttpRequest and encodeURI.
+      - The concept of completion contexts is now exposed to the user
+        (see :contexts), allowing for powerful and fine-grained
+        completion system customization. [b1]
     • Ex command parsing improvements, including:
       - Multiple Ex commands may now be separated by | [b1]
       - Commands can continue over multiple lines in RC files by
@@ -61,15 +88,6 @@
       - Added ;a and ;S modes for creating bookmarks and search keywords. [b4][b3]
       - Added 'hintkeys' option. [b2]
       - Added "transliterated" option to 'hintmatching'. [b1]
-    • General completion improvements
-      - JavaScript completion improvements, including: [b2]
-        + The prototype of the function whose arguments are currently
-          being typed is displayed during completion.
-        + Non-enumerable global properties are now completed for the
-          global object, including XMLHttpRequest and encodeURI.
-      - The concept of completion contexts is now exposed to the user
-        (see :contexts), allowing for powerful and fine-grained
-        completion system customization. [b1]
     • The external editor can now be configured to open to a given
       line number and column, used for opening source links and
       editing input fields with i_<C-i>. See :h 'editor'. [b4]
