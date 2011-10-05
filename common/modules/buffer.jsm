@@ -1227,33 +1227,37 @@ var Buffer = Module("Buffer", {
         let url = node.href || node.src || node.documentURI;
         let currExt = url.replace(/^.*?(?:\.([a-z0-9]+))?$/i, "$1").toLowerCase();
 
+        let ext = "";
         if (isinstance(node, [Ci.nsIDOMDocument,
                               Ci.nsIDOMHTMLImageElement])) {
             let type = node.contentType || node.QueryInterface(Ci.nsIImageLoadingContent)
                                                .getRequest(0).mimeType;
 
             if (type === "text/plain")
-                var ext = "." + (currExt || "txt");
+                ext = "." + (currExt || "txt");
             else
                 ext = "." + services.mime.getPrimaryExtension(type, currExt);
         }
         else if (currExt)
             ext = "." + currExt;
-        else
-            ext = "";
+
         let re = ext ? RegExp("(\\." + currExt + ")?$", "i") : /$/;
 
         var names = [];
         if (node.title)
-            names.push([node.title, /*L*/"Page Name"]);
+            names.push([node.title,
+                       _("buffer.save.pageName")]);
 
         if (node.alt)
-            names.push([node.alt, /*L*/"Alternate Text"]);
+            names.push([node.alt,
+                       _("buffer.save.altText")]);
 
         if (!isinstance(node, Ci.nsIDOMDocument) && node.textContent)
-            names.push([node.textContent, /*L*/"Link Text"]);
+            names.push([node.textContent,
+                       _("buffer.save.linkText")]);
 
-        names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")), "File Name"]);
+        names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")),
+                    _("buffer.save.filename")]);
 
         return names.filter(function ([leaf, title]) leaf)
                     .map(function ([leaf, title]) [leaf.replace(config.OS.illegalCharacters, encodeURIComponent)
@@ -1812,7 +1816,32 @@ var Buffer = Module("Buffer", {
         completion.savePage = function savePage(context, node) {
             context.fork("generated", context.filter.replace(/[^/]*$/, "").length,
                          this, function (context) {
-                context.completions = Buffer.getDefaultNames(node);
+                context.generate = function () {
+                    this.incomplete = true;
+                    this.completions = Buffer.getDefaultNames(node);
+                    util.httpGet(node.href || node.src || node.documentURI, {
+                        method: "HEAD",
+                        callback: function callback(xhr) {
+                            context.incomplete = false;
+                            try {
+                                if (/filename="(.*?)"/.test(xhr.getResponseHeader("Content-Disposition")))
+                                    context.completions.push([decodeURIComponent(RegExp.$1), _("buffer.save.suggested")]);
+                            }
+                            finally {
+                                context.completions = context.completions.slice();
+                            }
+                        },
+                        notificationCallbacks: Class(XPCOM([Ci.nsIChannelEventSink, Ci.nsIInterfaceRequestor]), {
+                            getInterface: function getInterface(iid) this.QueryInterface(iid),
+
+                            asyncOnChannelRedirect: util.wrapCallback(function (oldChannel, newChannel, flags, callback) {
+                                if (newChannel instanceof Ci.nsIHttpChannel)
+                                    newChannel.requestMethod = "HEAD";
+                                callback.onRedirectVerifyCallback(Cr.NS_OK);
+                            })
+                        })()
+                    });
+                };
             });
         };
     },

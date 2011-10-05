@@ -323,7 +323,8 @@ var CommandMode = Class("CommandMode", {
 
     open: function CM_open(command) {
         dactyl.assert(isinstance(this.mode, modes.COMMAND_LINE),
-                      /*L*/"Not opening command line in non-command-line mode.");
+                      /*L*/"Not opening command line in non-command-line mode.",
+                      false);
 
         this.messageCount = commandline.messageCount;
         modes.push(this.mode, this.extendedMode, this.closure);
@@ -1201,7 +1202,8 @@ var CommandLine = Module("commandline", {
             let value = this.editor.selection.focusNode.textContent;
             this.saveInput();
 
-            this.itemList.updateContext(context);
+            if (this.itemList.visible)
+                this.itemList.updateContext(context);
 
             if (this.waiting && this.waiting[0] == context)
                 this.select(this.waiting);

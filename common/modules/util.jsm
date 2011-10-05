@@ -757,6 +757,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (params.responseType)
                 xmlhttp.responseType = params.responseType;
 
+            if (params.notificationCallbacks)
+                xmlhttp.channel.notificationCallbacks = params.notificationCallbacks;
+
             xmlhttp.send(params.data);
             return xmlhttp;
         }
