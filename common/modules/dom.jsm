@@ -403,16 +403,19 @@ var DOM = Class("DOM", {
 
         this[0] instanceof Ci.nsIDOMNSEditableElement;
         if (this[0].editor instanceof Ci.nsIEditor)
-            return this[0].editor;
+            var editor = this[0].editor;
 
         try {
-            return this[0].QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
-                          .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIEditingSession)
-                          .getEditorForWindow(this[0]);
+            if (!editor)
+                editor = this[0].QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+                                .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIEditingSession)
+                                .getEditorForWindow(this[0]);
         }
         catch (e) {}
 
-        return null;
+        editor instanceof Ci.nsIPlaintextEditor;
+        editor instanceof Ci.nsIHTMLEditor;
+        return editor;
     },
 
     get isEditable() !!this.editor,

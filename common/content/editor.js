@@ -26,6 +26,9 @@ var Editor = Module("editor", {
             });
     },
 
+    get isCaret() modes.getStack(1).main == modes.CARET,
+    get isTextEdit() modes.getStack(1).main == modes.TEXT_EDIT,
+
     get editor() DOM(this.element).editor,
 
     getController: function getController(cmd) {
@@ -38,24 +41,24 @@ var Editor = Module("editor", {
     get selection() this.editor && this.editor.selection || null,
     get selectionController() this.editor && this.editor.selectionController || null,
 
-    get isCaret() modes.getStack(1).main == modes.CARET,
-    get isTextEdit() modes.getStack(1).main == modes.TEXT_EDIT,
-
-    deselectText: function () {
+    deselect: function () {
         if (this.selection && this.selection.focusNode)
             this.selection.collapse(this.selection.focusNode,
                                     this.selection.focusOffset);
     },
 
-    get selectionRange() {
+    get selectedRange() {
+        if (!this.selection)
+            return null;
+
         if (!this.selection.rangeCount) {
             let range = RangeFind.nodeContents(this.editor.rootElement.ownerDocument);
             range.collapse(true);
-            this.selectionRange = range;
+            this.selectedRange = range;
         }
         return this.selection.getRangeAt(0);
     },
-    set selectionRange(range) {
+    set selectedRange(range) {
         this.selection.removeAllRanges();
         if (range != null)
             this.selection.addRange(range);
@@ -88,18 +91,20 @@ var Editor = Module("editor", {
 
         // XXX: better as a precondition
         if (count == null)
-          count = 1;
+            count = 1;
+
+        if (!callable(cmd))
+            cmd = bind("doCommand", controller, cmd);
 
         let didCommand = false;
         while (count--) {
             // some commands need this try/catch workaround, because a cmd_charPrevious triggered
             // at the beginning of the textarea, would hang the doCommand()
             // good thing is, we need this code anyway for proper beeping
+
+            // What huh? --Kris
             try {
-                if (callable(cmd))
-                    cmd(this.editor, controller);
-                else
-                    controller.doCommand(cmd);
+                cmd(this.editor, controller);
                 didCommand = true;
             }
             catch (e) {
@@ -152,7 +157,7 @@ var Editor = Module("editor", {
                     continue;
 
                 if (editor instanceof Ci.nsIPlaintextEditor) {
-                    this.selectionRange = RangeFind.nodeContents(node);
+                    this.selectedRange = RangeFind.nodeContents(node);
                     editor.insertText(text);
                 }
                 else
@@ -172,10 +177,10 @@ var Editor = Module("editor", {
         // Grab the charcode of the key spec. Using the key name
         // directly will break keys like <
         let code = DOM.Event.parse(key)[0].charCode;
-        util.assert(code);
         let char = String.fromCharCode(code);
+        util.assert(code);
 
-        let range = this.selectionRange.cloneRange();
+        let range = this.selectedRange.cloneRange();
         let collapse = DOM(this.element).whiteSpace == "normal";
 
         // Find the *count*th occurance of *char* before a non-collapsed
@@ -345,9 +350,10 @@ var Editor = Module("editor", {
      * @see Abbreviation#expand
      */
     expandAbbreviation: function (mode) {
-        let elem = this.element;
+        if (!this.selection)
+            return;
 
-        let range = this.selectionRange.cloneRange();
+        let range = this.selectedRange.cloneRange();
         if (!range.collapsed)
             return;
 
@@ -355,7 +361,7 @@ var Editor = Module("editor", {
         let abbrev = abbreviations.match(mode, String(range));
         if (abbrev) {
             range.setStart(range.startContainer, range.endOffset - abbrev.lhs.length);
-            this.mungeRange(range, function () abbrev.expand(elem), true);
+            this.mungeRange(range, function () abbrev.expand(this.element), true);
         }
     },
 }, {
@@ -427,11 +433,8 @@ var Editor = Module("editor", {
             let node;
             while (node = this[meth]())
                 if (node instanceof Ci.nsIDOMText &&
-                        let ({ style } = DOM(node))
-                            style.MozUserSelect != "none" &&
-                            style.visibility != "hidden" &&
-                            style.visibility != "collapse" &&
-                            style.display != "none")
+                        DOM(node).isVisible &&
+                        DOM(node).style.MozUserSelect != "none")
                     return node;
         }
     }),
@@ -539,7 +542,7 @@ var Editor = Module("editor", {
                         selection.collapseToStart();
                 }
                 else if (stack.pop)
-                    editor.deselectText();
+                    editor.deselect();
             }
         });
         modes.addMode("TEXT_EDIT", {
@@ -764,7 +767,7 @@ var Editor = Module("editor", {
             mappings.add([modes.TEXT_EDIT], key,
                 desc,
                 function ({ command, count, motion }) {
-                    let start = editor.selectionRange.cloneRange();
+                    let start = editor.selectedRange.cloneRange();
 
                     modes.push(modes.OPERATOR, null, {
                         forCommand: command,
@@ -778,8 +781,8 @@ var Editor = Module("editor", {
                             editor.withSavedValues(["inEditMap"], function () {
                                 this.inEditMap = true;
 
-                                let range = RangeFind.union(start, editor.selectionRange);
-                                editor.selectionRange = select ? range : start;
+                                let range = RangeFind.union(start, editor.selectedRange);
+                                editor.selectedRange = select ? range : start;
                                 doTxn(range, editor);
                             });
 
@@ -796,7 +799,7 @@ var Editor = Module("editor", {
             desc,
             function ({ count,  motion }) {
                 dactyl.assert(editor.isTextEdit);
-                doTxn(editor.selectionRange, editor);
+                doTxn(editor.selectedRange, editor);
             },
             { count: true, type: "motion" });
         }
@@ -821,7 +824,7 @@ var Editor = Module("editor", {
                 dactyl.assert(command == modes.getStack(0).params.forCommand);
                 editor.executeCommand("cmd_beginLine", 1);
                 editor.executeCommand("cmd_selectLineNext", count || 1);
-                let range = editor.selectionRange;
+                let range = editor.selectedRange;
                 if (command == "c" && !range.collapsed) // Hack.
                     if (range.endContainer instanceof Text &&
                           range.endContainer.textContent[range.endOffset - 1] == "\n")
@@ -921,7 +924,7 @@ var Editor = Module("editor", {
             ["u"], "Undo changes",
             function (args) {
                 editor.executeCommand("cmd_undo", Math.max(args.count, 1));
-                editor.deselectText();
+                editor.deselect();
             },
             { count: true });
 
@@ -929,7 +932,7 @@ var Editor = Module("editor", {
             ["<C-r>"], "Redo undone changes",
             function (args) {
                 editor.executeCommand("cmd_redo", Math.max(args.count, 1));
-                editor.deselectText();
+                editor.deselect();
             },
             { count: true });
 
@@ -1063,7 +1066,7 @@ var Editor = Module("editor", {
                         return c == lc ? c.toLocaleUpperCase() : lc;
                     });
 
-                var range = editor.selectionRange;
+                var range = editor.selectedRange;
                 if (range.collapsed) {
                     count = count || 1;
                     util.dump(count, range);
