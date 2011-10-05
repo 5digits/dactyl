@@ -149,7 +149,6 @@ var Addon = Class("Addon", {
             <tr highlight="Addon" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
                 <td highlight="AddonName" key="name"/>
                 <td highlight="AddonVersion" key="version"/>
-                <td highlight="AddonStatus" key="status"/>
                 <td highlight="AddonButtons Buttons">
                     <a highlight="Button" href="javascript:0" key="enable">{_("addon.action.On")}</a>
                     <a highlight="Button" href="javascript:0" key="disable">{_("addon.action.Off")}</a>
@@ -157,6 +156,7 @@ var Addon = Class("Addon", {
                     <a highlight="Button" href="javascript:0" key="update">{_("addon.action.Update")}</a>
                     <a highlight="Button" href="javascript:0" key="options">{_("addon.action.Options")}</a>
                 </td>
+                <td highlight="AddonStatus" key="status"/>
                 <td highlight="AddonDescription" key="description"/>
             </tr>,
             this.list.document, this.nodes);
@@ -224,6 +224,7 @@ var Addon = Class("Addon", {
         this.nodes.version.textContent = this.version;
         update("status", this.statusInfo);
         this.nodes.description.textContent = this.description;
+        DOM(this.nodes.row).attr("active", this.isActive || null);
 
         for (let node in values(this.nodes))
             if (node.update && node.update !== callee)
@@ -284,8 +285,8 @@ var AddonList = Class("AddonList", {
                         <tr highlight="AddonHead">
                             <td>{_("title.Name")}</td>
                             <td>{_("title.Version")}</td>
-                            <td>{_("title.Status")}</td>
                             <td/>
+                            <td>{_("title.Status")}</td>
                             <td>{_("title.Description")}</td>
                         </tr>
                       </table>, this.document, this.nodes);

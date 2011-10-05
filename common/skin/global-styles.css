@@ -307,6 +307,7 @@ AddonHead>*;;;AddonCell
 
 Addon                        /* An add-on in the :addons manager */ \
                              display: table-row;
+Addon:not([active])          color: #888;
 Addon:nth-child(2n+1)        background: rgba(0, 0, 0, .04);
 
 Addon>*;;;AddonCell
