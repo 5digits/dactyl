@@ -162,12 +162,15 @@ var Editor = Module("editor", {
                 if (node == range.endContainer)
                     end = range.endOffset;
 
-                if (start != 0 || end != text.length)
+                if (start == 0 && end == text.length)
+                    text = munger(text);
+                else
                     text = text.slice(0, start)
                          + munger(text.slice(start, end))
                          + text.slice(end);
-                else
-                    text = munger(text);
+
+                if (text == node.textContent)
+                    continue;
 
                 if (editor instanceof Ci.nsIPlaintextEditor) {
                     this.selectionRange = RangeFind.nodeContents(node);
@@ -370,19 +373,16 @@ var Editor = Module("editor", {
      */
     expandAbbreviation: function (mode) {
         let elem = this.element;
-        if (!DOM(elem).isInput && elem.value)
+
+        let range = this.selectionRange.cloneRange();
+        if (!range.collapsed)
             return;
 
-        let text   = elem.value;
-        let start  = elem.selectionStart;
-        let end    = elem.selectionEnd;
-        let abbrev = abbreviations.match(mode, text.substring(0, start).replace(/.*\s/g, ""));
+        Editor.extendRange(range, false, /\S/);
+        let abbrev = abbreviations.match(mode, String(range));
         if (abbrev) {
-            let len = abbrev.lhs.length;
-            let rhs = abbrev.expand(elem);
-            elem.value = text.substring(0, start - len) + rhs + text.substring(start);
-            elem.selectionStart = start - len + rhs.length;
-            elem.selectionEnd   = end   - len + rhs.length;
+            range.setStart(range.startContainer, range.endOffset - abbrev.lhs.length);
+            this.mungeRange(range, function () abbrev.expand(elem), true);
         }
     },
 }, {
