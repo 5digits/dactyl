@@ -161,41 +161,34 @@ var Editor = Module("editor", {
         }
     },
 
-    findChar: function (key, count, backward) {
-        // TODO: Use extendRange, return range.
+    findChar: function (key, count, backward, offset) {
+        count  = count || 1; // XXX ?
+        offset = (offset || 0) - !!backward;
 
-        util.assert(DOM(this.element).isInput);
-
-        // XXX
-        if (count == null)
-            count = 1;
-
+        // Grab the charcode of the key spec. Using the key name
+        // directly will break keys like <
         let code = DOM.Event.parse(key)[0].charCode;
         util.assert(code);
-
         let char = String.fromCharCode(code);
 
-        let text = this.element.value;
-        let caret = this.element.selectionEnd;
-        if (backward) {
-            let end = text.lastIndexOf("\n", caret);
-            while (caret > end && caret >= 0 && count--)
-                caret = text.lastIndexOf(char, caret - 1);
-        }
-        else {
-            let end = text.indexOf("\n", caret);
-            if (end == -1)
-                end = text.length;
+        let range = this.selectionRange.cloneRange();
+        let collapse = DOM(this.element).whiteSpace == "normal";
 
-            while (caret < end && caret >= 0 && count--)
-                caret = text.indexOf(char, caret + 1);
-        }
+        // Find the *count*th occurance of *char* before a non-collapsed
+        // \n, ignoring the character at the caret.
+        let i = 0;
+        function test(c) (collapse || c != "\n") && (!i++ || c != char || --count)
 
-        if (count > 0)
-            caret = -1;
-        if (caret == -1)
-            dactyl.beep();
-        return caret;
+        Editor.extendRange(range, !backward, { test: test }, true);
+        dactyl.assert(count == 0);
+        range.collapse(backward);
+
+        // Skip to any requested offset.
+        count = Math.abs(offset);
+        Editor.extendRange(range, offset > 0, { test: function (c) count-- }, true);
+        range.collapse(offset < 0);
+
+        return range;
     },
 
     /**
@@ -268,7 +261,7 @@ var Editor = Module("editor", {
         line = 1 + pre.replace(/[^\n]/g, "").length;
         column = 1 + pre.replace(/[^]*\n/, "").length;
 
-        let origGroup = textBox && textBox.getAttributeNS(NS, "highlight") || "";
+        let origGroup = DOM(textBox).highlight.toString();
         let cleanup = util.yieldable(function cleanup(error) {
             if (timer)
                 timer.cancel();
@@ -323,7 +316,7 @@ var Editor = Module("editor", {
                 throw Error(_("io.cantCreateTempFile"));
 
             if (textBox) {
-                highlight.highlightNode(textBox, origGroup + " EditorEditing");
+                DOM(textBox).highlight.add("EditorEditing");
                 if (!keepFocus)
                     textBox.blur();
             }
@@ -354,7 +347,7 @@ var Editor = Module("editor", {
         if (!range.collapsed)
             return;
 
-        Editor.extendRange(range, false, /\S/);
+        Editor.extendRange(range, false, /\S/, true);
         let abbrev = abbreviations.match(mode, String(range));
         if (abbrev) {
             range.setStart(range.startContainer, range.endOffset - abbrev.lhs.length);
@@ -926,45 +919,37 @@ var Editor = Module("editor", {
         // finding characters
         function offset(backward, before, pos) {
             if (!backward && modes.main != modes.TEXT_EDIT)
-                pos += 1;
+                return 1;
             if (before)
-                pos += backward ? +1 : -1;
-            return pos;
+                return backward ? +1 : -1;
+            return 0;
         }
 
         bind(["f"], "Find a character on the current line, forwards",
              function ({ arg, count }) {
-                 let pos = editor.findChar(arg, Math.max(count, 1));
-                 if (pos >= 0)
-                     editor.moveToPosition(offset(false, false, pos),
-                                           modes.main == modes.VISUAL);
+                 editor.selectionRange = editor.findChar(arg, Math.max(count, 1), false,
+                                                         offset(false, false));
              },
              { arg: true, count: true, type: "operator" });
 
         bind(["F"], "Find a character on the current line, backwards",
              function ({ arg, count }) {
-                 let pos = editor.findChar(arg, Math.max(count, 1), true);
-                 if (pos >= 0)
-                     editor.moveToPosition(offset(true, false, pos),
-                                           modes.main == modes.VISUAL);
+                 editor.selectionRange = editor.findChar(arg, Math.max(count, 1), true,
+                                                         offset(true, false));
              },
              { arg: true, count: true, type: "operator" });
 
         bind(["t"], "Find a character on the current line, forwards, and move to the character before it",
              function ({ arg, count }) {
-                 let pos = editor.findChar(arg, Math.max(count, 1));
-                 if (pos >= 0)
-                     editor.moveToPosition(offset(false, true, pos),
-                                           modes.main == modes.VISUAL);
+                 editor.selectionRange = editor.findChar(arg, Math.max(count, 1), false,
+                                                         offset(false, true));
              },
              { arg: true, count: true, type: "operator" });
 
         bind(["T"], "Find a character on the current line, backwards, and move to the character after it",
              function ({ arg, count }) {
-                 let pos = editor.findChar(arg, Math.max(count, 1), true);
-                 if (pos >= 0)
-                     editor.moveToPosition(offset(true, true, pos),
-                                           modes.main == modes.VISUAL);
+                 editor.selectionRange = editor.findChar(arg, Math.max(count, 1), true,
+                                                         offset(true, true));
              },
              { arg: true, count: true, type: "operator" });
 
