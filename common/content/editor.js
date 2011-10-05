@@ -110,8 +110,11 @@ var Editor = Module("editor", {
     },
 
     moveToPosition: function (pos, select) {
-        let node = this.selection.focusNode;
-        this.selection[select ? "extend" : "collapse"](node, pos);
+        if (isObject(pos))
+            var { startContainer, startOffset } = pos;
+        else
+            [startOffset, startOffset] = [this.selection.focusNode, pos];
+        this.selection[select ? "extend" : "collapse"](startContainer, startOffset);
     },
 
     mungeRange: function mungeRange(range, munger, selectEnd) {
@@ -177,7 +180,7 @@ var Editor = Module("editor", {
         // Find the *count*th occurance of *char* before a non-collapsed
         // \n, ignoring the character at the caret.
         let i = 0;
-        function test(c) (collapse || c != "\n") && (!i++ || c != char || --count)
+        function test(c) (collapse || c != "\n") && !!(!i++ || c != char || --count)
 
         Editor.extendRange(range, !backward, { test: test }, true);
         dactyl.assert(count == 0);
@@ -185,7 +188,7 @@ var Editor = Module("editor", {
 
         // Skip to any requested offset.
         count = Math.abs(offset);
-        Editor.extendRange(range, offset > 0, { test: function (c) count-- }, true);
+        Editor.extendRange(range, offset > 0, { test: function (c) !!count-- }, true);
         range.collapse(offset < 0);
 
         return range;
@@ -919,7 +922,7 @@ var Editor = Module("editor", {
         // finding characters
         function offset(backward, before, pos) {
             if (!backward && modes.main != modes.TEXT_EDIT)
-                return 1;
+                return before ? 0 : 1;
             if (before)
                 return backward ? +1 : -1;
             return 0;
@@ -927,29 +930,33 @@ var Editor = Module("editor", {
 
         bind(["f"], "Find a character on the current line, forwards",
              function ({ arg, count }) {
-                 editor.selectionRange = editor.findChar(arg, Math.max(count, 1), false,
-                                                         offset(false, false));
+                 editor.moveToPosition(editor.findChar(arg, Math.max(count, 1), false,
+                                                       offset(false, false)),
+                                       modes.main == modes.VISUAL);
              },
              { arg: true, count: true, type: "operator" });
 
         bind(["F"], "Find a character on the current line, backwards",
              function ({ arg, count }) {
-                 editor.selectionRange = editor.findChar(arg, Math.max(count, 1), true,
-                                                         offset(true, false));
+                 editor.moveToPosition(editor.findChar(arg, Math.max(count, 1), true,
+                                                       offset(true, false)),
+                                       modes.main == modes.VISUAL);
              },
              { arg: true, count: true, type: "operator" });
 
         bind(["t"], "Find a character on the current line, forwards, and move to the character before it",
              function ({ arg, count }) {
-                 editor.selectionRange = editor.findChar(arg, Math.max(count, 1), false,
-                                                         offset(false, true));
+                 editor.moveToPosition(editor.findChar(arg, Math.max(count, 1), false,
+                                                       offset(false, true)),
+                                       modes.main == modes.VISUAL);
              },
              { arg: true, count: true, type: "operator" });
 
         bind(["T"], "Find a character on the current line, backwards, and move to the character after it",
              function ({ arg, count }) {
-                 editor.selectionRange = editor.findChar(arg, Math.max(count, 1), true,
-                                                         offset(true, true));
+                 editor.moveToPosition(editor.findChar(arg, Math.max(count, 1), true,
+                                                       offset(true, true)),
+                                       modes.main == modes.VISUAL);
              },
              { arg: true, count: true, type: "operator" });
 
@@ -966,9 +973,9 @@ var Editor = Module("editor", {
                 var range = editor.selectionRange;
                 if (range.collapsed) {
                     count = count || 1;
-
-                    range.setEnd(range.startContainer,
-                                 range.startOffset + count);
+                    util.dump(count, range);
+                    Editor.extendRange(range, true, { test: function (c) !!count-- }, true);
+                    util.dump(count, range);
                 }
                 editor.mungeRange(range, munger, count != null);
 
