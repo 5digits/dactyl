@@ -1139,7 +1139,6 @@ var CommandLine = Module("commandline", {
             if (!this.session.active)
                 return;
 
-            this.context.updateAsync = true;
             this.reset(show, tabPressed);
             this.wildIndex = 0;
             this._caret = this.caret;
@@ -1179,6 +1178,7 @@ var CommandLine = Module("commandline", {
 
             if (show) {
                 this.itemList.update();
+                this.context.updateAsync = true;
                 if (this.haveType("list"))
                     this.itemList.visible = true;
                 this.selected = null;

@@ -89,6 +89,12 @@ var Messages = Module("messages", {
         return arguments.length > 2 ? default_ : value;
     },
 
+    /**
+     * Exports known localizable strings to a properties file.
+     *
+     * @param {string|nsIFile} {file} The file to which to export
+     *      the strings.
+     */
     export: function export_(file) {
         let { Buffer, commands, hints, io, mappings, modes, options, sanitizer } = overlay.activeModules;
         file = io.File(file);
