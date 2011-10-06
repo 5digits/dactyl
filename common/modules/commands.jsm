@@ -510,7 +510,6 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
 
     /** @property {Iterator(Command)} @private */
     __iterator__: function __iterator__() {
-        util.dumpStack("ITERATOR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! eleventy one eleven!");
         if (this.cached)
             this.modules.initDependencies("commands");
         this.cached = false;
