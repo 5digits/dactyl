@@ -44,6 +44,7 @@
       - New searches now start within the current viewport where possible. [b8]
     • Text editing improvements, including:
       - Added t_gu, t_gU, and v_o mappings. [b8]
+      - Added t_<C-a> and t_<C-a> mappings. [b8]
       - Added o_c, o_d, and o_y mappings. [b8]
       - Added register and basic kill ring support, t_" and I_<C-'>
         mappings, and :registers command. [b8]

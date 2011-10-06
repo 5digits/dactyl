@@ -243,6 +243,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             let parentIdx = Array.indexOf(parent.childNodes,
                                           range[container]);
 
+            let delta = 0;
             for (let node in Editor.TextsIterator(range)) {
                 let text = node.textContent;
                 let start = 0, end = text.length;
@@ -261,6 +262,9 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 if (text == node.textContent)
                     continue;
 
+                if (selectEnd)
+                    delta = text.length - node.textContent.length;
+
                 if (editor instanceof Ci.nsIPlaintextEditor) {
                     this.selectedRange = RangeFind.nodeContents(node);
                     editor.insertText(text);
@@ -268,14 +272,17 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 else
                     node.textContent = text;
             }
-            this.selection.collapse(parent.childNodes[parentIdx], idx);
+            let node = parent.childNodes[parentIdx];
+            if (node instanceof Text)
+                idx = Math.constrain(idx + delta, 0, node.textContent.length);
+            this.selection.collapse(node, idx);
         }
         finally {
             editor.endPlaceHolderTransaction();
         }
     },
 
-    findChar: function (key, count, backward, offset) {
+    findChar: function findNumber(key, count, backward, offset) {
         count  = count || 1; // XXX ?
         offset = (offset || 0) - !!backward;
 
@@ -303,6 +310,44 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         range.collapse(offset < 0);
 
         return range;
+    },
+
+    findNumber: function findNumber(range) {
+        if (!range)
+            range = this.selectedRange.cloneRange();
+
+        // Find digit (or \n).
+        Editor.extendRange(range, true, /[^\n\d]/, true);
+        range.collapse(false);
+        // Select entire number.
+        Editor.extendRange(range, true, /\d/, true);
+        Editor.extendRange(range, false, /\d/, true);
+
+        // Sanity check.
+        dactyl.assert(/^\d+$/.test(range));
+
+        if (false) // Skip for now.
+        if (range.startContainer instanceof Text && range.startOffset > 2) {
+            if (range.startContainer.textContent.substr(range.startOffset - 2, 2) == "0x")
+                range.setStart(range.startContainer, range.startOffset - 2);
+        }
+
+        // Grab the sign, if it's there.
+        Editor.extendRange(range, false, /[+-]/, true);
+
+        return range;
+    },
+
+    modifyNumber: function modifyNumber(delta, range) {
+        range = this.findNumber(range);
+        let number = parseInt(range) + delta;
+        if (/^[+-]?0x/.test(range))
+            number = number.toString(16).replace(/^[+-]?/, "$&0x");
+        else if (/^[+-]?0\d/.test(range))
+            number = number.toString(8).replace(/^[+-]?/, "$&0");
+
+        this.mungeRange(range, function () String(number), true);
+        this.selection.modify("move", "backward", "character");
     },
 
     /**
@@ -1031,9 +1076,8 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         bind(["<S-Insert>"], "Insert clipboard/selection",
              function () { editor.paste(); });
 
-        mappings.add([modes.INPUT],
-           ["<C-i>"], "Edit text field with an external editor",
-           function () { editor.editFieldExternally(); });
+        bind(["<C-i>"], "Edit text field with an external editor",
+             function () { editor.editFieldExternally(); });
 
         bind(["<C-t>"], "Edit text field in Text Edit mode",
              function () {
@@ -1073,42 +1117,47 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             mappings.add([modes.TEXT_EDIT], names, description,
                          action, update({ type: "editor" }, params));
 
-        // text edit mode
-        mappings.add([modes.TEXT_EDIT],
-            ["u"], "Undo changes",
-            function (args) {
-                editor.executeCommand("cmd_undo", Math.max(args.count, 1));
-                editor.deselect();
-            },
-            { count: true });
 
-        mappings.add([modes.TEXT_EDIT],
-            ["<C-r>"], "Redo undone changes",
-            function (args) {
-                editor.executeCommand("cmd_redo", Math.max(args.count, 1));
-                editor.deselect();
-            },
-            { count: true });
+        bind(["<C-a>"], "Increment the next number",
+             function ({ count }) { editor.modifyNumber(count || 1) },
+             { count: true });
+
+        bind(["<C-x>"], "Decrement the next number",
+             function ({ count }) { editor.modifyNumber(-(count || 1)) },
+             { count: true });
+
+        // text edit mode
+        bind(["u"], "Undo changes",
+             function (args) {
+                 editor.executeCommand("cmd_undo", Math.max(args.count, 1));
+                 editor.deselect();
+             },
+             { count: true });
+
+        bind(["<C-r>"], "Redo undone changes",
+             function (args) {
+                 editor.executeCommand("cmd_redo", Math.max(args.count, 1));
+                 editor.deselect();
+             },
+             { count: true });
 
         bind(["D"], "Delete characters from the cursor to the end of the line",
              function () { editor.executeCommand("cmd_deleteToEndOfLine"); });
 
-        mappings.add([modes.TEXT_EDIT],
-            ["o"], "Open line below current",
-            function () {
-                editor.executeCommand("cmd_endLine", 1);
-                modes.push(modes.INSERT);
-                events.feedkeys("<Return>");
-            });
+        bind(["o"], "Open line below current",
+             function () {
+                 editor.executeCommand("cmd_endLine", 1);
+                 modes.push(modes.INSERT);
+                 events.feedkeys("<Return>");
+             });
 
-        mappings.add([modes.TEXT_EDIT],
-            ["O"], "Open line above current",
-            function () {
-                editor.executeCommand("cmd_beginLine", 1);
-                modes.push(modes.INSERT);
-                events.feedkeys("<Return>");
-                editor.executeCommand("cmd_linePrevious", 1);
-            });
+        bind(["O"], "Open line above current",
+             function () {
+                 editor.executeCommand("cmd_beginLine", 1);
+                 modes.push(modes.INSERT);
+                 events.feedkeys("<Return>");
+                 editor.executeCommand("cmd_linePrevious", 1);
+             });
 
         bind(["X"], "Delete character to the left",
              function (args) { editor.executeCommand("cmd_deleteCharBackward", Math.max(args.count, 1)); },
@@ -1127,13 +1176,12 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             ["v", "V"], "End Visual mode",
             function () { modes.pop(); });
 
-        mappings.add([modes.TEXT_EDIT],
-            ["V"], "Start Visual Line mode",
-            function () {
-                modes.push(modes.VISUAL, modes.LINE);
-                editor.executeCommand("cmd_beginLine", 1);
-                editor.executeCommand("cmd_selectLineNext", 1);
-            });
+        bind(["V"], "Start Visual Line mode",
+             function () {
+                 modes.push(modes.VISUAL, modes.LINE);
+                 editor.executeCommand("cmd_beginLine", 1);
+                 editor.executeCommand("cmd_selectLineNext", 1);
+             });
 
         mappings.add([modes.VISUAL],
             ["s"], "Change selected text",
@@ -1150,7 +1198,8 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                     var selection = editor.selection;
                 else
                     selection = buffer.focusedFrame.getSelection();
-                util.assert(selection.focusOffset);
+
+                util.assert(selection.focusNode);
                 let { focusOffset, anchorOffset, focusNode, anchorNode } = selection;
                 selection.collapse(focusNode, focusOffset);
                 selection.extend(anchorNode, anchorOffset);
