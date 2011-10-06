@@ -501,7 +501,7 @@ var IO = Module("io", {
 
         let { shellEscape } = util.closure;
 
-        return this.ext, withTempFiles(function (stdin, stdout, cmd) {
+        return this.withTempFiles(function (stdin, stdout, cmd) {
             if (input instanceof File)
                 stdin = input;
             else if (input)
