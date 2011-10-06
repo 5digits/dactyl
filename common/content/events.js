@@ -120,10 +120,13 @@ var Events = Module("events", {
         this._macroKeys = [];
         this._lastMacro = "";
 
-        this._macros = storage.newMap("macros", { privateData: true, store: true });
-        for (let [k, m] in this._macros)
-            if (isString(m))
-                m = { keys: m, timeRecorded: Date.now() };
+        this._macros = storage.newMap("registers", { privateData: true, store: true });
+        if (storage.exists("macros")) {
+            util.dump(storage.newMap("macros", { store: true }));
+            for (let [k, m] in storage.newMap("macros", { store: true }))
+                this._macros.set(k, { text: m.keys, timestamp: m.timeRecorded * 1000 });
+            storage.remove("macros");
+        }
 
         this.popups = {
             active: [],
@@ -255,17 +258,14 @@ var Events = Module("events", {
 
         if (/[A-Z]/.test(macro)) { // Append.
             macro = macro.toLowerCase();
-            this._macroKeys = DOM.Event.iterKeys((this._macros.get(macro) || { keys: "" }).keys)
+            this._macroKeys = DOM.Event.iterKeys(editor.getRegister(macro))
                                  .toArray();
         }
         else if (macro) { // Record afresh.
             this._macroKeys = [];
         }
         else if (this.recording) { // Save.
-            this._macros.set(this.recording, {
-                keys: this._macroKeys.join(""),
-                timeRecorded: Date.now()
-            });
+            editor.setRegister(this.recording, this._macroKeys.join(""));
 
             dactyl.log(_("macro.recorded", this.recording, this._macroKeys.join("")), 9);
             dactyl.echomsg(_("macro.recorded", this.recording));
@@ -280,27 +280,24 @@ var Events = Module("events", {
      * @returns {boolean}
      */
     playMacro: function (macro) {
-        let res = false;
-        dactyl.assert(/^[a-zA-Z0-9@]$/.test(macro), _("macro.invalid", macro));
+        dactyl.assert(/^[a-zA-Z0-9@]$/.test(macro),
+                      _("macro.invalid", macro));
 
         if (macro == "@")
             dactyl.assert(this._lastMacro, _("macro.noPrevious"));
         else
             this._lastMacro = macro.toLowerCase(); // XXX: sets last played macro, even if it does not yet exist
 
-        if (this._macros.get(this._lastMacro)) {
-            try {
-                modes.replaying = true;
-                res = events.feedkeys(this._macros.get(this._lastMacro).keys, { noremap: true });
-            }
-            finally {
-                modes.replaying = false;
-            }
-        }
-        else
-            // TODO: ignore this like Vim?
-            dactyl.echoerr(_("macro.noSuch", this._lastMacro));
-        return res;
+        let keys = editor.getRegister(this._lastMacro);
+        if (keys)
+            return modes.withSavedValues(["replaying"], function () {
+                this.replaying = true;
+                return events.feedkeys(keys, { noremap: true });
+            });
+
+        // TODO: ignore this like Vim?
+        dactyl.echoerr(_("macro.noSuch", this._lastMacro));
+        return false;
     },
 
     /**
@@ -311,7 +308,7 @@ var Events = Module("events", {
      */
     getMacros: function (filter) {
         let re = RegExp(filter || "");
-        return ([k, m.keys] for ([k, m] in events._macros) if (re.test(k)));
+        return ([k, m.text] for ([k, m] in editor.registers) if (re.test(k)));
     },
 
     /**
@@ -322,9 +319,9 @@ var Events = Module("events", {
      */
     deleteMacros: function (filter) {
         let re = RegExp(filter || "");
-        for (let [item, ] in this._macros) {
+        for (let [item, ] in editor.registers) {
             if (!filter || re.test(item))
-                this._macros.remove(item);
+                editor.registers.remove(item);
         }
     },
 
@@ -1172,18 +1169,6 @@ var Events = Module("events", {
         options.add(["timeoutlen", "tmol"],
             "Maximum time (milliseconds) to wait for a longer key command when a shorter one exists",
             "number", 1000);
-    },
-    sanitizer: function () {
-        sanitizer.addItem("macros", {
-            description: "Saved macros",
-            persistent: true,
-            action: function (timespan, host) {
-                if (!host)
-                    for (let [k, m] in events._macros)
-                        if (timespan.contains(m.timeRecorded * 1000))
-                            events._macros.remove(k);
-            }
-        });
     }
 });
 

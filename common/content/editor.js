@@ -101,7 +101,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
 
         if (isinstance(value, [Ci.nsIDOMRange, Ci.nsIDOMNode, Ci.nsISelection]))
             value = DOM.stringify(value);
-        value = { text: value, isLine: modes.extended & modes.LINE };
+        value = { text: value, isLine: modes.extended & modes.LINE, timestamp: Date.now() * 1000 };
 
         if (name == '"')
             name = 0;
@@ -1310,6 +1310,20 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                     context.keys = { text: util.identity, description: util.identity };
                 }
             });
+    },
+    sanitizer: function () {
+        sanitizer.addItem("registers", {
+            description: "Register values",
+            persistent: true,
+            action: function (timespan, host) {
+                if (!host) {
+                    for (let [k, v] in editor.registers)
+                        if (timespan.contains(v.timestamp))
+                            editor.registers.remove(k);
+                    editor.registerRing.truncate(0);
+                }
+            }
+        });
     }
 });
 

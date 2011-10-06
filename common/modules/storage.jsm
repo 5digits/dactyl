@@ -204,7 +204,17 @@ var Storage = Module("Storage", {
         File(IO.runtimePath.replace(/,.*/, ""))
             .child("info").child(config.profileName)),
 
-    exists: function exists(name) this.infoPath.child(name).exists(),
+    exists: function exists(key) this.infoPath.child(key).exists(),
+
+    remove: function remove(key) {
+        if (this.exists(key)) {
+            if (this[key] && this[key].timer)
+                this[key].timer.flush();
+            delete this[key];
+            delete this.keys[key];
+            this.infoPath.child(key).remove(false);
+        }
+    },
 
     newObject: function newObject(key, constructor, params) {
         if (params == null || !isObject(params))
