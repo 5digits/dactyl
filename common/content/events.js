@@ -122,7 +122,6 @@ var Events = Module("events", {
 
         this._macros = storage.newMap("registers", { privateData: true, store: true });
         if (storage.exists("macros")) {
-            util.dump(storage.newMap("macros", { store: true }));
             for (let [k, m] in storage.newMap("macros", { store: true }))
                 this._macros.set(k, { text: m.keys, timestamp: m.timeRecorded * 1000 });
             storage.remove("macros");
