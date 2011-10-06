@@ -867,21 +867,16 @@ var Events = Module("events", {
 
             let haveInput = modes.stack.some(function (m) m.main.input);
 
-            if (elem instanceof HTMLTextAreaElement
-               || elem instanceof Element && DOM(elem).style.MozUserModify === "read-write"
-               || elem == null && win && Editor.getEditor(win)) {
-
-                if (modes.main == modes.VISUAL && elem.selectionEnd == elem.selectionStart)
-                    modes.pop();
-
+            if (DOM(elem || win).isEditable) {
                 if (!haveInput)
-                    if (options["insertmode"])
-                        modes.push(modes.INSERT);
-                    else if (!isinstance(modes.main, [modes.TEXT_EDIT, modes.VISUAL])) {
-                        modes.push(modes.TEXT_EDIT);
-                        if (elem.selectionEnd - elem.selectionStart > 0)
-                            modes.push(modes.VISUAL);
-                    }
+                    if (!isinstance(modes.main, [modes.INPUT, modes.TEXT_EDIT, modes.VISUAL]))
+                        if (options["insertmode"])
+                            modes.push(modes.INSERT);
+                        else {
+                            modes.push(modes.TEXT_EDIT);
+                            if (elem.selectionEnd - elem.selectionStart > 0)
+                                modes.push(modes.VISUAL);
+                        }
 
                 if (hasHTMLDocument(win))
                     buffer.lastInputField = elem;
@@ -926,12 +921,8 @@ var Events = Module("events", {
         let controller = document.commandDispatcher.getControllerForCommand("cmd_copy");
         let couldCopy = controller && controller.isCommandEnabled("cmd_copy");
 
-        if (modes.main == modes.VISUAL) {
-            if (!couldCopy)
-                modes.pop(); // Really not ideal.
-        }
-        else if (couldCopy) {
-            if (modes.main == modes.TEXT_EDIT && !options["insertmode"])
+        if (couldCopy) {
+            if (modes.main == modes.TEXT_EDIT)
                 modes.push(modes.VISUAL);
             else if (modes.main == modes.CARET)
                 modes.push(modes.VISUAL);

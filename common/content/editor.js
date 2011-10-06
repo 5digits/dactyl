@@ -346,7 +346,8 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         else if (/^[+-]?0\d/.test(range))
             number = number.toString(8).replace(/^[+-]?/, "$&0");
 
-        this.mungeRange(range, function () String(number), true);
+        this.selectedRange = range;
+        this.editor.insertText(String(number));
         this.selection.modify("move", "backward", "character");
     },
 
@@ -511,7 +512,8 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         let abbrev = abbreviations.match(mode, String(range));
         if (abbrev) {
             range.setStart(range.startContainer, range.endOffset - abbrev.lhs.length);
-            this.mungeRange(range, function () abbrev.expand(this.element), true);
+            this.selectedRange = range;
+            this.editor.insertText(abbrev.expand(this.element));
         }
     },
 
@@ -786,10 +788,14 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             },
         };
         Map.types["operator"] = {
+            preExecute: function preExecute(args) {
+                editor.inEditMap = true;
+            },
             postExecute: function preExecute(args) {
+                editor.inEditMap = true;
                 if (modes.main == modes.OPERATOR)
                     modes.pop();
-            },
+            }
         };
 
         // add mappings for commands like h,j,k,l,etc. in CARET, VISUAL and TEXT_EDIT mode
