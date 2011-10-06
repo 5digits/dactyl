@@ -131,12 +131,16 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
     observers: {
         "toplevel-window-ready": function (window, data) {
-            window.addEventListener("DOMContentLoaded", util.wrapCallback(function listener(event) {
+            let listener = util.wrapCallback(function listener(event) {
                 if (event.originalTarget === window.document) {
                     window.removeEventListener("DOMContentLoaded", listener.wrapper, true);
+                    window.removeEventListener("load", listener.wrapper, true);
                     overlay._loadOverlays(window);
                 }
-            }), true);
+            });
+
+            window.addEventListener("DOMContentLoaded", listener, true);
+            window.addEventListener("load", listener, true);
         },
         "chrome-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); },
         "content-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); },
