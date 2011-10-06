@@ -569,7 +569,7 @@ var ConfigBase = Class("ConfigBase", {
      * @property {string} The leaf name of any temp files created by
      *     {@link io.createTempFile}.
      */
-    get tempFile() this.name + ".tmp",
+    get tempFile() this.name + ".txt",
 
     /**
      * @constant

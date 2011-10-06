@@ -86,7 +86,7 @@ var Config = Module("config", ConfigBase, {
             }
             catch (e) {}
 
-            return prefix + ".tmp";
+            return prefix + ".txt";
         }
     })
 

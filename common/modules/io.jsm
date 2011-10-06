@@ -326,7 +326,6 @@ var IO = Module("io", {
         return null;
     },
 
-    // TODO: make secure
     /**
      * Creates a temporary file.
      *
@@ -337,7 +336,7 @@ var IO = Module("io", {
             var file = name.clone();
         else {
             file = services.directory.get("TmpD", Ci.nsIFile);
-            file.append(name || config.addon.name);
+            file.append(this.config.tempFile + (name ? "." + name : ""));
         }
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(600));
 
@@ -502,7 +501,7 @@ var IO = Module("io", {
 
         let { shellEscape } = util.closure;
 
-        return this.withTempFiles(function (stdin, stdout, cmd) {
+        return this.ext, withTempFiles(function (stdin, stdout, cmd) {
             if (input instanceof File)
                 stdin = input;
             else if (input)
@@ -556,8 +555,8 @@ var IO = Module("io", {
      * @returns {boolean} false if temp files couldn't be created,
      *     otherwise, the return value of *func*.
      */
-    withTempFiles: function withTempFiles(func, self, checked) {
-        let args = array(util.range(0, func.length)).map(this.closure.createTempFile).array;
+    withTempFiles: function withTempFiles(func, self, checked, ext) {
+        let args = array(util.range(0, func.length)).map(bind("createTempFile", this, ext)).array;
         try {
             if (!args.every(util.identity))
                 return false;

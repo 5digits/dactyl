@@ -1016,6 +1016,9 @@ var Buffer = Module("Buffer", {
                 };
 
             let uri = isString(doc) ? util.newURI(doc) : util.newURI(doc.location.href);
+            let ext = uri.fileExtension || "txt";
+            if (doc.contentType)
+                ext = services.mime.getPrimaryExtension(doc.contentType, ext);
 
             if (!isString(doc))
                 return io.withTempFiles(function (temp) {
@@ -1023,7 +1026,7 @@ var Buffer = Module("Buffer", {
                     encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
                     temp.write(encoder.encodeToString(), ">");
                     return this.callback(temp, true);
-                }, this, true);
+                }, this, true, ext);
 
             let file = util.getFile(uri);
             if (file)
