@@ -1237,9 +1237,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 var range = editor.selectedRange;
                 if (range.collapsed) {
                     count = count || 1;
-                    util.dump(count, range);
                     Editor.extendRange(range, true, { test: function (c) !!count-- }, true);
-                    util.dump(count, range);
                 }
                 editor.mungeRange(range, munger, count != null);
 

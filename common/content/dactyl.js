@@ -1611,6 +1611,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 if (args.trailing)
                     storage.session.rehashCmd = args.trailing; // Hack.
                 args.break = true;
+
+                if (args["+purgecaches"])
+                    cache.flush();
+
                 util.rehash(args);
             },
             {
@@ -1620,7 +1624,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         commands.add(["res[tart]"],
             "Force " + config.host + " to restart",
-            function (args) { dactyl.restart(args.string); },
+            function (args) {
+                if (args["+purgecaches"])
+                    cache.flush();
+
+                dactyl.restart(args.string);
+            },
             {
                 argCount: "0",
                 options: startupOptions
@@ -1838,9 +1847,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     args = dactyl.parseCommandLine(args);
 
                 if (args) {
-                    if (args["+purgecaches"])
-                        cache.flush();
-
                     dactyl.commandLineOptions.rcFile = args["+u"];
                     dactyl.commandLineOptions.noPlugins = "++noplugin" in args;
                     dactyl.commandLineOptions.postCommands = args["+c"];

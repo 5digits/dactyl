@@ -1915,7 +1915,7 @@ var ItemList = Class("ItemList", {
         // would force a reflow after each DOM modification.
         this.activeGroups.filter(function (g) !g.collapsed)
             .map(function (g) g.rescrollFunc)
-            .forEach(function (f) f());
+            .forEach(call);
 
         this._resize.tell(ItemList.RESIZE_BRIEF);
     },

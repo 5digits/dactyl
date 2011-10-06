@@ -15,6 +15,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         this.queue = [];
         this.cache = {};
         this.providers = {};
+        this.globalProviders = this.providers;
         this.providing = {};
         this.localProviders = {};
 
@@ -173,7 +174,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
 
         if (Set.has(this.localProviders, name) && !this.isLocal) {
             for each (let { cache } in overlay.modules)
-                if (cache.has(name))
+                if (cache._has(name))
                     return cache.force(name, true);
         }
 
@@ -209,7 +210,10 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         return this.cache[name];
     },
 
-    has: function has(name) Set.has(this.providers, name) || set.has(this.cache, name),
+    _has: function _has(name) Set.has(this.providers, name) || set.has(this.cache, name),
+
+    has: function has(name) [this.globalProviders, this.cache, this.localProviders]
+            .some(function (obj) Set.has(obj, name)),
 
     register: function register(name, callback, self) {
         if (this.isLocal)

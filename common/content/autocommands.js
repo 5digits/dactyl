@@ -71,12 +71,6 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
  */
 var AutoCommands = Module("autocommands", {
     init: function () {
-        update(this, {
-            hives: contexts.Hives("autocmd", AutoCmdHive),
-            user: contexts.hives.autocmd.user,
-            allHives: contexts.allGroups.autocmd,
-            matchingHives: function matchingHives(uri, doc) contexts.matchingGroups(uri, doc).autocmd
-        });
     },
 
     get activeHives() contexts.allGroups.autocmd.filter(function (h) h._store.length),
@@ -172,6 +166,14 @@ var AutoCommands = Module("autocommands", {
     }
 }, {
 }, {
+    contexts: function () {
+        update(AutoCommands.prototype, {
+            hives: contexts.Hives("autocmd", AutoCmdHive),
+            user: contexts.hives.autocmd.user,
+            allHives: contexts.allGroups.autocmd,
+            matchingHives: function matchingHives(uri, doc) contexts.matchingGroups(uri, doc).autocmd
+        });
+    },
     commands: function () {
         commands.add(["au[tocmd]"],
             "Execute commands automatically on events",

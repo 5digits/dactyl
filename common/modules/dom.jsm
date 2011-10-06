@@ -879,7 +879,6 @@ var DOM = Class("DOM", {
 
                 if (isect.height < Math.min(viewport.height, rect.height)) {
                     let { top } = parent.scrollPos();
-                    util.dump("   " + top + " " + (viewport.top - rect.top) + " " + (viewport.bottom - rect.bottom));
                     if (getAlignment(viewport))
                         parent.scrollPos(null, top - (viewport.top - rect.top));
                     else

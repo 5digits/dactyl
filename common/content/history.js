@@ -122,8 +122,6 @@ var History = Module("history", {
                 steps -= sign;
             }
 
-        util.dump(idx, sh.index, sh.length, steps);
-
         dactyl.assert(idx != null);
         sh.index = idx;
     },

@@ -4,8 +4,6 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-try {
-
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("contexts", {
     exports: ["Contexts", "Group", "contexts"],
@@ -35,7 +33,7 @@ var Group = Class("Group", {
 
     modifiable: true,
 
-    cleanup: function cleanup() {
+    cleanup: function cleanup(reason) {
         for (let hive in values(this.hives))
             util.trapErrors("cleanup", hive);
 
@@ -43,13 +41,15 @@ var Group = Class("Group", {
         for (let hive in keys(this.hiveMap))
             delete this[hive];
 
-        this.children.splice(0).forEach(this.contexts.closure.removeGroup);
+        if (reason != "shutdown")
+            this.children.splice(0).forEach(this.contexts.closure.removeGroup);
     },
-    destroy: function destroy() {
+    destroy: function destroy(reason) {
         for (let hive in values(this.hives))
             util.trapErrors("destroy", hive);
 
-        this.children.splice(0).forEach(this.contexts.closure.removeGroup);
+        if (reason != "shutdown")
+            this.children.splice(0).forEach(this.contexts.closure.removeGroup);
     },
 
     argsExtra: function argsExtra() ({}),
@@ -143,13 +143,13 @@ var Contexts = Module("contexts", {
         },
 
         cleanup: function () {
-            for (let hive in values(this.groupList))
-                util.trapErrors("cleanup", hive);
+            for each (let hive in this.groupList.slice())
+                util.trapErrors("cleanup", hive, "shutdown");
         },
 
         destroy: function () {
-            for (let hive in values(this.groupList))
-                util.trapErrors("destroy", hive);
+            for each (let hive in values(this.groupList.slice()))
+                util.trapErrors("destroy", hive, "shutdown");
 
             for (let [name, plugin] in iter(this.modules.plugins.contexts))
                 if (plugin && "onUnload" in plugin && callable(plugin.onUnload))
@@ -808,6 +808,6 @@ var Contexts = Module("contexts", {
 
 endModule();
 
-} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+// catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

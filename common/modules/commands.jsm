@@ -188,8 +188,7 @@ var Command = Class("Command", {
      * @param {string} name The candidate name.
      * @returns {boolean}
      */
-    hasName: function hasName(name) this.parsedSpecs.some(
-        function ([long, short]) name.indexOf(short) == 0 && long.indexOf(name) == 0),
+    hasName: function hasName(name) Command.hasName(this.parsedSpecs, name),
 
     /**
      * A helper function to parse an argument string.
@@ -329,7 +328,7 @@ var Command = Class("Command", {
         });
 
         this.options.forEach(function (opt) {
-            if (opt.default !== undefined)
+            if ("default" in opt)
                 Object.defineProperty(res, opt.names[0],
                                       Object.getOwnPropertyDescriptor(opt, "default") ||
                                           { configurable: true, enumerable: true, get: function () opt.default });
@@ -386,6 +385,10 @@ var Command = Class("Command", {
             this.modules.dactyl.warn(loc + message);
     }
 }, {
+    hasName: function hasName(specs, name)
+        specs.some(function ([long, short])
+            name.indexOf(short) == 0 && long.indexOf(name) == 0),
+
     // TODO: do we really need more than longNames as a convenience anyway?
     /**
      *  Converts command name abbreviation specs of the form
@@ -463,12 +466,56 @@ var Ex = Module("Ex", {
 var CommandHive = Class("CommandHive", Contexts.Hive, {
     init: function init(group) {
         init.supercall(this, group);
+
         this._map = {};
         this._list = [];
+        this._specs = [];
     },
 
+    /**
+     * Caches this command hive.
+     */
+
+    cache: function cache() {
+        let self = this;
+        let { cache } = this.modules;
+        this.cached = true;
+
+        cache.register(this.cacheKey, function () {
+            self.cached = false;
+            this.modules.moduleManager.initDependencies("commands");
+
+            let map = {};
+            for (let [name, cmd] in Iterator(self._map))
+                if (cmd.sourceModule)
+                    map[name] = { sourceModule: cmd.sourceModule, isPlaceholder: true };
+
+            let specs = [];
+            for (let cmd in values(self._list))
+                for each (let spec in cmd.parsedSpecs)
+                    specs.push(spec.concat(cmd.name));
+
+            return { map: map, specs: specs };
+        });
+
+        let cached = cache.get(this.cacheKey);
+        if (this.cached) {
+            this._specs = cached.specs;
+            for (let [k, v] in Iterator(cached.map))
+                this._map[k] = v;
+        }
+    },
+
+    get cacheKey() "commands/hives/" + this.name + ".json",
+
     /** @property {Iterator(Command)} @private */
-    __iterator__: function __iterator__() array.iterValues(this._list.sort(function (a, b) a.name > b.name)),
+    __iterator__: function __iterator__() {
+        util.dumpStack("ITERATOR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! eleventy one eleven!");
+        if (this.cached)
+            this.modules.initDependencies("commands");
+        this.cached = false;
+        return array.iterValues(this._list.sort(function (a, b) a.name > b.name))
+    },
 
     /** @property {string} The last executed Ex command line. */
     repeat: null,
@@ -491,6 +538,8 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         extra = extra || {};
         if (!extra.definedAt)
             extra.definedAt = contexts.getCaller(Components.stack.caller);
+        if (!extra.sourceModule)
+            extra.sourceModule = commands.currentDependency;
 
         extra.hive = this;
         extra.parsedSpecs = Command.parseSpecs(specs);
@@ -498,15 +547,17 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         let names = array.flatten(extra.parsedSpecs);
         let name = names[0];
 
-        util.assert(!names.some(function (name) name in commands.builtin._map),
-                    _("command.cantReplace", name));
+        if (this.name != "builtin") {
+            util.assert(!names.some(function (name) name in commands.builtin._map),
+                        _("command.cantReplace", name));
 
-        util.assert(replace || names.every(function (name) !(name in this._map), this),
-                    _("command.wontReplace", name));
+            util.assert(replace || names.every(function (name) !(name in this._map), this),
+                        _("command.wontReplace", name));
+        }
 
         for (let name in values(names)) {
             ex.__defineGetter__(name, function () this._run(name));
-            if (name in this._map)
+            if (name in this._map && !this._map[name].isPlaceholder)
                 this.remove(name);
         }
 
@@ -549,9 +600,22 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
      *     its names matches *name* exactly.
      * @returns {Command}
      */
-    get: function get(name, full) this._map[name]
-            || !full && array.nth(this._list, function (cmd) cmd.hasName(name), 0)
-            || null,
+    get: function get(name, full) {
+        let cmd = this._map[name]
+               || !full && array.nth(this._list, function (cmd) cmd.hasName(name), 0)
+               || null;
+
+        if (!cmd && full) {
+            let name = array.nth(this.specs, function (spec) Command.hasName(spec, name), 0);
+            return name && this.get(name);
+        }
+
+        if (cmd && cmd.isPlaceholder) {
+            this.modules.moduleManager.initDependencies("commands", [cmd.sourceModule]);
+            cmd = this._map[name];
+        }
+        return cmd;
+    },
 
     /**
      * Remove the user-defined command with matching *name*.
@@ -574,6 +638,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
  */
 var Commands = Module("commands", {
     lazyInit: true,
+    lazyDepends: true,
 
     Local: function Local(dactyl, modules, window) let ({ Group, contexts } = modules) ({
         init: function init() {
@@ -583,6 +648,13 @@ var Commands = Module("commands", {
                 user: contexts.hives.commands.user,
                 builtin: contexts.hives.commands.builtin
             });
+        },
+
+        reallyInit: function reallyInit() {
+            if (false)
+                this.builtin.cache();
+            else
+                this.modules.moduleManager.initDependencies("commands");
         },
 
         get context() contexts.context,
