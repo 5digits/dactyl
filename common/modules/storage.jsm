@@ -93,10 +93,30 @@ var ArrayStore = Class("ArrayStore", StoreBase, {
         this.fireEvent("push", this._object.length);
     },
 
-    pop: function pop(value) {
-        var res = this._object.pop();
-        this.fireEvent("pop", this._object.length);
+    pop: function pop(value, ord) {
+        if (ord == null)
+            var res = this._object.pop();
+        else
+            res = this._object.splice(ord, 1)[0];
+
+        this.fireEvent("pop", this._object.length, ord);
         return res;
+    },
+
+    shift: function shift(value) {
+        var res = this._object.shift();
+        this.fireEvent("shift", this._object.length);
+        return res;
+    },
+
+    insert: function insert(value, ord) {
+        if (ord == 0)
+            this._object.unshift(value);
+        else
+            this._object = this._object.slice(0, ord)
+                               .concat([value])
+                               .concat(this._object.slice(ord));
+        this.fireEvent("insert", this._object.length, ord);
     },
 
     truncate: function truncate(length, fromEnd) {

@@ -339,16 +339,20 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * This is same as Firefox's readFromClipboard function, but is needed for
      * apps like Thunderbird which do not provide it.
      *
+     * @param {string} which Which clipboard to write to. Either
+     *     "global" or "selection". If not provided, both clipboards are
+     *     updated.
+     *     @optional
      * @returns {string}
      */
-    clipboardRead: function clipboardRead(getClipboard) {
+    clipboardRead: function clipboardRead(which) {
         try {
             const { clipboard } = services;
 
             let transferable = services.Transferable();
             transferable.addDataFlavor("text/unicode");
 
-            let source = clipboard[getClipboard || !clipboard.supportsSelectionClipboard() ?
+            let source = clipboard[which == "global" || !clipboard.supportsSelectionClipboard() ?
                                    "kGlobalClipboard" : "kSelectionClipboard"];
             clipboard.getData(transferable, source);
 
@@ -375,7 +379,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     @optional
      */
     clipboardWrite: function clipboardWrite(str, verbose, which) {
-        if (!which)
+        if (which == null)
             services.clipboardHelper.copyString(str);
         else if (which == "selection" && !services.clipboard.supportsSelectionClipboard())
             return;

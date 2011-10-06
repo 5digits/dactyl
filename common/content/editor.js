@@ -11,7 +11,7 @@
 // http://developer.mozilla.org/en/docs/Editor_Embedding_Guide
 
 /** @instance editor */
-var Editor = Module("editor", {
+var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
     init: function init(elem) {
         if (elem)
             this.element = elem;
@@ -24,6 +24,97 @@ var Editor = Module("editor", {
                 let win = document.commandDispatcher.focusedWindow;
                 return DOM(win).isEditable && win || null;
             });
+    },
+
+    signals: {
+        "mappings.willExecute": function mappings_willExecute(map) {
+            if (this.currentRegister && !(this._currentMap && this._wait == util.yielders)) {
+                this._currentMap = map;
+                this._wait = util.yielders;
+            }
+        },
+        "mappings.executed": function mappings_executed(map) {
+            if (this._currentMap == map) {
+                this.currentRegister = null;
+                this._wait = util.yielders;
+                this._currentMap = null;
+            }
+        }
+    },
+
+    get registers() storage.newMap("registers", { privateData: true, store: true }),
+    get registerRing() storage.newArray("register-ring", { privateData: true, store: true }),
+
+    // Fixme: Move off this object.
+    currentRegister: null,
+
+    defaultRegister: "*",
+
+    selectionRegisters: {
+        "*": "selection",
+        "+": "global"
+    },
+
+    /**
+     * Get the value of the register *name*.
+     *
+     * @param {string|number} name The name of the register to get.
+     * @returns {string|null}
+     * @see #setRegister
+     */
+    getRegister: function getRegister(name) {
+        if (name == null)
+            name = editor.currentRegister || editor.defaultRegister;
+
+        if (name == '"')
+            name = 0;
+        if (name == "_")
+            var res = null;
+        else if (Set.has(this.selectionRegisters, name))
+            res = { text: dactyl.clipboardRead(this.selectionRegisters[name]) || "" };
+        else if (!/^[0-9]$/.test(name))
+            res = this.registers.get(name);
+        else
+            res = this.registerRing.get(name);
+
+        return res != null ? res.text : res;
+    },
+
+    /**
+     * Sets the value of register *name* to value. The following
+     * registers have special semantics:
+     *
+     *   *   - Tied to the PRIMARY selection value on X11 systems.
+     *   +   - Tied to the primary global clipboard.
+     *   _   - The null register. Never has any value.
+     *   "   - Equivalent to 0.
+     *   0-9 - These act as a kill ring. Setting any of them pushes the
+     *         values of higher numbered registers up one slot.
+     *
+     * @param {string|number} name The name of the register to set.
+     * @param {string|Range|Selection|Node} value The value to save to
+     *      the register.
+     */
+    setRegister: function setRegister(name, value) {
+        if (name == null)
+            name = editor.currentRegister || editor.defaultRegister;
+
+        if (isinstance(value, [Ci.nsIDOMRange, Ci.nsIDOMNode, Ci.nsISelection]))
+            value = DOM.stringify(value);
+        value = { text: value, isLine: modes.extended & modes.LINE };
+
+        if (name == '"')
+            name = 0;
+        if (name == "_")
+            ;
+        else if (Set.has(this.selectionRegisters, name))
+            dactyl.clipboardWrite(value.text, false, this.selectionRegisters[name]);
+        else if (!/^[0-9]$/.test(name))
+            this.registers.set(name, value);
+        else {
+            this.registerRing.insert(value, name);
+            this.registerRing.truncate(10);
+        }
     },
 
     get isCaret() modes.getStack(1).main == modes.CARET,
@@ -72,29 +163,43 @@ var Editor = Module("editor", {
             this.editor.setShouldTxnSetSelection(!val);
     },
 
-    pasteClipboard: function pasteClipboard(clipboard) {
-        let elem = this.element;
+    copy: function copy(range, name) {
+        range = range || this.selection;
 
-        let text = dactyl.clipboardRead(clipboard);
+        if (!range.collapsed)
+            this.setRegister(name, range);
+    },
+
+    cut: function cut(range, name) {
+        if (range)
+            this.selectedRange = range;
+
+        if (!this.selection.isCollapsed)
+            this.setRegister(name, this.selection);
+
+        this.editor.deleteSelection(0);
+    },
+
+    paste: function paste(name) {
+        let text = this.getRegister(name);
         dactyl.assert(text && this.editor instanceof Ci.nsIPlaintextEditor);
 
         this.editor.insertText(text);
     },
 
     // count is optional, defaults to 1
-    executeCommand: function (cmd, count) {
-        let controller = this.getController(cmd);
-        dactyl.assert(callable(cmd) ||
-                          controller &&
-                          controller.supportsCommand(cmd) &&
-                          controller.isCommandEnabled(cmd));
+    executeCommand: function executeCommand(cmd, count) {
+        if (!callable(cmd)) {
+            var controller = this.getController(cmd);
+            util.assert(controller &&
+                        controller.supportsCommand(cmd) &&
+                        controller.isCommandEnabled(cmd));
+            cmd = bind("doCommand", controller, cmd);
+        }
 
         // XXX: better as a precondition
         if (count == null)
             count = 1;
-
-        if (!callable(cmd))
-            cmd = bind("doCommand", controller, cmd);
 
         let didCommand = false;
         while (count--) {
@@ -363,7 +468,21 @@ var Editor = Module("editor", {
             range.setStart(range.startContainer, range.endOffset - abbrev.lhs.length);
             this.mungeRange(range, function () abbrev.expand(this.element), true);
         }
-    }
+    },
+
+    // nsIEditActionListener:
+    WillDeleteNode: util.wrapCallback(function WillDeleteNode(node) {
+        if (node.textContent)
+            this.setRegister(0, node);
+    }),
+    WillDeleteSelection: util.wrapCallback(function WillDeleteSelection(selection) {
+        if (!selection.isCollapsed)
+            this.setRegister(0, selection);
+    }),
+    WillDeleteText: util.wrapCallback(function WillDeleteText(node, start, length) {
+        if (length)
+            this.setRegister(0, node.textContent.substr(start, length));
+    })
 }, {
     TextsIterator: Class("TextsIterator", {
         init: function init(range, context, after) {
@@ -575,6 +694,38 @@ var Editor = Module("editor", {
             bases: [modes.INSERT]
         });
     },
+    commands: function init_commands() {
+        commands.add(["reg[isters]"],
+            "List the contents of known registers",
+            function (args) {
+                completion.listCompleter("register", args[0]);
+            },
+            { argCount: "*" });
+    },
+    completion: function init_completion() {
+        completion.register = function complete_register(context) {
+            context = context.fork("registers");
+            context.keys = { text: util.identity, description: editor.closure.getRegister };
+
+            context.match = function (r) !this.filter || ~this.filter.indexOf(r);
+
+            context.fork("clipboard", 0, this, function (ctxt) {
+                ctxt.match = context.match;
+                ctxt.title = ["Clipboard Registers"];
+                ctxt.completions = Object.keys(editor.selectionRegisters);
+            });
+            context.fork("kill-ring", 0, this, function (ctxt) {
+                ctxt.match = context.match;
+                ctxt.title = ["Kill Ring Registers"];
+                ctxt.completions = Array.slice("0123456789");
+            });
+            context.fork("user", 0, this, function (ctxt) {
+                ctxt.match = context.match;
+                ctxt.title = ["User Defined Registers"];
+                ctxt.completions = editor.registers.keys();
+            });
+        };
+    },
     mappings: function init_mappings() {
 
         Map.types["editor"] = {
@@ -676,9 +827,9 @@ var Editor = Module("editor", {
                 editor.executeCommand("cmd_selectLineNext");
         }
 
-        function updateRange(editor, forward, re, modify) {
+        function updateRange(editor, forward, re, modify, sameWord) {
             let range = Editor.extendRange(editor.selection.getRangeAt(0),
-                                           forward, re, false, editor.rootElement);
+                                           forward, re, sameWord, editor.rootElement);
             modify(range);
             editor.selection.removeAllRanges();
             editor.selection.addRange(range);
@@ -694,10 +845,11 @@ var Editor = Module("editor", {
                     parent.input();
             }
 
-        function move(forward, re)
+        function move(forward, re, sameWord)
             function _move(editor) {
                 updateRange(editor, forward, re,
-                            function (range) { range.collapse(!forward); });
+                            function (range) { range.collapse(!forward); },
+                            sameWord);
             }
         function select(forward, re)
             function _select(editor) {
@@ -706,7 +858,7 @@ var Editor = Module("editor", {
             }
         function beginLine(editor_) {
             editor.executeCommand("cmd_beginLine");
-            move(true, /\S/)(editor_);
+            move(true, /\s/, true)(editor_);
         }
 
         //             COUNT  CARET                   TEXT_EDIT            VISUAL_TEXT_EDIT
@@ -769,6 +921,7 @@ var Editor = Module("editor", {
                 function ({ command, count, motion }) {
                     let start = editor.selectedRange.cloneRange();
 
+                    editor._currentMap = null;
                     modes.push(modes.OPERATOR, null, {
                         forCommand: command,
 
@@ -786,6 +939,7 @@ var Editor = Module("editor", {
                                 doTxn(range, editor);
                             });
 
+                            editor.currentRegister = null;
                             modes.delay(function () {
                                 if (mode)
                                     modes.push(mode);
@@ -804,9 +958,9 @@ var Editor = Module("editor", {
             { count: true, type: "motion" });
         }
 
-        addMotionMap(["d", "x"], "Delete text", true,  function (editor) { editor.editor.cut(); });
-        addMotionMap(["c"],      "Change text", true,  function (editor) { editor.editor.cut(); }, modes.INSERT);
-        addMotionMap(["y"],      "Yank text",   false, function (editor, range) { dactyl.clipboardWrite(String(range)) });
+        addMotionMap(["d", "x"], "Delete text", true,  function (editor) { editor.cut(); });
+        addMotionMap(["c"],      "Change text", true,  function (editor) { editor.cut(); }, modes.INSERT);
+        addMotionMap(["y"],      "Yank text",   false, function (editor, range) { editor.copy(range); });
 
         addMotionMap(["gu"], "Lowercase text", false,
              function (editor, range) {
@@ -822,13 +976,13 @@ var Editor = Module("editor", {
             ["c", "d", "y"], "Select the entire line",
             function ({ command, count }) {
                 dactyl.assert(command == modes.getStack(0).params.forCommand);
-                editor.executeCommand("cmd_beginLine", 1);
-                editor.executeCommand("cmd_selectLineNext", count || 1);
-                let range = editor.selectedRange;
-                if (command == "c" && !range.collapsed) // Hack.
-                    if (range.endContainer instanceof Text &&
-                          range.endContainer.textContent[range.endOffset - 1] == "\n")
-                        editor.executeCommand("cmd_selectCharPrevious", 1);
+
+                let sel = editor.selection;
+                sel.modify("move", "backward", "lineboundary");
+                sel.modify("extend", "forward", "lineboundary");
+
+                if (command != "c")
+                    sel.modify("extend", "forward", "character");
             },
             { count: true, type: "operator" });
 
@@ -875,7 +1029,7 @@ var Editor = Module("editor", {
              function () { editor.executeCommand("cmd_deleteCharForward", 1); });
 
         bind(["<S-Insert>"], "Insert clipboard/selection",
-             function () { editor.pasteClipboard(); });
+             function () { editor.paste(); });
 
         mappings.add([modes.INPUT],
            ["<C-i>"], "Edit text field with an external editor",
@@ -1005,10 +1159,24 @@ var Editor = Module("editor", {
         bind(["p"], "Paste clipboard contents",
              function ({ count }) {
                 dactyl.assert(!editor.isCaret);
-                editor.executeCommand("cmd_paste", count || 1);
-                modes.pop(modes.TEXT_EDIT);
+                editor.executeCommand(modules.bind("paste", editor, null),
+                                      count || 1);
             },
             { count: true });
+
+        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
+            ['"'], "Bind a register to the next command",
+            function ({ arg }) {
+                editor.currentRegister = arg;
+            },
+            { arg: true });
+
+        mappings.add([modes.INPUT],
+            ["<C-'>", '<C-">'], "Bind a register to the next command",
+            function ({ arg }) {
+                editor.currentRegister = arg;
+            },
+            { arg: true });
 
         let bind = function bind(names, description, action, params)
             mappings.add([modes.TEXT_EDIT, modes.OPERATOR, modes.VISUAL],

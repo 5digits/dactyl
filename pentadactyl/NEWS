@@ -45,6 +45,8 @@
     • Text editing improvements, including:
       - Added t_gu, t_gU, and v_o mappings. [b8]
       - Added o_c, o_d, and o_y mappings. [b8]
+      - Added register and basic kill ring support, t_" and I_<C-'>
+        mappings, and :registers command. [b8]
       - Added operator modes and proper first class motion maps. [b8]
       - Improved undo support for most mappings. [b8]
     • General completion improvements

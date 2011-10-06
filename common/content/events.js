@@ -191,6 +191,13 @@ var Events = Module("events", {
         this.listen(window, this.popups, "events", true);
     },
 
+    cleanup: function cleanup() {
+        let elem = dactyl.focusedElement;
+        if (DOM(elem).isEditable)
+            util.trapErrors("removeEditActionListener",
+                            DOM(elem).editor, editor);
+    },
+
     signals: {
         "browser.locationChange": function (webProgress, request, uri) {
             options.get("passkeys").flush();
@@ -572,6 +579,10 @@ var Events = Module("events", {
     events: {
         blur: function onBlur(event) {
             let elem = event.originalTarget;
+            if (DOM(elem).isEditable)
+                util.trapErrors("removeEditActionListener",
+                                DOM(elem).editor, editor);
+
             if (elem instanceof Window && services.focus.activeWindow == null
                 && document.commandDispatcher.focusedWindow !== window) {
                 // Deals with circumstances where, after the main window
@@ -592,6 +603,9 @@ var Events = Module("events", {
         // TODO: Merge with onFocusChange
         focus: function onFocus(event) {
             let elem = event.originalTarget;
+            if (DOM(elem).isEditable)
+                util.trapErrors("addEditActionListener",
+                                DOM(elem).editor, editor);
 
             if (elem == window)
                 overlay.activeWindow = window;

@@ -1759,8 +1759,7 @@ var ItemList = Class("ItemList", {
     set visible(val) this.container.collapsed = !val,
 
     get activeGroups() this.context.contextList
-                           .filter(function (c) c.message || c.incomplete
-                                             || c.hasItems && c.items.length)
+                           .filter(function (c) c.message || c.incomplete || c.items.length)
                            .map(this.getGroup, this),
 
     get selected() let (g = this.selectedGroup) g && g.selectedIdx != null &&

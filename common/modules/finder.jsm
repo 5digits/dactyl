@@ -819,7 +819,7 @@ var RangeFind = Class("RangeFind", {
         let start = a.compareBoundaryPoints(a.START_TO_START, b) < 0 ? a : b;
         let end   = a.compareBoundaryPoints(a.END_TO_END, b) > 0 ? a : b;
         let res   = start.cloneRange();
-        res.setEnd(end.startContainer, end.endOffset);
+        res.setEnd(end.endContainer, end.endOffset);
         return res;
     }
 });

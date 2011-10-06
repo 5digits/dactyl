@@ -6,8 +6,6 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-try {
-
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("completion", {
     exports: ["CompletionContext", "Completion", "completion"]
@@ -221,7 +219,7 @@ var CompletionContext = Class("CompletionContext", {
     },
     get title() this.__title,
 
-    get activeContexts() this.contextList.filter(function (c) c.hasItems && c.items.length),
+    get activeContexts() this.contextList.filter(function (c) c.items.length),
 
     // Temporary
     /**
@@ -356,6 +354,7 @@ var CompletionContext = Class("CompletionContext", {
             yield ["context", function () self];
             yield ["result", quote ? function () quote[0] + util.trapErrors(1, quote, this.text) + quote[2]
                                    : function () this.text];
+            yield ["texts", function () Array.concat(this.text)];
         };
 
         for (let i in iter(this.keys, result(this.quote))) {
@@ -862,10 +861,9 @@ var CompletionContext = Class("CompletionContext", {
 
     Filter: {
         text: function (item) {
-            let text = item.texts || Array.concat(item.text);
+            let text = item.texts;
             for (let [i, str] in Iterator(text)) {
                 if (this.match(String(str))) {
-                    item.texts = text;
                     item.text = String(text[i]);
                     return true;
                 }
@@ -1063,11 +1061,13 @@ var Completion = Module("completion", {
             context.title[0] += " " + _("completion.additional");
             context.filter = context.parent.filter; // FIXME
             context.completions = context.parent.completions;
+
             // For items whose URL doesn't exactly match the filter,
             // accept them if all tokens match either the URL or the title.
             // Filter out all directly matching strings.
             let match = context.filters[0];
             context.filters[0] = function (item) !match.call(this, item);
+
             // and all that don't match the tokens.
             let tokens = context.filter.split(/\s+/);
             context.filters.push(function (item) tokens.every(
@@ -1209,6 +1209,6 @@ var Completion = Module("completion", {
 
 endModule();
 
-} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+// catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

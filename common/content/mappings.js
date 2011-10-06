@@ -134,6 +134,7 @@ var Map = Class("Map", {
                         false);
 
         try {
+            dactyl.triggerObserver("mappings.willExecute", this, args);
             this.preExecute(args);
             this.executing = true;
             var res = repeat();
