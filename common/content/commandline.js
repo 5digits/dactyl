@@ -1093,15 +1093,17 @@ var CommandLine = Module("commandline", {
                                  .filter(function (c) c.incomplete
                                                    || c.hasItems && c.items.length),
 
+        // TODO: Remove.
         get completion() {
             let str = commandline.command;
             return str.substring(this.prefix.length, str.length - this.suffix.length);
         },
         set completion(completion) {
+            this._completionItem = null;
             this.previewClear();
 
             // Change the completion text.
-            // The second line is a hack to deal with some substring
+            // The third line is a hack to deal with some substring
             // preview corner cases.
             let value = this.prefix + completion + this.suffix;
             commandline.widgets.active.command.value = value;
@@ -1113,6 +1115,16 @@ var CommandLine = Module("commandline", {
 
             this.input.dactylKeyPress = undefined;
             this._completion = completion;
+        },
+
+        get completionItem() this._completionItem,
+        set completionItem(tuple) {
+            let value = this.value;
+            if (tuple)
+                value = this.value.substr(0, tuple[0].offset - this.start)
+                      + tuple[0].items[tuple[1]].result;
+            this.completion = value;
+            this._completionItem = tuple;
         },
 
         get caret() this.editor.selection.getRangeAt(0).startOffset,
@@ -1211,6 +1223,7 @@ var CommandLine = Module("commandline", {
                 let cursor = this.selected;
                 if (cursor && cursor[0] == context) {
                     if (cursor[1] >= context.items.length
+                            // FIXME:
                             || this.completion != context.items[cursor[1]].result) {
                         this.selected = null;
                         this.itemList.select(null);
@@ -1351,11 +1364,11 @@ var CommandLine = Module("commandline", {
             if (idx == null || !this.activeContexts.length) {
                 // Wrapped. Start again.
                 this.selected = null;
-                this.completion = this.value;
+                this.completionItem = null;
             }
             else {
                 this.selected = idx;
-                this.completion = this.getItem().result;
+                this.completionItem = idx;
             }
 
             this.itemList.select(idx, null, position);

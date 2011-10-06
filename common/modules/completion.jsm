@@ -959,6 +959,7 @@ var Completion = Module("completion", {
 
         if (/^about:/.test(context.filter))
             context.fork("about", 6, this, function (context) {
+                context.title = ["about:"];
                 context.generate = function () {
                     return [[k.substr(services.ABOUT.length), ""]
                             for (k in Cc)
