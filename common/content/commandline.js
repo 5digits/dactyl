@@ -1609,28 +1609,32 @@ var CommandLine = Module("commandline", {
                  self.completions.onTab(keypressEvents[0]);
              });
 
-        bind(["<C-Tab>", "<A-f>", "<compl-next-group>"], "Select the next matching completion group",
+        bind(["<C-Tab>", "<A-f>", "<compl-next-group>"],
+             "Select the next matching completion group",
              function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
                  self.completions.tabTimer.flush();
                  self.completions.select(self.completions.CTXT_DOWN);
              });
 
-        bind(["<C-S-Tab>", "<A-S-f>", "<compl-prev-group>"], "Select the previous matching completion group",
+        bind(["<C-S-Tab>", "<A-S-f>", "<compl-prev-group>"],
+             "Select the previous matching completion group",
              function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
                  self.completions.tabTimer.flush();
                  self.completions.select(self.completions.CTXT_UP);
              });
 
-        bind(["<C-f>", "<PageDown>", "<compl-next-page>"], "Select the next page of completions",
+        bind(["<C-f>", "<PageDown>", "<compl-next-page>"],
+             "Select the next page of completions",
              function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
                  self.completions.tabTimer.flush();
                  self.completions.select(self.completions.PAGE_DOWN);
              });
 
-        bind(["<C-b>", "<PageUp>", "<compl-prev-page>"], "Select the previous page of completions",
+        bind(["<C-b>", "<PageUp>", "<compl-prev-page>"],
+             "Select the previous page of completions",
              function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
                  self.completions.tabTimer.flush();

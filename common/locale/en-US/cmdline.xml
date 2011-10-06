@@ -161,6 +161,23 @@
     </description>
 </item>
 
+<item>
+    <tags><![CDATA[c_<A-f> c_<C-Tab> c_<compl-next-group>]]></tags>
+    <spec>&lt;C-Tab></spec>
+    <description>
+        <p>Select the next matching completion group.</p>
+    </description>
+</item>
+
+<item>
+    <tags><![CDATA[c_<A-S-F> c_<C-S-Tab> c_<compl-prev-group>]]></tags>
+    <spec>&lt;C-S-Tab></spec>
+    <description>
+        <p>Select the previous matching completion group.</p>
+    </description>
+</item>
+
+
 <h2 tag="cmdline-lines">Ex command lines</h2>
 
 <item>

@@ -643,7 +643,7 @@ var CompletionContext = Class("CompletionContext", {
     getRow: function getRow(idx, doc) {
         let cache = this.cache.rows;
         if (cache) {
-            if (!(idx in this.cache.rows))
+            if (idx in this.items && !(idx in this.cache.rows))
                 try {
                     cache[idx] = util.xmlToDom(this.createRow(this.items[idx]),
                                                doc || this.doc);

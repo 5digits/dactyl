@@ -695,6 +695,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
         else if (obj instanceof Map) {
             spec = function (map) obj.count ? <><oa>count</oa>{map}</> : <>{map}</>;
+            tag = function (map) <>{
+                    let (c = obj.modes[0].char) c ? c + "_" : ""
+                }{ map }</>;
             link = function (map) {
                 let [, mode, name, extra] = /^(?:(.)_)?(?:<([^>]+)>)?(.*)$/.exec(map);
                 let k = <k>{extra}</k>;
