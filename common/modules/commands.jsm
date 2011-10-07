@@ -328,10 +328,14 @@ var Command = Class("Command", {
         });
 
         this.options.forEach(function (opt) {
-            if ("default" in opt)
-                Object.defineProperty(res, opt.names[0],
-                                      Object.getOwnPropertyDescriptor(opt, "default") ||
-                                          { configurable: true, enumerable: true, get: function () opt.default });
+            if (opt.default !== undefined) {
+                let prop = Object.getOwnPropertyDescriptor(opt, "default") ||
+                    { configurable: true, enumerable: true, get: function () opt.default };
+
+                if (prop.get && !prop.set)
+                    prop.set = function (val) { Class.replaceProperty(this, opt.names[0], val) };
+                Object.defineProperty(res, opt.names[0], prop);
+            }
         });
 
         return res;
