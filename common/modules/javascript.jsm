@@ -592,8 +592,10 @@ var JavaScript = Module("javascript", {
 
         // Wait for a keypress before completing when there's no key
         if (!this.context.tabPressed && key == "" && obj.length > 1) {
+            let message = this.context.message || "";
             this.context.waitingForTab = true;
-            this.context.message = _("completion.waitingForKeyPress");
+            this.context.message = <>{message}
+                                     {_("completion.waitingForKeyPress")}</>;
             return null;
         }
 
