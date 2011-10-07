@@ -883,6 +883,15 @@ var Events = Module("events", {
                 return;
             }
 
+            if (elem && Events.isInputElement(elem)) {
+                if (!haveInput)
+                    modes.push(modes.INSERT);
+
+                if (hasHTMLDocument(win))
+                    buffer.lastInputField = elem;
+                return;
+            }
+
             if (config.focusChange) {
                 config.focusChange(win);
                 return;
