@@ -368,15 +368,15 @@ var CommandMode = Class("CommandMode", {
             commandline.commandSession = null;
             this.input.dactylKeyPress = undefined;
 
+            let waiting = this.accepted && this.completions && this.completions.waiting;
+            if (waiting)
+                this.completions.onComplete = bind("onSubmit", this);
+
             if (this.completions)
                 this.completions.cleanup();
 
             if (this.history)
                 this.history.save();
-
-            let waiting = this.accepted && this.completions && this.completions.waiting;
-            if (waiting)
-                this.completions.onComplete = bind("onSubmit", this);
 
             commandline.hideCompletions();
 
@@ -1030,6 +1030,14 @@ var CommandLine = Module("commandline", {
      * @param {Object} input
      */
     Completions: Class("Completions", {
+        UP: {},
+        DOWN: {},
+        CTXT_UP: {},
+        CTXT_DOWN: {},
+        PAGE_UP: {},
+        PAGE_DOWN: {},
+        RESET: null,
+
         init: function init(input, session) {
             let self = this;
 
@@ -1039,7 +1047,6 @@ var CommandLine = Module("commandline", {
             this.editor = input.editor;
             this.input = input;
             this.session = session;
-            this.selected = null;
 
             this.wildmode = options.get("wildmode");
             this.wildtypes = this.wildmode.value;
@@ -1068,69 +1075,100 @@ var CommandLine = Module("commandline", {
         tabCount: 0,
 
         ignoredCount: 0,
+
+        /**
+         * @private
+         */
         onDoneFeeding: function onDoneFeeding() {
             if (this.ignoredCount)
                 this.autocompleteTimer.flush(true);
             this.ignoredCount = 0;
         },
 
+        /**
+         * @private
+         */
         onTab: function onTab(event) {
             this.tabCount += event.shiftKey ? -1 : 1;
             this.tabTimer.tell(event);
         },
 
-        UP: {},
-        DOWN: {},
-        CTXT_UP: {},
-        CTXT_DOWN: {},
-        PAGE_UP: {},
-        PAGE_DOWN: {},
-        RESET: null,
-
-        lastSubstring: "",
-
         get activeContexts() this.context.contextList
                                  .filter(function (c) c.incomplete
                                                    || c.hasItems && c.items.length),
 
-        // TODO: Remove.
+        /**
+         * Returns the current completion string relative to the
+         * offset of the currently selected context.
+         */
         get completion() {
-            let str = commandline.command;
-            return str.substring(this.prefix.length, str.length - this.suffix.length);
+            let offset = this.selected ? this.selected[0].offset : this.start;
+            return commandline.command.slice(offset, this.caret);
         },
-        set completion(completion) {
-            this._completionItem = null;
+
+        /**
+         * Updates the input field from *offset* to {@link #caret}
+         * with the value *value*. Afterward, the caret is moved
+         * just after the end of the updated text.
+         *
+         * @param {number} offset The offset in the original input
+         *      string at which to insert *value*.
+         * @param {string} value The value to insert.
+         */
+        setCompletion: function setCompletion(offset, value) {
             this.previewClear();
 
-            // Change the completion text.
-            // The third line is a hack to deal with some substring
-            // preview corner cases.
-            let value = this.prefix + completion + this.suffix;
-            commandline.widgets.active.command.value = value;
-            this.editor.selection.focusNode.textContent = value;
+            if (value == null)
+                var [input, caret] = [this.originalValue, this.originalCaret];
+            else {
+                input = this.getCompletion(offset, value);
+                caret = offset + value.length;
+            }
 
-            // Reset the caret to one position after the completion.
-            this.caret = this.prefix.length + completion.length;
+            // Change the completion text.
+            // The second line is a hack to deal with some substring
+            // preview corner cases.
+            commandline.widgets.active.command.value = input;
+            this.editor.selection.focusNode.textContent = input;
+
+            this.caret = caret;
             this._caret = this.caret;
 
             this.input.dactylKeyPress = undefined;
-            this._completion = completion;
         },
 
-        get completionItem() this._completionItem,
-        set completionItem(tuple) {
-            let value = this.value;
-            if (tuple)
-                value = this.value.substr(0, tuple[0].offset - this.start)
-                      + tuple[0].items[tuple[1]].result;
-            this.completion = value;
-            this._completionItem = tuple;
+        /**
+         * For a given offset and completion string, returns the
+         * full input value after selecting that item.
+         *
+         * @param {number} offset The offset at which to insert the
+         *      completion.
+         * @param {string} value The value to insert.
+         * @returns {string};
+         */
+        getCompletion: function getCompletion(offset, value) {
+            return this.originalValue.substr(0, offset)
+                 + value
+                 + this.originalValue.substr(this.originalCaret);
+        },
+
+        get selected() this.itemList.selected,
+        set selected(tuple) {
+            if (!array.equals(tuple || [],
+                              this.itemList.selected || []))
+                this.itemList.select(tuple);
+
+            if (!tuple)
+                this.setCompletion(null);
+            else {
+                let [ctxt, idx] = tuple;
+                this.setCompletion(ctxt.offset, ctxt.items[idx].result);
+            }
         },
 
         get caret() this.editor.selection.getRangeAt(0).startOffset,
         set caret(offset) {
-            this.editor.selection.getRangeAt(0).setStart(this.editor.rootElement.firstChild, offset);
-            this.editor.selection.getRangeAt(0).setEnd(this.editor.rootElement.firstChild, offset);
+            this.editor.selection.collapse(this.editor.rootElement.firstChild, offset);
         },
 
         get start() this.context.allItems.start,
@@ -1141,6 +1179,33 @@ var CommandLine = Module("commandline", {
 
         get wildtype() this.wildtypes[this.wildIndex] || "",
 
+        /**
+         * Cleanup resources used by this completion session. This
+         * instance should not be used again once this method is
+         * called.
+         */
+        cleanup: function cleanup() {
+            dactyl.unregisterObserver("events.doneFeeding", this.closure.onDoneFeeding);
+            this.previewClear();
+
+            this.tabTimer.reset();
+            this.autocompleteTimer.reset();
+            if (!this.onComplete)
+                this.context.cancelAll();
+
+            this.itemList.visible = false;
+            this.input.dactylKeyPress = undefined;
+            this.hasQuit = true;
+        },
+
+        /**
+         * Run the completer.
+         *
+         * @param {boolean} show Passed to {@link #reset}.
+         * @param {boolean} tabPressed Should be set to true if, and
+         *      only if, this function is being called in response
+         *      to a <Tab> press.
+         */
         complete: function complete(show, tabPressed) {
             this.session.ignoredCount = 0;
 
@@ -1156,32 +1221,33 @@ var CommandLine = Module("commandline", {
             this._caret = this.caret;
         },
 
-        cleanup: function () {
-            dactyl.unregisterObserver("events.doneFeeding", this.closure.onDoneFeeding);
-            this.previewClear();
-
-            this.tabTimer.reset();
-            this.autocompleteTimer.reset();
-            if (!this.onComplete)
-                this.context.cancelAll();
-
-            this.itemList.visible = false;
-            this.input.dactylKeyPress = undefined;
-            this.hasQuit = true;
-        },
-
-        saveInput: function saveInput() {
-            this.prefix = this.context.value.substring(0, this.start);
-            this.value  = this.context.value.substring(this.start, this.caret);
-            this.suffix = this.context.value.substring(this.caret);
-        },
-
+        /**
+         * Clear any preview string and cancel any pending
+         * asynchronous context. Called when there is further input
+         * to be processed.
+         */
         clear: function clear() {
             this.context.cancelAll();
             this.wildIndex = -1;
             this.previewClear();
         },
 
+        /**
+         * Saves the current input state. To be called before an
+         * item is selected in a new set of completion responses.
+         * @private
+         */
+        saveInput: function saveInput() {
+            this.originalValue = this.context.value;
+            this.originalCaret = this.caret;
+        },
+
+        /**
+         * Resets the completion state.
+         *
+         * @param {boolean} show If true and options allow the
+         *      completion list to be shown, show it.
+         */
         reset: function reset(show) {
             this.waiting = null;
             this.wildIndex = -1;
@@ -1193,18 +1259,26 @@ var CommandLine = Module("commandline", {
                 this.context.updateAsync = true;
                 if (this.haveType("list"))
                     this.itemList.visible = true;
-                this.selected = null;
                 this.wildIndex = 0;
             }
 
             this.preview();
         },
 
+        /**
+         * Calls when an asynchronous completion context has new
+         * results to return.
+         *
+         * @param {CompletionContext} context The changed context.
+         * @private
+         */
         asyncUpdate: function asyncUpdate(context) {
             if (this.hasQuit) {
                 let item = this.getItem(this.waiting);
                 if (item && this.waiting && this.onComplete) {
-                    this.onComplete(this.prefix + item.result + this.suffix);
+                    util.trapErrors("onComplete", this,
+                                    this.getCompletion(this.waiting[0].offset,
+                                                       item.result));
                     this.waiting = null;
                     this.context.cancelAll();
                 }
@@ -1222,26 +1296,49 @@ var CommandLine = Module("commandline", {
             else if (!this.waiting) {
                 let cursor = this.selected;
                 if (cursor && cursor[0] == context) {
-                    if (cursor[1] >= context.items.length
-                            // FIXME:
-                            || this.completion != context.items[cursor[1]].result) {
-                        this.selected = null;
+                    let item = this.getItem(cursor);
+                    if (!item || this.completion != item.result)
                         this.itemList.select(null);
-                    }
                 }
 
                 this.preview();
             }
         },
 
+        /**
+         * Returns true if the currently selected 'wildmode' index
+         * has the given completion type.
+         */
         haveType: function haveType(type)
             this.wildmode.checkHas(this.wildtype, type == "first" ? "" : type),
 
+        /**
+         * Returns the completion item for the given selection
+         * tuple.
+         *
+         * @param {[CompletionContext,number]} tuple The spec of the
+         *      item to return.
+         *      @default {@link #selected}
+         * @returns {object}
+         */
         getItem: function getItem(tuple) {
             tuple = tuple || this.selected;
             return tuple && tuple[0] && tuple[0].items[tuple[1]];
         },
 
+        /**
+         * Returns a tuple representing the next item, at the given
+         * *offset*, from *tuple*.
+         *
+         * @param {[CompletionContext,number]} tuple The offset from
+         *      which to search.
+         *      @default {@link #selected}
+         * @param {number} offset The positive or negative offset to
+         *      find.
+         *      @default 1
+         * @param {boolean} noWrap If true, and the search would
+         *      wrap, return null.
+         */
         nextItem: function nextItem(tuple, offset, noWrap) {
             if (tuple === undefined)
                 tuple = this.selected;
@@ -1249,6 +1346,17 @@ var CommandLine = Module("commandline", {
             return this.itemList.getRelativeItem(offset || 1, tuple, noWrap);
         },
 
+        /**
+         * The last previewed substring.
+         * @private
+         */
+        lastSubstring: "",
+
+        /**
+         * Displays a preview of the text provided by the next <Tab>
+         * press if the current input is an anchored substring of
+         * that result.
+         */
         preview: function preview() {
             this.previewClear();
             if (this.wildIndex < 0 || this.suffix || !this.activeContexts.length || this.waiting)
@@ -1273,7 +1381,7 @@ var CommandLine = Module("commandline", {
                 substring = this.getItem(cursor).result;
 
             // Don't show 1-character substrings unless we've just hit backspace
-            if (substring.length < 2 && this.lastSubstring.indexOf(substring) !== 0)
+            if (substring.length < 2 && this.lastSubstring.indexOf(substring))
                 return;
 
             this.lastSubstring = substring;
@@ -1293,11 +1401,14 @@ var CommandLine = Module("commandline", {
             });
         },
 
+        /**
+         * Clears the currently displayed next-<Tab> preview string.
+         */
         previewClear: function previewClear() {
             let node = this.editor.rootElement.firstChild;
             if (node && node.nextSibling) {
                 try {
-                    this.editor.deleteNode(node.nextSibling);
+                    DOM(node.nextSibling).remove();
                 }
                 catch (e) {
                     node.nextSibling.textContent = "";
@@ -1312,6 +1423,19 @@ var CommandLine = Module("commandline", {
             delete this.removeSubstring;
         },
 
+        /**
+         * Selects a completion based on the value of *idx*.
+         *
+         * @param {[CompletionContext,number]|const object} The
+         *      (context,index) tuple of the item to select, or an
+         *      offset constant from this object.
+         * @param {number} count When given an offset constant,
+         *      select *count* units.
+         *      @default 1
+         * @param {boolean} fromTab If true, this function was
+         *      called by {@link #tab}.
+         *      @private
+         */
         select: function select(idx, count, fromTab) {
             count = count || 1;
 
@@ -1361,17 +1485,8 @@ var CommandLine = Module("commandline", {
 
             this.waiting = null;
 
-            if (idx == null || !this.activeContexts.length) {
-                // Wrapped. Start again.
-                this.selected = null;
-                this.completionItem = null;
-            }
-            else {
-                this.selected = idx;
-                this.completionItem = idx;
-            }
-
             this.itemList.select(idx, null, position);
+            this.selected = idx;
 
             this.preview();
 
@@ -1383,6 +1498,16 @@ var CommandLine = Module("commandline", {
                                         this.itemList.itemCount);
         },
 
+        /**
+         * Selects a completion result based on the 'wildmode'
+         * option, or the value of the *wildmode* parameter.
+         *
+         * @param {number} offset The positive or negative number of
+         *      tab presses to process.
+         * @param {[string]} wildmode A 'wildmode' value to
+         *      substitute for the value of the 'wildmode' option.
+         *      @optional
+         */
         tab: function tab(offset, wildmode) {
             this.autocompleteTimer.flush();
             this.ignoredCount = 0;
@@ -1408,9 +1533,9 @@ var CommandLine = Module("commandline", {
                     this.select(this.nextItem(null));
                     break;
                 case "longest":
-                    if (this.items.length > 1) {
+                    if (this.itemList.itemCount > 1) {
                         if (this.substring && this.substring.length > this.completion.length)
-                            this.completion = this.substring;
+                            this.setCompletion(this.start, this.substring);
                         break;
                     }
                     // Fallthrough
@@ -1589,6 +1714,9 @@ var CommandLine = Module("commandline", {
 
         bind(["<Return>", "<C-j>", "<C-m>"], "Accept the current input",
              function ({ self }) {
+                 if (self.completions)
+                     self.completions.tabTimer.flush();
+
                  let command = commandline.command;
 
                  self.accepted = true;
@@ -1775,8 +1903,8 @@ var ItemList = Class("ItemList", {
                            .filter(function (c) c.message || c.incomplete || c.items.length)
                            .map(this.getGroup, this),
 
-    get selected() let (g = this.selectedGroup) g && g.selectedIdx != null &&
-        [g.context, g.selectedIdx],
+    get selected() let (g = this.selectedGroup) g && g.selectedIdx != null
+        ? [g.context, g.selectedIdx] : null,
 
     getRelativeItem: function getRelativeItem(offset, tuple, noWrap) {
         let groups = this.activeGroups;
@@ -1848,6 +1976,12 @@ var ItemList = Class("ItemList", {
         return res;
     },
 
+    /**
+     * Initializes the ItemList for use with a new root completion
+     * context.
+     *
+     * @param {CompletionContext} context The new root context.
+     */
     open: function open(context) {
         this.context = context;
         this.nodes = {};
@@ -1861,6 +1995,11 @@ var ItemList = Class("ItemList", {
         this.update();
     },
 
+    /**
+     * Updates the absolute result indices of all groups after
+     * results have changed.
+     * @private
+     */
     updateOffsets: function updateOffsets() {
         let total = this.itemCount;
         let count = 0;
@@ -1870,6 +2009,10 @@ var ItemList = Class("ItemList", {
         }
     },
 
+    /**
+     * Updates the set and state of active groups for a new set of
+     * completion results.
+     */
     update: function update() {
         DOM(this.nodes.completions).empty();
 
@@ -1890,6 +2033,13 @@ var ItemList = Class("ItemList", {
         this._resize.tell();
     },
 
+    /**
+     * Updates the group for *context* after an asynchronous update
+     * push.
+     *
+     * @param {CompletionContext} context The context which has
+     *      changed.
+     */
     updateContext: function updateContext(context) {
         let group = this.getGroup(context);
         this.updateOffsets();
@@ -1906,6 +2056,10 @@ var ItemList = Class("ItemList", {
         this.select(g, g && g.selectedIdx);
     },
 
+    /**
+     * Updates the DOM to reflect the current state of all groups.
+     * @private
+     */
     draw: function draw() {
         for each (let group in this.activeGroups)
             group.draw();
@@ -1926,6 +2080,11 @@ var ItemList = Class("ItemList", {
     },
 
     minHeight: 0,
+
+    /**
+     * Resizes the list after an update.
+     * @private
+     */
     resize: function resize(flags) {
         let { completions, root } = this.nodes;
 
@@ -1958,6 +2117,21 @@ var ItemList = Class("ItemList", {
         }
     },
 
+    /**
+     * Selects the item at the given *group* and *index*.o
+     *
+     * @param {CompletionContext|[CompletionContext,number]} *group* The
+     *      completion context to select, or a tuple specifying the
+     *      context and item index.
+     * @param {number} index The item index in *group* to select.
+     * @param {number} position If non-null, try to position the
+     *      selected item at the *position*th row from the top of
+     *      the screen. Note that at least {@link #CONTEXT_LINES}
+     *      lines will be visible above an below the selected item
+     *      unless there are insufficient results to make this
+     *      possible.
+     *      @optional
+     */
     select: function select(group, index, position) {
         if (isArray(group))
             [group, index] = group;
@@ -2012,6 +2186,13 @@ var ItemList = Class("ItemList", {
         this.draw();
     },
 
+    /**
+     * Returns an ItemList group for the given completion context,
+     * creating one if necessary.
+     *
+     * @param {CompletionContext} context
+     * @returns {ItemList.Group}
+     */
     getGroup: function getGroup(context)
         context instanceof ItemList.Group ? context
                                           : context && context.getCache("itemlist-group",
@@ -2054,6 +2235,11 @@ var ItemList = Class("ItemList", {
 
         get itemCount() this.context.items.length,
 
+        /**
+         * Returns a function which will update the scroll offsets
+         * and heights of various DOM members.
+         * @private
+         */
         get rescrollFunc() {
             let container = this.nodes.itemsContainer;
             let pos    = DOM(container).rect.top;
@@ -2076,6 +2262,9 @@ var ItemList = Class("ItemList", {
             }
         },
 
+        /**
+         * Reset this group for use with a new set of results.
+         */
         reset: function reset() {
             this.nodes = {};
             this.generatedRange = ItemList.Range(0, 0);
@@ -2083,6 +2272,9 @@ var ItemList = Class("ItemList", {
             DOM.fromXML(this.rootXML, this.doc, this.nodes);
         },
 
+        /**
+         * Update this group after an asynchronous results push.
+         */
         update: function update() {
             this.generatedRange = ItemList.Range(0, 0);
             DOM(this.nodes.items).empty();
@@ -2094,6 +2286,11 @@ var ItemList = Class("ItemList", {
                 this.selectedIdx = null;
         },
 
+        /**
+         * Updates the DOM to reflect the current state of this
+         * group.
+         * @private
+         */
         draw: function draw() {
             DOM(this.nodes.contents).toggle(!this.collapsed);
             if (this.collapsed)

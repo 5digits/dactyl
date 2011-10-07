@@ -231,26 +231,34 @@ var CompletionContext = Class("CompletionContext", {
      * @deprecated
      */
     get allItems() {
+        let self = this;
+
         try {
-            let self = this;
-            let allItems = this.contextList.map(function (context) context.hasItems && context.items);
+            let allItems = this.contextList.map(function (context) context.hasItems && context.items.length);
             if (this.cache.allItems && array.equals(this.cache.allItems, allItems))
                 return this.cache.allItemsResult;
             this.cache.allItems = allItems;
 
-            let minStart = Math.min.apply(Math, [context.offset for ([k, context] in Iterator(this.contexts)) if (context.hasItems && context.items.length)]);
+            let minStart = Math.min.apply(Math, this.activeContexts.map(function (c) c.offset));
             if (minStart == Infinity)
                 minStart = 0;
-            let items = this.activeContexts.map(function (context) {
-                let prefix = self.value.substring(minStart, context.offset);
-                return context.items.map(function (item) ({
-                    text: prefix + item.text,
-                    result: prefix + item.result,
-                    __proto__: item
-                }));
+
+            this.cache.allItemsResult = memoize({
+                start: minStart,
+
+                get longestSubstring() self.longestAllSubstring,
+
+                get items() array.flatten(self.activeContexts.map(function (context) {
+                    let prefix = self.value.substring(minStart, context.offset);
+
+                    return context.items.map(function (item) ({
+                        text: prefix + item.text,
+                        result: prefix + item.result,
+                        __proto__: item
+                    }));
+                }))
             });
-            this.cache.allItemsResult = { start: minStart, items: array.flatten(items) };
-            memoize(this.cache.allItemsResult, "longestSubstring", function () self.longestAllSubstring);
+
             return this.cache.allItemsResult;
         }
         catch (e) {
