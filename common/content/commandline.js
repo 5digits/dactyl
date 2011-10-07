@@ -942,12 +942,9 @@ var CommandLine = Module("commandline", {
             if (/^\s*$/.test(str))
                 return;
             this.store = this.store.filter(function (line) (line.value || line) != str);
-            try {
+            dactyl.trapErrors(function () {
                 this.store.push({ value: str, timestamp: Date.now()*1000, privateData: this.checkPrivate(str) });
-            }
-            catch (e) {
-                dactyl.reportError(e);
-            }
+            }, this);
             this.store = this.store.slice(-options["history"]);
         },
         /**

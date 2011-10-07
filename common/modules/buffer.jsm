@@ -514,7 +514,8 @@ var Buffer = Module("Buffer", {
             rect = { x: rect.left, y: 0, width: rect.width, height: win.innerHeight };
         }
         else {
-            rect = { x: win.innerWidth / 2, y: 0, width: 0, height: 0 };
+            let w = win.innerWidth;
+            rect = { x: w / 2 - w / 10, y: 0, width: w / 5, height: win.innerHeight };
         }
 
         var reduce = function (a, b) DOM(a).rect.top < DOM(b).rect.top ? a : b;
@@ -529,29 +530,31 @@ var Buffer = Module("Buffer", {
         let ranges = getRanges(rect);
         if (!ranges.length)
             ranges = getRanges({ x: 0, y: y, width: win.innerWidth, height: 0 });
-        if (!ranges.length && !sel.rangeCount)
-            ranges = [RangeFind.nodeContents(doc.body || doc.querySelector("body") || doc.documentElement)];
-        if (!ranges.length)
-            return;
 
-        range = ranges.reduce(reduce);
+        if (ranges.length) {
+            range = ranges.reduce(reduce);
 
-        if (range) {
-            range.collapse(!reverse);
-            sel.removeAllRanges();
-            sel.addRange(range);
-            do {
-                if (visible(range).height > 0)
-                    break;
+            if (range) {
+                range.collapse(!reverse);
+                sel.removeAllRanges();
+                sel.addRange(range);
+                do {
+                    if (visible(range).height > 0)
+                        break;
 
-                var { startContainer, startOffset } = range;
-                sel.modify("move", dir, "line");
-                range = sel.getRangeAt(0);
+                    var { startContainer, startOffset } = range;
+                    sel.modify("move", dir, "line");
+                    range = sel.getRangeAt(0);
+                }
+                while (startContainer != range.startContainer || startOffset != range.startOffset);
+
+                sel.modify("move", reverse ? "forward" : "backward", "lineboundary");
             }
-            while (startContainer != range.startContainer || startOffset != range.startOffset);
-
-            sel.modify("move", reverse ? "forward" : "backward", "lineboundary");
         }
+
+        if (!sel.rangeCount)
+            sel.collapse(doc.body || doc.querySelector("body") || doc.documentElement,
+                         0);
     },
 
     /**

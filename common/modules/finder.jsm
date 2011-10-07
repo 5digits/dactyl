@@ -95,7 +95,7 @@ var RangeFinder = Module("rangefinder", {
 
         this.options["findflags"].forEach(function (f) replacer(f, f));
 
-        str = str.replace(/\\(.|$)/g, replacer);
+        let pattern = str.replace(/\\(.|$)/g, replacer);
 
         // It's possible, with :tabdetach for instance, for the rangeFind to
         // actually move from one window to another, which breaks things.
@@ -114,7 +114,9 @@ var RangeFinder = Module("rangefinder", {
             this.rangeFind.highlighted = highlighted;
             this.rangeFind.selections = selections;
         }
-        return this.lastFindPattern = str;
+        if (str)
+            this.lastFindPattern = str;
+        return pattern;
     },
 
     find: function (pattern, backwards) {
@@ -168,6 +170,12 @@ var RangeFinder = Module("rangefinder", {
     },
 
     onSubmit: function (command) {
+        if (!command && this.lastFindPattern) {
+            this.find(this.lastFindPattern, this.backward);
+            this.findAgain();
+            return;
+        }
+
         if (!this.options["incfind"] || !this.rangeFind || !this.rangeFind.found) {
             this.clear();
             this.find(command || this.lastFindPattern, this.backward);
