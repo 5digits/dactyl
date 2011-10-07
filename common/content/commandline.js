@@ -2122,7 +2122,7 @@ var ItemList = Class("ItemList", {
     },
 
     /**
-     * Selects the item at the given *group* and *index*.o
+     * Selects the item at the given *group* and *index*.
      *
      * @param {CompletionContext|[CompletionContext,number]} *group* The
      *      completion context to select, or a tuple specifying the
@@ -2131,9 +2131,8 @@ var ItemList = Class("ItemList", {
      * @param {number} position If non-null, try to position the
      *      selected item at the *position*th row from the top of
      *      the screen. Note that at least {@link #CONTEXT_LINES}
-     *      lines will be visible above an below the selected item
-     *      unless there are insufficient results to make this
-     *      possible.
+     *      lines will be visible above and below the selected item
+     *      unless there aren't enough results to make this possible.
      *      @optional
      */
     select: function select(group, index, position) {

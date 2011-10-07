@@ -1200,7 +1200,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             });
 
         mappings.add([modes.VISUAL],
-            ["o"], "Focus the other end of the selection",
+            ["o"], "Move cursor to the other end of the selection",
             function () {
                 if (editor.isTextEdit)
                     var selection = editor.selection;
