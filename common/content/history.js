@@ -7,28 +7,36 @@
 "use strict";
 
 var History = Module("history", {
+    SORT_DEFAULT: "-date",
+
     get format() bookmarks.format,
 
     get service() services.history,
 
-    get: function get(filter, maxItems, order) {
+    get: function get(filter, maxItems, sort) {
+        sort = sort || this.SORT_DEFAULT;
+
+        if (isString(filter))
+            filter = { searchTerms: filter };
+
         // no query parameters will get all history
         let query = services.history.getNewQuery();
         let options = services.history.getNewQueryOptions();
 
-        if (typeof filter == "string")
-            filter = { searchTerms: filter };
         for (let [k, v] in Iterator(filter))
             query[k] = v;
 
-        let _order = /^([+-])(.+)/.exec(order || "+date");
-        dactyl.assert(_order, _("error.invalidSort", order));
+        let res = /^([+-])(.+)/.exec(sort);
+        dactyl.assert(res, _("error.invalidSort", sort));
 
-        _order = "SORT_BY_" + _order[2].toUpperCase() + "_" +
-                    (_order[1] == "+" ? "ASCENDING" : "DESCENDING");
-        dactyl.assert(_order in options, _("error.invalidSort", order));
+        let [, dir, field] = res;
+        let _sort = "SORT_BY_" + field.toUpperCase() + "_" +
+                    { "+": "ASCENDING", "-": "DESCENDING" }[dir];
 
-        options.sortingMode = options[_order];
+        dactyl.assert(_sort in options,
+                      _("error.invalidSort", sort));
+
+        options.sortingMode = options[_sort];
         options.resultType = options.RESULTS_AS_URI;
         if (maxItems > 0)
             options.maxResults = maxItems;

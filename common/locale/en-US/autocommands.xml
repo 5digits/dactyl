@@ -95,11 +95,11 @@
 
 <p>Enable <em>Pass Through</em> mode on <em>some</em> Google sites:</p>
 
-<code><ex>:autocmd LocationChange</ex> <str delim="'">^https?://(www|mail)\.google\.com/</str> <ex>:normal!</ex> <k name="C-z"/></code>
+<code><ex>:autocmd LocationChange</ex> <str delim="">www.google.com</str>,<str delim="">mail.google.com</str> <ex>:normal!</ex> <k name="C-z"/></code>
 
 <p>or</p>
 
-<code><ex>:autocmd LocationChange</ex> <str delim="">www.google.com</str>,<str delim="">mail.google.com</str> <ex>:normal!</ex> <k name="C-z"/></code>
+<code><ex>:autocmd LocationChange</ex> <str delim="'">^https?://(www|mail)\.google\.com/</str> <ex>:normal!</ex> <k name="C-z"/></code>
 
 <p>Set the filetype to mail when editing email at Gmail:</p>
 

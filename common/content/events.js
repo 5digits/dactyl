@@ -879,16 +879,7 @@ var Events = Module("events", {
                         }
 
                 if (hasHTMLDocument(win))
-                    buffer.lastInputField = elem;
-                return;
-            }
-
-            if (elem && Events.isInputElement(elem)) {
-                if (!haveInput)
-                    modes.push(modes.INSERT);
-
-                if (hasHTMLDocument(win))
-                    buffer.lastInputField = elem;
+                    buffer.lastInputField = elem || win;
                 return;
             }
 
