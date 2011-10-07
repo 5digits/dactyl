@@ -135,7 +135,8 @@ Dense              /* Arbitrary elements which should be packed densely together
                    margin-top: 0; margin-bottom: 0;
 
 EditorEditing;;*   /* Text fields for which an external editor is open */ \
-                   -moz-user-input: none !important; -moz-user-modify: read-only !important;
+                   -moz-user-input: none !important; -moz-user-modify: read-only !important; \
+                   background-color: #bbb !important;
 *EditorEditing>*;;*  background-color: #bbb !important;
 EditorError;;*     /* Text fields briefly after an error has occurred running the external editor */ \
                    background: red !important;

@@ -440,6 +440,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 tmpfile.remove(false);
 
             if (textBox) {
+                DOM(textBox).highlight.remove("EditorEditing");
                 if (!keepFocus)
                     dactyl.focus(textBox);
                 for (let group in values(blink.concat(blink, ""))) {
@@ -478,9 +479,9 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 throw Error(_("io.cantCreateTempFile"));
 
             if (textBox) {
-                DOM(textBox).highlight.add("EditorEditing");
                 if (!keepFocus)
                     textBox.blur();
+                DOM(textBox).highlight.add("EditorEditing");
             }
 
             if (!tmpfile.write(text))
@@ -779,14 +780,18 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
 
         Map.types["editor"] = {
             preExecute: function preExecute(args) {
-                if (editor.editor)
-                    editor.editor.beginTransaction();
+                if (editor.editor && !this.editor) {
+                    this.editor = editor.editor;
+                    this.editor.beginTransaction();
+                }
                 editor.inEditMap = true;
             },
             postExecute: function preExecute(args) {
                 editor.inEditMap = false;
-                if (editor.editor)
-                    editor.editor.endTransaction();
+                if (this.editor) {
+                    this.editor.endTransaction();
+                    this.editor = null;
+                }
             },
         };
         Map.types["operator"] = {
