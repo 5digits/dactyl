@@ -1278,6 +1278,21 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                        }</dl>
                    </overlay>;
         });
+
+        cache.register("help/privacy.xml", function () {
+            default xml namespace = NS;
+
+            return '<?xml version="1.0"?>\n' +
+                   <overlay xmlns={NS}>
+                       <dl insertafter="sanitize-items">{
+                       template.map(options.get("sanitizeitems").values
+                           .sort(function (a, b) String.localeCompare(a.name, b.name)),
+                           function ({ name, description })
+                           <><dt>{name}</dt><dd>{template.linkifyHelp(description, true)}</dd></>,
+                           <>{"\n"}</>)
+                       }</dl>
+                   </overlay>;
+        });
     },
     events: function () {
         events.listen(window, dactyl, "events", true);

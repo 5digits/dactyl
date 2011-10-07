@@ -56,25 +56,7 @@
             Items may be any of:
         </p>
 
-        <dl>
-            <!-- TODO: autogenerate -->
-            <dt>all         </dt>       <dd>All items</dd>
-            <dt>cache       </dt>       <dd>Cache</dd>
-            <dt>commandline </dt>       <dd>Command-line history</dd>
-            <dt>cookies     </dt>       <dd>Cookies</dd>
-            <dt>downloads   </dt>       <dd>Download history</dd>
-            <dt>formdata    </dt>       <dd>Saved form and search history</dd>
-            <dt>history     </dt>       <dd>Browsing history</dd>
-            <dt>host        </dt>       <dd>All data from the given host</dd>
-            <dt>marks       </dt>       <dd>Local and URL marks</dd>
-            <dt>messages    </dt>       <dd>Saved <ex>:messages</ex></dd>
-            <dt>offlineapps </dt>       <dd>Offline website data</dd>
-            <dt>options     </dt>       <dd>Options containing hostname data</dd>
-            <dt>passwords   </dt>       <dd>Saved passwords</dd>
-            <dt>registers   </dt>       <dd>Register values</dd>
-            <dt>sessions    </dt>       <dd>Authenticated sessions</dd>
-            <dt>sitesettings</dt>       <dd>Site preferences</dd>
-        </dl>
+        <dl tag="sanitize-items"/>
 
         <p>
             Items may be excluded by prefixing them with a <tt>!</tt>. The first
