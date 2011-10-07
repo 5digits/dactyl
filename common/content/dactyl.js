@@ -65,6 +65,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     destroy: function () {
+        this.observe.unregister();
         autocommands.trigger("LeavePre", {});
         dactyl.triggerObserver("shutdown", null);
         util.dump("All dactyl modules destroyed\n");
@@ -98,9 +99,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     this.trapErrors("destroy", mod, reason);
             }
 
-            for (let mod in values(modules.ownPropertyValues.reverse()))
-                if (mod instanceof Class && "INIT" in mod && "cleanup" in mod.INIT)
-                    this.trapErrors(mod.cleanup, mod, dactyl, modules, window, reason);
+            modules.moduleManager.initDependencies("cleanup");
 
             for (let name in values(Object.getOwnPropertyNames(modules).reverse()))
                 try {
@@ -1129,7 +1128,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return func.apply(self || this, Array.slice(arguments, 2));
         }
         catch (e) {
-            dactyl.reportError(e, true);
+            try {
+                dactyl.reportError(e, true);
+            }
+            catch (e) {
+                util.reportError(e);
+            }
             return e;
         }
     },
