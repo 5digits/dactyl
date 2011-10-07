@@ -966,11 +966,15 @@ var CommandLine = Module("commandline", {
          * @param {string} val The new value.
          */
         replace: function replace(val) {
-            this.input.dactylKeyPress = undefined;
-            if (this.completions)
-                this.completions.previewClear();
-            this.input.value = val;
-            this.session.onHistory(val);
+            editor.withSavedValues(["skipSave"], function () {
+                editor.skipSave = true;
+
+                this.input.dactylKeyPress = undefined;
+                if (this.completions)
+                    this.completions.previewClear();
+                this.input.value = val;
+                this.session.onHistory(val);
+            }, this);
         },
 
         /**
@@ -1116,25 +1120,28 @@ var CommandLine = Module("commandline", {
          * @param {string} value The value to insert.
          */
         setCompletion: function setCompletion(offset, value) {
-            this.previewClear();
+            editor.withSavedValues(["skipSave"], function () {
+                editor.skipSave = true;
+                this.previewClear();
 
-            if (value == null)
-                var [input, caret] = [this.originalValue, this.originalCaret];
-            else {
-                input = this.getCompletion(offset, value);
-                caret = offset + value.length;
-            }
+                if (value == null)
+                    var [input, caret] = [this.originalValue, this.originalCaret];
+                else {
+                    input = this.getCompletion(offset, value);
+                    caret = offset + value.length;
+                }
 
-            // Change the completion text.
-            // The second line is a hack to deal with some substring
-            // preview corner cases.
-            commandline.widgets.active.command.value = input;
-            this.editor.selection.focusNode.textContent = input;
+                // Change the completion text.
+                // The second line is a hack to deal with some substring
+                // preview corner cases.
+                commandline.widgets.active.command.value = input;
+                this.editor.selection.focusNode.textContent = input;
 
-            this.caret = caret;
-            this._caret = this.caret;
+                this.caret = caret;
+                this._caret = this.caret;
 
-            this.input.dactylKeyPress = undefined;
+                this.input.dactylKeyPress = undefined;
+            }, this);
         },
 
         /**

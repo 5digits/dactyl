@@ -45,6 +45,8 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
     get registers() storage.newMap("registers", { privateData: true, store: true }),
     get registerRing() storage.newArray("register-ring", { privateData: true, store: true }),
 
+    skipSave: false,
+
     // Fixme: Move off this object.
     currentRegister: null,
 
@@ -519,15 +521,15 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
 
     // nsIEditActionListener:
     WillDeleteNode: util.wrapCallback(function WillDeleteNode(node) {
-        if (node.textContent)
+        if (!editor.skipSave && node.textContent)
             this.setRegister(0, node);
     }),
     WillDeleteSelection: util.wrapCallback(function WillDeleteSelection(selection) {
-        if (!selection.isCollapsed)
+        if (!editor.skipSave && !selection.isCollapsed)
             this.setRegister(0, selection);
     }),
     WillDeleteText: util.wrapCallback(function WillDeleteText(node, start, length) {
-        if (length)
+        if (!editor.skipSave && length)
             this.setRegister(0, node.textContent.substr(start, length));
     })
 }, {
