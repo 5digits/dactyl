@@ -1759,69 +1759,6 @@ var Buffer = Module("Buffer", {
             context.completions = [[title, href.join(", ")] for ([title, href] in Iterator(styles))];
         };
 
-        completion.buffer = function buffer(context, visible) {
-            let { tabs } = modules;
-
-            let filter = context.filter.toLowerCase();
-
-            let defItem = { parent: { getTitle: function () "" } };
-
-            let tabGroups = {};
-            tabs.getGroups();
-            tabs[visible ? "visibleTabs" : "allTabs"].forEach(function (tab, i) {
-                let group = (tab.tabItem || tab._tabViewTabItem || defItem).parent || defItem.parent;
-                if (!Set.has(tabGroups, group.id))
-                    tabGroups[group.id] = [group.getTitle(), []];
-
-                group = tabGroups[group.id];
-                group[1].push([i, tab.linkedBrowser]);
-            });
-
-            context.pushProcessor(0, function (item, text, next) <>
-                <span highlight="Indicator" style="display: inline-block;">{item.indicator}</span>
-                { next.call(this, item, text) }
-            </>);
-            context.process[1] = function (item, text) template.bookmarkDescription(item, template.highlightFilter(text, this.filter));
-
-            context.anchored = false;
-            context.keys = {
-                text: "text",
-                description: "url",
-                indicator: function (item) item.tab === tabs.getTab()  ? "%" :
-                                           item.tab === tabs.alternate ? "#" : " ",
-                icon: "icon",
-                id: "id",
-                command: function () "tabs.select"
-            };
-            context.compare = CompletionContext.Sort.number;
-            context.filters[0] = CompletionContext.Filter.textDescription;
-
-            for (let [id, vals] in Iterator(tabGroups))
-                context.fork(id, 0, this, function (context, [name, browsers]) {
-                    context.title = [name || "Buffers"];
-                    context.generate = function ()
-                        Array.map(browsers, function ([i, browser]) {
-                            let indicator = " ";
-                            if (i == tabs.index())
-                                indicator = "%";
-                            else if (i == tabs.index(tabs.alternate))
-                                indicator = "#";
-
-                            let tab = tabs.getTab(i, visible);
-                            let url = browser.contentDocument.location.href;
-                            i = i + 1;
-
-                            return {
-                                text: [i + ": " + (tab.label || /*L*/"(Untitled)"), i + ": " + url],
-                                tab: tab,
-                                id: i,
-                                url: url,
-                                icon: tab.image || BookmarkCache.DEFAULT_FAVICON
-                            };
-                        });
-                }, vals);
-        };
-
         completion.savePage = function savePage(context, node) {
             context.fork("generated", context.filter.replace(/[^/]*$/, "").length,
                          this, function (context) {

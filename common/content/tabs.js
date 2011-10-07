@@ -232,16 +232,21 @@ var Tabs = Module("tabs", {
      *
      * @returns {Window}
      */
-    getGroups: function getGroups() {
-        if ("_groups" in this)
-            return this._groups;
-
-        if (window.TabView && TabView._initFrame)
-            TabView._initFrame();
-
+    getGroups: function getGroups(func) {
         let iframe = document.getElementById("tab-view");
         this._groups = iframe ? iframe.contentWindow : null;
-        if (this._groups)
+
+        if ("_groups" in this && !func)
+            return this._groups;
+
+        if (func)
+            func = bind(function (func) { func(this._groups) }, this, func);
+
+        if (window.TabView && TabView._initFrame)
+            TabView._initFrame(func);
+
+        this._groups = iframe ? iframe.contentWindow : null;
+        if (this._groups && !func)
             util.waitFor(function () this._groups.TabItems, this);
         return this._groups;
     },
@@ -598,10 +603,10 @@ var Tabs = Module("tabs", {
         services.sessionStore.setTabState(to, tabState);
     }
 }, {
-    load: function () {
+    load: function init_load() {
         tabs.updateTabCount();
     },
-    commands: function () {
+    commands: function init_commands() {
         [
             {
                 name: ["bd[elete]"],
@@ -895,50 +900,71 @@ var Tabs = Module("tabs", {
                                   _("error.trailingCharacters"));
 
                     let [winIndex, tabIndex] = args.map(function (arg) parseInt(arg));
+                    if (args["-group"]) {
+                        util.assert(args.length == 1);
+                        window.TabView.moveTabTo(tabs.getTab(), winIndex);
+                        return;
+                    }
+
                     let win = dactyl.windows[winIndex - 1];
+                    let sourceTab = tabs.getTab();
 
                     dactyl.assert(win, _("window.noIndex", winIndex));
                     dactyl.assert(win != window, _("window.cantAttachSame"));
 
-                    let browser = win.getBrowser();
+                    let modules     = win.dactyl.modules;
+                    let { browser } = modules.config;
 
                     if (args[1]) {
-                        let tabList = browser.visibleTabs || browser.mTabs;
+                        let tabList = modules.tabs.visibleTabs;
                         let target  = dactyl.assert(tabList[tabIndex]);
-                        tabIndex = Array.indexOf(browser.mTabs, target) - 1;
+                        tabIndex = Array.indexOf(tabs.allTabs, target) - 1;
                     }
 
-                    let dummy = browser.addTab("about:blank");
+                    let newTab = browser.addTab("about:blank");
                     browser.stop();
                     // XXX: the implementation of DnD in tabbrowser.xml suggests
                     // that we may not be guaranteed of having a docshell here
                     // without this reference?
                     browser.docShell;
 
-                    let last = browser.mTabs.length - 1;
+                    let last = modules.tabs.allTabs.length - 1;
 
                     if (args[1])
-                        browser.moveTabTo(dummy, tabIndex);
-                    browser.selectedTab = dummy; // required
-                    browser.swapBrowsersAndCloseOther(dummy, config.tabbrowser.mCurrentTab);
+                        browser.moveTabTo(newTab, tabIndex);
+                    browser.selectedTab = newTab; // required
+                    browser.swapBrowsersAndCloseOther(newTab, sourceTab);
                 }, {
                     argCount: "+",
                     literal: 1,
                     completer: function (context, args) {
                         switch (args.completeArg) {
                         case 0:
-                            context.filters.push(function ({ item }) item != window);
-                            completion.window(context);
+                            if (args["-group"])
+                                completion.tabGroup(context);
+                            else {
+                                context.filters.push(function ({ item }) item != window);
+                                completion.window(context);
+                            }
                             break;
                         case 1:
-                            let win = dactyl.windows[Number(args[0]) - 1];
-                            if (!win || !win.dactyl)
-                                context.message = _("Error", _("window.noIndex", winIndex));
-                            else
-                                win.dactyl.modules.commands.get("tabmove").completer(context);
+                            if (!args["-group"]) {
+                                let win = dactyl.windows[Number(args[0]) - 1];
+                                if (!win || !win.dactyl)
+                                    context.message = _("Error", _("window.noIndex", winIndex));
+                                else
+                                    win.dactyl.modules.commands.get("tabmove").completer(context);
+                            }
                             break;
                         }
-                    }
+                    },
+                    options: [
+                        {
+                            names: ["-group", "-g"],
+                            description: "Attach to a group rather than a window",
+                            type: CommandOption.NOARG
+                        }
+                    ]
                 });
         }
 
@@ -995,7 +1021,88 @@ var Tabs = Module("tabs", {
                 { argCount: "0" });
         }
     },
-    events: function () {
+    completion: function init_completion() {
+
+        completion.buffer = function buffer(context, visible) {
+            let { tabs } = modules;
+
+            let filter = context.filter.toLowerCase();
+
+            let defItem = { parent: { getTitle: function () "" } };
+
+            let tabGroups = {};
+            tabs.getGroups();
+            tabs[visible ? "visibleTabs" : "allTabs"].forEach(function (tab, i) {
+                let group = (tab.tabItem || tab._tabViewTabItem || defItem).parent || defItem.parent;
+                if (!Set.has(tabGroups, group.id))
+                    tabGroups[group.id] = [group.getTitle(), []];
+
+                group = tabGroups[group.id];
+                group[1].push([i, tab.linkedBrowser]);
+            });
+
+            context.pushProcessor(0, function (item, text, next) <>
+                <span highlight="Indicator" style="display: inline-block;">{item.indicator}</span>
+                { next.call(this, item, text) }
+            </>);
+            context.process[1] = function (item, text) template.bookmarkDescription(item, template.highlightFilter(text, this.filter));
+
+            context.anchored = false;
+            context.keys = {
+                text: "text",
+                description: "url",
+                indicator: function (item) item.tab === tabs.getTab()  ? "%" :
+                                           item.tab === tabs.alternate ? "#" : " ",
+                icon: "icon",
+                id: "id",
+                command: function () "tabs.select"
+            };
+            context.compare = CompletionContext.Sort.number;
+            context.filters[0] = CompletionContext.Filter.textDescription;
+
+            for (let [id, vals] in Iterator(tabGroups))
+                context.fork(id, 0, this, function (context, [name, browsers]) {
+                    context.title = [name || "Buffers"];
+                    context.generate = function ()
+                        Array.map(browsers, function ([i, browser]) {
+                            let indicator = " ";
+                            if (i == tabs.index())
+                                indicator = "%";
+                            else if (i == tabs.index(tabs.alternate))
+                                indicator = "#";
+
+                            let tab = tabs.getTab(i, visible);
+                            let url = browser.contentDocument.location.href;
+                            i = i + 1;
+
+                            return {
+                                text: [i + ": " + (tab.label || /*L*/"(Untitled)"), i + ": " + url],
+                                tab: tab,
+                                id: i,
+                                url: url,
+                                icon: tab.image || BookmarkCache.DEFAULT_FAVICON
+                            };
+                        });
+                }, vals);
+        };
+
+        completion.tabGroup = function tabGroup(context) {
+            context.title = ["Tab Groups"];
+            context.keys = {
+                text: "id",
+                description: function (group) group.getTitle() ||
+                    group.getChildren().map(function (t) t.tab.label).join(", ")
+            };
+            context.generate = function () {
+                context.incomplete = true;
+                tabs.getGroups(function ({ GroupItems }) {
+                    context.incomplete = false;
+                    context.completions = GroupItems.groupItems;
+                });
+            };
+        };
+    },
+    events: function init_events() {
         let tabContainer = config.tabbrowser.mTabContainer;
         function callback() {
             tabs.timeout(function () { this.updateTabCount(); });
@@ -1004,7 +1111,7 @@ var Tabs = Module("tabs", {
             events.listen(tabContainer, event, callback, false);
         events.listen(tabContainer, "TabSelect", tabs.closure._onTabSelect, false);
     },
-    mappings: function () {
+    mappings: function init_mappings() {
 
         mappings.add([modes.COMMAND], ["<C-t>", "<new-tab-next>"],
             "Execute the next mapping in a new tab",
@@ -1096,7 +1203,7 @@ var Tabs = Module("tabs", {
                 { count: true });
         }
     },
-    options: function () {
+    options: function init_options() {
         options.add(["showtabline", "stal"],
             "Define when the tab bar is visible",
             "string", true,

@@ -286,6 +286,16 @@
             buffer list. If this is the last buffer in a window, the window
             will be closed.
         </p>
+
+        <p>The following options are available:</p>
+
+        <dl dt="width: 8em;">
+            <dt>-group</dt>
+            <dd>
+                Attach to a tab group in the current window rather than to a
+                separate window.
+                (short name <em>-g</em>).
+            </dd>
     </description>
 </item>
 
