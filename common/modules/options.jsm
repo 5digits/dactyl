@@ -863,8 +863,10 @@ var Options = Module("options", {
                             option.pre = "no";
                         option.default = (opt.defaultValue ? "" : "no") + opt.name;
                     }
-                    else if (isArray(opt.value))
-                        option.value = <>={template.map(opt.value, function (v) template.highlight(String(v)), <>,<span style="width: 0; display: inline-block"> </span></>)}</>;
+                    else if (isArray(opt.value) && opt.type != "charlist")
+                        option.value = <>={template.map(opt.value,
+                            function (v) template.highlight(String(v)),
+                            <>,<span style="width: 0; display: inline-block"> </span></>)}</>;
                     else
                         option.value = <>={template.highlight(opt.stringValue)}</>;
                     yield option;
