@@ -786,7 +786,7 @@ var Buffer = Module("Buffer", {
      * @param {boolean} offScreen If true, include only off-screen elements. @optional
      */
     findJump: function findJump(arg, count, reverse, offScreen) {
-        let { options } = this.modules;
+        let { marks, options } = this.modules;
 
         const FUDGE = 10;
 
@@ -844,7 +844,6 @@ var Buffer = Module("Buffer", {
         let next = current + count;
         if (next < 0 || next >= frames.length)
             util.dactyl.beep();
-            dactyl.beep();
         next = Math.constrain(next, 0, frames.length - 1);
 
         // focus next frame and scroll into view
