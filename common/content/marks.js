@@ -42,7 +42,7 @@ var Marks = Module("marks", {
 
         params.location = doc.documentURI.replace(/#.*/, ""),
         params.offset = buffer.scrollPosition;
-        params.path = DOM(buffer.findScrollable(0, params.offset.x)).xpath;
+        params.path = DOM(buffer.findScrollable(0, false)).xpath;
         params.timestamp = Date.now() * 1000;
         params.equals = function (m) this.location == m.location
                                   && this.offset.x == m.offset.x

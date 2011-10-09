@@ -1482,12 +1482,12 @@ var Buffer = Module("Buffer", {
      *
      * @param {Element} elem The element to scroll.
      */
-    getScrollPosition: function getPosition(elem) {
-        let style = DOM(elem).style;
+    getScrollPosition: function getPosition(node) {
+        let style = DOM(node.body || node).style;
 
-        elem = Buffer.Scrollable(elem);
+        let elem = Buffer.Scrollable(node);
         return {
-            x: elem.scrollLeft && elem.scrollLeft / this._exWidth(elem),
+            x: elem.scrollLeft && elem.scrollLeft / this._exWidth(node),
             y: elem.scrollTop / parseFloat(style.lineHeight)
         }
     },
