@@ -963,7 +963,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         addBeginInsertModeMap(["S"],             ["cmd_deleteToEndOfLine", "cmd_deleteToBeginningOfLine"], "Delete the current line and start insert");
         addBeginInsertModeMap(["C"],             ["cmd_deleteToEndOfLine"], "Delete from the cursor to the end of the line and start insert");
 
-        function addMotionMap(key, desc, select, cmd, mode) {
+        function addMotionMap(key, desc, select, cmd, mode, caretOk) {
             function doTxn(range, editor) {
                 try {
                     editor.editor.beginTransaction();
@@ -1007,18 +1007,21 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 },
                 { count: true, type: "motion" });
 
-        mappings.add([modes.VISUAL], key,
-            desc,
-            function ({ count,  motion }) {
-                dactyl.assert(editor.isTextEdit);
-                doTxn(editor.selectedRange, editor);
-            },
-            { count: true, type: "motion" });
+            mappings.add([modes.VISUAL], key,
+                desc,
+                function ({ count,  motion }) {
+                    dactyl.assert(caretOk || editor.isTextEdit);
+                    if (modes.isTextEdit)
+                        doTxn(editor.selectedRange, editor);
+                    else
+                        cmd(editor, buffer.selection.getRangeAt(0));
+                },
+                { count: true, type: "motion" });
         }
 
         addMotionMap(["d", "x"], "Delete text", true,  function (editor) { editor.cut(); });
         addMotionMap(["c"],      "Change text", true,  function (editor) { editor.cut(); }, modes.INSERT);
-        addMotionMap(["y"],      "Yank text",   false, function (editor, range) { editor.copy(range); });
+        addMotionMap(["y"],      "Yank text",   false, function (editor, range) { editor.copy(range); }, null, true);
 
         addMotionMap(["gu"], "Lowercase text", false,
              function (editor, range) {

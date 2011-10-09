@@ -558,6 +558,11 @@ var Buffer = Module("Buffer", {
     },
 
     /**
+     * @property {nsISelection} The current document's normal selection.
+     */
+    get selection() this.win.getSelection(),
+
+    /**
      * @property {nsISelectionController} The current document's selection
      *     controller.
      */
