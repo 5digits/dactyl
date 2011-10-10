@@ -341,7 +341,7 @@ var Mappings = Module("mappings", {
             this._watchStack = 0;
 
         this.watches = this.watches.filter(function (elem) {
-            if (elem[2] <= this._watchStack)
+            if (this._watchStack <= elem[2])
                 elem[3]--;
             if (elem[3] <= 0)
                 elem[0].call(elem[1] || null);

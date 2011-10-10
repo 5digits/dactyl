@@ -325,6 +325,11 @@ var MOW = Module("mow", {
                 mow.echo(mow.lastOutput, "Normal");
             });
 
+        mappings.add([modes.OUTPUT_MULTILINE],
+            ["<Esc>", "<C-[>"],
+            "Return to the previous mode",
+            function () { modes.pop(null, { fromEscape: true }); });
+
         let bind = function bind(keys, description, action, test, default_) {
             mappings.add([modes.OUTPUT_MULTILINE],
                 keys, description,

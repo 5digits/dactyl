@@ -17,8 +17,6 @@ var HintSession = Class("HintSession", CommandMode, {
 
         opts = opts || {};
 
-        this.forceOpen = opts.forceOpen || dactyl.forceOpen;
-
         if (!opts.window)
             opts.window = modes.getStack(0).params.window;
 
@@ -36,6 +34,7 @@ var HintSession = Class("HintSession", CommandMode, {
         this.usedTabKey = false;
         this.validHints = []; // store the indices of the "hints" array with valid elements
 
+        mappings.pushCommand();
         this.open();
 
         this.top = opts.window || content;
@@ -99,6 +98,8 @@ var HintSession = Class("HintSession", CommandMode, {
         leave.superapply(this, arguments);
 
         if (!stack.push) {
+            mappings.popCommand();
+
             if (hints.hintSession == this)
                 hints.hintSession = null;
             if (this.top) {
@@ -500,18 +501,17 @@ var HintSession = Class("HintSession", CommandMode, {
                 this.timeout(next, 50);
         }).call(this);
 
+        mappings.pushCommand();
         if (!this.continue) {
             modes.pop();
             if (timeout)
                 modes.push(modes.IGNORE, modes.HINTS);
         }
 
-        dactyl.withSavedValues(["forceOpen"], function () {
-            dactyl.forceOpen = this.forceOpen;
-            dactyl.trapErrors("action", this.hintMode,
-                              elem, elem.href || elem.src || "",
-                              this.extendedhintCount, top);
-        }, this);
+        dactyl.trapErrors("action", this.hintMode,
+                          elem, elem.href || elem.src || "",
+                          this.extendedhintCount, top);
+        mappings.popCommand();
 
         this.timeout(function () {
             if (modes.main == modes.IGNORE && !this.continue)
@@ -757,8 +757,8 @@ var Hints = Module("hints", {
         this.addMode("S", "Add a search keyword",                 function (elem) bookmarks.addSearchKeyword(elem));
         this.addMode("v", "View hint source",                     function (elem, loc) buffer.viewSource(loc, false));
         this.addMode("V", "View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true));
-        this.addMode("y", "Yank hint location",                   function (elem, loc) dactyl.clipboardWrite(loc, true));
-        this.addMode("Y", "Yank hint description",                function (elem) dactyl.clipboardWrite(elem.textContent || "", true));
+        this.addMode("y", "Yank hint location",                   function (elem, loc) editor.setRegister(null, loc, true));
+        this.addMode("Y", "Yank hint description",                function (elem) editor.setRegister(null, elem.textContent || "", true));
         this.addMode("c", "Open context menu",                    function (elem) DOM(elem).contextmenu());
         this.addMode("i", "Show image",                           function (elem) dactyl.open(elem.src));
         this.addMode("I", "Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB));
@@ -1036,18 +1036,19 @@ var Hints = Module("hints", {
         this._extendedhintCount = opts.count;
 
         opts = opts || {};
-        if (!Set.has(opts, "forceOpen"))
-            opts.forceOpen = dactyl.forceOpen;
 
-        commandline.input(["Normal", mode], "", {
+        mappings.pushCommand();
+        commandline.input(["Normal", mode], null, {
             autocomplete: false,
             completer: function (context) {
                 context.compare = function () 0;
                 context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints.modes))];
             },
+            onCancel: mappings.closure.popCommand,
             onSubmit: function (arg) {
                 if (arg)
                     hints.show(arg, opts);
+                mappings.popCommand();
             },
             onChange: function (arg) {
                 if (Object.keys(hints.modes).some(function (m) m != arg && m.indexOf(arg) == 0))
@@ -1216,42 +1217,45 @@ var Hints = Module("hints", {
         });
     },
     mappings: function () {
-        var myModes = config.browserModes.concat(modes.OUTPUT_MULTILINE);
-        mappings.add(myModes, ["f"],
+        let bind = function bind(names, description, action, params)
+            mappings.add(config.browserModes, names, description,
+                         action, params);
+
+        bind(["f"],
             "Start Hints mode",
             function () { hints.show("o"); });
 
-        mappings.add(myModes, ["F"],
+        bind(["F"],
             "Start Hints mode, but open link in a new tab",
             function () { hints.show(options.get("activate").has("links") ? "t" : "b"); });
 
-        mappings.add(myModes, [";"],
+        bind([";"],
             "Start an extended hints mode",
             function ({ count }) { hints.open(";", { count: count }); },
             { count: true });
 
-        mappings.add(myModes, ["g;"],
+        bind(["g;"],
             "Start an extended hints mode and stay there until <Esc> is pressed",
             function ({ count }) { hints.open("g;", { continue: true, count: count }); },
             { count: true });
 
-        mappings.add(modes.HINTS, ["<Return>"],
+        bind(["<Return>"],
             "Follow the selected hint",
             function ({ self }) { self.update(true); });
 
-        mappings.add(modes.HINTS, ["<Tab>"],
+        bind(["<Tab>"],
             "Focus the next matching hint",
             function ({ self }) { self.tab(false); });
 
-        mappings.add(modes.HINTS, ["<S-Tab>"],
+        bind(["<S-Tab>"],
             "Focus the previous matching hint",
             function ({ self }) { self.tab(true); });
 
-        mappings.add(modes.HINTS, ["<BS>", "<C-h>"],
+        bind(["<BS>", "<C-h>"],
             "Delete the previous character",
             function ({ self }) self.backspace());
 
-        mappings.add(modes.HINTS, ["<Leader>"],
+        bind(["<Leader>"],
             "Toggle hint filtering",
             function ({ self }) { self.escapeNumbers = !self.escapeNumbers; });
     },
