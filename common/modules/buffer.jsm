@@ -1377,6 +1377,11 @@ var Buffer = Module("Buffer", {
         if (node.dactylScrollTimer)
             node.dactylScrollTimer.cancel();
 
+        if (x == null)
+            x = elem.scrollLeft;
+        if (y == null)
+            y = elem.scrollTop;
+
         x = node.dactylScrollDestX = Math.min(x, elem.scrollWidth  - elem.clientWidth);
         y = node.dactylScrollDestY = Math.min(y, elem.scrollHeight - elem.clientHeight);
         let [startX, startY] = [elem.scrollLeft, elem.scrollTop];
