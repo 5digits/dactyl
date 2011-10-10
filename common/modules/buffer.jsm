@@ -1102,9 +1102,6 @@ var Buffer = Module("Buffer", {
         let { dactyl, statusline } = this.modules;
         let { ZoomManager } = this;
 
-        util.assert(value >= Buffer.ZOOM_MIN || value <= Buffer.ZOOM_MAX,
-                    _("zoom.outOfRange", Buffer.ZOOM_MIN, Buffer.ZOOM_MAX));
-
         if (fullZoom === undefined)
             fullZoom = ZoomManager.useFullZoom;
         else
@@ -1761,10 +1758,8 @@ var Buffer = Module("Buffer", {
                     level = 100;
                 else if (/^\d+$/.test(arg))
                     level = parseInt(arg, 10);
-                else if (/^[+-]\d+$/.test(arg)) {
+                else if (/^[+-]\d+$/.test(arg))
                     level = Math.round(buffer.zoomLevel + parseInt(arg, 10));
-                    level = Math.constrain(level, Buffer.ZOOM_MIN, Buffer.ZOOM_MAX);
-                }
                 else
                     dactyl.assert(false, _("error.trailingCharacters"));
 
