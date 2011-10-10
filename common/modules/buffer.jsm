@@ -175,7 +175,10 @@ var Buffer = Module("Buffer", {
      * @property {number} The current browser's zoom level, as a
      *     percentage with 100 as 'normal'.
      */
-    get zoomLevel() this.contentViewer[this.fullZoom ? "fullZoom" : "textZoom"] * 100,
+    get zoomLevel() {
+        let v = this.contentViewer;
+        return v[v.textZoom == 1 ? "fullZoom" : "textZoom"] * 100
+    },
     set zoomLevel(value) { this.setZoom(value, this.fullZoom); },
 
     /**
@@ -1162,7 +1165,7 @@ var Buffer = Module("Buffer", {
             fullZoom = ZoomManager.useFullZoom;
 
         let values = ZoomManager.zoomValues;
-        let cur = values.indexOf(ZoomManager.snap(this.zoom));
+        let cur = values.indexOf(ZoomManager.snap(this.zoomLevel / 100));
         let i = Math.constrain(cur + steps, 0, values.length - 1);
 
         util.assert(i != cur || fullZoom != ZoomManager.useFullZoom);

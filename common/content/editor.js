@@ -1229,7 +1229,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             },
             { count: true });
 
-        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
+        mappings.add([modes.COMMAND],
             ['"'], "Bind a register to the next command",
             function ({ arg }) {
                 editor.currentRegister = arg;
