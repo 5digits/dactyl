@@ -1139,7 +1139,7 @@ var Buffer = Module("Buffer", {
 
         if (services.has("contentPrefs") && prefs.get("browser.zoom.siteSpecific"))
             services.contentPrefs.getPref(uri, "dactyl.content.full-zoom", function (val) {
-                if (uri.equals(self.uri) && val != prefs.get("browser.zoom.full"))
+                if (val != null && uri.equals(self.uri) && val != prefs.get("browser.zoom.full"))
                     [self.contentViewer.textZoom, self.contentViewer.fullZoom] =
                         [self.contentViewer.fullZoom, self.contentViewer.textZoom];
             });
