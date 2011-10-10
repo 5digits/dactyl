@@ -135,6 +135,7 @@ var Map = Class("Map", {
 
         try {
             dactyl.triggerObserver("mappings.willExecute", this, args);
+            mappings.pushCommand();
             this.preExecute(args);
             this.executing = true;
             var res = repeat();
@@ -145,6 +146,7 @@ var Map = Class("Map", {
         }
         finally {
             this.executing = false;
+            mappings.popCommand();
             this.postExecute(args);
             dactyl.triggerObserver("mappings.executed", this, args);
         }
@@ -320,6 +322,31 @@ var MapHive = Class("MapHive", Contexts.Hive, {
  */
 var Mappings = Module("mappings", {
     init: function () {
+        this.watches = [];
+        this._watchStack = 0;
+        this._yielders = 0;
+    },
+
+    afterCommands: function afterCommands(count, cmd, self) {
+        this.watches.push([cmd, self, Math.max(this._watchStack - 1, 0), count || 1]);
+    },
+
+    pushCommand: function pushCommand(cmd) {
+        this._watchStack++;
+        this._yielders = util.yielders;
+    },
+    popCommand: function popCommand(cmd) {
+        this._watchStack = Math.max(this._watchStack - 1, 0);
+        if (util.yielders > this._yielders)
+            this._watchStack = 0;
+
+        this.watches = this.watches.filter(function (elem) {
+            if (elem[2] <= this._watchStack)
+                elem[3]--;
+            if (elem[3] <= 0)
+                elem[0].call(elem[1] || null);
+            return elem[3] > 0;
+        }, this);
     },
 
     repeat: Modes.boundProperty(),

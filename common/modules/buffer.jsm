@@ -1247,7 +1247,7 @@ var Buffer = Module("Buffer", {
             return "";
 
         let range = selection.getRangeAt(0).cloneRange();
-        if (range.collapsed && range.startContainer instanceof Ci.nsIDOMText) {
+        if (range.collapsed) {
             let re = options.get("iskeyword").regexp;
             Editor.extendRange(range, true,  re, true);
             Editor.extendRange(range, false, re, true);
@@ -1824,7 +1824,7 @@ var Buffer = Module("Buffer", {
         events.listen(config.browser, "scroll", buffer.closure._updateBufferPosition, false);
     },
     mappings: function initMappings(dactyl, modules, window) {
-        let { Editor, Events, buffer, events, ex, mappings, modes, options, tabs } = modules;
+        let { Editor, Events, buffer, editor, events, ex, mappings, modes, options, tabs } = modules;
 
         mappings.add([modes.NORMAL],
             ["y", "<yank-location>"], "Yank current location to the clipboard",
@@ -2094,7 +2094,7 @@ var Buffer = Module("Buffer", {
             function () {
                 let sel = buffer.currentWord;
                 dactyl.assert(sel);
-                dactyl.clipboardWrite(sel, true);
+                editor.setRegister(null, sel, true);
             });
 
         // zooming

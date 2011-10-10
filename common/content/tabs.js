@@ -54,15 +54,8 @@ var Tabs = Module("tabs", {
         enter: function enter() {
             if (window.TabsInTitlebar)
                 window.TabsInTitlebar.allowedBy("dactyl", true);
-        },
-
-        "mappings.executed": function mappings_executed() {
-            if (this._mappingCount && !--this._mappingCount)
-                dactyl.forceTarget = null;
-        },
+        }
     },
-
-    _mappingCount: 0,
 
     _alternates: Class.Memoize(function () [config.tabbrowser.mCurrentTab, null]),
 
@@ -1116,8 +1109,10 @@ var Tabs = Module("tabs", {
         mappings.add([modes.COMMAND], ["<C-t>", "<new-tab-next>"],
             "Execute the next mapping in a new tab",
             function ({ count }) {
-                tabs._mappingCount = (count || 1) + 1;
                 dactyl.forceTarget = dactyl.NEW_TAB;
+                mappings.afterCommands((count || 1) + 1, function () {
+                    dactyl.forceTarget = null;
+                });
             },
             { count: true });
 

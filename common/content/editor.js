@@ -26,22 +26,6 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             });
     },
 
-    signals: {
-        "mappings.willExecute": function mappings_willExecute(map) {
-            if (this.currentRegister && !(this._currentMap && this._wait == util.yielders)) {
-                this._currentMap = map;
-                this._wait = util.yielders;
-            }
-        },
-        "mappings.executed": function mappings_executed(map) {
-            if (this._currentMap == map) {
-                this.currentRegister = null;
-                this._wait = util.yielders;
-                this._currentMap = null;
-            }
-        }
-    },
-
     get registers() storage.newMap("registers", { privateData: true, store: true }),
     get registerRing() storage.newArray("register-ring", { privateData: true, store: true }),
 
@@ -49,6 +33,18 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
 
     // Fixme: Move off this object.
     currentRegister: null,
+
+    /**
+     * Temporarily set the default register for the span of the next
+     * mapping.
+     */
+    pushRegister: function pushRegister(arg) {
+        let restore = this.currentRegister;
+        this.currentRegister = arg;
+        mappings.afterCommands(2, function () {
+            this.currentRegister = restore;
+        }, this);
+    },
 
     defaultRegister: "*",
 
@@ -97,7 +93,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
      * @param {string|Range|Selection|Node} value The value to save to
      *      the register.
      */
-    setRegister: function setRegister(name, value) {
+    setRegister: function setRegister(name, value, verbose) {
         if (name == null)
             name = editor.currentRegister || editor.defaultRegister;
 
@@ -110,7 +106,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         if (name == "_")
             ;
         else if (Set.has(this.selectionRegisters, name))
-            dactyl.clipboardWrite(value.text, false, this.selectionRegisters[name]);
+            dactyl.clipboardWrite(value.text, verbose, this.selectionRegisters[name]);
         else if (!/^[0-9]$/.test(name))
             this.registers.set(name, value);
         else {
@@ -608,21 +604,21 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         }
     }),
 
-    extendRange: function extendRange(range, forward, re, sameWord, root) {
+    extendRange: function extendRange(range, forward, re, sameWord, root, end) {
         function advance(positive) {
             while (true) {
                 while (idx == text.length && (node = iterator.getNext())) {
                     if (node == iterator.start)
-                        idx = range.endOffset;
+                        idx = range[offset];
 
-                    offset = text.length;
+                    start = text.length;
                     text += node.textContent;
-                    range.setEnd(node, idx - offset);
+                    range[set](node, idx - start);
                 }
 
                 if (idx >= text.length || re.test(text[idx]) != positive)
                     break;
-                range.setEnd(range.endContainer, ++idx - offset);
+                range[set](range[container], ++idx - start);
             }
         }
         function retreat(positive) {
@@ -630,21 +626,26 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 while (idx == 0 && (node = iterator.getPrev())) {
                     let str = node.textContent;
                     if (node == iterator.start)
-                        idx = range.startOffset;
+                        idx = range[offset];
                     else
                         idx = str.length;
 
                     text = str + text;
-                    range.setStart(node, idx);
+                    range[set](node, idx);
                 }
                 if (idx == 0 || re.test(text[idx - 1]) != positive)
                     break;
-                range.setStart(range.startContainer, --idx);
+                range[set](range[container], --idx);
             }
         }
 
+        if (end == null)
+            end = forward ? "end" : "start";
+        let [container, offset, set] = [end + "Container", end + "Offset",
+                                        "set" + util.capitalize(end)];
+
         if (!root)
-            for (root = range.startContainer;
+            for (root = range[container];
                  root.parentNode instanceof Element && !DOM(root).isEditable;
                  root = root.parentNode)
                 ;
@@ -653,13 +654,13 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         if (root instanceof Ci.nsIEditor)
             root = root.rootElement;
 
-        let node = range[forward ? "endContainer" : "startContainer"];
+        let node = range[container];
         let iterator = Editor.TextsIterator(RangeFind.nodeContents(root),
                                             node, !forward);
 
         let text = "";
         let idx  = 0;
-        let offset = 0;
+        let start = 0;
 
         if (forward) {
             advance(true);
@@ -886,11 +887,17 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         }
 
         function updateRange(editor, forward, re, modify, sameWord) {
-            let range = Editor.extendRange(editor.selection.getRangeAt(0),
-                                           forward, re, sameWord, editor.rootElement);
+            let sel   = editor.selection;
+            let range = sel.getRangeAt(0);
+
+            let end = range.endContainer == sel.focusNode && range.endOffset == sel.focusOffset;
+            if (range.collapsed)
+                end = forward;
+
+            Editor.extendRange(range, forward, re, sameWord,
+                               editor.rootElement, end ? "end" : "start");
             modify(range);
-            editor.selection.removeAllRanges();
-            editor.selection.addRange(range);
+            editor.selectionController.repaintSelection(editor.selectionController.SELECTION_NORMAL);
         }
 
         function clear(forward, re)
@@ -979,29 +986,35 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 function ({ command, count, motion }) {
                     let start = editor.selectedRange.cloneRange();
 
-                    editor._currentMap = null;
+                    mappings.pushCommand();
                     modes.push(modes.OPERATOR, null, {
                         forCommand: command,
 
                         count: count,
 
                         leave: function leave(stack) {
-                            if (stack.push || stack.fromEscape)
-                                return;
+                            try {
+                                if (stack.push || stack.fromEscape)
+                                    return;
 
-                            editor.withSavedValues(["inEditMap"], function () {
-                                this.inEditMap = true;
+                                editor.withSavedValues(["inEditMap"], function () {
+                                    this.inEditMap = true;
 
-                                let range = RangeFind.union(start, editor.selectedRange);
-                                editor.selectedRange = select ? range : start;
-                                doTxn(range, editor);
-                            });
+                                    let range = RangeFind.union(start, editor.selectedRange);
+                                    editor.selectedRange = select ? range : start;
+                                    doTxn(range, editor);
+                                });
 
-                            editor.currentRegister = null;
-                            modes.delay(function () {
-                                if (mode)
-                                    modes.push(mode);
-                            });
+                                editor.currentRegister = null;
+                                modes.delay(function () {
+                                    if (mode)
+                                        modes.push(mode);
+                                });
+                            }
+                            finally {
+                                if (!stack.push)
+                                    mappings.popCommand();
+                            }
                         }
                     });
                 },
@@ -1011,7 +1024,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 desc,
                 function ({ count,  motion }) {
                     dactyl.assert(caretOk || editor.isTextEdit);
-                    if (modes.isTextEdit)
+                    if (editor.isTextEdit)
                         doTxn(editor.selectedRange, editor);
                     else
                         cmd(editor, buffer.selection.getRangeAt(0));
@@ -1232,14 +1245,14 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         mappings.add([modes.COMMAND],
             ['"'], "Bind a register to the next command",
             function ({ arg }) {
-                editor.currentRegister = arg;
+                editor.pushRegister(arg);
             },
             { arg: true });
 
         mappings.add([modes.INPUT],
             ["<C-'>", '<C-">'], "Bind a register to the next command",
             function ({ arg }) {
-                editor.currentRegister = arg;
+                editor.pushRegister(arg);
             },
             { arg: true });
 
