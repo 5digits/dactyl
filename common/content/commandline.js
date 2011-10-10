@@ -1095,8 +1095,7 @@ var CommandLine = Module("commandline", {
         },
 
         get activeContexts() this.context.contextList
-                                 .filter(function (c) c.incomplete
-                                                   || c.hasItems && c.items.length),
+                                 .filter(function (c) c.items.length || c.incomplete),
 
         /**
          * Returns the current completion string relative to the
@@ -1899,13 +1898,13 @@ var ItemList = Class("ItemList", {
         </div>
     </e4x>.elements(),
 
-    get itemCount() this.context.allItems.items.length,
+    get itemCount() this.context.contextList.reduce(function (acc, ctxt) acc + ctxt.items.length, 0),
 
     get visible() !this.container.collapsed,
     set visible(val) this.container.collapsed = !val,
 
     get activeGroups() this.context.contextList
-                           .filter(function (c) c.message || c.incomplete || c.items.length)
+                           .filter(function (c) c.items.length || c.message || c.incomplete)
                            .map(this.getGroup, this),
 
     get selected() let (g = this.selectedGroup) g && g.selectedIdx != null
