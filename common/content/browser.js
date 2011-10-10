@@ -148,6 +148,8 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
             let win = webProgress.DOMWindow;
             if (win && uri) {
+                Buffer(win).updateZoom();
+
                 let oldURI = overlay.getData(win.document)["uri"];
                 if (overlay.getData(win.document)["load-idx"] === webProgress.loadedTransIndex
                     || !oldURI || uri.spec.replace(/#.*/, "") !== oldURI.replace(/#.*/, ""))

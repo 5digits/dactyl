@@ -13,8 +13,9 @@ defineModule("buffer", {
 }, this);
 
 this.lazyRequire("finder", ["RangeFind"]);
-this.lazyRequire("template", ["template"]);
 this.lazyRequire("overlay", ["overlay"]);
+this.lazyRequire("storage", ["storage"]);
+this.lazyRequire("template", ["template"]);
 
 /**
  * A class to manage the primary web content buffer. The name comes
@@ -1115,12 +1116,31 @@ var Buffer = Module("Buffer", {
             return dactyl.echoerr(_("zoom.illegal"));
         }
 
-        if (fullZoom && services.has("contentPrefs"))
-            services.contentPrefs.setPref(this.uri, "browser.content.full-zoom",
-                                          value);
+        if (services.has("contentPrefs") && !storage.privateMode
+                && prefs.get("browser.zoom.siteSpecific")) {
+            services.contentPrefs[value != 1 ? "setPref" : "removePref"]
+                (this.uri, "browser.content.full-zoom", value);
+            services.contentPrefs[value != 1 ? "setPref" : "removePref"]
+                (this.uri, "dactyl.content.full-zoom", fullZoom);
+        }
 
         statusline.updateZoomLevel();
     },
+
+    /**
+     * Updates the zoom level of this buffer from a content preference.
+     */
+    updateZoom: util.wrapCallback(function updateZoom() {
+        let self = this;
+        let uri = this.uri;
+
+        if (services.has("contentPrefs") && prefs.get("browser.zoom.siteSpecific"))
+            services.contentPrefs.getPref(uri, "dactyl.content.full-zoom", function (val) {
+                if (uri.equals(self.uri) && val != prefs.get("browser.zoom.full"))
+                    [self.contentViewer.textZoom, self.contentViewer.fullZoom] =
+                        [self.contentViewer.fullZoom, self.contentViewer.textZoom];
+            });
+    }),
 
     /**
      * Adjusts the page zoom of the current buffer relative to the
@@ -1142,7 +1162,7 @@ var Buffer = Module("Buffer", {
             fullZoom = ZoomManager.useFullZoom;
 
         let values = ZoomManager.zoomValues;
-        let cur = values.indexOf(ZoomManager.snap(ZoomManager.zoom));
+        let cur = values.indexOf(ZoomManager.snap(this.zoom));
         let i = Math.constrain(cur + steps, 0, values.length - 1);
 
         util.assert(i != cur || fullZoom != ZoomManager.useFullZoom);

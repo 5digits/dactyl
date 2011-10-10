@@ -1363,7 +1363,8 @@ var CommandLine = Module("commandline", {
          */
         preview: function preview() {
             this.previewClear();
-            if (this.wildIndex < 0 || this.suffix || !this.activeContexts.length || this.waiting)
+            if (this.wildIndex < 0 || this.caret < this.input.value.length
+                    || !this.activeContexts.length || this.waiting)
                 return;
 
             let substring = "";
