@@ -2075,6 +2075,9 @@ var ItemList = Class("ItemList", {
             .map(function (g) g.rescrollFunc)
             .forEach(call);
 
+        if (!this.selected)
+            this.win.scrollTo(0, 0);
+
         this._resize.tell(ItemList.RESIZE_BRIEF);
     },
 
