@@ -1518,13 +1518,18 @@ var Buffer = Module("Buffer", {
     },
 
     _exWidth: function _exWidth(elem) {
-        let div = DOM(<elem style="width: 1ex !important; position: absolute !important; padding: 0 !important; display: block;"/>,
-                      elem.ownerDocument).appendTo(elem.body || elem);
         try {
-            return parseFloat(div.style.width);
+            let div = DOM(<elem style="width: 1ex !important; position: absolute !important; padding: 0 !important; display: block;"/>,
+                          elem.ownerDocument).appendTo(elem.body || elem);
+            try {
+                return parseFloat(div.style.width);
+            }
+            finally {
+                div.remove();
+            }
         }
-        finally {
-            div.remove();
+        catch (e) {
+            return parseFloat(DOM(elem).fontSize) / 1.618;
         }
     },
 

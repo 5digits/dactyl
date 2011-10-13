@@ -378,10 +378,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     @optional
      */
     clipboardWrite: function clipboardWrite(str, verbose, which) {
-        if (which == null)
+        if (which == null || which == "selection" && !services.clipboard.supportsSelectionClipboard())
             services.clipboardHelper.copyString(str);
-        else if (which == "selection" && !services.clipboard.supportsSelectionClipboard())
-            return;
         else
             services.clipboardHelper.copyStringToClipboard(str,
                 services.clipboard["k" + util.capitalize(which) + "Clipboard"]);
