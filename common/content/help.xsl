@@ -303,6 +303,9 @@
         <a style="color: inherit;">
             <xsl:if test="not(@link) or @link != 'false'">
                 <xsl:choose>
+                    <xsl:when test="@link and @link != 'false'">
+                        <xsl:attribute name="href">dactyl://help-tag/<xsl:value-of select="@link"/></xsl:attribute>
+                    </xsl:when>
                     <xsl:when test="contains(ancestor::*/@document-tags, concat(' ', $tag, ' '))">
                         <xsl:attribute name="href">#<xsl:value-of select="$tag-url"/></xsl:attribute>
                     </xsl:when>
