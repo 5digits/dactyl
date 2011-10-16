@@ -2255,7 +2255,7 @@ var ItemList = Class("ItemList", {
 
             let win = this.win;
             let row = this.selectedRow;
-            if (row) {
+            if (row && this.parent.minHeight) {
                 let { rect } = DOM(this.selectedRow);
                 var scrollY = this.win.scrollY + rect.bottom - this.win.innerHeight;
             }

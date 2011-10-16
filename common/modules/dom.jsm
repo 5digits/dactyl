@@ -98,24 +98,7 @@ var DOM = Class("DOM", {
         }]
     ]),
 
-    matcher: function matcher(sel) {
-        let res;
-
-        if (/^([a-z0-9_-]+)$/i.exec(sel))
-            res = function (elem) elem.localName == val;
-        else if (/^#([a-z0-9:_-]+)$/i.exec(sel))
-            res = function (elem) elem.id == val;
-        else if (/^\.([a-z0-9:_-]+)$/i.exec(sel))
-            res = function (elem) elem.classList.contains(val);
-        else if (/^\[([a-z0-9:_-]+)\]$/i.exec(sel))
-            res = function (elem) elem.hasAttribute(val);
-        else
-            res = function (elem) ~Array.indexOf(elem.parentNode.querySelectorAll(sel),
-                                                 elem);
-
-        let val = RegExp.$1;
-        return res;
-    },
+    matcher: function matcher(sel) function (elem) elem.mozMatchesSelector && elem.mozMatchesSelector(sel),
 
     each: function each(fn, self) {
         let obj = self || this.Empty();
