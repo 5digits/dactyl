@@ -972,7 +972,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 object = Iterator(object);
                 hasValue = false;
             }
-            for (let i in object) {
+            let keyIter = object;
+            if ("__iterator__" in object && !callable(object.__iterator__))
+                keyIter = keys(object)
+
+            for (let i in keyIter) {
                 let value = <![CDATA[<no value>]]>;
                 try {
                     value = object[i];

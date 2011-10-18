@@ -291,7 +291,6 @@ var Modes = Module("modes", {
 
     inSet: false,
 
-    // helper function to set both modes in one go
     set: function set(mainMode, extendedMode, params, stack) {
         var delayed, oldExtended, oldMain, prev, push;
 
@@ -628,7 +627,8 @@ var Modes = Module("modes", {
             opts);
     },
     prefs: function initPrefs() {
-        prefs.watch("accessibility.browsewithcaret", function () modes.onCaretChange.apply(modes, arguments));
+        prefs.watch("accessibility.browsewithcaret",
+                    function () { modes.onCaretChange.apply(modes, arguments) });
     }
 });
 

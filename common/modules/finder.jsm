@@ -48,6 +48,16 @@ var RangeFinder = Module("rangefinder", {
         prefs.safeSet("accessibility.typeaheadfind", false);
     },
 
+    cleanup: function cleanup() {
+        for (let doc in util.iterDocuments()) {
+            let find = overlay.getData(doc, "range-find", null);
+            if (find)
+                find.highlight(true);
+
+            overlay.setData(doc, "range-find", null);
+        }
+    },
+
     get commandline() this.modules.commandline,
     get modes() this.modules.modes,
     get options() this.modules.options,
@@ -719,13 +729,14 @@ var RangeFind = Class("RangeFind", {
             this.range = range;
             this.document = range.startContainer.ownerDocument;
             this.window = this.document.defaultView;
-            this.docShell = util.docShell(this.window);
 
             if (this.selection == null)
                 return false;
 
             this.save();
         },
+
+        docShell: Class.Memoize(function () util.docShell(this.window)),
 
         intersects: function (range) RangeFind.intersects(this.range, range),
 
