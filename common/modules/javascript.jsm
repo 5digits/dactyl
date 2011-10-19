@@ -102,7 +102,7 @@ var JavaScript = Module("javascript", {
 
         let completions = [k for (k in this.iter(obj, toplevel))];
         if (obj === this.modules) // Hack.
-            completions = completions.concat([k for (k in this.iter(this.modules.jsmodules, toplevel))]);
+            completions = array.uniq(completions.concat([k for (k in this.iter(this.modules.jsmodules, toplevel))]));
         return completions;
     },
 
@@ -620,10 +620,10 @@ var JavaScript = Module("javascript", {
      * enumerable by any standard method.
      */
     globalNames: Class.Memoize(function () let (self = this) array.uniq([
-        "Array", "ArrayBuffer", "AttributeName", "Boolean", "Components",
+        "Array", "ArrayBuffer", "AttributeName", "Audio", "Boolean", "Components",
         "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
-        "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date",
-        "Error", "EvalError", "Float32Array", "Float64Array", "Function",
+        "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date", "Error",
+        "EvalError", "File", "Float32Array", "Float64Array", "Function",
         "HTMLDelElement", "HTMLInsElement", "HTMLSpanElement", "Infinity",
         "InnerModalContentWindow", "InnerWindow", "Int16Array", "Int32Array",
         "Int8Array", "InternalError", "Iterator", "JSON", "KeyboardEvent",

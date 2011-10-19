@@ -972,10 +972,14 @@ Class.prototype = {
             if (self.stale ||
                     util.rehashing && !isinstance(Cu.getGlobalForObject(callback), ["BackstagePass"]))
                 return;
+            self.timeouts.splice(self.timeouts.indexOf(timer), 1);
             util.trapErrors(callback, self);
         }
-        return services.Timer(timeout_notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);
+        let timer = services.Timer(timeout_notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);
+        this.timeouts.push(timer);
+        return timer;
     },
+    timeouts: [],
 
     /**
      * Updates this instance with the properties of the given objects.
