@@ -625,15 +625,13 @@ var Mappings = Module("mappings", {
                             .map(function (hive) [
                                 {
                                     command: "map",
-                                    options: array([
-                                        hive.name !== "user" && ["-group", hive.name],
-                                        map.count && ["-count"],
-                                        ["-modes", uniqueModes(map.modes)],
-                                        ["-description", map.description],
-                                        map.silent && ["-silent"]])
-
-                                        .filter(util.identity)
-                                        .toObject(),
+                                    options: {
+                                        "-count": map.count ? null : undefined,
+                                        "-description": map.description,
+                                        "-group": hive.name == "user" ? undefined : hive.name,
+                                        "-modes": uniqueModes(map.modes),
+                                        "-silent": map.silent ? null : undefined
+                                    },
                                     arguments: [map.names[0]],
                                     literalArg: map.rhs,
                                     ignoreDefaults: true
