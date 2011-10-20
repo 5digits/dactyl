@@ -199,7 +199,7 @@
             <dt>HelpXMLTagStart</dt>            <dd></dd>
             <dt>HelpXMLText</dt>                <dd></dd>
             <dt>Hint</dt>                       <dd></dd>
-            <dt>HintActive</dt>                 <dd>The hint element of link which will be followed by <k name="CR"/></dd>
+            <dt>HintActive</dt>                 <dd>The hint element of link which will be followed by <k name="CR" link="false"/></dd>
             <dt>HintElem</dt>                   <dd>The hintable element</dd>
             <dt>HintImage</dt>                  <dd>The indicator which floats above hinted images</dd>
             <dt>Hint[active]</dt>               <dd></dd>

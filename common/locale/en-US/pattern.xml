@@ -43,7 +43,7 @@
 
 <item>
     <tags><![CDATA[<find-forward> /]]></tags>
-    <spec>/<a>pattern</a><k name="CR"/></spec>
+    <spec>/<a>pattern</a><k name="CR" link="false"/></spec>
     <description>
         <p>Find <a>pattern</a> starting at the current caret position.</p>
 
@@ -66,7 +66,7 @@
 
 <item>
     <tags><![CDATA[<find-backward> ?]]></tags>
-    <spec>?<a>pattern</a><k name="CR"/></spec>
+    <spec>?<a>pattern</a><k name="CR" link="false"/></spec>
     <description>
         <p>
             Find a pattern backward of the current caret position in exactly the

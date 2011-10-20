@@ -37,10 +37,10 @@
     For instance,
 </p>
 
-<code><ex>:map <k name="F2" link="false"/></ex> <ex>:styletoggle</ex> <em>-name</em> <k name="A-Tab" link="false"/></code>
+<code><ex>:map <k name="F2" link="false"/></ex> <ex>:styletoggle</ex> <em>-name</em> <k name="A-Tab" link="c_&lt;Tab>"/></code>
 
 <p>
-    causes “<tt><ex>:styletoggle</ex> <em>-name</em> <k name="A-Tab" link="false"/></tt>” to be typed out
+    causes “<tt><ex>:styletoggle</ex> <em>-name</em> <k name="A-Tab" link="c_&lt;Tab"/></tt>” to be typed out
     whenever <k name="F2" link="false"/> is pressed, providing a way to toggle
     a tab-completed named user style.
 </p>

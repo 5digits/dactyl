@@ -229,7 +229,7 @@
 
 <p>
     Whichever way you choose to indicate your target link, once &dactyl.appName; has
-    highlighted the link you want, simply hit <k name="CR"/> to open it.
+    highlighted the link you want, simply hit <k name="CR" link="false"/> to open it.
 </p>
 
 <p>

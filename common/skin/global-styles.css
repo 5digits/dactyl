@@ -256,7 +256,7 @@ Hint[active];;*  background: rgba(255, 253, 208, .8);
 Hint::after;;*   content: attr(text) !important;
 HintElem;;*      /* The hintable element */ \
                  background-color: yellow  !important; color: black !important;
-HintActive;;*    /* The hint element of link which will be followed by <k name="CR"/> */ \
+HintActive;;*    /* The hint element of link which will be followed by <k name="CR" link="false"/> */ \
                  background-color: #88FF00 !important; color: black !important;
 HintImage;;*     /* The indicator which floats above hinted images */ \
                  opacity: .5 !important;
