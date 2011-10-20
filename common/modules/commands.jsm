@@ -836,8 +836,11 @@ var Commands = Module("commands", {
                                           .toObject();
 
         for (let [opt, val] in Iterator(args.options || {})) {
+            if (val === undefined)
+                continue;
             if (val != null && defaults[opt] === val)
                 continue;
+
             let chr = /^-.$/.test(opt) ? " " : "=";
             if (isArray(val))
                 opt += chr + Option.stringify.stringlist(val);
@@ -845,6 +848,7 @@ var Commands = Module("commands", {
                 opt += chr + Commands.quote(val);
             res.push(opt);
         }
+
         for (let [, arg] in Iterator(args.arguments || []))
             res.push(Commands.quote(arg));
 

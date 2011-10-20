@@ -153,7 +153,7 @@ var Highlights = Module("Highlight", {
 
         let highlight = this.highlight[key] || this._create(false, [key]);
 
-        let bases = extend || highlight.extend;
+        let bases = extend || highlight.extends;
         if (append) {
             newStyle = Styles.append(highlight.value || "", newStyle);
             bases = highlight.extends.concat(bases);
@@ -405,7 +405,10 @@ var Highlights = Module("Highlight", {
                     {
                         command: this.name,
                         arguments: [v.class],
-                        literalArg: v.value
+                        literalArg: v.value,
+                        options: {
+                            "-link": v.extends.length ? v.extends : undefined
+                        }
                     }
                     for (v in Iterator(highlight))
                     if (v.value != v.defaultValue)
