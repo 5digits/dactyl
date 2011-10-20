@@ -133,6 +133,14 @@ var Marks = Module("marks", {
         });
     },
 
+    get jumps() {
+        let store = buffer.localStore;
+        return {
+            index: store.jumpsIndex,
+            locations: store.jumps.map(function (j) j.mark)
+        };
+    },
+
     /**
      * Remove all marks matching *filter*. If *special* is given, removes all
      * local marks.

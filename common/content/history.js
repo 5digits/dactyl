@@ -293,6 +293,33 @@ var History = Module("history", {
                 ],
                 privateData: true
             });
+
+        commands.add(["ju[mps]"],
+            "Show jumplist",
+            function () {
+                let sh = history.session;
+                let index = sh.index;
+
+                let jumps = marks.jumps;
+                if (jumps.index < 0)
+                    jumps = [sh[sh.index]];
+                else {
+                    index += jumps.index;
+                    jumps = jumps.locations.map(function (l) ({
+                        __proto__: l,
+                        title: buffer.title,
+                        get URI() util.newURI(this.location)
+                    }));
+                }
+
+                let list = sh.slice(0, sh.index)
+                             .concat(jumps)
+                             .concat(sh.slice(sh.index + 1));
+
+                commandline.commandOutput(template.jumps(index, list));
+            },
+            { argCount: "0" });
+
     },
     completion: function () {
         completion.domain = function (context) {

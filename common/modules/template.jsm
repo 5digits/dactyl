@@ -392,6 +392,8 @@ var Template = Module("Template", {
         return <table>
                 <tr style="text-align: left;" highlight="Title">
                     <th colspan="2">{_("title.Jump")}</th>
+                    <th>{_("title.HPos")}</th>
+                    <th>{_("title.VPos")}</th>
                     <th>{_("title.Title")}</th>
                     <th>{_("title.URI")}</th>
                 </tr>
@@ -400,6 +402,8 @@ var Template = Module("Template", {
                     <tr>
                         <td class="indicator">{idx == index ? ">" : ""}</td>
                         <td>{Math.abs(idx - index)}</td>
+                        <td>{val.offset ? val.offset.x : ""}</td>
+                        <td>{val.offset ? val.offset.y : ""}</td>
                         <td style="width: 250px; max-width: 500px; overflow: hidden;">{val.title}</td>
                         <td><a href={val.URI.spec} highlight="URL jump-list">{util.losslessDecodeURI(val.URI.spec)}</a></td>
                     </tr>)

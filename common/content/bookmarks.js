@@ -382,14 +382,6 @@ var Bookmarks = Module("bookmarks", {
 }, {
 }, {
     commands: function () {
-        commands.add(["ju[mps]"],
-            "Show jumplist",
-            function () {
-                let sh = history.session;
-                commandline.commandOutput(template.jumps(sh.index, sh));
-            },
-            { argCount: "0" });
-
         // TODO: Clean this up.
         const tags = {
             names: ["-tags", "-T"],
