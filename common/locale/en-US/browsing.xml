@@ -250,6 +250,19 @@
 </item>
 
 <item>
+    <tags>:ju :jumps</tags>
+    <strut/>
+    <spec>:ju<oa>mps</oa></spec>
+    <description>
+        <p>
+            Display the jump list.
+            The jump numbers shown are suitable as arguments to <k name="C-o"/>
+            or <k name="C-i"/>.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags><![CDATA[<M-Left> <A-Left> H]]></tags>
     <strut/>
     <spec>[count]H</spec>
