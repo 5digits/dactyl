@@ -166,7 +166,7 @@ var IO = Module("io", {
 
                     dactyl.echomsg(_("io.sourcing", filename.quote()), 2);
 
-                    let uri = services.io.newFileURI(file);
+                    let uri = file.URI;
 
                     let sourceJSM = function sourceJSM() {
                         context = contexts.Module(uri);

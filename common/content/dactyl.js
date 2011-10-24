@@ -800,7 +800,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 loadplugins = { __proto__: loadplugins, value: args.map(Option.parseRegexp) };
 
             dir.readDirectory(true).forEach(function (file) {
-                if (file.isFile() && loadplugins.getKey(file.path)
+                if (file.leafName[0] == ".")
+                    ;
+                else if (file.isFile() && loadplugins.getKey(file.path)
                         && !(!force && file.path in dactyl.pluginFiles && dactyl.pluginFiles[file.path] >= file.lastModifiedTime)) {
                     try {
                         io.source(file.path);
