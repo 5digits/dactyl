@@ -819,8 +819,11 @@ var DOM = Class("DOM", {
                 elem = elem.defaultView;
             if (elem instanceof Ci.nsIDOMElement)
                 services.focus.setFocus(elem, flags);
-            else if (elem instanceof Ci.nsIDOMWindow)
+            else if (elem instanceof Ci.nsIDOMWindow) {
                 services.focus.focusedWindow = elem;
+                if (services.focus.focusedWindow != elem)
+                    services.focus.clearFocus(elem);
+            }
         }
         catch (e) {
             util.dump(elem);
