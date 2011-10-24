@@ -38,9 +38,19 @@
 #include "dactylUtils.h"
 
 #include "jsdbgapi.h"
-#include "jsobj.h"
+// #include "jsobj.h"
 
 #include "nsStringAPI.h"
+
+#if GECKO_MAJOR < 10
+    static inline JSObject*
+    JS_GetGlobalForScopeChain(JSContext *cx) {
+        JSObject *callingScope = JS_GetScopeChain(cx);
+        if (!callingScope)
+            return nsnull;
+        return JS_GetGlobalForObject(cx, callingScope);
+    }
+#endif
 
 /*
  * Evil. Evil, evil, evil.
@@ -244,9 +254,8 @@ dactylUtils::EvalInContext(const nsAString &aSource,
     {
         JSAutoRequest req(cx);
 
-        callingScope = JS_GetScopeChain(cx);
+        callingScope = JS_GetGlobalForScopeChain(cx);
         NS_ENSURE_TRUE(callingScope, NS_ERROR_FAILURE);
-        callingScope = JS_GetGlobalForObject(cx, callingScope);
     }
 
     {
@@ -313,6 +322,10 @@ dactylUtils::CreateContents(nsIDOMElement *aElement)
     return NS_OK;
 }
 
+namespace XPCWrapper {
+    extern JSObject *UnsafeUnwrapSecurityWrapper(JSObject *obj);
+};
+
 NS_IMETHODIMP
 dactylUtils::GetGlobalForObject(const jsval &aObject,
                                 JSContext *cx,
@@ -323,18 +336,16 @@ dactylUtils::GetGlobalForObject(const jsval &aObject,
     NS_ENSURE_FALSE(JSVAL_IS_PRIMITIVE(aObject),
                     NS_ERROR_XPC_BAD_CONVERT_JS);
 
-    JSObject *obj = JSVAL_TO_OBJECT(aObject);
-#ifndef WIN32 /* Why? No idea. */
-    if (obj->isProxy())
-#endif
-        obj = obj->unwrap();
+    JSObject *obj = XPCWrapper::UnsafeUnwrapSecurityWrapper(JSVAL_TO_OBJECT(aObject));
 
     JSObject *global = JS_GetGlobalForObject(cx, obj);
     *rval = OBJECT_TO_JSVAL(global);
 
+    /*
     // Outerize if necessary.
     if (JSObjectOp outerize = global->getClass()->ext.outerObject)
         *rval = OBJECT_TO_JSVAL(outerize(cx, global));
+    */
 
     return NS_OK;
 }

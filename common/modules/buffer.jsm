@@ -877,7 +877,7 @@ var Buffer = Module("Buffer", {
     showElementInfo: function showElementInfo(elem) {
         let { dactyl } = this.modules;
 
-        dactyl.echo(<><!--L-->Element:<br/>{util.objectToString(elem, true)}</>, commandline.FORCE_MULTILINE);
+        dactyl.echo(<><!--L-->Element:<br/>{util.objectToString(elem, true)}</>);
     },
 
     /**

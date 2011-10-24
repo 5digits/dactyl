@@ -79,6 +79,13 @@ inline PRBool EnsureStringLength(T& aStr, PRUint32 aLen)
 #include "jsdbgapi.h"
 #include "jsfriendapi.h"
 
+#if GECKO_MAJOR < 10
+    static inline JSVersion
+    JS_GetVersion(JSContext *cx) {
+        return cx->findVersion();
+    }
+#endif
+
 #include "mozilla/FunctionTimer.h"
 #include "mozilla/scache/StartupCache.h"
 #include "mozilla/scache/StartupCacheUtils.h"
@@ -519,7 +526,7 @@ dactylUtils::LoadSubScript (const PRUnichar * aURL
 
     bool writeScript = false;
     JSScriptType *scriptObj = nsnull;
-    JSVersion version = cx->findVersion();
+    JSVersion version = JS_GetVersion(cx);
 
     nsCAutoString cachePath;
     cachePath.Append("jssubloader/");
