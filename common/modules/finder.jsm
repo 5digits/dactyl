@@ -607,6 +607,7 @@ var RangeFind = Class("RangeFind", {
         this.startRange.collapse(!this.reverse);
         this.lastRange = this.selectedRange;
         this.range = this.findRange(this.startRange);
+        util.assert(this.range);
         this.ranges.first = this.range;
         this.ranges.forEach(function (range) range.save());
         this.forward = null;
