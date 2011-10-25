@@ -859,8 +859,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     events: {
         click: function onClick(event) {
-            if (event.originalTarget instanceof Element) {
-                let command = event.originalTarget.getAttributeNS(NS, "command");
+            let elem = event.originalTarget;
+
+            if (elem instanceof Element && services.security.isSystemPrincipal(elem.nodePrincipal)) {
+                let command = elem.getAttributeNS(NS, "command");
                 if (command && event.button == 0) {
                     event.preventDefault();
 
