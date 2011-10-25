@@ -799,10 +799,14 @@ var Events = Module("events", {
                                 function (mode) mappings.hives.some(
                                     function (hive) hive.get(mode, key) || hive.getCandidates(mode, key)));
 
+            events.dbg("ON " + event.type.toUpperCase() + " " + DOM.Event.stringify(event) +
+                       " passing: " + this.passing + " " +
+                       " pass: " + pass +
+                       " replay: " + event.isReplay +
+                       " macro: " + event.isMacro);
+
             if (event.type === "keydown")
                 this.passing = pass;
-
-            events.dbg("ON " + event.type.toUpperCase() + " " + DOM.Event.stringify(event) + " pass: " + pass + " replay: " + event.isReplay + " macro: " + event.isMacro);
 
             // Prevents certain sites from transferring focus to an input box
             // before we get a chance to process our key bindings on the

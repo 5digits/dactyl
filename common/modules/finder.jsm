@@ -268,7 +268,7 @@ var RangeFinder = Module("rangefinder", {
             function () { rangefinder.openPrompt(modes.FIND_FORWARD); });
 
         mappings.add(myModes,
-            ["?", "<find-backward>"], "Find a pattern backward of the current caret position",
+            ["?", "<find-backward>", "<S-Slash>"], "Find a pattern backward of the current caret position",
             function () { rangefinder.openPrompt(modes.FIND_BACKWARD); });
 
         mappings.add(myModes,

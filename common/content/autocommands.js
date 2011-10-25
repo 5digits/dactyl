@@ -103,6 +103,7 @@ var AutoCommands = Module("autocommands", {
             return cmds;
         }
 
+        XML.prettyPrinting = XML.ignoreWhitespace = false;
         commandline.commandOutput(
             <table>
                 <tr highlight="Title">
@@ -110,15 +111,16 @@ var AutoCommands = Module("autocommands", {
                 </tr>
                 {
                     template.map(hives, function (hive)
-                        <tr highlight="Title">
-                            <td colspan="3">{hive.name}</td>
+                        <tr>
+                            <td colspan="3"><span highlight="Title">{hive.name}</span>
+                                            {hive.filter}</td>
                         </tr> +
                         <tr style="height: .5ex;"/> +
                         template.map(cmds(hive), function ([event, items])
                             <tr style="height: .5ex;"/> +
                             template.map(items, function (item, i)
                                 <tr>
-                                    <td highlight="Title" style="padding-right: 1em;">{i == 0 ? event : ""}</td>
+                                    <td highlight="Title" style="padding-left: 1em; padding-right: 1em;">{i == 0 ? event : ""}</td>
                                     <td>{item.filter.toXML ? item.filter.toXML() : item.filter}</td>
                                     <td>{item.command}</td>
                                 </tr>) +

@@ -65,7 +65,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<find-backward> ?]]></tags>
+    <tags><![CDATA[<find-backward> <S-Slash> ?]]></tags>
     <spec>?<a>pattern</a><k name="CR" link="false"/></spec>
     <description>
         <p>
