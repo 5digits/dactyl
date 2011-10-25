@@ -945,7 +945,7 @@ var CommandLine = Module("commandline", {
             dactyl.trapErrors(function () {
                 this.store.push({ value: str, timestamp: Date.now()*1000, privateData: this.checkPrivate(str) });
             }, this);
-            this.store = this.store.slice(-options["history"]);
+            this.store = this.store.slice(this.store.length - options["history"]);
         },
         /**
          * @property {function} Returns whether a data item should be
