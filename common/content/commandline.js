@@ -2012,7 +2012,7 @@ var ItemList = Class("ItemList", {
     updateOffsets: function updateOffsets() {
         let total = this.itemCount;
         let count = 0;
-        for each (let group in this.activeGroups) {
+        for (let group in values(this.activeGroups)) {
             group.offsets = { start: count, end: total - count - group.itemCount };
             count += group.itemCount;
         }
@@ -2027,7 +2027,7 @@ var ItemList = Class("ItemList", {
 
         let container = DOM(this.nodes.completions);
         let groups = this.activeGroups;
-        for each (let group in groups) {
+        for (let group in values(groups)) {
             group.reset();
             container.append(group.nodes.root);
         }
@@ -2070,7 +2070,7 @@ var ItemList = Class("ItemList", {
      * @private
      */
     draw: function draw() {
-        for each (let group in this.activeGroups)
+        for (let group in values(this.activeGroups))
             group.draw();
 
         // We need to collect all of the rescrolling functions in
@@ -2178,7 +2178,7 @@ var ItemList = Class("ItemList", {
             }
 
             let count = this.maxItems;
-            for each (let group in groups) {
+            for (let group in values(groups)) {
                 let off = Math.max(0, start - group.offsets.start);
 
                 group.count = Math.constrain(group.itemCount - off, 0, count);

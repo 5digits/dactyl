@@ -1234,7 +1234,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             info.* = info.*.(function::attribute("lang").length() == 0 || @lang == lang);
 
                             for each (let elem in info.NS::info)
-                                for each (let attr in ["@name", "@summary", "@href"])
+                                for (let attr in values(["@name", "@summary", "@href"]))
                                     if (elem[attr].length())
                                         info[attr] = elem[attr];
                         }
