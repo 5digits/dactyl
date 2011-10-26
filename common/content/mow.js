@@ -265,7 +265,12 @@ var MOW = Module("mow", {
         this.visible = true;
     },
 
-    get spaceNeeded() Math.max(0, DOM("#" + config.ids.commandContainer, document).rect.bottom - window.innerHeight),
+    get spaceNeeded() {
+        if (DOM("#dactyl-bell", document).isVisible)
+            return 0;
+        return Math.max(0, DOM("#" + config.ids.commandContainer, document).rect.bottom
+                            - window.innerHeight);
+    },
 
     /**
      * Update or remove the multi-line output widget's "MORE" prompt.

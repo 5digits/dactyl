@@ -376,8 +376,8 @@ var DOM = Class("DOM", {
      * @returns {boolean}
      */
     get isVisible() {
-        let style = this.style;
-        return style.visibility == "visible" && style.display != "none";
+        let style = this[0] && this.style;
+        return style && style.visibility == "visible" && style.display != "none";
     },
 
     get editor() {
