@@ -441,7 +441,12 @@ var CommandExMode = Class("CommandExMode", CommandMode, {
     prompt: ["Normal", ":"],
 
     complete: function CEM_complete(context) {
-        context.fork("ex", 0, completion, "ex");
+        try {
+            context.fork("ex", 0, completion, "ex");
+        }
+        catch (e) {
+            context.message = _("error.error", e);
+        }
     },
 
     onSubmit: function CEM_onSubmit(command) {
@@ -945,7 +950,7 @@ var CommandLine = Module("commandline", {
             dactyl.trapErrors(function () {
                 this.store.push({ value: str, timestamp: Date.now()*1000, privateData: this.checkPrivate(str) });
             }, this);
-            this.store = this.store.slice(this.store.length - options["history"]);
+            this.store = this.store.slice(Math.max(0, this.store.length - options["history"]));
         },
         /**
          * @property {function} Returns whether a data item should be
