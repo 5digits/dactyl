@@ -1833,7 +1833,11 @@ var Buffer = Module("Buffer", {
 
         mappings.add([modes.NORMAL],
             ["y", "<yank-location>"], "Yank current location to the clipboard",
-            function () { dactyl.clipboardWrite(buffer.uri.spec, true); });
+            function () {
+                let link = DOM("link[href][rev=canonical], link[href][rel=shortlink]", buffer.doc);
+                let url = link.length ? link.attr("href") : buffer.uri.spec;
+                dactyl.clipboardWrite(url, true);
+            });
 
         mappings.add([modes.NORMAL],
             ["<C-a>", "<increment-url-path>"], "Increment last number in URL",
