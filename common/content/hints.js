@@ -1268,7 +1268,7 @@ var Hints = Module("hints", {
             "XPath or CSS selector strings of hintable elements for extended hint modes",
             "regexpmap", {
                 "[iI]": "img",
-                "[asOTvVWy]": ["a[href]", "area[href]", "img[src]", "iframe[src]"],
+                "[asOTvVWy]": [":-moz-any-link", "area[href]", "img[src]", "iframe[src]"],
                 "[f]": "body",
                 "[F]": ["body", "code", "div", "html", "p", "pre", "span"],
                 "[S]": ["input:not([type=hidden])", "textarea", "button", "select"]
@@ -1288,7 +1288,7 @@ var Hints = Module("hints", {
 
         options.add(["hinttags", "ht"],
             "XPath or CSS selector strings of hintable elements for Hints mode",
-            "stringlist", "a[href],area,button,iframe,input:not([type=hidden]),select,textarea," +
+            "stringlist", ":-moz-any-link,area,button,iframe,input:not([type=hidden]),select,textarea," +
                           "[onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand]," +
                           "[tabindex],[role=link],[role=button],[contenteditable=true]",
             {
