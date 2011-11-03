@@ -251,28 +251,48 @@ var Bookmarks = Module("bookmarks", {
     getSuggestions: function getSuggestions(engineName, query, callback) {
         const responseType = "application/x-suggestions+json";
 
+        if (Set.has(this.suggestionProviders, engineName))
+            return this.suggestionProviders[engineName](query, callback);
+
         let engine = Set.has(this.searchEngines, engineName) && this.searchEngines[engineName];
         if (engine && engine.supportsResponseType(responseType))
             var queryURI = engine.getSubmission(query, responseType).uri.spec;
         if (!queryURI)
             return (callback || util.identity)([]);
 
+        function parse(req) JSON.parse(req.responseText)[1].filter(isString);
+        return this.makeSuggestions(queryURI, parse, callback);
+    },
+
+    /**
+     * Given a query URL, response parser, and optionally a callback,
+     * fetch and parse search query results for {@link getSuggestions}.
+     *
+     * @param {string} url The URL to fetch.
+     * @param {function(XMLHttpRequest):[string]} parser The function which
+     *      parses the response.
+     */
+    makeSuggestions: function makeSuggestions(url, parser, callback) {
         function process(req) {
             let results = [];
             try {
-                results = JSON.parse(req.responseText)[1].filter(isString);
+                results = parser(req);
             }
-            catch (e) {}
+            catch (e) {
+                util.reportError(e);
+            }
             if (callback)
                 return callback(results);
             return results;
         }
 
-        let req = util.httpGet(queryURI, callback && process);
+        let req = util.httpGet(url, callback && process);
         if (callback)
             return req;
         return process(req);
     },
+
+    suggestionProviders: {},
 
     /**
      * Returns an array containing a search URL and POST data for the
@@ -670,15 +690,19 @@ var Bookmarks = Module("bookmarks", {
             let engineList = (engineAliases || options["suggestengines"].join(",") || "google").split(",");
 
             engineList.forEach(function (name) {
+                var desc = name;
                 let engine = bookmarks.searchEngines[name];
-                if (!engine)
+                if (engine)
+                    var desc = engine.description;
+                else if (!Set.has(bookmarks.suggestionProviders, name))
                     return;
+
                 let [, word] = /^\s*(\S+)/.exec(context.filter) || [];
                 if (!kludge && word == name) // FIXME: Check for matching keywords
                     return;
                 let ctxt = context.fork(name, 0);
 
-                ctxt.title = [/*L*/engine.description + " Suggestions"];
+                ctxt.title = [/*L*/desc + " Suggestions"];
                 ctxt.keys = { text: util.identity, description: function () "" };
                 ctxt.compare = CompletionContext.Sort.unsorted;
                 ctxt.filterFunc = null;
