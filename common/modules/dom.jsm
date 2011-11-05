@@ -1456,7 +1456,7 @@ var DOM = Class("DOM", {
      * @returns {Node}
      */
     fromXML: function fromXML(node, doc, nodes) {
-        XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         if (typeof node === "string") // Sandboxes can't currently pass us XML objects.
             node = XML(node);
 

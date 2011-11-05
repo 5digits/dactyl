@@ -877,6 +877,7 @@ var Buffer = Module("Buffer", {
     showElementInfo: function showElementInfo(elem) {
         let { dactyl } = this.modules;
 
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         dactyl.echo(<><!--L-->Element:<br/>{util.objectToString(elem, true)}</>);
     },
 
