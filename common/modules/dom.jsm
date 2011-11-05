@@ -1272,7 +1272,8 @@ var DOM = Class("DOM", {
 
         types: Class.Memoize(function () iter(
             {
-                Mouse: "click mousedown mouseout mouseover mouseup " +
+                Mouse: "click mousedown mouseout mouseover mouseup dblclick " +
+                       "hover " +
                        "popupshowing popupshown popuphiding popuphidden " +
                        "contextmenu",
                 Key:   "keydown keypress keyup",

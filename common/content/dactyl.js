@@ -1470,7 +1470,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             {
                 setter: function (value) {
                     prefs.safeSet("accessibility.typeaheadfind.enablesound", !value,
-                                  _("option.visualbell.safeSet"));
+                                  _("option.safeSet", "visualbell"));
                     return value;
                 }
             });

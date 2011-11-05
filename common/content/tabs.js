@@ -1209,7 +1209,7 @@ var Tabs = Module("tabs", {
                         tabs.tabStyle.enabled = true;
                     else {
                         prefs.safeSet("browser.tabs.autoHide", value === "multitab",
-                                      _("option.showtabline.safeSet"));
+                                      _("option.safeSet", "showtabline"));
                         tabs.tabStyle.enabled = false;
                     }
 
@@ -1257,7 +1257,7 @@ var Tabs = Module("tabs", {
                             if (group[2])
                                 prefs.safeSet("browser.tabs." + group[2],
                                               !(valueSet["all"] ^ valueSet[group[0]]),
-                                              _("option.activate.safeSet"));
+                                              _("option.safeSet", "activate"));
                         return newValues;
                     }
                 });
@@ -1292,9 +1292,9 @@ var Tabs = Module("tabs", {
                         }
 
                         prefs.safeSet("browser.link.open_newwindow", open,
-                                      _("option.popups.safeSet"));
+                                      _("option.safeSet", "popups"));
                         prefs.safeSet("browser.link.open_newwindow.restriction", restriction,
-                                      _("option.popups.safeSet"));
+                                      _("option.safeSet", "popups"));
                         return values;
                     },
                     values: {
