@@ -2099,7 +2099,7 @@ var Buffer = Module("Buffer", {
             function () { tabs.reload(tabs.getTab(), true); });
 
         // yanking
-        mappings.add([modes.NORMAL], ["Y", "<yank-word>"],
+        mappings.add([modes.NORMAL], ["Y", "<yank-selection>"],
             "Copy selected text or current word",
             function () {
                 let sel = buffer.currentWord;

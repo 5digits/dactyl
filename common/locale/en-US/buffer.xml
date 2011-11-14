@@ -540,7 +540,7 @@
 </item>
 
 <item>
-    <tags>&lt;yank-word> Y</tags>
+    <tags>&lt;yank-selection> Y</tags>
     <spec>Y</spec>
     <description short="true">
         <p>Copy currently selected text to the system clipboard.</p>
