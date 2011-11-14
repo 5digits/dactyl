@@ -1466,8 +1466,9 @@
             Number of lines to scroll with <k name="C-u"/> and <k name="C-d"/>
             commands. The number of lines scrolled defaults to half the window
             size. When a <oa>count</oa> is specified to the <k name="C-u"/> or
-            <k name="C-d"/> commands, that value is used instead. When the
-            value is <em>0</em>, it defaults to half the window height.
+            <k name="C-d"/> commands, set this option to <oa>count</oa> before
+            executing the command. Setting this to <em>0</em> restores the
+            default behaviour.
         </p>
     </description>
 </item>

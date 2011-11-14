@@ -203,8 +203,8 @@
     <description>
         <p>
             Scroll window downwards by the amount specified in the
-            <o>scroll</o> option. With <oa>count</oa>, scroll as if
-            <o>scroll</o> were set to <oa>count</oa>.
+            <o>scroll</o> option. With <oa>count</oa>, set the <o>scroll</o>
+            option to <oa>count</oa> before executing the command.
         </p>
     </description>
 </item>
@@ -215,9 +215,9 @@
     <spec><oa>count</oa>&lt;C-u></spec>
     <description>
         <p>
-            Scroll window upwards by the amount specified in the
-            <o>scroll</o> option. With <oa>count</oa>, scroll as if
-            <o>scroll</o> were set to <oa>count</oa>.
+            Scroll window upwards by the amount specified in the <o>scroll</o>
+            option. With <oa>count</oa>, set the <o>scroll</o> option to
+            <oa>count</oa> before executing the command.
         </p>
     </description>
 </item>
