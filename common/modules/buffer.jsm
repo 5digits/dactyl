@@ -679,29 +679,23 @@ var Buffer = Module("Buffer", {
     scrollToPosition: function scrollToPosition(horizontal, vertical)
         Buffer.scrollToPosition(this.findScrollable(0, vertical == null), horizontal, vertical),
 
-    _scrollByScrollSize: function _scrollByScrollSize(count, direction) {
-        let { options } = this.modules;
-
-        if (count > 0)
-            options["scroll"] = count;
-        this.scrollByScrollSize(direction);
-    },
-
     /**
-     * Scrolls the buffer vertically 'scroll' lines.
+     * Scrolls the buffer vertically 'scroll' or *count* lines.
      *
+     * @param {number} count The number of lines to scroll. When 0, use the
+     *     'scroll' option value.
      * @param {boolean} direction The direction to scroll. If true then
      *     scroll up and if false scroll down.
-     * @param {number} count The multiple of 'scroll' lines to scroll.
      * @optional
      */
-    scrollByScrollSize: function scrollByScrollSize(direction, count) {
+    scrollByScrollSize: function scrollByScrollSize(count, direction) {
         let { options } = this.modules;
 
         direction = direction ? 1 : -1;
-        count = count || 1;
 
-        if (options["scroll"] > 0)
+        if (count > 0)
+            this.scrollVertical("lines", count * direction);
+        else if (options["scroll"] > 0)
             this.scrollVertical("lines", options["scroll"] * direction);
         else
             this.scrollVertical("pages", direction / 2);
@@ -1937,12 +1931,12 @@ var Buffer = Module("Buffer", {
 
         mappings.add([modes.NORMAL], ["<C-d>", "<scroll-down>"],
             "Scroll window downwards in the buffer",
-            function (args) { buffer._scrollByScrollSize(args.count, true); },
+            function (args) { buffer.scrollByScrollSize(args.count, true); },
             { count: true });
 
         mappings.add([modes.NORMAL], ["<C-u>", "<scroll-up>"],
             "Scroll window upwards in the buffer",
-            function (args) { buffer._scrollByScrollSize(args.count, false); },
+            function (args) { buffer.scrollByScrollSize(args.count, false); },
             { count: true });
 
         mappings.add([modes.NORMAL], ["<C-b>", "<PageUp>", "<S-Space>", "<scroll-up-page>"],
