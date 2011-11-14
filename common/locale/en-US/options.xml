@@ -545,6 +545,28 @@
 </item>
 
 <item>
+    <tags>'ds' 'defsearch'</tags>
+    <spec>'defsearch' 'ds'</spec>
+    <type>&option.defsearch.type;</type>
+    <default>&option.defsearch.default;</default>
+    <description>
+        <p>
+            Sets the default search engine. The default search engine is
+            used by <ex>:open</ex> and related commands for arguments which
+            include no search or bookmark keywords and can't otherwise be
+            converted into URLs or existing file names.
+        </p>
+
+        <p>
+            This means that with <o>defsearch</o> set to <str>youtube</str>,
+            <ex>:open Tim Minchin</ex> behaves exactly as
+            <ex>:open youtube Tim Minchin</ex>, so long as you don't have a
+            search or bookmark keyword called ‘Tim’.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags>'dls' 'dlsort' 'downloadsort'</tags>
     <spec>'downloadsort' 'dlsort' 'dls'</spec>
     <strut/>
@@ -568,29 +590,6 @@
             <dt>time</dt>     <dd>Time remaining</dd>
             <dt>url</dt>      <dd>Source URL</dd>
         </dl>
-    </description>
-</item>
-
-
-<item>
-    <tags>'ds' 'defsearch'</tags>
-    <spec>'defsearch' 'ds'</spec>
-    <type>&option.defsearch.type;</type>
-    <default>&option.defsearch.default;</default>
-    <description>
-        <p>
-            Sets the default search engine. The default search engine is
-            used by <ex>:open</ex> and related commands for arguments which
-            include no search or bookmark keywords and can't otherwise be
-            converted into URLs or existing file names.
-        </p>
-
-        <p>
-            This means that with <o>defsearch</o> set to <str>youtube</str>,
-            <ex>:open Tim Minchin</ex> behaves exactly as
-            <ex>:open youtube Tim Minchin</ex>, so long as you don't have a
-            search or bookmark keyword called ‘Tim’.
-        </p>
     </description>
 </item>
 
@@ -1392,38 +1391,6 @@
 </item>
 
 <item>
-    <tags>'scs' 'scrollsteps'</tags>
-    <spec>'scrollsteps' 'scs'</spec>
-    <type>&option.scrollsteps.type;</type>
-    <default>&option.scrollsteps.default;</default>
-    <description>
-        <p>
-            The number of steps in which to smooth scroll to a new position. If
-            set to 1, smooth scrolling is not used.
-        </p>
-    </description>
-</item>
-<item>
-    <tags>'sct' 'scrolltime'</tags>
-    <spec>'scrolltime' 'sct'</spec>
-    <type>&option.scrolltime.type;</type>
-    <default>&option.scrolltime.default;</default>
-    <description>
-        <p>The time, in milliseconds, in which to smooth scroll to a new position.</p>
-    </description>
-    </item>
-
-<item>
-    <tags>'spl' 'spelllang'</tags>
-    <spec>'spelllang' 'spl'</spec>
-    <type>&option.spelllang.type;</type>
-    <default>&option.spelllang.default;</default>
-    <description short="true">
-        <p>The language used by the spell checker.</p>
-    </description>
-</item>
-
-<item>
     <tags>'ss' 'sanitizeshutdown'</tags>
     <spec>'sanitizeshutdown' 'ss'</spec>
     <type>&option.sanitizeshutdown.type;</type>
@@ -1472,6 +1439,29 @@
         </p>
     </description>
 </item>
+
+<item>
+    <tags>'scs' 'scrollsteps'</tags>
+    <spec>'scrollsteps' 'scs'</spec>
+    <type>&option.scrollsteps.type;</type>
+    <default>&option.scrollsteps.default;</default>
+    <description>
+        <p>
+            The number of steps in which to smooth scroll to a new position. If
+            set to 1, smooth scrolling is not used.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>'sct' 'scrolltime'</tags>
+    <spec>'scrolltime' 'sct'</spec>
+    <type>&option.scrolltime.type;</type>
+    <default>&option.scrolltime.default;</default>
+    <description>
+        <p>The time, in milliseconds, in which to smooth scroll to a new position.</p>
+    </description>
+    </item>
 
 <item>
     <tags>'sh' 'shell'</tags>
@@ -1544,6 +1534,16 @@
             <dt>multitab</dt> <dd>Show the tab bar when there are multiple tabs</dd>
             <dt>never</dt>    <dd>Never show the tab bar</dd>
         </dl>
+    </description>
+</item>
+
+<item>
+    <tags>'spl' 'spelllang'</tags>
+    <spec>'spelllang' 'spl'</spec>
+    <type>&option.spelllang.type;</type>
+    <default>&option.spelllang.default;</default>
+    <description short="true">
+        <p>The language used by the spell checker.</p>
     </description>
 </item>
 
