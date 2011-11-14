@@ -713,6 +713,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *    user: {string} The user name to send via HTTP Authentication.
      *    pass: {string} The password to send via HTTP Authentication.
      *
+     *    quiet: {boolean} If true, don't report errors.
+     *
      * @returns {XMLHttpRequest}
      */
     httpGet: function httpGet(url, callback, self) {
