@@ -48,9 +48,9 @@
         <p>Find <a>pattern</a> starting at the current caret position.</p>
 
         <p>
-            The following escape sequences can be used to modify the
-            behavior of the search. When flags conflict, the last to
-            appear is the one that takes effect.
+            The following escape sequences can be used anywhere in
+            <a>pattern</a> to modify the behavior of the search. When flags
+            conflict, the last to appear is the one that takes effect.
         </p>
 
         <dl dt="width: 6em;">
