@@ -62,7 +62,7 @@ var RangeFinder = Module("rangefinder", {
     get modes() this.modules.modes,
     get options() this.modules.options,
 
-    openPrompt: function (mode) {
+    openPrompt: function openPrompt(mode) {
         this.modules.marks.push();
         this.commandline;
         this.CommandMode(mode, this.content).open();
@@ -74,7 +74,7 @@ var RangeFinder = Module("rangefinder", {
         this.find("", mode == this.modes.FIND_BACKWARD);
     },
 
-    bootstrap: function (str, backward) {
+    bootstrap: function bootstrap(str, backward) {
         if (arguments.length < 2 && this.rangeFind)
             backward = this.rangeFind.reverse;
 
@@ -107,6 +107,8 @@ var RangeFinder = Module("rangefinder", {
 
         let pattern = str.replace(/\\(.|$)/g, replacer);
 
+        if (str)
+            this.lastFindPattern = str;
         // It's possible, with :tabdetach for instance, for the rangeFind to
         // actually move from one window to another, which breaks things.
         if (!this.rangeFind
@@ -118,6 +120,7 @@ var RangeFinder = Module("rangefinder", {
 
             if (this.rangeFind)
                 this.rangeFind.cancel();
+            this.rangeFind = null;
             this.rangeFind = RangeFind(this.window, this.content, matchCase, backward,
                                        linksOnly && this.options.get("hinttags").matcher,
                                        regexp);
@@ -125,12 +128,10 @@ var RangeFinder = Module("rangefinder", {
             this.rangeFind.selections = selections;
         }
         this.rangeFind.pattern = str;
-        if (str)
-            this.lastFindPattern = str;
         return pattern;
     },
 
-    find: function (pattern, backwards) {
+    find: function find(pattern, backwards) {
         this.modules.marks.push();
         let str = this.bootstrap(pattern, backwards);
         this.backward = this.rangeFind.reverse;
@@ -142,7 +143,7 @@ var RangeFinder = Module("rangefinder", {
         return this.rangeFind.found;
     },
 
-    findAgain: function (reverse) {
+    findAgain: function findAgain(reverse) {
         this.modules.marks.push();
         if (!this.rangeFind)
             this.find(this.lastFindPattern);
@@ -164,23 +165,23 @@ var RangeFinder = Module("rangefinder", {
         this.rangeFind.focus();
     },
 
-    onCancel: function () {
+    onCancel: function onCancel() {
         if (this.rangeFind)
             this.rangeFind.cancel();
     },
 
-    onChange: function (command) {
+    onChange: function onChange(command) {
         if (this.options["incfind"]) {
             command = this.bootstrap(command);
             this.rangeFind.find(command);
         }
     },
 
-    onHistory: function () {
+    onHistory: function onHistory() {
         this.rangeFind.found = false;
     },
 
-    onSubmit: function (command) {
+    onSubmit: function onSubmit(command) {
         if (!command && this.lastFindPattern) {
             this.find(this.lastFindPattern, this.backward);
             this.findAgain();
@@ -201,7 +202,7 @@ var RangeFinder = Module("rangefinder", {
      * Highlights all occurrences of the last sought for string in the
      * current buffer.
      */
-    highlight: function () {
+    highlight: function highlight() {
         if (this.rangeFind)
             this.rangeFind.highlight();
     },
@@ -209,7 +210,7 @@ var RangeFinder = Module("rangefinder", {
     /**
      * Clears all find highlighting.
      */
-    clear: function () {
+    clear: function clear() {
         if (this.rangeFind)
             this.rangeFind.highlight(true);
     }
@@ -606,8 +607,8 @@ var RangeFind = Class("RangeFind", {
         this.startRange = this.selectedRange;
         this.startRange.collapse(!this.reverse);
         this.lastRange = this.selectedRange;
-        this.range = this.findRange(this.startRange);
-        util.assert(this.range);
+        this.range = this.findRange(this.startRange) || this.ranges[0];
+        util.assert(this.range, "Null range", false);
         this.ranges.first = this.range;
         this.ranges.forEach(function (range) range.save());
         this.forward = null;

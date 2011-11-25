@@ -22,7 +22,7 @@ var Binding = Class("Binding", {
         Object.defineProperties(node, this.constructor.properties);
 
         for (let [event, handler] in values(this.constructor.events))
-            node.addEventListener(event, handler, false);
+            node.addEventListener(event, util.wrapCallback(handler, true), false);
     },
 
     set collapsed(collapsed) {
@@ -157,7 +157,7 @@ var Template = Module("Template", {
                     events["dactyl-input"] = events["input"];
 
                 for (let [event, handler] in Iterator(events))
-                    node.addEventListener(event, obj.closure(handler), false);
+                    node.addEventListener(event, util.wrapCallback(obj.closure(handler), true), false);
             }
         })
     },
