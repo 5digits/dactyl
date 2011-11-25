@@ -1811,6 +1811,17 @@
     </description>
 </item>
 
+<item>
+    <tags>'ys' 'yankshort'</tags>
+    <spec>'yankshort' 'ys'</spec>
+    <type>&option.yankshort.type;</type>
+    <default>&option.yankshort.default;</default>
+    <description>
+        <p>Yank the canonical short URL of a web page where provided.</p>
+    </description>
+</item>
+
+
 </document>
 
 <!-- vim:se sts=4 sw=4 et: -->

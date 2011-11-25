@@ -1835,8 +1835,9 @@ var Buffer = Module("Buffer", {
         mappings.add([modes.NORMAL],
             ["y", "<yank-location>"], "Yank current location to the clipboard",
             function () {
-                let link = DOM("link[href][rev=canonical], link[href][rel=shortlink]", buffer.doc);
-                let url = link.length ? link.attr("href") : buffer.uri.spec;
+                let { doc, uri } = buffer;
+                let link = DOM("link[href][rev=canonical], link[href][rel=shortlink]", doc);
+                let url = link.length && options.get("yankshort").getKey(uri) ? link.attr("href") : uri.spec;
                 dactyl.clipboardWrite(url, true);
             });
 
@@ -2329,6 +2330,10 @@ var Buffer = Module("Buffer", {
                 setter: function (value) buffer.contentViewer.authorStyleDisabled = value,
                 getter: function () buffer.contentViewer.authorStyleDisabled
             });
+
+        options.add(["yankshort", "ys"],
+            "Yank the canonical short URL of a web page where provided",
+            "sitelist", ["youtube.com", "bugzilla.mozilla.org"]);
     }
 });
 
