@@ -1859,6 +1859,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.log(_("dactyl.modulesLoaded"), 3);
 
+        userContext.DOM = Class("DOM", DOM, { init: function DOM_(sel, ctxt) DOM(sel, ctxt || buffer.focusedFrame.document) });
+        userContext.$ = modules.userContext.DOM;
+
         dactyl.timeout(function () {
             try {
                 var args = config.prefs.get("commandline-args")

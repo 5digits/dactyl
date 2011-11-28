@@ -19,9 +19,8 @@ var states = iter([v, k.slice(prefix.length).toLowerCase()]
 
 var Download = Class("Download", {
     init: function init(id, list) {
-        let self = XPCSafeJSObjectWrapper(services.downloadManager.getDownload(id));
-        self.__proto__ = this;
-        this.instance = this;
+        let self = this;
+        this.download = services.downloadManager.getDownload(id);
         this.list = list;
 
         this.nodes = {
@@ -191,6 +190,14 @@ var Download = Class("Download", {
 
         this.updateProgress();
     }
+});
+Object.keys(XPCOMShim([Ci.nsIDownload])).forEach(function (key) {
+    if (!(key in Download.prototype))
+        Object.defineProperty(Download.prototype, key, {
+            get: function get() this.download[key],
+            set: function set(val) this.download[key] = val,
+            configurable: true
+        });
 });
 
 var DownloadList = Class("DownloadList",
