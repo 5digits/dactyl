@@ -199,10 +199,18 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     getNames: function getNames(branch) this.branch.getChildList(branch || "", { value: 0 }),
 
+    /**
+     * Returns true if the current branch has the given preference.
+     *
+     * @param {string} name The preference name.
+     * @returns {boolean}
+     */
+    has: function get(name) this.branch.getPrefType(name) != 0,
+
     _checkSafe: function _checkSafe(name, message, value) {
         let curval = this.get(name, null);
 
-        if (this.branches.original.get(name) == null)
+        if (this.branches.original.get(name) == null && !this.branches.saved.has(name))
             this.branches.original.set(name, curval, true);
 
         if (arguments.length > 2 && curval === value)

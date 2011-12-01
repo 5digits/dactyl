@@ -1483,7 +1483,7 @@ var Commands = Module("commands", {
 
             let start = "«%-d-]'", end = "'[-d-%»";
 
-            let n = /^\d+$/.test(cmd.argCount) ? parseInt(argCount) : 12;
+            let n = /^\d+$/.test(cmd.argCount) ? parseInt(cmd.argCount) : 12;
             for (let i = args.completeArg; i < n; i++)
                 args[i] = start + i + end;
 
