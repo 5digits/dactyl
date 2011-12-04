@@ -1836,6 +1836,10 @@ var Buffer = Module("Buffer", {
             ["y", "<yank-location>"], "Yank current location to the clipboard",
             function () {
                 let { doc, uri } = buffer;
+                if (uri instanceof Ci.nsIURL)
+                    uri.query = uri.query.replace(/(?:^|&)utm_[^&]+/g, "")
+                                         .replace(/^&/, "");
+
                 let link = DOM("link[href][rev=canonical], link[href][rel=shortlink]", doc);
                 let url = link.length && options.get("yankshort").getKey(uri) ? link.attr("href") : uri.spec;
                 dactyl.clipboardWrite(url, true);
