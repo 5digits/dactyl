@@ -385,8 +385,13 @@ var DOM = Class("DOM", {
             return;
 
         this[0] instanceof Ci.nsIDOMNSEditableElement;
-        if (this[0].editor instanceof Ci.nsIEditor)
-            var editor = this[0].editor;
+        try {
+            if (this[0].editor instanceof Ci.nsIEditor)
+                var editor = this[0].editor;
+        }
+        catch (e) {
+            util.reportError(e);
+        }
 
         try {
             if (!editor)

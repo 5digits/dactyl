@@ -170,7 +170,8 @@ var Download = Class("Download", {
             }
         }
 
-        let total = this.nodes.progressTotal.textContent = this.size ? util.formatBytes(this.size, 1, true) : _("download.unknown");
+        let total = this.nodes.progressTotal.textContent = this.size || !this.nActive ? util.formatBytes(this.size, 1, true)
+                                                                                      : _("download.unknown");
         let suffix = RegExp(/( [a-z]+)?$/i.exec(total)[0] + "$");
         this.nodes.progressHave.textContent = util.formatBytes(this.amountTransferred, 1, true).replace(suffix, "");
 
@@ -322,16 +323,17 @@ var DownloadList = Class("DownloadList",
 
     updateProgress: function updateProgress() {
         let downloads = values(this.downloads).toArray();
+        let active    = downloads.filter(function (d) d.alive);
 
         let self = Object.create(this);
         for (let prop in values(["amountTransferred", "size", "speed", "timeRemaining"]))
-            this[prop] = downloads.reduce(function (acc, dl) dl[prop] + acc, 0);
+            this[prop] = active.reduce(function (acc, dl) dl[prop] + acc, 0);
 
         Download.prototype.updateProgress.call(self);
 
-        let active = downloads.filter(function (dl) dl.alive).length;
-        if (active)
-            this.nodes.total.textContent = _("download.nActive", active);
+        this.nActive = active.length;
+        if (active.length)
+            this.nodes.total.textContent = _("download.nActive", active.length);
         else for (let key in values(["total", "percent", "speed", "time"]))
             this.nodes[key].textContent = "";
 
