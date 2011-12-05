@@ -952,6 +952,7 @@ var DOM = Class("DOM", {
                 pass: ["Pass"],
                 return: ["Return", "CR", "Enter"],
                 right_shift: [">"],
+                slash: ["/"],
                 space: ["Space", " "],
                 subtract: ["Minus", "Subtract"]
             };
@@ -1178,7 +1179,7 @@ var DOM = Class("DOM", {
                             else
                                 key = key.toLowerCase();
 
-                        if (!modifier && /^[a-z0-9]$/i.test(key))
+                        if (!modifier && key.length == 1)
                             return key;
                     }
                 }
@@ -1209,10 +1210,10 @@ var DOM = Class("DOM", {
                         key = String.fromCharCode(charCode + 64);
                 }
                 // a normal key like a, b, c, 0, etc.
-                else if (charCode > 0) {
+                else if (charCode) {
                     key = String.fromCharCode(charCode);
 
-                    if (!/^[a-z0-9]$/i.test(key) && key in this.key_code) {
+                    if (!/^[^<\s]$/i.test(key) && key in this.key_code) {
                         // a named charCode key (<Space> and <lt>) space can be shifted, <lt> must be forced
                         if ((key.match(/^\s$/) && event.shiftKey) || event.dactylShift)
                             modifier += "S-";
