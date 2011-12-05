@@ -898,8 +898,10 @@ var Buffer = Module("Buffer", {
             let file = this.win.location.pathname.split("/").pop() || _("buffer.noName");
             let title = this.win.document.title || _("buffer.noTitle");
 
-            let info = template.map(sections || options["pageinfo"],
-                function (opt) template.map(Buffer.pageInfo[opt].action.call(self), util.identity, ", "),
+            let info = template.map(
+                (sections || options["pageinfo"])
+                    .map(function (opt) Buffer.pageInfo[opt].action.call(self)),
+                function (res) res && iter(res).join(", ") || undefined,
                 ", ");
 
             if (bookmarkcache.isBookmarked(this.URL))
