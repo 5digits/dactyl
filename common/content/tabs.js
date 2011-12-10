@@ -831,10 +831,10 @@ var Tabs = Module("tabs", {
                     let arg = args[0];
 
                     if (tabs.indexFromSpec(arg) == -1) {
-                        let tabs = [tab for (tab in tabs.match(args[0], args.count, true))];
-                        dactyl.assert(tabs.length, _("error.invalidArgument", arg));
-                        dactyl.assert(tabs.length == 1, _("buffer.multipleMatching", arg));
-                        arg = tabs[0];
+                        let list = [tab for (tab in tabs.match(args[0], args.count, true))];
+                        dactyl.assert(list.length, _("error.invalidArgument", arg));
+                        dactyl.assert(list.length == 1, _("buffer.multipleMatching", arg));
+                        arg = list[0];
                     }
                     tabs.move(tabs.getTab(), arg, args.bang);
                 }, {
