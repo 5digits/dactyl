@@ -2209,7 +2209,7 @@ var ItemList = Class("ItemList", {
                                           : context && context.getCache("itemlist-group",
                                                                         bind("Group", ItemList, this, context)),
 
-    getOffset: function getOffset(tuple) this.getGroup(tuple[0]).getOffset(tuple[1])
+    getOffset: function getOffset(tuple) tuple && this.getGroup(tuple[0]).getOffset(tuple[1])
 }, {
     RESIZE_BRIEF: 1 << 0,
 

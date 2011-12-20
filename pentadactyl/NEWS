@@ -1,4 +1,4 @@
-1.0b7pre:
+1.0rc1:
     • Extensive Firefox 4 support, including:
       - Fully restartless. Can now be installed, uninstalled,
         enabled, disabled, and upgraded without restarting Firefox.
