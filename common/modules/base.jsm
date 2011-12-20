@@ -159,7 +159,7 @@ defineModule.loadLog = [];
 Object.defineProperty(defineModule.loadLog, "push", {
     value: function (val) {
         val = defineModule.prefix + val;
-        if (false)
+        if (true)
             defineModule.dump(val + "\n");
         this[this.length] = Date.now() + " " + val;
     }
