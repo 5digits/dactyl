@@ -1020,7 +1020,7 @@ var Hints = Module("hints", {
 
         let indexOf = String.indexOf;
         if (options.get("hintmatching").has("transliterated"))
-            indexOf = Hints.indexOf;
+            indexOf = Hints.closure.indexOf;
 
         switch (options["hintmatching"][0]) {
         case "contains"      : return containsMatcher(hintString);
@@ -1169,7 +1169,7 @@ var Hints = Module("hints", {
             [0x24d0, 0x24e9, "a"],
             [0xfb00, 0xfb06, ["ff", "fi", "fl", "ffi", "ffl", "st", "st"]],
             [0xff21, 0xff3a, "A"], [0xff41, 0xff5a, "a"]
-        ].forEach(function (start, stop, val) {
+        ].forEach(function ([start, stop, val]) {
             if (typeof val != "string")
                 for (let i = start; i <= stop; i++)
                     table[String.fromCharCode(i)] = val[(i - start) % val.length];
