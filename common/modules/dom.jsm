@@ -191,11 +191,11 @@ var DOM = Class("DOM", {
         this.each(function (elem) {
             while(true) {
                 elem = fn.call(this, elem)
-                if (elem instanceof Ci.nsIDOMElement)
+                if (elem instanceof Ci.nsIDOMNode)
                     res[res.length++] = elem;
                 else if (elem && "length" in elem)
-                    for (let i = 0; i < tmp.length; i++)
-                        res[res.length++] = tmp[j];
+                    for (let i = 0; i < elem.length; i++)
+                        res[res.length++] = elem[j];
                 else
                     break;
             }
@@ -255,6 +255,9 @@ var DOM = Class("DOM", {
 
     get siblingsBefore() this.all(function (elem) elem.previousElementSibling),
     get siblingsAfter() this.all(function (elem) elem.nextElementSibling),
+
+    get allSiblingsBefore() this.all(function (elem) elem.previousSibling),
+    get allSiblingsAfter() this.all(function (elem) elem.nextSibling),
 
     get class() let (self = this) ({
         toString: function () self[0].className,

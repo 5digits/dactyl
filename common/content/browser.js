@@ -180,7 +180,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         setOverLink: util.wrapCallback(function setOverLink(link, b) {
             setOverLink.superapply(this, arguments);
             dactyl.triggerObserver("browser.overLink", link);
-        }),
+        })
     }
 }, {
 }, {
@@ -204,6 +204,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             function () {
                 window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
                       .redraw();
+                statusline.overLink = null;
                 statusline.updateStatus();
                 commandline.clear();
             },

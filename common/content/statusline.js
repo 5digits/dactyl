@@ -110,9 +110,11 @@ var StatusLine = Module("statusline", {
         "browser.overLink": function (link) {
             switch (options["showstatuslinks"]) {
             case "status":
+                this.overLink = link ? _("status.link", link) : null;
                 this.status = link ? _("status.link", link) : buffer.uri;
                 break;
             case "command":
+                this.overLink = null;
                 if (link)
                     dactyl.echo(_("status.link", link), commandline.FORCE_SINGLELINE);
                 else
@@ -250,7 +252,7 @@ var StatusLine = Module("statusline", {
 
     updateStatus: function updateStatus() {
         this.timeout(function () {
-            this.status = buffer.uri;
+            this.status = this.overLink || buffer.uri;
         });
     },
 

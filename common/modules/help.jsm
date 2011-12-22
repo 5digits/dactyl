@@ -317,12 +317,12 @@ var Help = Module("Help", {
                                 .split(" "));
             function fix(node) {
                 switch(node.nodeType) {
-                case Node.ELEMENT_NODE:
-                    if (isinstance(node, [HTMLBaseElement]))
+                case Ci.nsIDOMNode.ELEMENT_NODE:
+                    if (isinstance(node, [Ci.nsIDOMHTMLBaseElement]))
                         return;
 
                     data.push("<"); data.push(node.localName);
-                    if (node instanceof HTMLHtmlElement)
+                    if (node instanceof Ci.nsIDOMHTMLHtmlElement)
                         data.push(" xmlns=" + XHTML.uri.quote(),
                                   " xmlns:dactyl=" + NS.uri.quote());
 
@@ -335,8 +335,14 @@ var Help = Module("Help", {
                         if (name == "href") {
                             value = node.href || value;
                             if (value.indexOf("dactyl://help-tag/") == 0) {
-                                let uri = services.io.newChannel(value, null, null).originalURI;
-                                value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
+                                try {
+                                    let uri = services.io.newChannel(value, null, null).originalURI;
+                                    value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
+                                }
+                                catch (e) {
+                                    util.dump("Magical tag thingy failure for: " + value);
+                                    dactyl.reportError(e);
+                                }
                             }
                             if (!/^#|[\/](#|$)|^[a-z]+:/.test(value))
                                 value = value.replace(/(#|$)/, ".xhtml$1");
@@ -354,24 +360,26 @@ var Help = Module("Help", {
                         data.push(" />");
                     else {
                         data.push(">");
-                        if (node instanceof HTMLHeadElement)
+                        if (node instanceof Ci.nsIDOMHTMLHeadElement)
                             data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
                         Array.map(node.childNodes, fix);
                         data.push("</", node.localName, ">");
                     }
                     break;
-                case Node.TEXT_NODE:
+                case Ci.nsIDOMNode.TEXT_NODE:
                     data.push(<>{node.textContent}</>.toXMLString());
                 }
             }
 
+            let { buffer, content, events } = modules;
             let chromeFiles = {};
             let styles = {};
+
             for (let [file, ] in Iterator(help.files)) {
                 let url = "dactyl://help/" + file;
                 dactyl.open(url);
                 util.waitFor(function () content.location.href == url && buffer.loaded
-                                && content.document.documentElement instanceof HTMLHtmlElement,
+                                && content.document.documentElement instanceof Ci.nsIDOMHTMLHtmlElement,
                              15000);
                 events.waitForPageLoad();
                 var data = [

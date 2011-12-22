@@ -1939,7 +1939,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 if (dactyl.commandLineOptions.rcFile == "NONE" || dactyl.commandLineOptions.noPlugins)
                     options["loadplugins"] = [];
 
-                if (options["loadplugins"])
+                if (options["loadplugins"].length)
                     dactyl.loadPlugins();
             }
             catch (e) {
