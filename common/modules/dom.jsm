@@ -948,21 +948,30 @@ var DOM = Class("DOM", {
             //       want to refer to within dactyl's source code for
             //       comparisons like if (key == "<Esc>") { ... }
             this.keyTable = {
-                add: ["Plus", "Add"],
+                add: ["+", "Plus", "Add"],
+                back_quote: ["`"],
+                back_slash: ["\\"],
                 back_space: ["BS"],
+                comma: [","],
                 count: ["count"],
+                close_bracket: ["]"],
                 delete: ["Del"],
+                equals: ["="],
                 escape: ["Esc", "Escape"],
                 insert: ["Insert", "Ins"],
                 leader: ["Leader"],
                 left_shift: ["LT", "<"],
                 nop: ["Nop"],
+                open_bracket: ["["],
                 pass: ["Pass"],
+                period: ["."],
+                quote: ["'"],
                 return: ["Return", "CR", "Enter"],
                 right_shift: [">"],
+                semicolon: [";"],
                 slash: ["/"],
                 space: ["Space", " "],
-                subtract: ["Minus", "Subtract"]
+                subtract: ["-", "Minus", "Subtract"]
             };
 
             this.key_key = {};
