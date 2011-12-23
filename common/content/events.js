@@ -801,9 +801,10 @@ var Events = Module("events", {
                     !this.processor && event.type === "keydown"
                         && options.get("passunknown").getKey(modes.main.allBases)
                         && let (key = DOM.Event.stringify(event))
-                            !modes.main.allBases.some(
+                            !(modes.main.count && /^\d$/.test(key) ||
+                              modes.main.allBases.some(
                                 function (mode) mappings.hives.some(
-                                    function (hive) hive.get(mode, key) || hive.getCandidates(mode, key)));
+                                    function (hive) hive.get(mode, key) || hive.getCandidates(mode, key))));
 
             events.dbg("ON " + event.type.toUpperCase() + " " + DOM.Event.stringify(event) +
                        " passing: " + this.passing + " " +
