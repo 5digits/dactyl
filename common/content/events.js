@@ -613,6 +613,12 @@ var Events = Module("events", {
 
             let win = (elem.ownerDocument || elem).defaultView || elem;
 
+            util.dump("focus", elem instanceof Element ? elem : String(elem));
+            util.dump("     ", (services.focus.getLastFocusMethod(win) & 0x3000),
+                      events.isContentNode(elem),
+                      !buffer.focusAllowed(elem),
+                      isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window]));
+
             if (!(services.focus.getLastFocusMethod(win) & 0x3000)
                 && events.isContentNode(elem)
                 && !buffer.focusAllowed(elem)
@@ -625,7 +631,7 @@ var Events = Module("events", {
             }
 
             if (elem instanceof Element)
-                elem.dactylFocusAllowed = undefined;
+                delete overlay.getData(elem)["focus-allowed"];
         },
 
         /*
