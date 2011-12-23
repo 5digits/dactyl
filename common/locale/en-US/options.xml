@@ -18,7 +18,13 @@
 </p>
 
 <dl dt="width: 10em;">
-    <dt>boolean</dt>       <dd>Can only be <hl key="Boolean">on</hl> or <hl key="Boolean">off</hl></dd>
+    <dt/><dd tag="boolean"/>
+    <dt>boolean</dt>
+    <dd>
+        Can only be <hl key="Boolean">on</hl> (<ex>:set <a>option</a></ex>) or
+        <hl key="Boolean">off</hl> (<ex>:set no<a>option</a></ex>)
+    </dd>
+
     <dt>number</dt>        <dd>A numeric value</dd>
     <dt>string</dt>        <dd>A string value</dd>
 
