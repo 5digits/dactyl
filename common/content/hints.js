@@ -1187,7 +1187,7 @@ var Hints = Module("hints", {
         if (src.length == 0)
             return 0;
     outer:
-        for (var i = 0; i < end; i++) {
+        for (var i = 0; i <= end; i++) {
                 var j = i;
                 for (var k = 0; k < src.length;) {
                     var s = dest[j++];
