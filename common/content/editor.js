@@ -280,7 +280,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         }
     },
 
-    findChar: function findNumber(key, count, backward, offset) {
+    findChar: function findChar(key, count, backward, offset) {
         count  = count || 1; // XXX ?
         offset = (offset || 0) - !!backward;
 

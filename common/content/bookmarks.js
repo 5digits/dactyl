@@ -347,9 +347,10 @@ var Bookmarks = Module("bookmarks", {
             if (charset)
                 var encodedParam = escape(window.convertFromUnicode(charset, param));
             else
-                encodedParam = bookmarkcache.keywords[keyword].encodeURIComponent(param);
+                encodedParam = bookmarkcache.keywords[keyword.toLowerCase()].encodeURIComponent(param);
 
-            url = url.replace(/%s/g, encodedParam).replace(/%S/g, param);
+            url = url.replace(/%s/g, function () encodedParam)
+                     .replace(/%S/g, function () param);
             if (/%s/i.test(data))
                 postData = window.getPostDataStream(data, param, encodedParam, "application/x-www-form-urlencoded");
         }
