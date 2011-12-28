@@ -72,7 +72,7 @@ var Buffer = Module("Buffer", {
         dactyl.assert(url instanceof Ci.nsIURL);
 
         while (count-- && url.path != "/")
-            url.path = url.path.replace(/[^\/]+\/*$/, "");
+            url.path = url.path.replace(/[^\/]*\/*$/, "");
 
         dactyl.assert(!url.equals(this.documentURI));
         dactyl.open(url.spec);
