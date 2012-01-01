@@ -43,6 +43,18 @@ update(Bookmark.prototype, {
             return encodeURIComponent(str);
         let conv = services.CharsetConv(this.charset);
         return escape(conv.ConvertFromUnicode(str) + conv.Finish());
+    },
+
+    get folder() {
+        let res = [];
+        res.toString = function () this.join("/");
+
+        let id = this.id, parent, title;
+        while ((id    = services.bookmarks.getFolderIdForItem(id)) &&
+               (title = services.bookmarks.getItemTitle(id)))
+            res.push(title);
+
+        return res.reverse();
     }
 })
 Bookmark.prototype.members.uri = Bookmark.prototype.members.url;
