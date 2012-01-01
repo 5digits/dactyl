@@ -453,7 +453,7 @@ var Option = Class("Option", {
             result = undefined;
 
         let [, bang, filter] = /^(!?)(.*)/.exec(pattern);
-        filter = Option.dequote(filter);
+        filter = Option.dequote(filter).trim();
 
         let quote = this.keepQuotes ? util.identity : Option.quote;
 

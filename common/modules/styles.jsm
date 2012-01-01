@@ -420,6 +420,8 @@ var Styles = Module("Styles", {
      * @returns {nsIURI -> boolean}
      */
     matchFilter: function (filter) {
+        filter = filter.trim();
+
         if (filter === "*")
             var test = function test(uri) true;
         else if (!/^(?:[a-z-]+:|[a-z-.]+$)/.test(filter)) {
