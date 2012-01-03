@@ -321,22 +321,26 @@ var DOM = Class("DOM", {
                this[0]                            ? this[0].getBoundingClientRect() : {},
 
     get viewport() {
-        if (this[0] instanceof Ci.nsIDOMWindow)
+        let node = this[0];
+        if (node instanceof Ci.nsIDOMDocument)
+            node = node.defaultView;
+
+        if (node instanceof Ci.nsIDOMWindow)
             return {
                 get width() this.right - this.left,
                 get height() this.bottom - this.top,
-                bottom: this[0].innerHeight,
-                right: this[0].innerWidth,
+                bottom: node.innerHeight,
+                right: node.innerWidth,
                 top: 0, left: 0
             };
 
         let r = this.rect;
         return {
-            width: this[0].clientWidth,
-            height: this[0].clientHeight,
-            top: r.top + this[0].clientTop,
+            width: node.clientWidth,
+            height: node.clientHeight,
+            top: r.top + node.clientTop,
             get bottom() this.top + this.height,
-            left: r.left + this[0].clientLeft,
+            left: r.left + node.clientLeft,
             get right() this.left + this.width
         }
     },
