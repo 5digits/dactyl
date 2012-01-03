@@ -1638,8 +1638,9 @@
         <p>
             The regular expression used to split URL lists in commands
             like <ex>:open</ex>. When set to the empty string, URL lists
-            are never split. With the default value, the following will open
-            three URLs in the current tab and two new background tabs,
+            are never split. With the default settings, the following will open
+            three URLs (the first one in the current tab and the latter two in
+            two new background tabs):
         </p>
         <code><ex>:open <str delim="">google Linux</str> | <str delim="">wikipedia Arch Linux</str> | <str delim="">imdb Serenity</str></ex></code>
     </description>
