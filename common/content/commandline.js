@@ -282,9 +282,12 @@ var CommandWidgets = Class("CommandWidgets", {
     contextMenu: Class.Memoize(function () {
         ["copy", "copylink", "selectall"].forEach(function (tail) {
             // some host apps use "hostPrefixContext-copy" ids
-            let xpath = "//xul:menuitem[contains(@id, '" + "ontext-" + tail + "') and not(starts-with(@id, 'dactyl-'))]";
-            document.getElementById("dactyl-context-" + tail).style.listStyleImage =
-                DOM(DOM.XPath(xpath, document).snapshotItem(0)).style.listStyleImage;
+            let css   = "menuitem[id$='ontext-" + tail + "']:not([id^=dactyl-])";
+            let style = DOM(css, document).style;
+            DOM("#dactyl-context-" + tail, document).css({
+                listStyleImage: style.listStyleImage,
+                MozImageRegion: style.MozImageRegion
+            });
         });
         return document.getElementById("dactyl-contextmenu");
     }),
