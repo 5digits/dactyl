@@ -1062,12 +1062,15 @@
     <description>
         <p>
             Patterns used to determine line numbers used by <k>G</k>. May be
-            either a selector expression as accepted by <o>hinttags</o>, in
-            which case the first matching element whose text content is equal to
-            the desired line number is used or the <oa>count</oa>th element
-            failing that, or the string <str delim="'">func:</str> followed by a
-            function which, given arguments for the document and desired line
-            number, must return the target element.
+            either a selector expression as accepted by <o>hinttags</o>, or the
+            string <str delim="'">func:</str> followed by a JavaScript
+            expression which evaluates to a function. In the former case, the
+            first matching element whose text content is equal to the desired
+            line number is used. If no such element exists, the <oa>count</oa>th
+            matching element is used. In the latter case, the provided function
+            must accept two arguments, the document in question and the desired
+            line number, and must return the element corresponding to the given
+            line.
         </p>
     </description>
 </item>
