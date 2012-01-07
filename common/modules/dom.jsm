@@ -1192,7 +1192,9 @@ var DOM = Class("DOM", {
                     if (event.keyCode in this.code_key) {
                         key = this.code_key[event.keyCode];
 
-                        if (event.shiftKey && (key.length > 1 || event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
+                        if (event.shiftKey && (key.length > 1 || key.toUpperCase() == key.toLowerCase()
+                                               || event.ctrlKey || event.altKey || event.metaKey)
+                                || event.dactylShift)
                             modifier += "S-";
                         else if (!modifier && key.length === 1)
                             if (event.shiftKey)
