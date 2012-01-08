@@ -297,8 +297,9 @@
         <xsl:param name="contents" select="text()"/>
         <xsl:variable name="tag" select="$contents"/>
         <xsl:variable name="tag-url" select="
-          regexp:replace(regexp:replace($tag, '%', 'g', '%25'),
-                         '#', 'g', '%23')"/>
+          regexp:replace(regexp:replace(regexp:replace($tag, '%', 'g', '%25'),
+                                        '#', 'g', '%23'),
+                         ';', 'g', '%3B')"/>
 
         <a style="color: inherit;">
             <xsl:if test="not(@link) or @link != 'false'">
