@@ -783,14 +783,16 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             preExecute: function preExecute(args) {
                 if (editor.editor && !this.editor) {
                     this.editor = editor.editor;
-                    this.editor.beginTransaction();
+                    if (!this.noTransaction)
+                        this.editor.beginTransaction();
                 }
                 editor.inEditMap = true;
             },
             postExecute: function preExecute(args) {
                 editor.inEditMap = false;
                 if (this.editor) {
-                    this.editor.endTransaction();
+                    if (!this.noTransaction)
+                        this.editor.endTransaction();
                     this.editor = null;
                 }
             },
@@ -1158,17 +1160,17 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         // text edit mode
         bind(["u"], "Undo changes",
              function (args) {
-                 editor.executeCommand("cmd_undo", Math.max(args.count, 1));
+                 editor.editor.undo(Math.max(args.count, 1));
                  editor.deselect();
              },
-             { count: true });
+             { count: true, noTransaction: true });
 
         bind(["<C-r>"], "Redo undone changes",
              function (args) {
-                 editor.executeCommand("cmd_redo", Math.max(args.count, 1));
+                 editor.editor.redo(Math.max(args.count, 1));
                  editor.deselect();
              },
-             { count: true });
+             { count: true, noTransaction: true });
 
         bind(["D"], "Delete characters from the cursor to the end of the line",
              function () { editor.executeCommand("cmd_deleteToEndOfLine"); });
