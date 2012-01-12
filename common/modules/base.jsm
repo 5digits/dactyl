@@ -1571,10 +1571,17 @@ const Iter = Class("Iter", {
         this.iter = iter;
         if ("__iterator__" in iter)
             this.iter = iter.__iterator__();
+
+        if (this.iter.finalize)
+            this.finalize = function finalize() this.iter.finalize.apply(this.iter, arguments);
     },
 
+    next: function next() this.iter.next(),
+
+    send: function send() this.iter.send.apply(this.iter, arguments),
+
     __iterator__: function () this.iter
-})
+});
 
 /**
  * Array utility methods.

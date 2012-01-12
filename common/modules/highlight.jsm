@@ -101,7 +101,7 @@ var Highlights = Module("Highlight", {
     keys: function keys() Object.keys(this.highlight).sort(),
 
     __iterator__: function () values(this.highlight).sort(function (a, b) String.localeCompare(a.class, b.class))
-                                                    .iterValues().__iterator__(),
+                                                    .iterValues(),
 
     _create: function _create(agent, args) {
         let obj = Highlight.apply(Highlight, args);
