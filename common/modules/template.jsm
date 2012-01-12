@@ -105,7 +105,7 @@ var Template = Module("Template", {
 
     map: function map(iter, func, sep, interruptable) {
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
-        if (iter.length) // FIXME: Kludge?
+        if (typeof iter.length == "number") // FIXME: Kludge?
             iter = array.iterValues(iter);
         let res = <></>;
         let n = 0;
