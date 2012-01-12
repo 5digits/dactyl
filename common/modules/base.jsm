@@ -289,7 +289,7 @@ function properties(obj, prototypes, debugger_) {
     for (; obj; obj = prototypes && prototype(obj)) {
         try {
             if (sandbox.Object.getOwnPropertyNames || !debugger_ || !services.debugger.isOn)
-                var iter = values(Object.getOwnPropertyNames(obj));
+                var iter = (v for each (v in Object.getOwnPropertyNames(obj)));
         }
         catch (e) {}
         if (!iter)
@@ -1452,17 +1452,7 @@ function iter(obj, iface) {
             return iter(obj.enumerator());
         return iter(obj.enumerator);
     }
-    res.__noSuchMethod__ = function __noSuchMethod__(meth, args) {
-        if (meth in iter)
-            var res = iter[meth].apply(iter, [this].concat(args));
-        else
-            res = let (ary = array(this))
-                ary[meth] ? ary[meth].apply(ary, args) : ary.__noSuchMethod__(meth, args);
-        if (isinstance(res, ["Iterator", "Generator"]))
-            return iter(res);
-        return res;
-    };
-    return res;
+    return Iter(res);
 }
 update(iter, {
     toArray: function toArray(iter) array(iter).array,
@@ -1575,6 +1565,16 @@ update(iter, {
         catch (e if e instanceof StopIteration) {}
     }
 });
+
+const Iter = Class("Iter", {
+    init: function init(iter) {
+        this.iter = iter;
+        if ("__iterator__" in iter)
+            this.iter = iter.__iterator__();
+    },
+
+    __iterator__: function () this.iter
+})
 
 /**
  * Array utility methods.
@@ -1729,6 +1729,40 @@ var array = Class("array", Array, {
             res.push([item, i in ary2 ? ary2[i] : ""]);
         return res;
     }
+});
+
+/* Make Minefield not explode, because Minefield exploding is not fun. */
+let iterProto = Iter.prototype;
+Object.keys(iter).forEach(function (k) {
+    iterProto[k] = function () {
+        let res = iter[k].apply(iter, [this].concat(Array.slice(arguments)));
+        if (isinstance(res, ["Iterator", "Generator"]))
+            return Iter(res);
+        return res;
+    };
+});
+
+Object.keys(array).forEach(function (k) {
+    if (!(k in iterProto))
+        iterProto[k] = function () {
+            let res = array[k].apply(array, [this.toArray()].concat(Array.slice(arguments)));
+            if (isinstance(res, ["Iterator", "Generator"]))
+                return Iter(res);
+            if (isArray(res))
+                return array(res);
+            return res;
+        };
+});
+
+Object.getOwnPropertyNames(Array.prototype).forEach(function (k) {
+    if (!(k in iterProto))
+        iterProto[k] = function () {
+            let ary = iter(this).toArray();
+            let res = ary[k].apply(ary, arguments);
+            if (isArray(res))
+                return array(res);
+            return res;
+        };
 });
 
 endModule();
