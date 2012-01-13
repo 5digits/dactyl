@@ -81,23 +81,15 @@ var Binding = Class("Binding", {
         return res;
     })
 });
-for (let [k, v] in Iterator(XPCOMShim([Ci.nsIDOMElement]))) {
-    let key = k;
-    let prop = { configurable: true, enumerable: false };
 
-    if (callable(v))
-        update(prop, {
-            value: function () this.node[key].apply(this.node, arguments),
-            writable: true
-        });
-    else
-        update(prop, {
-            get: function () this.node[k],
-            set: function (val) this.node[k] = val
-        });
-
-    Object.defineProperty(Binding.prototype, key, prop);
-}
+["appendChild", "getAttribute", "insertBefore", "setAttribute"].forEach(function (key) {
+    Object.defineProperty(Binding.prototype, key, {
+        configurable: true,
+        enumerable: false,
+        value: function () this.node[key].apply(this.node, arguments),
+        writable: true
+    });
+});
 
 var Template = Module("Template", {
     add: function add(a, b) a + b,

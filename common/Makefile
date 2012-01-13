@@ -16,7 +16,7 @@ GOOGLE_PROJ   = dactyl
 GOOGLE	      = https://$(GOOGLE_PROJ).googlecode.com/files
 VERSION	     ?= $(shell $(SED) -n 's/.*em:version(>|=")(.*)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
 UUID   	     := $(shell $(SED) -n 's/.*em:id(>|=")(.*)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
-MANGLE	     := $(shell date '+%s' | awk '{ printf "%x", $$1 }')
+MANGLE	     := chrome
 MOZMILL       = mozmill
 HOSTAPP_PATH  = $(shell which $(HOSTAPP))
 TEST_DIR      = $(BASE)/tests/functional

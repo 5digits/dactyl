@@ -215,7 +215,8 @@ var ConfigBase = Class("ConfigBase", {
         let jar = io.isJarURL(uri);
         if (jar) {
             let prefix = getDir(jar.JAREntry);
-            var res = iter(s.slice(prefix.length).replace(/\/.*/, "") for (s in io.listJar(jar.JARFile, prefix)))
+            var res = iter(s.slice(prefix.length).replace(/\/.*/, "")
+                           for (s in io.listJar(jar.JARFile, prefix)))
                         .toArray();
         }
         else {
@@ -225,7 +226,7 @@ var ConfigBase = Class("ConfigBase", {
                         if (f.isDirectory())).array;
         }
 
-        function exists(pkg) services["resource:"].hasSubstitution("dactyl-locale-" + pkg);
+        let exists = function exists(pkg) services["resource:"].hasSubstitution("dactyl-locale-" + pkg);
 
         return array.uniq([this.appLocale, this.appLocale.replace(/-.*/, "")]
                             .filter(exists)

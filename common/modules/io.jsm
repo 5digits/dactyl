@@ -331,14 +331,19 @@ var IO = Module("io", {
      *
      * @returns {File}
      */
-    createTempFile: function createTempFile(name) {
-        if (name instanceof Ci.nsIFile)
+    createTempFile: function createTempFile(name, type) {
+        if (name instanceof Ci.nsIFile) {
             var file = name.clone();
+            if (!type || type == "file")
+                file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
+            else
+                file.createUnique(Ci.nsIFile.DIRECTORY_TYPE, octal(777));
+        }
         else {
             file = services.directory.get("TmpD", Ci.nsIFile);
             file.append(this.config.tempFile + (name ? "." + name : ""));
+            file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
         }
-        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(600));
 
         services.externalApp.deleteTemporaryFileOnExit(file);
 
@@ -414,7 +419,8 @@ var IO = Module("io", {
         if (bin instanceof File || File.isAbsolutePath(bin))
             return this.File(bin);
 
-        let dirs = services.environment.get("PATH").split(config.OS.isWindows ? ";" : ":");
+        let dirs = services.environment.get("PATH")
+                           .split(config.OS.pathListSep);
         // Windows tries the CWD first TODO: desirable?
         if (config.OS.isWindows)
             dirs = [io.cwd].concat(dirs);
@@ -556,7 +562,8 @@ var IO = Module("io", {
      *     otherwise, the return value of *func*.
      */
     withTempFiles: function withTempFiles(func, self, checked, ext) {
-        let args = array(util.range(0, func.length)).map(bind("createTempFile", this, ext)).array;
+        let args = array(util.range(0, func.length))
+                    .map(bind("createTempFile", this, ext)).array;
         try {
             if (!args.every(util.identity))
                 return false;

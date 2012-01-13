@@ -195,8 +195,6 @@ function init() {
             break;
 
         case "resource":
-            var hardSuffix = /^[^\/]*/.exec(fields[2])[0];
-
             resources.push(fields[1], fields[1] + suffix);
             resourceProto.setSubstitution(fields[1], getURI(fields[2]));
             resourceProto.setSubstitution(fields[1] + suffix, getURI(fields[2]));
@@ -205,7 +203,7 @@ function init() {
 
     // Flush the cache if necessary, just to be paranoid
     let pref = "extensions.dactyl.cacheFlushCheck";
-    let val  = addon.version + "-" + hardSuffix;
+    let val  = addon.version;
     if (!Services.prefs.prefHasUserValue(pref) || Services.prefs.getCharPref(pref) != val) {
         var cacheFlush = true;
         Services.obs.notifyObservers(null, "startupcache-invalidate", "");
