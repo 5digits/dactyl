@@ -45,7 +45,8 @@ var Messages = Module("messages", {
         array.uniq([JSMLoader.getTarget("dactyl://locale/" + this.name + ".properties"),
                     JSMLoader.getTarget("dactyl://locale-local/" + this.name + ".properties"),
                     "resource://dactyl-locale/en-US/" + this.name + ".properties",
-                    "resource://dactyl-locale-local/en-US/" + this.name + ".properties"])
+                    "resource://dactyl-locale-local/en-US/" + this.name + ".properties"],
+                   true)
              .map(services.stringBundle.createBundle)
              .filter(function (bundle) { try { bundle.getSimpleEnumeration(); return true; } catch (e) { return false; } })),
 
