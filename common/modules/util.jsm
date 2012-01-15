@@ -710,6 +710,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *    responseType: {string} Override the type of the "response"
      *                  property.
      *
+     *    headers: {objects} Extra request headers.
+     *
      *    user: {string} The user name to send via HTTP Authentication.
      *    pass: {string} The password to send via HTTP Authentication.
      *
@@ -749,12 +751,18 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 params.data = data;
             }
 
-
             if (params.mimeType)
                 xmlhttp.overrideMimeType(params.mimeType);
 
-            xmlhttp.open(params.method || "GET", url, async,
-                         params.user, params.pass);
+            let args = [params.method || "GET", url, async];
+            if (params.user != null || params.pass != null)
+                args.push(params.user);
+            if (params.pass != null)
+                args.push(prams.pass);
+            xmlhttp.open.apply(xmlhttp, args);
+
+            for (let [header, val] in Iterator(params.headers || {}))
+                xmlhttp.setRequestHeader(header, val);
 
             if (params.responseType)
                 xmlhttp.responseType = params.responseType;

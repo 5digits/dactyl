@@ -55,7 +55,7 @@ var JavaScript = Module("javascript", {
 
     newContext: function () this.modules.newContext(this.modules.userContext, true),
 
-    get completers() JavaScript.completers, // For backward compatibility
+    completers: Class.Memoize(function () Object.create(JavaScript.completers)),
 
     // Some object members are only accessible as function calls
     getKey: function (obj, key) {
@@ -550,7 +550,7 @@ var JavaScript = Module("javascript", {
                 }
                 catch (e) {}
                 if (!completer)
-                    completer = JavaScript.completers[funcName];
+                    completer = this.completers[funcName];
                 if (!completer)
                     return null;
 

@@ -143,7 +143,7 @@ var Events = Module("events", {
                         this.active.push(elem);
                 }
 
-                this.active = this.active.filter(function (e) e.popupBoxObject.popupState != "closed");
+                this.active = this.active.filter(function (e) e.popupBoxObject && e.popupBoxObject.popupState != "closed");
 
                 if (!this.active.length && !this.activeMenubar)
                     modes.remove(modes.MENU, true);

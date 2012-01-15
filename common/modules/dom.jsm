@@ -803,11 +803,30 @@ var DOM = Class("DOM", {
         if (isObject(event))
             capture = listener;
         else
-            event = array.toObject([[key, val]]);
+            event = array.toObject([[event, listener]]);
 
         return this.each(function (elem) {
             for (let [k, v] in Iterator(event))
                 elem.removeEventListener(k, v.wrapper || v, capture);
+        });
+    },
+    once: function once(event, listener, capture) {
+        if (isObject(event))
+            capture = listener;
+        else
+            event = array.toObject([[event, listener]]);
+
+        for (let pair in Iterator(event)) {
+            let [evt, callback] = pair;
+            event[evt] = util.wrapCallback(function wrapper(event) {
+                this.removeEventListener(evt, wrapper.wrapper, capture);
+                return callback.apply(this, arguments);
+            }, true);
+        }
+
+        return this.each(function (elem) {
+            for (let [k, v] in Iterator(event))
+                elem.addEventListener(k, v, capture);
         });
     },
 
