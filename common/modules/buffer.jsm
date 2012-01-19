@@ -2230,7 +2230,7 @@ var Buffer = Module("Buffer", {
         options.add(["linenumbers", "ln"],
             "Patterns used to determine line numbers used by G",
             "sitemap", {
-                "view-source:*": 'span[id^=line]',
+                "view-source:*": '[id^=line]',
                 "code.google.com": '#nums [id^="nums_table"] a[href^="#"]',
                 "github.com": '.line_numbers>*',
                 "mxr.mozilla.org": 'a.l',

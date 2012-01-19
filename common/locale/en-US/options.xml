@@ -1053,7 +1053,8 @@
     <tags>'ln' 'linenumbers'</tags>
     <spec>'linenumbers' 'ln'</spec>
     <type>&option.linenumbers.type;</type>
-    <default><![CDATA[code.google.com:'#nums [id^="nums_table"] a[href^="#"]',
+    <default><![CDATA['view-source:*':[id^=line],
+          code.google.com:'#nums [id^="nums_table"] a[href^="#"]',
           github.com:.line_numbers>*,
           mxr.mozilla.org:a.l,
           pastebin.com:#code_frame>div>ol>li,
