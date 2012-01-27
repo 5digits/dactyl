@@ -55,12 +55,12 @@ var DOM = Class("DOM", {
             this[length++] = DOM.fromXML(val, context, this.nodes);
         else if (val instanceof Ci.nsIDOMNode || val instanceof Ci.nsIDOMWindow)
             this[length++] = val;
-        else if ("length" in val)
-            for (let i = 0; i < val.length; i++)
-                this[length++] = val[i];
         else if ("__iterator__" in val || isinstance(val, ["Iterator", "Generator"]))
             for (let elem in val)
                 this[length++] = elem;
+        else if ("length" in val)
+            for (let i = 0; i < val.length; i++)
+                this[length++] = val[i];
         else
             this[length++] = val;
 

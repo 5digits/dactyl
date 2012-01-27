@@ -532,6 +532,7 @@ var HintSession = Class("HintSession", CommandMode, {
      */
     removeHints: function _removeHints(timeout) {
         for (let { doc, start, end } in values(this.docs)) {
+            DOM(doc.documentElement).highlight.remove("Hinting");
             // Goddamn stupid fucking Gecko 1.x security manager bullshit.
             try { delete doc.dactylLabels; } catch (e) { doc.dactylLabels = undefined; }
 
@@ -574,6 +575,7 @@ var HintSession = Class("HintSession", CommandMode, {
         this.validHints = [];
 
         for (let { doc, start, end } in values(this.docs)) {
+            DOM(doc.documentElement).highlight.add("Hinting");
             let [offsetX, offsetY] = this.getContainerOffsets(doc);
 
         inner:
@@ -590,13 +592,13 @@ var HintSession = Class("HintSession", CommandMode, {
                         if (!rect)
                             continue;
 
-                        hint.imgSpan = util.xmlToDom(<span highlight="Hint" dactyl:hl="HintImage" xmlns:dactyl={NS}/>, doc);
-                        hint.imgSpan.style.display = "none";
-                        hint.imgSpan.style.left = (rect.left + offsetX) + "px";
-                        hint.imgSpan.style.top = (rect.top + offsetY) + "px";
-                        hint.imgSpan.style.width = (rect.right - rect.left) + "px";
-                        hint.imgSpan.style.height = (rect.bottom - rect.top) + "px";
-                        hint.span.parentNode.appendChild(hint.imgSpan);
+                        hint.imgSpan = DOM(<span highlight="Hint" dactyl:hl="HintImage" xmlns:dactyl={NS}/>, doc).css({
+                            display: "none",
+                            left: (rect.left + offsetX) + "px",
+                            top: (rect.top + offsetY) + "px",
+                            width: (rect.right - rect.left) + "px",
+                            height: (rect.bottom - rect.top) + "px"
+                        }).appendTo(hint.span.parentNode)[0];
                     }
                 }
 

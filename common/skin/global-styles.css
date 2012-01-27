@@ -243,8 +243,9 @@ FrameIndicator;;* {
 Bell          /* &dactyl.appName;’s visual bell */ \
               background-color: black !important;
 
+Hinting;;*  /* A document which is currently being hinted */
 Hint;;* {
-    /* A hint indicator. See <ex>:help hints</ex> */
+    /* A hint indicator. See :help hints */
     font:        bold 10px "Droid Sans Mono", monospace !important;
     margin:      -.2ex;
     padding:     0 0 0 1px;
