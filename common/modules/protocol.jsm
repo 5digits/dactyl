@@ -182,31 +182,34 @@ function XMLChannel(uri, contentType, noErrorChannel, unprivileged) {
     this.channel.contentType = contentType || channel.contentType;
     this.channel.contentCharset = "UTF-8";
     if (!unprivileged)
-    this.channel.owner = systemPrincipal;
+        this.channel.owner = systemPrincipal;
 
-    let stream = services.InputStream(channelStream);
-    let [, pre, doctype, url, extra, open, post] = util.regexp(<![CDATA[
-            ^ ([^]*?)
-            (?:
-                (<!DOCTYPE \s+ \S+ \s+) (?:SYSTEM \s+ "([^"]*)" | ((?:[^[>\s]|\s[^[])*))
-                (\s+ \[)?
-                ([^]*)
-            )?
-            $
-        ]]>, "x").exec(stream.read(4096));
-    this.writes.push(pre);
-    if (doctype) {
-        this.writes.push(doctype + (extra || "") + " [\n");
-        if (url)
-            this.addChannel(url);
-
-        if (!open)
-            this.writes.push("\n]");
-
-        for (let [, pre, url] in util.regexp.iterate(/([^]*?)(?:%include\s+"([^"]*)";|$)/gy, post)) {
-            this.writes.push(pre);
+    let type = this.channel.contentType;
+    if (type.indexOf("text/") == 0 || type.indexOf("+xml") == type.length - 4) {
+        let stream = services.InputStream(channelStream);
+        let [, pre, doctype, url, extra, open, post] = util.regexp(<![CDATA[
+                ^ ([^]*?)
+                (?:
+                    (<!DOCTYPE \s+ \S+ \s+) (?:SYSTEM \s+ "([^"]*)" | ((?:[^[>\s]|\s[^[])*))
+                    (\s+ \[)?
+                    ([^]*)
+                )?
+                $
+            ]]>, "x").exec(stream.read(4096));
+        this.writes.push(pre);
+        if (doctype) {
+            this.writes.push(doctype + (extra || "") + " [\n");
             if (url)
                 this.addChannel(url);
+
+            if (!open)
+                this.writes.push("\n]");
+
+            for (let [, pre, url] in util.regexp.iterate(/([^]*?)(?:%include\s+"([^"]*)";|$)/gy, post)) {
+                this.writes.push(pre);
+                if (url)
+                    this.addChannel(url);
+            }
         }
     }
     this.writes.push(channelStream);

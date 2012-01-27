@@ -1316,7 +1316,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * Escapes a string against shell meta-characters and argument
      * separators.
      */
-    shellEscape: function shellEscape(str) '"' + String.replace(str, /[\\"$]/g, "\\$&") + '"',
+    shellEscape: function shellEscape(str) '"' + String.replace(str, /[\\"$`]/g, "\\$&") + '"',
 
     /**
      * Suspend execution for at least *delay* milliseconds. Functions by
