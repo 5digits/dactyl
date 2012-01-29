@@ -694,6 +694,7 @@
     <strut/>
     <type>&option.extendedhinttags.type;</type>
     <default>[asOTvVWy]:':-moz-any-link',area[href],img[src],iframe[src],
+          [A]:[id],
           [f]:body,
           [F]:body,code,div,html,p,pre,span,
           [iI]:img,

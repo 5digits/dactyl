@@ -1762,7 +1762,7 @@ Object.keys(array).forEach(function (k) {
 });
 
 Object.getOwnPropertyNames(Array.prototype).forEach(function (k) {
-    if (!(k in iterProto))
+    if (!(k in iterProto) && callable(Array.prototype[k]))
         iterProto[k] = function () {
             let ary = iter(this).toArray();
             let res = ary[k].apply(ary, arguments);

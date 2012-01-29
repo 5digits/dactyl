@@ -339,7 +339,9 @@ var Option = Class("Option", {
         if (isArray(defaultValue))
             defaultValue = defaultValue.map(Option.quote).join(",");
         else if (isObject(defaultValue))
-            defaultValue = iter(defaultValue).map(function (val) val.map(Option.quote).join(":")).join(",");
+            defaultValue = iter(defaultValue).map(function (val) val.map(function (v) Option.quote(v, /:/))
+                                                                    .join(":"))
+                                             .join(",");
 
         if (isArray(defaultValue))
             defaultValue = defaultValue.map(Option.quote).join(",");
@@ -446,7 +448,7 @@ var Option = Class("Option", {
     },
 
     unparseRegexp: function unparseRegexp(re, quoted) re.bang + Option.quote(util.regexp.getSource(re), /^!|:/) +
-        (typeof re.result === "boolean" ? "" : ":" + (quoted ? re.result : Option.quote(re.result))),
+        (typeof re.result === "boolean" ? "" : ":" + (quoted ? re.result : Option.quote(re.result, /:/))),
 
     parseSite: function parseSite(pattern, result, rest) {
         if (isArray(rest)) // Called by Array.map
@@ -455,7 +457,7 @@ var Option = Class("Option", {
         let [, bang, filter] = /^(!?)(.*)/.exec(pattern);
         filter = Option.dequote(filter).trim();
 
-        let quote = this.keepQuotes ? util.identity : Option.quote;
+        let quote = this.keepQuotes ? util.identity : function (v) Option.quote(v, /:/);
 
         return update(Styles.matchFilter(filter), {
             bang: bang,
@@ -491,7 +493,7 @@ var Option = Class("Option", {
 
         stringlist:  function (vals) vals.map(Option.quote).join(","),
 
-        stringmap:   function (vals) [Option.quote(k, /:/) + ":" + Option.quote(v) for ([k, v] in Iterator(vals))].join(","),
+        stringmap:   function (vals) [Option.quote(k, /:/) + ":" + Option.quote(v, /:/) for ([k, v] in Iterator(vals))].join(","),
 
         regexplist:  function (vals) vals.join(","),
         get regexpmap() this.regexplist,

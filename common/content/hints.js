@@ -761,6 +761,11 @@ var Hints = Module("hints", {
         this.addMode("V", "View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true));
         this.addMode("y", "Yank hint location",                   function (elem, loc) editor.setRegister(null, loc, true));
         this.addMode("Y", "Yank hint description",                function (elem) editor.setRegister(null, elem.textContent || "", true));
+        this.addMode("A", "Yank hint anchor url",                 function (elem) {
+            let uri = elem.ownerDocument.documentURIObject.clone();
+            uri.ref = elem.id;
+            dactyl.clipboardWrite(uri.spec, true);
+        });
         this.addMode("c", "Open context menu",                    function (elem) DOM(elem).contextmenu());
         this.addMode("i", "Show image",                           function (elem) dactyl.open(elem.src));
         this.addMode("I", "Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB));
@@ -1271,6 +1276,7 @@ var Hints = Module("hints", {
             "regexpmap", {
                 "[iI]": "img",
                 "[asOTvVWy]": [":-moz-any-link", "area[href]", "img[src]", "iframe[src]"],
+                "[A]": ["[id]"],
                 "[f]": "body",
                 "[F]": ["body", "code", "div", "html", "p", "pre", "span"],
                 "[S]": ["input:not([type=hidden])", "textarea", "button", "select"]
@@ -1280,11 +1286,13 @@ var Hints = Module("hints", {
                 getKey: function (val, default_)
                     let (res = array.nth(this.value, function (re) let (match = re.exec(val)) match && match[0] == val, 0))
                         res ? res.matcher : default_,
-                setter: function (vals) {
+                parse: function parse(val) {
+                    let vals = parse.supercall(this, val);
                     for (let value in values(vals))
                         value.matcher = DOM.compileMatcher(Option.splitList(value.result));
                     return vals;
                 },
+                testValues: function testValues(vals, validator) vals.every(function (re) Option.splitList(re).every(validator)),
                 validator: DOM.validateMatcher
             });
 

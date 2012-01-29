@@ -84,6 +84,7 @@
     • The command line is now hidden by default. Added c, C, and M to
       'guioptions'. [b4]
     • Hints mode improvements, including:
+      - Added [;A] extended hint mode. [rc2]
       - Added g; continued extended hints mode, which allows
         selecting multiple hints. Removed ;F. [b1]
       - Hints are now updated after scrolling and window resizing. [b3]
