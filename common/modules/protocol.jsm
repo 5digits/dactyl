@@ -185,7 +185,7 @@ function XMLChannel(uri, contentType, noErrorChannel, unprivileged) {
         this.channel.owner = systemPrincipal;
 
     let type = this.channel.contentType;
-    if (type.indexOf("text/") == 0 || type.indexOf("+xml") == type.length - 4) {
+    if (/^text\/|[\/+]xml$/.test(type)) {
         let stream = services.InputStream(channelStream);
         let [, pre, doctype, url, extra, open, post] = util.regexp(<![CDATA[
                 ^ ([^]*?)

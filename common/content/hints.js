@@ -1276,7 +1276,7 @@ var Hints = Module("hints", {
             "regexpmap", {
                 "[iI]": "img",
                 "[asOTvVWy]": [":-moz-any-link", "area[href]", "img[src]", "iframe[src]"],
-                "[A]": ["[id]"],
+                "[A]": ["[id],a[name]"],
                 "[f]": "body",
                 "[F]": ["body", "code", "div", "html", "p", "pre", "span"],
                 "[S]": ["input:not([type=hidden])", "textarea", "button", "select"]
