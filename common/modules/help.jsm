@@ -126,7 +126,7 @@ var Help = Module("Help", {
                 | (?: ^ [^\S\n]* \n) +
             ]]>), "gmxy");
 
-            let betas = util.regexp(/\[(b\d)\]/, "gx");
+            let betas = util.regexp(/\[((?:b|rc)\d)\]/, "gx");
 
             let beta = array(betas.iterate(NEWS))
                         .map(function (m) m[1]).uniq().slice(-1)[0];

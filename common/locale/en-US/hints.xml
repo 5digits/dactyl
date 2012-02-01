@@ -109,6 +109,7 @@
             <li tag=";V"><em>V</em> to view its destination source in the external editor</li>
             <li tag=";y"><em>y</em> to yank its destination location</li>
             <li tag=";Y"><em>Y</em> to yank its text description</li>
+            <li tag=";A"><em>A</em> to yank its anchor URL</li>
             <li tag=";c"><em>c</em> to open its context menu</li>
             <li tag=";i"><em>i</em> to open an image</li>
             <li tag=";I"><em>I</em> to open an image in a new tab.</li>

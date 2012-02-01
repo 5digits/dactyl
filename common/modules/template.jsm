@@ -258,7 +258,7 @@ var Template = Module("Template", {
     linkifyHelp: function linkifyHelp(str, help) {
         let re = util.regexp(<![CDATA[
             (?P<pre> [/\s]|^)
-            (?P<tag> '[\w-]+' | :(?:[\w-]+!?|!) | (?:._)?<[\w-]+>\w* | \b[a-zA-Z]_(?:\w+|.) | \[[\w-]+\] | E\d{3} )
+            (?P<tag> '[\w-]+' | :(?:[\w-]+!?|!) | (?:._)?<[\w-]+>\w* | \b[a-zA-Z]_(?:[\w[\]]+|.) | \[[\w-;]+\] | E\d{3} )
             (?=      [[\)!,:;./\s]|$)
         ]]>, "gx");
         return this.highlightSubstrings(str, (function () {
