@@ -722,7 +722,7 @@ var HintSession = Class("HintSession", CommandMode, {
      * Display the current status to the user.
      */
     updateStatusline: function _updateStatusline() {
-        statusline.inputBuffer = (this.escapeNumbers ? options["mapleader"] : "") +
+        statusline.inputBuffer = (this.escapeNumbers ? "\\" : "") +
                                  (this.hintNumber ? this.getHintString(this.hintNumber) : "");
     },
 });
@@ -1266,7 +1266,7 @@ var Hints = Module("hints", {
             "Delete the previous character",
             function ({ self }) self.backspace());
 
-        bind(["<Leader>"],
+        bind(["\\"],
             "Toggle hint filtering",
             function ({ self }) { self.escapeNumbers = !self.escapeNumbers; });
     },

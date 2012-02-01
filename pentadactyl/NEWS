@@ -217,8 +217,8 @@
         still be used for this purpose. [b4]
       - 'loadplugins' is now a [regexplist] option rather than
         a boolean. [b2]
-      - 'mapleader' is now an option rather than a :let
-        variable. [b4]
+      - 'mapleader' is no longer an option rather or a :let
+        variable. [b4][rc2]
       - 'passkeys' is now a [sitemap] with key chain support rather
         than a [regexpmap]. [b6]
       - The precise format of 'sanitizeitems' has changed slightly. [b8]

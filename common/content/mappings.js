@@ -355,7 +355,7 @@ var Mappings = Module("mappings", {
 
     get userHives() this.allHives.filter(function (h) h !== this.builtin, this),
 
-    expandLeader: function expandLeader(keyString) keyString.replace(/<Leader>/i, function () options["mapleader"]),
+    expandLeader: deprecated("your brain", function expandLeader(keyString) keyString),
 
     prefixes: Class.Memoize(function () {
         let list = Array.map("CASM", function (s) s + "-");
@@ -365,8 +365,6 @@ var Mappings = Module("mappings", {
     }),
 
     expand: function expand(keys) {
-        keys = keys.replace(/<leader>/i, options["mapleader"]);
-
         if (!/<\*-/.test(keys))
             var res = keys;
         else
@@ -541,7 +539,7 @@ var Mappings = Module("mappings", {
                     args["-builtin"] = true;
 
                 if (!rhs) // list the mapping
-                    mappings.list(mapmodes, mappings.expandLeader(lhs), hives);
+                    mappings.list(mapmodes, lhs, hives);
                 else {
                     util.assert(args["-group"].modifiable,
                                 _("map.builtinImmutable"));
@@ -828,18 +826,10 @@ var Mappings = Module("mappings", {
                 function (context, obj, args) [[m.names, m.description] for (m in this.iterate(args[0]))]
             ]);
     },
-    options: function initOptions(dactyl, modules, window) {
-        options.add(["mapleader", "ml"],
-            "Define the replacement keys for the <Leader> pseudo-key",
-            "string", "\\", {
-                setter: function (value) {
-                    if (this.hasChanged)
-                        for (let hive in values(mappings.allHives))
-                            for (let stack in values(hive.stacks))
-                                delete stack.states;
-                    return value;
-                }
-            });
+    mappings: function initMappings(dactyl, modules, window) {
+        mappings.add([modes.COMMAND],
+             ["\\"], "Emits <Leader> pseudo-key",
+             function () { events.feedkeys("<Leader>") });
     }
 });
 

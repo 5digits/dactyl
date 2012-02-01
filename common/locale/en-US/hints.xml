@@ -48,7 +48,7 @@
             <dt><k name="Tab"/></dt>
             <dd>Moves the focus to the next hintable element</dd>
 
-            <dt><k name="Leader"/></dt>
+            <dt><k>\</k></dt>
             <dd>Temporarily treats all numbers (or other keys, depending on the
                 value of <o>hintkeys</o>) as ordinary text</dd>
 

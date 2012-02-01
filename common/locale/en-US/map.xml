@@ -395,25 +395,6 @@
     </description>
 </item>
 
-<item>
-    <tags><![CDATA[<Leader> \]]></tags>
-    <strut/>
-    <spec><![CDATA[<Leader>]]></spec>
-    <description>
-        <p>
-            A pseudo-key which expands to the value of the <o>mapleader</o>
-            option. For example, by default,
-        </p>
-        <code><ex>:map <k name="Leader"/>h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
-        <p>works like</p>
-        <code><ex>:map \h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
-        <p>but after</p>
-        <set opt="mapleader"><str>,</str></set>
-        <p>it works like</p>
-        <code><ex>:map ,h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
-    </description>
-</item>
-
 <h3 tag="map-examples">Mapping examples</h3>
 
 <p>Make <k name="A-n" link="false"/> do the same as <k name="Down" link="false"/> in input <t>modes</t>:</p>

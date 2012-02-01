@@ -694,7 +694,7 @@
     <strut/>
     <type>&option.extendedhinttags.type;</type>
     <default>[asOTvVWy]:':-moz-any-link',area[href],img[src],iframe[src],
-          [A]:[id],
+          [A]:[id],a[name],
           [f]:body,
           [F]:body,code,div,html,p,pre,span,
           [iI]:img,
@@ -1113,16 +1113,6 @@
         <p>
             See also <ex>:runtime</ex>.
         </p>
-    </description>
-</item>
-
-<item>
-    <tags>'ml' 'mapleader'</tags>
-    <spec>'mapleader' 'ml'</spec>
-    <type>&option.mapleader.type;</type>
-    <default>&option.mapleader.default;</default>
-    <description>
-        <p>Defines the replacement keys for the <k name="Leader"/> pseudo-key.</p>
     </description>
 </item>
 

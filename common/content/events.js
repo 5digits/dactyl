@@ -372,8 +372,6 @@ var Events = Module("events", {
             if (quiet)
                 commandline.quiet = quiet;
 
-            keys = mappings.expandLeader(keys);
-
             for (let [, evt_obj] in Iterator(DOM.Event.parse(keys))) {
                 let now = Date.now();
                 let key = DOM.Event.stringify(evt_obj);
