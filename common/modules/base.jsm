@@ -363,7 +363,7 @@ function keys(obj) iter(function keys() {
  * @returns {Generator}
  */
 function values(obj) iter(function values() {
-    if (isinstance(obj, ["Generator", "Iterator"]))
+    if (isinstance(obj, ["Generator", "Iterator", Iter]))
         for (let k in obj)
             yield k;
     else
