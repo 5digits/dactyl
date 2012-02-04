@@ -345,7 +345,7 @@ var Bookmarks = Module("bookmarks", {
                 catch (e) {}
 
             if (charset)
-                var encodedParam = escape(window.convertFromUnicode(charset, param));
+                var encodedParam = escape(window.convertFromUnicode(charset, param)).replace(/\+/g, encodeURIComponent);
             else
                 encodedParam = bookmarkcache.keywords[keyword.toLowerCase()].encodeURIComponent(param);
 

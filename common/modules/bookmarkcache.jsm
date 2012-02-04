@@ -42,7 +42,7 @@ update(Bookmark.prototype, {
         if (!this.charset || this.charset === "UTF-8")
             return encodeURIComponent(str);
         let conv = services.CharsetConv(this.charset);
-        return escape(conv.ConvertFromUnicode(str) + conv.Finish());
+        return escape(conv.ConvertFromUnicode(str) + conv.Finish()).replace(/\+/g, encodeURIComponent);
     },
 
     get folder() {
