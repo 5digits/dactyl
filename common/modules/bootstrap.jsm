@@ -123,8 +123,9 @@ else
         },
 
         cleanup: function unregister() {
-            for each (let factory in this.factories.splice(0))
+            for each (let factory in this.factories)
                 this.manager.unregisterFactory(factory.classID, factory);
+            this.factories = {};
         },
 
         purge: function purge() {
@@ -185,11 +186,15 @@ else
         }),
 
         registerFactory: function registerFactory(factory) {
+            if (Set.has(this.factories, factory.contractID))
+                this.manager.unregisterFactory(this.factories[factory.contractID].classID,
+                                               this.factories[factory.contractID]);
+
             this.manager.registerFactory(factory.classID,
                                          String(factory.classID),
                                          factory.contractID,
                                          factory);
-            this.factories.push(factory);
+            this.factories[factory.contractID] = factory;
         }
     };
 

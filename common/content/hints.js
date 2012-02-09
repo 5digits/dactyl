@@ -301,7 +301,8 @@ var HintSession = Class("HintSession", CommandMode, {
 
             if (!rect.width || !rect.height)
                 if (!Array.some(elem.childNodes, function (elem) elem instanceof Element && DOM(elem).style.float != "none" && isVisible(elem)))
-                    return false;
+                    if (elem.textContent || !elem.name)
+                        return false;
 
             let computedStyle = doc.defaultView.getComputedStyle(elem, null);
             if (computedStyle.visibility != "visible" || computedStyle.display == "none")
@@ -763,7 +764,7 @@ var Hints = Module("hints", {
         this.addMode("Y", "Yank hint description",                function (elem) editor.setRegister(null, elem.textContent || "", true));
         this.addMode("A", "Yank hint anchor url",                 function (elem) {
             let uri = elem.ownerDocument.documentURIObject.clone();
-            uri.ref = elem.id;
+            uri.ref = elem.id || elem.name;
             dactyl.clipboardWrite(uri.spec, true);
         });
         this.addMode("c", "Open context menu",                    function (elem) DOM(elem).contextmenu());
@@ -1276,7 +1277,7 @@ var Hints = Module("hints", {
             "regexpmap", {
                 "[iI]": "img",
                 "[asOTvVWy]": [":-moz-any-link", "area[href]", "img[src]", "iframe[src]"],
-                "[A]": ["[id],a[name]"],
+                "[A]": ["[id]", "a[name]"],
                 "[f]": "body",
                 "[F]": ["body", "code", "div", "html", "p", "pre", "span"],
                 "[S]": ["input:not([type=hidden])", "textarea", "button", "select"]
