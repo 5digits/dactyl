@@ -1220,6 +1220,7 @@ var CommandLine = Module("commandline", {
         complete: function complete(show, tabPressed) {
             this.session.ignoredCount = 0;
 
+            this.waiting = null;
             this.context.reset();
             this.context.tabPressed = tabPressed;
 
@@ -1948,6 +1949,7 @@ var ItemList = Class("ItemList", {
             // Check if we've passed any incomplete contexts
 
             let i = groups.indexOf(group);
+            util.assert(i >= 0, undefined, false);
             for (; i < groups.length; i++) {
                 let end = groups[i].offsets.start + groups[i].itemCount;
                 if (start >= end && groups[i].context.incomplete)
