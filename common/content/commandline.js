@@ -1491,8 +1491,12 @@ var CommandLine = Module("commandline", {
                 this.wildIndex = this.wildtypes.length - 1;
 
             if (idx && idx[1] >= idx[0].items.length) {
-                this.waiting = idx;
-                statusline.progress = _("completion.waitingForResults");
+                if (!idx[0].incomplete)
+                    this.waiting = null;
+                else {
+                    this.waiting = idx;
+                    statusline.progress = _("completion.waitingForResults");
+                }
                 return;
             }
 

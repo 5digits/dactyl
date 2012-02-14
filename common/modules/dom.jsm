@@ -1567,12 +1567,15 @@ var DOM = Class("DOM", {
                     null
                 );
 
-                return Object.create(result, {
-                    __iterator__: {
-                        value: asIterator ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
-                                          : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
-                    }
-                });
+                let res = {
+                    __iterator__:
+                        asIterator ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
+                                   : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
+                };
+
+                for (let [k, v] in Iterator(result))
+                    res[k] = v;
+                return res;
             }
             catch (e) {
                 throw e.stack ? e : Error(e);
