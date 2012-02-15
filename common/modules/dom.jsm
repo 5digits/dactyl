@@ -1568,13 +1568,14 @@ var DOM = Class("DOM", {
                 );
 
                 let res = {
+                    iterateNext: function () result.iterateNext(),
+                    get resultType() result.resultType,
+                    get snapshotLength() result.snapshotLength,
+                    snapshotItem: function (i) result.snapshotItem(i),
                     __iterator__:
                         asIterator ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
                                    : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
                 };
-
-                for (let [k, v] in Iterator(result))
-                    res[k] = v;
                 return res;
             }
             catch (e) {
