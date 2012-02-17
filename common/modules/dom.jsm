@@ -791,12 +791,12 @@ var DOM = Class("DOM", {
         else
             event = array.toObject([[event, listener]]);
 
-        for (let [k, v] in Iterator(event))
-            event[k] = util.wrapCallback(v, true);
+        for (let [evt, callback] in Iterator(event))
+            event[evt] = util.wrapCallback(callback, true);
 
         return this.each(function (elem) {
-            for (let [k, v] in Iterator(event))
-                elem.addEventListener(k, v, capture);
+            for (let [evt, callback] in Iterator(event))
+                elem.addEventListener(evt, callback, capture);
         });
     },
     unlisten: function unlisten(event, listener, capture) {

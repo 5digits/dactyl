@@ -533,9 +533,11 @@
 
 <item>
     <tags>&lt;yank-location> y</tags>
+    <strut/>
     <spec>y</spec>
-    <description short="true">
-        <p>Yank current location to the clipboard.</p>
+    <description>
+        <p>Yank current location to the clipboard. See also
+            <o>yankshort</o></p>
     </description>
 </item>
 
