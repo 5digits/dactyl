@@ -537,7 +537,7 @@
     <spec>y</spec>
     <description>
         <p>Yank current location to the clipboard. See also
-            <o>yankshort</o></p>
+            <o>yankshort</o>.</p>
     </description>
 </item>
 
