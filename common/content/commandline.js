@@ -1677,6 +1677,7 @@ var CommandLine = Module("commandline", {
         });
 
         modes.addMode("INPUT_MULTILINE", {
+            description: "Active when the command line's multiline input buffer is open",
             bases: [modes.INSERT]
         });
     },
