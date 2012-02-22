@@ -28,6 +28,8 @@ var ModuleBase = Class("ModuleBase", {
     toString: function () "[module " + this.constructor.className + "]"
 });
 
+var _id = 0;
+
 var Modules = function Modules(window) {
     /**
      * @constructor Module
@@ -136,7 +138,7 @@ var Modules = function Modules(window) {
             }
         },
 
-        newContext: function newContext(proto, normal) {
+        newContext: function newContext(proto, normal, name) {
             if (normal)
                 return create(proto);
 
@@ -144,6 +146,7 @@ var Modules = function Modules(window) {
                 var sandbox = services.dactyl.createGlobal();
             else
                 sandbox = Components.utils.Sandbox(window, { sandboxPrototype: proto || modules,
+                                                             sandboxName: name || ("Dactyl Sandbox " + ++_id),
                                                              wantXrays: false });
 
             // Hack:

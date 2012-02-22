@@ -222,7 +222,10 @@ var Contexts = Module("contexts", {
                 util.trapErrors("onUnload", self);
         }
         else {
-            self = args && !isArray(args) ? args : newContext.apply(null, args || [userContext]);
+            let params = Array.slice(args || [userContext]);
+            params[2] = params[2] || File(file).URI.spec;
+
+            self = args && !isArray(args) ? args : newContext.apply(null, params);
             update(self, {
                 NAME: Const(id),
 

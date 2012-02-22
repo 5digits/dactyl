@@ -455,7 +455,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             if (textBox) {
                 textBox.value = val;
 
-                if (false) {
+                if (true) {
                     let elem = DOM(textBox);
                     elem.attrNS(NS, "modifiable", true)
                         .style.MozUserInput;

@@ -53,7 +53,7 @@ var JavaScript = Module("javascript", {
 
     lazyInit: true,
 
-    newContext: function () this.modules.newContext(this.modules.userContext, true),
+    newContext: function () this.modules.newContext(this.modules.userContext, true, "Dactyl JS Temp Context"),
 
     completers: Class.Memoize(function () Object.create(JavaScript.completers)),
 
@@ -765,10 +765,10 @@ var JavaScript = Module("javascript", {
                 let self = this;
                 let sandbox = true || isinstance(context, ["Sandbox"]);
 
-                this.context = modules.newContext(context, !sandbox);
+                this.context = modules.newContext(context, !sandbox, "Dactyl REPL Context");
                 this.js = modules.JavaScript();
                 this.js.replContext = this.context;
-                this.js.newContext = function newContext() modules.newContext(self.context, !sandbox);
+                this.js.newContext = function newContext() modules.newContext(self.context, !sandbox, "Dactyl REPL Temp Context");
 
                 this.js.globals = [
                    [this.context, /*L*/"REPL Variables"],
