@@ -15,13 +15,13 @@ var Bookmarks = Module("bookmarks", {
 
         storage.addObserver("bookmark-cache", function (key, event, arg) {
             if (["add", "change", "remove"].indexOf(event) >= 0)
-                autocommands.trigger("Bookmark" + event[0].toUpperCase() + event.substr(1),
+                autocommands.trigger("Bookmark" + util.capitalize(event),
                      iter({
                          bookmark: {
                              toString: function () "bookmarkcache.bookmarks[" + arg.id + "]",
                              valueOf: function () arg
                          }
-                     }, arg));
+                     }, arg).toObject());
             bookmarks.timer.tell();
         }, window);
     },
