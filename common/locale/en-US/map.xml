@@ -373,6 +373,33 @@
 </item>
 
 <item>
+    <tags><![CDATA[<Leader>]]></tags>
+    <strut/>
+    <spec><![CDATA[<Leader>]]></spec>
+    <description>
+        <p>
+            An arbitrary and meaningless key that some people seem
+            attached to. The <k>\</k> key will, by default, emit
+            this pseudo-key so that it can be used at the start of
+            other mappings. Note, however, that there is nothing
+            special about it and any key can be mapped to emit any
+            other arbitrary pseudo-key in the same way.
+        </p>
+
+        <code><ex>:map , <k name="Leader"/></ex>
+<ex>:map ; <k name="AwesomestLeaderEver"/></ex>
+
+<ex>:map <k name="Leader"/>k <key>-js</key> doStuff()</ex>
+<ex>:map <k name="AwesomestLeaderEver"/>k <key>-js</key> doOtherReallyNiftyStuff()</ex></code>
+
+        <p>
+            Needless to say this behavior is considered childish and
+            discouraged.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags><![CDATA[<Pass>]]></tags>
     <spec><![CDATA[<Pass>]]></spec>
     <description short="true">
