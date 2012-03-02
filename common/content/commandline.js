@@ -757,8 +757,7 @@ var CommandLine = Module("commandline", {
         }
 
         if ((flags & this.ACTIVE_WINDOW) &&
-            window != services.windowWatcher.activeWindow &&
-            services.windowWatcher.activeWindow.dactyl)
+            window != overlay.activeWindow)
             return;
 
         if ((flags & this.DISALLOW_MULTILINE) && !this.widgets.mowContainer.collapsed)

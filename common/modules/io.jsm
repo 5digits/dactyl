@@ -41,26 +41,6 @@ var IO = Module("io", {
 
             this._lastRunCommand = ""; // updated whenever the users runs a command with :!
             this._scriptNames = [];
-
-            this.downloadListener = {
-                onDownloadStateChange: function (state, download) {
-                    if (download.state == services.downloadManager.DOWNLOAD_FINISHED) {
-                        let url   = download.source.spec;
-                        let title = download.displayName;
-                        let file  = download.targetFile.path;
-                        let size  = download.size;
-
-                        dactyl.echomsg({ domains: [util.getHost(url)], message: _("io.downloadFinished", title, file) },
-                                       1, modules.commandline.ACTIVE_WINDOW);
-                        modules.autocommands.trigger("DownloadPost", { url: url, title: title, file: file, size: size });
-                    }
-                },
-                onStateChange:    function () {},
-                onProgressChange: function () {},
-                onSecurityChange: function () {}
-            };
-
-            services.downloadManager.addListener(this.downloadListener);
         },
 
         CommandFileMode: Class("CommandFileMode", modules.CommandMode, {
@@ -83,10 +63,6 @@ var IO = Module("io", {
                 context.filters = context.filters.concat(this.filters || []);
             }
         }),
-
-        destroy: function destroy() {
-            services.downloadManager.removeListener(this.downloadListener);
-        },
 
         /**
          * Returns all directories named *name* in 'runtimepath'.

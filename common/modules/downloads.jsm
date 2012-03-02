@@ -9,6 +9,8 @@ defineModule("downloads", {
     exports: ["Download", "Downloads", "downloads"]
 }, this);
 
+this.lazyRequire("overlay", ["overlay"]);
+
 Cu.import("resource://gre/modules/DownloadUtils.jsm", this);
 
 let prefix = "DOWNLOAD_";
@@ -388,7 +390,30 @@ var DownloadList = Class("DownloadList",
     }
 });
 
-var Downloads = Module("downloads", {
+var Downloads = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
+    init: function () {
+        services.downloadManager.addListener(this);
+    },
+
+    destroy: function destroy() {
+        services.downloadManager.removeListener(this);
+    },
+
+    onDownloadStateChange: function (state, download) {
+        if (download.state == services.downloadManager.DOWNLOAD_FINISHED) {
+            let url   = download.source.spec;
+            let title = download.displayName;
+            let file  = download.targetFile.path;
+            let size  = download.size;
+
+
+            overlay.modules.forEach(function (modules) {
+                modules.dactyl.echomsg({ domains: [util.getHost(url)], message: _("io.downloadFinished", title, file) },
+                                       1, modules.commandline.ACTIVE_WINDOW);
+                modules.autocommands.trigger("DownloadPost", { url: url, title: title, file: file, size: size });
+            });
+        }
+    }
 }, {
 }, {
     commands: function initCommands(dactyl, modules, window) {
