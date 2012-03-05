@@ -756,8 +756,7 @@ var CommandLine = Module("commandline", {
             data = message.message;
         }
 
-        if ((flags & this.ACTIVE_WINDOW) &&
-            window != overlay.activeWindow)
+        if ((flags & this.ACTIVE_WINDOW) && window != overlay.activeWindow)
             return;
 
         if ((flags & this.DISALLOW_MULTILINE) && !this.widgets.mowContainer.collapsed)

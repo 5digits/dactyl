@@ -66,13 +66,12 @@
 </dl>
 
 <p>
-    The ordinary <ex>:map</ex> and <ex>:noremap</ex> commands
-    add mappings for Normal and Visual mode. In order to map key
-    bindings in a different mode, any of the mapping commands may be
-    prefixed with one of the above letters. For instance,
+    The ordinary <ex>:map</ex> command adds mappings for Normal and Visual
+    mode. In order to map key bindings in a different mode, any of the mapping
+    commands may be prefixed with one of the above letters. For instance,
     <ex>:imap</ex> creates a new key mapping in Insert mode, while
-    <ex>:cunmap</ex> removes a key mapping from Command Line mode.
-    Other modes can be specified using the <em>-modes</em> option described below.
+    <ex>:cunmap</ex> removes a key mapping from Command Line mode. Other modes
+    can be specified using the <em>-modes</em> option described below.
 </p>
 
 <warning>
@@ -127,12 +126,12 @@
 </p>
 
 <dl dt="width: 20em;">
-    <dt>:map   :noremap   :unmap</dt>  <dd>Normal and Visual modes</dd>
-    <dt>:nmap  :nnoremap  :nunmap</dt> <dd>Normal mode</dd>
-    <dt>:vmap  :vnoremap  :vunmap</dt> <dd>Visual mode</dd>
-    <dt>:imap  :inoremap  :iunmap</dt> <dd>Insert mode</dd>
-    <dt>:tmap  :tnoremap  :tunmap</dt> <dd>Text Edit mode</dd>
-    <dt>:cmap  :cnoremap  :cunmap</dt> <dd>Command Line mode</dd>
+    <dt>:map   :unmap</dt>  <dd>Normal and Visual modes</dd>
+    <dt>:nmap  :nunmap</dt> <dd>Normal mode</dd>
+    <dt>:vmap  :vunmap</dt> <dd>Visual mode</dd>
+    <dt>:imap  :iunmap</dt> <dd>Insert mode</dd>
+    <dt>:tmap  :tunmap</dt> <dd>Text Edit mode</dd>
+    <dt>:cmap  :cunmap</dt> <dd>Command Line mode</dd>
 </dl>
 
 <note>
@@ -175,6 +174,8 @@
     <tags>:cno :cnoremap</tags>
     <spec>:cno<oa>remap</oa> <a>lhs</a> <a>rhs</a></spec>
     <description>
+        <deprecated>These aliases are deprecated. The <em>-builtin</em> flag
+            should be used in their stead.</deprecated>
         <p>
             Map the <t>key-sequence</t> <a>lhs</a> to <a>rhs</a> for
             the applicable mode(s). The keys in <a>rhs</a> do not

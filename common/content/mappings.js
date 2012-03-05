@@ -657,7 +657,7 @@ var Mappings = Module("mappings", {
             commands.add([ch + "no[remap]"],
                 "Map a key sequence without remapping keys" + modeDescription,
                 function (args) { map(args, true); },
-                update({}, opts));
+                update({ deprecated: ":" + ch + "map -builtin" }, opts));
 
             commands.add([ch + "unm[ap]"],
                 "Remove a mapping" + modeDescription,
