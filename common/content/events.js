@@ -116,7 +116,7 @@ var Events = Module("events", {
         });
 
         this._fullscreen = window.fullScreen;
-        this._lastFocus = null;
+        this._lastFocus = { get: function () null };
         this._macroKeys = [];
         this._lastMacro = "";
 
@@ -901,20 +901,22 @@ var Events = Module("events", {
             }
 
             let urlbar = document.getElementById("urlbar");
-            if (elem == null && urlbar && urlbar.inputField == this._lastFocus)
+            if (elem == null && urlbar && urlbar.inputField == this._lastFocus.get())
                 util.threadYield(true); // Why? --Kris
 
             while (modes.main.ownsFocus
-                    && modes.topOfStack.params.ownsFocus != elem
-                    && modes.topOfStack.params.ownsFocus != win
+                    && let ({ ownsFocus } = modes.topOfStack.params)
+                         (!ownsFocus ||
+                             ownsFocus.get() != elem &&
+                             ownsFocus.get() != win)
                     && !modes.topOfStack.params.holdFocus)
                  modes.pop(null, { fromFocus: true });
         }
         finally {
-            this._lastFocus = elem;
+            this._lastFocus = util.weakReference(elem);
 
             if (modes.main.ownsFocus)
-                modes.topOfStack.params.ownsFocus = elem;
+                modes.topOfStack.params.ownsFocus = util.weakReference(elem);
         }
     }),
 

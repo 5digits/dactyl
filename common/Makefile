@@ -50,9 +50,6 @@ XPI_NAME      = $(NAME)-$(VERSION)
 XPI           =  ../downloads/$(XPI_NAME).xpi
 XPI_PATH      = $(TOP)/$(XPI:%.xpi=%)
 
-RDF           = ../downloads/update.rdf
-RDF_IN        = $(RDF).in
-
 BUILD_DIR     = build.$(VERSION).$(OS)
 
 .SILENT:
@@ -78,7 +75,6 @@ help:
 	@echo "  make install    - installs this source tree directly to your $(HOSTAPP) profile"
 	@echo '                    set $$PROFILE to select a profile by name and $$PROFILEPATHS'
 	@echo '                    to change the directory where profiles are searched'
-	@echo "  make release    - updates update.rdf (this is not for you)"
 	@echo "  make dist       - uploads to Google Code (this is not for you)"
 	@echo "  make clean      - clean up"
 	@echo "  make distclean  - clean up more"
@@ -93,8 +89,6 @@ info:
 	@echo "xpi files           $(XPI_FILES)"
 
 jar: $(JAR)
-
-release: $(XPI) $(RDF)
 
 # This is not for you!
 dist: $(XPI)
@@ -159,13 +153,6 @@ install:
 
 installxpi: xpi
 	$(HOSTAPP) $(XPI)
-
-$(RDF): $(RDF_IN) Makefile
-	@echo "Preparing release..."
-	$(SED) -e "s,@VERSION@,$(VERSION),g" \
-	           -e "s,@DATE@,$(BUILD_DATE),g" \
-	           < $< > $@
-	@echo "SUCCESS: $@"
 
 clean:
 	@echo "General $(NAME) cleanup..."
