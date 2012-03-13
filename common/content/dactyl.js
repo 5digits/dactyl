@@ -887,11 +887,15 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Opens one or more URLs. Returns true when load was initiated, or
      * false on error.
      *
-     * @param {string|object|Array} urls A representation of the URLs to open. May be
-     *     either a string, which will be passed to
-     *     {@link Dactyl#parseURLs}, an array in the same format as
-     *     would be returned by the same, or an object as returned by
-     *     {@link DOM#formData}.
+     * @param {string|Array} urls A representation of the URLs to open.
+     *     A string will be passed to {@link Dactyl#parseURLs}. An array may
+     *     contain elements of the following forms:
+     *
+     *      • {string}            A URL to open.
+     *      • {[string, string]}  Pair of a URL and POST data.
+     *      • {object}            Object compatible with those returned by
+     *                            {@link DOM#formData}.
+     *
      * @param {object} params A set of parameters specifying how to open the
      *     URLs. The following properties are recognized:
      *
