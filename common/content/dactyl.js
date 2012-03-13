@@ -891,10 +891,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     A string will be passed to {@link Dactyl#parseURLs}. An array may
      *     contain elements of the following forms:
      *
-     *      • {string}            A URL to open.
-     *      • {[string, string]}  Pair of a URL and POST data.
-     *      • {object}            Object compatible with those returned by
-     *                            {@link DOM#formData}.
+     *      • {string}                    A URL to open.
+     *      • {[string, {string|Array}]}  Pair of a URL and POST data.
+     *      • {object}                    Object compatible with those returned
+     *                                    by {@link DOM#formData}.
      *
      * @param {object} params A set of parameters specifying how to open the
      *     URLs. The following properties are recognized:
