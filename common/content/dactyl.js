@@ -952,6 +952,18 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     loc = { url: loc[0], postData: loc[1] };
                 else if (isString(loc))
                     loc = { url: loc };
+                else
+                    loc = Object.create(loc);
+
+                if (isString(loc.postData))
+                    loc.postData = ["application/x-www-form-urlencoded", loc.postData];
+
+                if (isArray(loc.postData)) {
+                    let stream = services.MIMEStream(services.StringStream(loc.postData[1]));
+                    stream.addHeader("Content-Type", loc.postData[0]);
+                    stream.addContentLength = true;
+                    loc.postData = stream;
+                }
 
                 // decide where to load the first url
                 switch (where) {

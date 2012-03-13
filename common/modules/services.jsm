@@ -92,6 +92,7 @@ var Services = Module("Services", {
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     "nsIDocumentEncoder");
         this.addClass("InterfacePointer", "@mozilla.org/supports-interface-pointer;1", "nsISupportsInterfacePointer", "data");
         this.addClass("InputStream",  "@mozilla.org/scriptableinputstream;1",      "nsIScriptableInputStream", "init");
+        this.addClass("MIMEStream",   "@mozilla.org/network/mime-input-stream;1",  "nsIMIMEInputStream", "setData");
         this.addClass("Persist",      "@mozilla.org/embedding/browser/nsWebBrowserPersist;1", "nsIWebBrowserPersist");
         this.addClass("Pipe",         "@mozilla.org/pipe;1",                       "nsIPipe", "init");
         this.addClass("Process",      "@mozilla.org/process/util;1",               "nsIProcess", "init");
