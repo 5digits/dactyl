@@ -184,7 +184,11 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         let query = services.history.getNewQuery();
         let options = services.history.getNewQueryOptions();
         options.queryType = options.QUERY_TYPE_BOOKMARKS;
-        options.excludeItemIfParentHasAnnotation = "livemark/feedURI";
+        try {
+            // https://bugzil.la/702639
+            options.excludeItemIfParentHasAnnotation = "livemark/feedURI";
+        }
+        catch (e) {}
 
         let { root } = services.history.executeQuery(query, options);
         root.containerOpen = true;

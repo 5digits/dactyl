@@ -299,7 +299,7 @@ var Modes = Module("modes", {
             return;
         }
 
-        params = params || this.getMode(mainMode || this.main).params;
+        params = params || Object.create(this.getMode(mainMode || this.main).params);
 
         if (!stack && mainMode != null && this._modeStack.length > 1)
             this.reset();
