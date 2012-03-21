@@ -1275,6 +1275,7 @@ var Hints = Module("hints", {
         options.add(["extendedhinttags", "eht"],
             "XPath or CSS selector strings of hintable elements for extended hint modes",
             "regexpmap", {
+                // Make sure to update the docs when you change this.
                 "[iI]": "img",
                 "[asOTvVWy]": [":-moz-any-link", "area[href]", "img[src]", "iframe[src]"],
                 "[A]": ["[id]", "a[name]"],
@@ -1299,6 +1300,7 @@ var Hints = Module("hints", {
 
         options.add(["hinttags", "ht"],
             "XPath or CSS selector strings of hintable elements for Hints mode",
+            // Make sure to update the docs when you change this.
             "stringlist", ":-moz-any-link,area,button,iframe,input:not([type=hidden]),select,textarea," +
                           "[onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand]," +
                           "[tabindex],[role=link],[role=button],[contenteditable=true]",

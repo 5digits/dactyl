@@ -394,7 +394,7 @@ var Buffer = Module("Buffer", {
 
             function a(regexp, elem) regexp.test(elem.textContent) === regexp.result ||
                             Array.some(elem.childNodes, function (child) regexp.test(child.alt) === regexp.result);
-            function b(regexp, elem) regexp.test(elem.title);
+            function b(regexp, elem) regexp.test(elem.title) === regexp.result;
 
             let res = Array.filter(frame.document.querySelectorAll(selector), Hints.isVisible);
             for (let test in values([a, b]))
@@ -2020,7 +2020,7 @@ var Buffer = Module("Buffer", {
         mappings.add([modes.NORMAL], ["[[", "<previous-page>"],
             "Follow the link labeled 'prev', 'previous' or '<' if it exists",
             function (args) {
-                buffer.findLink("previous", options["previouspattern"], (args.count || 1) - 1, true);
+                buffer.findLink("prev", options["previouspattern"], (args.count || 1) - 1, true);
             },
             { count: true });
 
@@ -2230,6 +2230,7 @@ var Buffer = Module("Buffer", {
         options.add(["linenumbers", "ln"],
             "Patterns used to determine line numbers used by G",
             "sitemap", {
+                // Make sure to update the docs when you change this.
                 "view-source:*": '[id^=line]',
                 "code.google.com": '#nums [id^="nums_table"] a[href^="#"]',
                 "github.com": '.line_numbers>*',
