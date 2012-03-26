@@ -1806,7 +1806,8 @@ var Buffer = Module("Buffer", {
                             context.incomplete = false;
                             try {
                                 if (/filename="(.*?)"/.test(xhr.getResponseHeader("Content-Disposition")))
-                                    context.completions.push([decodeURIComponent(RegExp.$1), _("buffer.save.suggested")]);
+                                    context.completions.push([decodeURIComponent(RegExp.$1),
+                                                             _("buffer.save.suggested")]);
                             }
                             finally {
                                 context.completions = context.completions.slice();
