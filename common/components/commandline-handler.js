@@ -73,9 +73,9 @@ CommandLineHandler.prototype = {
                 util.dactyl.execute(remote);
             }
         }
-        catch(e) {
-            util.reportError(e)
-        };
+        catch (e) {
+            util.reportError(e);
+        }
 
         try {
             this.optionValue = commandLine.handleFlagWithParam(config.name, false);
