@@ -2280,12 +2280,12 @@ var Buffer = Module("Buffer", {
 
         options.add(["nextpattern"],
             "Patterns to use when guessing the next page in a document sequence",
-            "regexplist", UTF8(/'\bnext\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\bmore\b'/.source),
+            "regexplist", UTF8(/'^Next [>»]','^Next »','\bnext\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\bmore\b'/.source),
             { regexpFlags: "i" });
 
         options.add(["previouspattern"],
             "Patterns to use when guessing the previous page in a document sequence",
-            "regexplist", UTF8(/'\bprev|previous\b',^<$,^(<<|«)$,^(<|«),(<|«)$/.source),
+            "regexplist", UTF8(/'[<«] Prev$','« Prev$','\bprev(ious)\b',^<$,^(<<|«)$,^(<|«),(<|«)$/.source),
             { regexpFlags: "i" });
 
         options.add(["pageinfo", "pa"],
