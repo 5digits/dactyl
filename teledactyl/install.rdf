@@ -8,7 +8,7 @@
         em:version="0.6"
         em:description="Thunderbird for Mutt and Vim addicts"
         em:creator="Kris Maglione"
-        em:homepageURL="http://dactyl.sf.net/Teledactyl"
+        em:homepageURL="http://5digits.org/teledactyl"
         em:iconURL="chrome://teledactyl/skin/icon.png"
         em:bootstrap="true">
         <em:targetApplication>

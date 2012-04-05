@@ -191,7 +191,7 @@ XML.prettyPrinting   = <hl key="Boolean">false</hl>;
 <hl key="HelpXMLTagStart">&lt;plugin
     <hl key="HelpXMLAttribute">name</hl><hl key="HelpXMLString">flashblock</hl>
     <hl key="HelpXMLAttribute">version</hl><hl key="HelpXMLString">1.0</hl>
-    <hl key="HelpXMLAttribute">href</hl><hl key="HelpXMLString">http://dactyl.sf.net/pentadactyl/plugins#flashblock-plugin</hl>
+    <hl key="HelpXMLAttribute">href</hl><hl key="HelpXMLString">http://5digits.org/pentadactyl/plugins#flashblock-plugin</hl>
     <hl key="HelpXMLAttribute">summary</hl><hl key="HelpXMLString">Flash Blocker</hl>
     <hl key="HelpXMLAttribute">xmlns</hl>{NS}></hl></escape>
     <author email="maglione.k@gmail.com">Kris Maglione</author>

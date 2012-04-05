@@ -9,7 +9,7 @@
         em:version="0.1a1pre"
         em:description="Songbird for Vim and CMus junkies."
         em:creator="Prathyush Thota"
-        em:homepageURL="http://dactyl.sourceforge.net/"
+        em:homepageURL="http://5digits.org/"
         em:iconURL="chrome://melodactyl/skin/icon.png"
         em:optionsURL="chrome://dactyl/content/preferences.xul">
         <em:targetApplication>

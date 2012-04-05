@@ -403,11 +403,11 @@ var ConfigBase = Class("ConfigBase", {
 
     dtdDactyl: memoize({
         get name() config.name,
-        get home() "http://dactyl.sourceforge.net/",
+        get home() "http://5digits.org/",
         get apphome() this.home + this.name,
         code: "http://code.google.com/p/dactyl/",
         get issues() this.home + "bug/" + this.name,
-        get plugins() "http://dactyl.sf.net/" + this.name + "/plugins",
+        get plugins() "http://5digits.org/" + this.name + "/plugins",
         get faq() this.home + this.name + "/faq",
 
         "list.mailto": Class.Memoize(function () config.name + "@googlegroups.com"),

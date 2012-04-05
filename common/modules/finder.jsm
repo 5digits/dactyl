@@ -44,7 +44,7 @@ var RangeFinder = Module("rangefinder", {
 
     init: function init() {
         prefs.safeSet("accessibility.typeaheadfind.autostart", false);
-        // The above should be sufficient, but: http://dactyl.sf.net/bmo/348187
+        // The above should be sufficient, but: http://bugzil.la/348187
         prefs.safeSet("accessibility.typeaheadfind", false);
     },
 

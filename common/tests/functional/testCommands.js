@@ -157,11 +157,11 @@ var tests = {
         error: ["!"]
     },
     cookies: {
-        anyOutput: ["dactyl.sf.net", "dactyl.sf.net list"],
+        anyOutput: ["5digits.org", "5digits.org list"],
         error: ["!", ""],
         completions: [
             "",
-            ["dactyl.sf.net ", hasItems]
+            ["5digits.org ", hasItems]
         ]
     },
     cunabbreviate: {},
