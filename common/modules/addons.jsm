@@ -170,7 +170,7 @@ var Addon = Class("Addon", {
         let action = actions[cmd];
         if ("perm" in action && !(this.permissions & AddonManager["PERM_CAN_" + action.perm.toUpperCase()]))
             return false;
-        if ("filter" in action && !action.filter({ item: this }))
+        if ("filter" in action && !action.filter(this))
             return false;
         return true;
     },
