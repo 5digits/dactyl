@@ -96,7 +96,7 @@ var Template = Module("Template", {
     join: function join(c) function (a, b) a + c + b,
 
     map: function map(iter, func, sep, interruptable) {
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         if (typeof iter.length == "number") // FIXME: Kludge?
             iter = array.iterValues(iter);
         let res = <></>;
@@ -201,7 +201,7 @@ var Template = Module("Template", {
             var desc = this.processor[1].call(this, item, item.description);
         }
 
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         // <e4x>
         return <div highlight={highlightGroup || "CompItem"} style="white-space: nowrap">
                    <!-- The non-breaking spaces prevent empty elements
@@ -227,7 +227,7 @@ var Template = Module("Template", {
         if (help.initialized && !Set.has(help.tags, topic))
             return <span highlight={type || ""}>{text || token}</span>;
 
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         type = type || (/^'.*'$/.test(token)   ? "HelpOpt" :
                         /^\[.*\]$|^E\d{3}$/.test(token) ? "HelpTopic" :
                         /^:\w/.test(token)     ? "HelpEx"  : "HelpKey");
@@ -247,7 +247,7 @@ var Template = Module("Template", {
         if (help.initialized && !Set.has(help.tags, topic))
             return <>{token}</>;
 
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         let tag = (/^'.*'$/.test(token)            ? "o" :
                    /^\[.*\]$|^E\d{3}$/.test(token) ? "t" :
                    /^:\w/.test(token)              ? "ex"  : "k");
@@ -287,7 +287,7 @@ var Template = Module("Template", {
     // if "processStrings" is true, any passed strings will be surrounded by " and
     // any line breaks are displayed as \n
     highlight: function highlight(arg, processStrings, clip, bw) {
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         // some objects like window.JSON or getBrowsers()._browsers need the try/catch
         try {
             let str = this.stringify(arg);
@@ -343,6 +343,8 @@ var Template = Module("Template", {
         return this.highlightSubstrings(str, (function () {
             if (filter.length == 0)
                 return;
+
+            XML.ignoreWhitespace = XML.prettyPrinting = false;
             let lcstr = String.toLowerCase(str);
             let lcfilter = filter.toLowerCase();
             let start = 0;
@@ -396,7 +398,7 @@ var Template = Module("Template", {
     </>,
 
     jumps: function jumps(index, elems) {
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         // <e4x>
         return <table>
                 <tr style="text-align: left;" highlight="Title">
@@ -422,7 +424,7 @@ var Template = Module("Template", {
     },
 
     options: function options(title, opts, verbose) {
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         // <e4x>
         return <table>
                 <tr highlight="Title" align="left">
@@ -449,7 +451,7 @@ var Template = Module("Template", {
         let url = util.fixURI(frame.filename || "unknown");
         let path = util.urlPath(url);
 
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         return <a xmlns:dactyl={NS} dactyl:command="buffer.viewSource"
             href={url} path={path} line={frame.lineNumber}
             highlight="URL">{
@@ -458,7 +460,7 @@ var Template = Module("Template", {
     },
 
     table: function table(title, data, indent) {
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         let table = // <e4x>
             <table>
                 <tr highlight="Title" align="left">
@@ -479,7 +481,7 @@ var Template = Module("Template", {
 
     tabular: function tabular(headings, style, iter) {
         // TODO: This might be mind-bogglingly slow. We'll see.
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         // <e4x>
         return <table>
                 <tr highlight="Title" align="left">
@@ -502,7 +504,7 @@ var Template = Module("Template", {
     },
 
     usage: function usage(iter, format) {
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         format = format || {};
         let desc = format.description || function (item) template.linkifyHelp(item.description);
         let help = format.help || function (item) item.name;

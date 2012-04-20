@@ -657,6 +657,7 @@ var CompletionContext = Class("CompletionContext", {
                 }
                 catch (e) {
                     util.reportError(e);
+                    XML.ignoreWhitespace = XML.prettyPrinting = false;
                     cache[idx] = util.xmlToDom(
                         <div highlight="CompItem" style="white-space: nowrap">
                             <li highlight="CompResult">{this.text}&#xa0;</li>
