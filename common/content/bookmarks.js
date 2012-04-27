@@ -473,7 +473,7 @@ var Bookmarks = Module("bookmarks", {
                 let updated = bookmarks.add(opts);
                 let action  = updated ? "updated" : "added";
 
-                let extra   = (opts.title == opts.url) ? "" : " (" + opts.title + ")";
+                let extra   = (opts.title && opts.title != opts.url) ? " (" + opts.title + ")" : "";
 
                 dactyl.echomsg({ domains: [util.getHost(opts.url)], message: _("bookmark." + action, opts.url + extra) },
                                1, commandline.FORCE_SINGLELINE);
