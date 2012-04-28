@@ -180,7 +180,7 @@
 <p>
     QuickMarks are bookmarks stripped to the bone for quickly getting to the
     pages that you visit most. A QuickMark is simply a URL assigned to a letter
-    or number. They can therefore be saved or opened with only three key
+    or digit. They can therefore be saved or opened with only three key
     presses each. QuickMarks are persistent across browser sessions.
 </p>
 
@@ -245,7 +245,7 @@
     <spec>:qmark <a>a-zA-Z0-9</a> <a>url</a></spec>
     <description>
         <p>
-            Mark <a>url</a> with a letter for quick access. See also
+            Mark <a>url</a> with a letter or digit for quick access. See also
             <k>go</k>, <k>gn</k>, and <k>M</k>.
         </p>
 
