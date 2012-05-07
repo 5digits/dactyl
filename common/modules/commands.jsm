@@ -8,11 +8,14 @@
 
 try {
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("commands", {
     exports: ["ArgType", "Command", "Commands", "CommandOption", "Ex", "commands"],
     require: ["contexts", "messages", "util"]
-}, this);
+});
+
+lazyRequire("help", ["help"]);
+lazyRequire("options", ["Option"]);
+lazyRequire("template", ["template"]);
 
 /**
  * A structure representing the options available for a command.

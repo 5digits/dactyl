@@ -6,16 +6,15 @@
 // See https://wiki.mozilla.org/Extension_Manager:Bootstrapped_Extensions
 // for details.
 
-const NAME = "bootstrap";
 const global = this;
 
 var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
-function module(uri) {
-    let obj = {};
-    Cu.import(uri, obj);
-    return obj;
-}
+function module(uri) Cu.import(uri, {});
+
+const DEBUG = true;
+
+__defineGetter__("BOOTSTRAP", function () "resource://" + moduleName + "/bootstrap.jsm");
 
 const { AddonManager } = module("resource://gre/modules/AddonManager.jsm");
 const { XPCOMUtils }   = module("resource://gre/modules/XPCOMUtils.jsm");
@@ -26,43 +25,267 @@ const resourceProto = Services.io.getProtocolHandler("resource")
 const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 const manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
 
-const DISABLE_ACR        = "resource://dactyl-content/disable-acr.jsm";
-const BOOTSTRAP_JSM      = "resource://dactyl/bootstrap.jsm";
 const BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
 
-var JSMLoader = BOOTSTRAP_CONTRACT in Cc && Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
 var name = "dactyl";
 
 function reportError(e) {
-    dump("\n" + name + ": bootstrap: " + e + "\n" + (e.stack || Error().stack) + "\n");
+    let stack = e.stack || Error().stack;
+    dump("\n" + name + ": bootstrap: " + e + "\n" + stack + "\n");
     Cu.reportError(e);
+    Cc["@mozilla.org/consoleservice;1"].getService(Ci.nsIConsoleService)
+                                       .logStringMessage(stack);
 }
-function debug(msg) {
-    dump(name + ": " + msg + "\n");
+function debug() {
+    if (DEBUG)
+        dump(name + ": " + Array.join(arguments, ", ") + "\n");
 }
 
-function httpGet(url) {
+function httpGet(uri) {
     let xmlhttp = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
     xmlhttp.overrideMimeType("text/plain");
-    xmlhttp.open("GET", url, false);
+    xmlhttp.open("GET", uri.spec || uri, false);
     xmlhttp.send(null);
     return xmlhttp;
 }
 
+let moduleName;
 let initialized = false;
 let addon = null;
 let addonData = null;
 let basePath = null;
+let bootstrap;
 let categories = [];
 let components = {};
 let resources = [];
 let getURI = null;
 
-function updateLoader() {
-    try {
-        JSMLoader.loader = Cc["@dactyl.googlecode.com/extra/utils"].getService(Ci.dactylIUtils);
+let JSMLoader = {
+    get addon() addon,
+
+    currentModule: null,
+
+    factories: [],
+
+    get name() name,
+
+    get module() moduleName,
+
+    globals: {},
+    modules: {},
+
+    times: {
+        all: 0,
+        add: function add(major, minor, delta) {
+            this.all += delta;
+
+            this[major] = (this[major] || 0) + delta;
+            if (minor) {
+                minor = ":" + minor;
+                this[minor] = (this[minor] || 0) + delta;
+                this[major + minor] = (this[major + minor] || 0) + delta;
+            }
+        },
+        clear: function clear() {
+            for (let key in this)
+                if (typeof this[key] !== "number")
+                    delete this[key];
+        }
+    },
+
+    getTarget: function getTarget(url) {
+        let chan = Services.io.newChannel(url, null, null);
+        try { chan.cancel(Cr.NS_BINDING_ABORTED) } catch (e) {}
+        return chan.name;
+    },
+
+    _atexit: [],
+
+    atexit: function atexit(arg, self) {
+        if (typeof arg !== "string")
+            this._atexit.push(arguments);
+        else
+            for each (let [fn, self] in this._atexit)
+                try {
+                    fn.call(self, arg);
+                }
+                catch (e) {
+                    reportError(e);
+                }
+    },
+
+    _load: function _load(name, target) {
+        let urls = [name];
+        if (name.indexOf(":") === -1)
+            urls = this.config["module-paths"].map(function (path) path + name + ".jsm");
+
+        for each (let url in urls)
+            try {
+                var uri = resourceProto.resolveURI(Services.io.newURI(url, null, null));
+                if (uri in this.globals)
+                    return this.modules[name] = this.globals[uri];
+
+                this.globals[uri] = this.modules[name];
+                bootstrap.loadSubScript(url, this.modules[name]);
+                return;
+            }
+            catch (e) {
+                delete this.globals[uri];
+                if (typeof e != "string")
+                    throw e;
+            }
+
+        throw Error("No such module: " + name);
+    },
+
+    load: function load(name, target) {
+        if (!this.modules.hasOwnProperty(name)) {
+            this.modules[name] = this.modules.base ? bootstrap.create(this.modules.base)
+                                                   : bootstrap.import({ JSMLoader: this, module: global.module });
+
+            let currentModule = this.currentModule;
+            this.currentModule = this.modules[name];
+
+            try {
+                this._load(name, this.modules[name]);
+            }
+            catch (e) {
+                delete this.modules[name];
+                reportError(e);
+                throw e;
+            }
+            finally {
+                this.currentModule = currentModule;
+            }
+        }
+
+        let module = this.modules[name];
+        if (target)
+            for each (let symbol in module.EXPORTED_SYMBOLS)
+                target[symbol] = module[symbol];
+
+        return module;
+    },
+
+    // Cuts down on stupid, fscking url mangling.
+    get loadSubScript() bootstrap.loadSubScript,
+
+    cleanup: function unregister() {
+        for each (let factory in this.factories.splice(0))
+            manager.unregisterFactory(factory.classID, factory);
+    },
+
+    Factory: function Factory(class_) ({
+        __proto__: class_.prototype,
+
+        createInstance: function (outer, iid) {
+            try {
+                if (outer != null)
+                    throw Cr.NS_ERROR_NO_AGGREGATION;
+                if (!class_.instance)
+                    class_.instance = new class_();
+                return class_.instance.QueryInterface(iid);
+            }
+            catch (e) {
+                Cu.reportError(e);
+                throw e;
+            }
+        }
+    }),
+
+    registerFactory: function registerFactory(factory) {
+        manager.registerFactory(factory.classID,
+                                String(factory.classID),
+                                factory.contractID,
+                                factory);
+        this.factories.push(factory);
     }
-    catch (e) {};
+};
+
+function init() {
+    debug("bootstrap: init");
+
+    let manifestURI = getURI("chrome.manifest");
+    let manifest = httpGet(manifestURI)
+            .responseText
+            .replace(/#(resource)#/g, "$1")
+            .replace(/^\s*|\s*$|#.*/g, "")
+            .replace(/^\s*\n/gm, "");
+
+    for each (let line in manifest.split("\n")) {
+        let fields = line.split(/\s+/);
+        switch(fields[0]) {
+        case "category":
+            categoryManager.addCategoryEntry(fields[1], fields[2], fields[3], false, true);
+            categories.push([fields[1], fields[2]]);
+            break;
+        case "component":
+            components[fields[1]] = new FactoryProxy(getURI(fields[2]).spec, fields[1]);
+            break;
+        case "contract":
+            components[fields[2]].contractID = fields[1];
+            break;
+
+        case "resource":
+            moduleName = moduleName || fields[1];
+            resources.push(fields[1]);
+            resourceProto.setSubstitution(fields[1], getURI(fields[2]));
+        }
+    }
+
+    bootstrap = module(BOOTSTRAP);
+    bootstrap.require = JSMLoader.load("base").require;
+
+    // Flush the cache if necessary, just to be paranoid
+    let pref = "extensions.dactyl.cacheFlushCheck";
+    let val  = addon.version;
+    if (!Services.prefs.prefHasUserValue(pref) || Services.prefs.getCharPref(pref) != val) {
+        var cacheFlush = true;
+        Services.obs.notifyObservers(null, "startupcache-invalidate", "");
+        Services.prefs.setCharPref(pref, val);
+    }
+
+    try {
+        //JSMLoader.load("disable-acr").init(addon.id);
+    }
+    catch (e) {
+        reportError(e);
+    }
+
+    Services.obs.notifyObservers(null, "dactyl-rehash", null);
+
+    JSMLoader.name = name;
+    JSMLoader.bootstrap = this;
+
+    JSMLoader.load("config", global);
+    JSMLoader.load("main", global);
+
+    JSMLoader.cacheFlush = cacheFlush;
+    JSMLoader.load("base", global);
+
+    if (!(BOOTSTRAP_CONTRACT in Cc)) {
+        // Use Sandbox to prevent closures over this scope
+        let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].getService());
+        let factory = Cu.evalInSandbox("({ createInstance: function () this })", sandbox);
+
+        factory.classID         = Components.ID("{f541c8b0-fe26-4621-a30b-e77d21721fb5}");
+        factory.contractID      = BOOTSTRAP_CONTRACT;
+        factory.QueryInterface  = XPCOMUtils.generateQI([Ci.nsIFactory]);
+        factory.wrappedJSObject = factory;
+
+        manager.registerFactory(factory.classID, String(factory.classID),
+                                BOOTSTRAP_CONTRACT, factory);
+    }
+
+    Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader = !Cu.unload && JSMLoader;
+
+    for each (let component in components)
+        component.register();
+
+    updateVersion();
+
+    if (addon !== addonData)
+        require("main", global);
 }
 
 /**
@@ -74,8 +297,7 @@ function updateVersion() {
         if (typeof require === "undefined" || addon === addonData)
             return;
 
-        require(global, "config");
-        require(global, "prefs");
+        JSMLoader.load("prefs", global);
         config.lastVersion = localPrefs.get("lastVersion", null);
 
         localPrefs.set("lastVersion", addon.version);
@@ -100,7 +322,7 @@ function startup(data, reason) {
     if (!initialized) {
         initialized = true;
 
-        debug("bootstrap: init" + " " + data.id);
+        debug("bootstrap: init " + data.id);
 
         addonData = data;
         addon = data;
@@ -108,10 +330,9 @@ function startup(data, reason) {
         AddonManager.getAddonByID(addon.id, function (a) {
             addon = a;
 
-            updateLoader();
             updateVersion();
             if (typeof require !== "undefined")
-                require(global, "main");
+                require("main", global);
         });
 
         if (basePath.isDirectory())
@@ -125,6 +346,7 @@ function startup(data, reason) {
                 Services.io.newURI("jar:" + Services.io.newFileURI(basePath).spec.replace(/!/g, "%21") + "!" +
                                    "/" + path, null, null);
 
+        JSMLoader.config = JSON.parse(httpGet(getURI("config.json")).responseText);
         try {
             init();
         }
@@ -166,120 +388,13 @@ FactoryProxy.prototype = {
     }
 }
 
-function init() {
-    debug("bootstrap: init");
-
-    let manifestURI = getURI("chrome.manifest");
-    let manifest = httpGet(manifestURI.spec)
-            .responseText
-            .replace(/^\s*|\s*$|#.*/g, "")
-            .replace(/^\s*\n/gm, "");
-
-    let suffix = "-";
-    let chars = "0123456789abcdefghijklmnopqrstuv";
-    for (let n = Date.now(); n; n = Math.round(n / chars.length))
-        suffix += chars[n % chars.length];
-
-    for each (let line in manifest.split("\n")) {
-        let fields = line.split(/\s+/);
-        switch(fields[0]) {
-        case "category":
-            categoryManager.addCategoryEntry(fields[1], fields[2], fields[3], false, true);
-            categories.push([fields[1], fields[2]]);
-            break;
-        case "component":
-            components[fields[1]] = new FactoryProxy(getURI(fields[2]).spec, fields[1]);
-            break;
-        case "contract":
-            components[fields[2]].contractID = fields[1];
-            break;
-
-        case "resource":
-            resources.push(fields[1], fields[1] + suffix);
-            resourceProto.setSubstitution(fields[1], getURI(fields[2]));
-            resourceProto.setSubstitution(fields[1] + suffix, getURI(fields[2]));
-        }
-    }
-
-    // Flush the cache if necessary, just to be paranoid
-    let pref = "extensions.dactyl.cacheFlushCheck";
-    let val  = addon.version;
-    if (!Services.prefs.prefHasUserValue(pref) || Services.prefs.getCharPref(pref) != val) {
-        var cacheFlush = true;
-        Services.obs.notifyObservers(null, "startupcache-invalidate", "");
-        Services.prefs.setCharPref(pref, val);
-    }
-
-    try {
-        module(DISABLE_ACR).init(addon.id);
-    }
-    catch (e) {
-        reportError(e);
-    }
-
-    if (JSMLoader) {
-        // Temporary hacks until platforms and dactyl releases that don't
-        // support Cu.unload are phased out.
-        if (Cu.unload) {
-            // Upgrading from dactyl release without Cu.unload support.
-            Cu.unload(BOOTSTRAP_JSM);
-            for (let [name] in Iterator(JSMLoader.globals))
-                Cu.unload(~name.indexOf(":") ? name : "resource://dactyl" + JSMLoader.suffix + "/" + name);
-        }
-        else if (JSMLoader.bump != 6) {
-            // We're in a version without Cu.unload support and the
-            // JSMLoader interface has changed. Bump off the old one.
-            Services.scriptloader.loadSubScript("resource://dactyl" + suffix + "/bootstrap.jsm",
-                Cu.import(BOOTSTRAP_JSM, global));
-        }
-    }
-
-    if (!JSMLoader || JSMLoader.bump !== 6 || Cu.unload)
-        Cu.import(BOOTSTRAP_JSM, global);
-
-    JSMLoader.name = name;
-    JSMLoader.bootstrap = this;
-
-    JSMLoader.load(BOOTSTRAP_JSM, global);
-
-    JSMLoader.init(suffix);
-    JSMLoader.cacheFlush = cacheFlush;
-    JSMLoader.load("base.jsm", global);
-
-    if (!(BOOTSTRAP_CONTRACT in Cc)) {
-        // Use Sandbox to prevent closures over this scope
-        let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].getService());
-        let factory = Cu.evalInSandbox("({ createInstance: function () this })", sandbox);
-
-        factory.classID         = Components.ID("{f541c8b0-fe26-4621-a30b-e77d21721fb5}");
-        factory.contractID      = BOOTSTRAP_CONTRACT;
-        factory.QueryInterface  = XPCOMUtils.generateQI([Ci.nsIFactory]);
-        factory.wrappedJSObject = factory;
-
-        manager.registerFactory(factory.classID, String(factory.classID),
-                                BOOTSTRAP_CONTRACT, factory);
-    }
-
-    Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader = !Cu.unload && JSMLoader;
-
-    for each (let component in components)
-        component.register();
-
-    Services.obs.notifyObservers(null, "dactyl-rehash", null);
-    updateVersion();
-
-    updateLoader();
-    if (addon !== addonData)
-        require(global, "main");
-}
-
 function shutdown(data, reason) {
-    debug("bootstrap: shutdown " + reasonToString(reason));
+    let strReason = reasonToString(reason);
+    debug("bootstrap: shutdown " + strReason);
+
     if (reason != APP_SHUTDOWN) {
         try {
-            module(DISABLE_ACR).cleanup();
-            if (Cu.unload)
-                Cu.unload(DISABLE_ACR);
+            //JSMLoader.load("disable-acr").cleanup(addon.id);
         }
         catch (e) {
             reportError(e);
@@ -288,10 +403,18 @@ function shutdown(data, reason) {
         if (~[ADDON_UPGRADE, ADDON_DOWNGRADE, ADDON_UNINSTALL].indexOf(reason))
             Services.obs.notifyObservers(null, "dactyl-purge", null);
 
-        Services.obs.notifyObservers(null, "dactyl-cleanup", reasonToString(reason));
+        Services.obs.notifyObservers(null, "dactyl-cleanup", strReason);
         Services.obs.notifyObservers(null, "dactyl-cleanup-modules", reasonToString(reason));
 
-        JSMLoader.purge();
+        JSMLoader.atexit(strReason);
+        JSMLoader.cleanup(strReason);
+
+        if (Cu.unload)
+            Cu.unload(BOOTSTRAP);
+        else
+            bootstrap.require = null;
+
+
         for each (let [category, entry] in categories)
             categoryManager.deleteCategoryEntry(category, entry, false);
         for each (let resource in resources)

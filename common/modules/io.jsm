@@ -9,14 +9,15 @@
 
 try {
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("io", {
     exports: ["IO", "io"],
     require: ["services"]
-}, this);
+});
 
-this.lazyRequire("config", ["config"]);
-this.lazyRequire("contexts", ["Contexts", "contexts"]);
+lazyRequire("config", ["config"]);
+lazyRequire("contexts", ["Contexts", "contexts"]);
+lazyRequire("storage", ["File", "storage"]);
+lazyRequire("styles", ["styles"]);
 
 // TODO: why are we passing around strings rather than file objects?
 /**

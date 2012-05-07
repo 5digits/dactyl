@@ -5,10 +5,11 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("dom", {
     exports: ["$", "DOM", "NS", "XBL", "XHTML", "XUL"]
-}, this);
+});
+
+lazyRequire("highlight", ["highlight"]);
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
 var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");

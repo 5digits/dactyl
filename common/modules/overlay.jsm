@@ -6,11 +6,12 @@
 
 try {
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("overlay", {
     exports: ["overlay"],
     require: ["util"]
-}, this);
+});
+
+lazyRequire("highlight", ["highlight"]);
 
 var getAttr = function getAttr(elem, ns, name)
     elem.hasAttributeNS(ns, name) ? elem.getAttributeNS(ns, name) : null;
@@ -224,7 +225,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                     iterator = ([elem.@id, elem.elements(), elem.@*::*.(function::name() != "id")] for each (elem in obj[key]));
 
                 for (let [elem, xml, attr] in iterator) {
-                    if (elem = doc.getElementById(elem)) {
+                    if (elem = doc.getElementById(String(elem))) {
                         let node = DOM.fromXML(xml, doc, obj.objects);
                         if (!(node instanceof Ci.nsIDOMDocumentFragment))
                             elems.push(node);

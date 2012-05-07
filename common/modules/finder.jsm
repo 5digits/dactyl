@@ -4,14 +4,13 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("finder", {
     exports: ["RangeFind", "RangeFinder", "rangefinder"],
-    require: ["prefs"]
-}, this);
+    require: ["prefs", "util"]
+});
 
-this.lazyRequire("buffer", ["Buffer"]);
-this.lazyRequire("overlay", ["overlay"]);
+lazyRequire("buffer", ["Buffer"]);
+lazyRequire("overlay", ["overlay"]);
 
 function equals(a, b) XPCNativeWrapper(a) == XPCNativeWrapper(b);
 

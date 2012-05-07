@@ -8,13 +8,14 @@
 
 try {
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("util", {
     exports: ["DOM", "$", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["dom", "services"]
-}, this);
+});
 
-this.lazyRequire("overlay", ["overlay"]);
+lazyRequire("overlay", ["overlay"]);
+lazyRequire("storage", ["File", "storage"]);
+lazyRequire("template", ["template"]);
 
 var FailedAssertion = Class("FailedAssertion", ErrorBase, {
     init: function init(message, level, noTrace) {
@@ -1615,7 +1616,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
  * @singleton
  */
 var GlobalMath = Math;
-var Math = update(Object.create(GlobalMath), {
+this.Math = update(Object.create(GlobalMath), {
     /**
      * Returns the specified *value* constrained to the range *min* - *max*.
      *

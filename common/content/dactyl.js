@@ -1264,7 +1264,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             return '<?xml version="1.0"?>\n' +
                    '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
-                   '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
                    <document xmlns={NS}
                        name="plugins" title={config.appName + " Plugins"}>
                        <h1 tag="using-plugins">{_("help.title.Using Plugins")}</h1>

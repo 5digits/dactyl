@@ -5,6 +5,10 @@
     "host": "Firefox",
     "hostbin": "firefox",
 
+    "module-paths": [
+        "resource://dactyl/"
+    ],
+
     "autocommands": {
         "BookmarkAdd":      "Triggered after a page is bookmarked",
         "BookmarkChange":   "Triggered after a page's bookmark is changed",

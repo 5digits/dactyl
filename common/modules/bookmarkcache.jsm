@@ -4,11 +4,10 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("bookmarkcache", {
     exports: ["Bookmark", "BookmarkCache", "Keyword", "bookmarkcache"],
     require: ["services", "util"]
-}, this);
+});
 
 this.lazyRequire("storage", ["storage"]);
 

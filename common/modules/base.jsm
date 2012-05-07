@@ -6,8 +6,7 @@
 
 var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
-Cu.import("resource://dactyl/bootstrap.jsm");
-Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("resource://gre/modules/XPCOMUtils.jsm", this);
 try {
     var ctypes;
     Cu.import("resource://gre/modules/ctypes.jsm");
@@ -27,108 +26,20 @@ if (!XPCNativeWrapper.unwrap)
             return obj.wrappedJSObject;
         return obj;
     };
-if (!Object.create)
-    Object.create = function create(proto, props) {
-        let obj = { __proto__: proto };
-        for (let k in properties(props || {}))
-            Object.defineProperty(obj, k, props[k]);
-        return obj;
-    };
-if (!Object.defineProperty)
-    Object.defineProperty = function defineProperty(obj, prop, desc) {
-        try {
-            let value = desc.value;
-            if ("value" in desc)
-                if (desc.writable && !__lookupGetter__.call(obj, prop)
-                                  && !__lookupSetter__.call(obj, prop))
-                    try {
-                        obj[prop] = value;
-                    }
-                    catch (e if e instanceof TypeError) {}
-                else {
-                    __defineGetter__.call(obj, prop, function () value);
-                    if (desc.writable)
-                        __defineSetter__.call(obj, prop, function (val) { value = val; });
-                }
-
-            if ("get" in desc)
-                __defineGetter__.call(obj, prop, desc.get);
-            if ("set" in desc)
-                __defineSetter__.call(obj, prop, desc.set);
-        }
-        catch (e) {
-            throw e.stack ? e : Error(e);
-        }
-    };
-if (!Object.defineProperties)
-    Object.defineProperties = function defineProperties(obj, props) {
-        for (let [k, v] in Iterator(props))
-            Object.defineProperty(obj, k, v);
-    };
-if (!Object.freeze)
-    Object.freeze = function freeze(obj) {};
-if (!Object.getPropertyDescriptor)
-    Object.getPropertyDescriptor = function getPropertyDescriptor(obj, prop) {
-        try {
-            let desc = {
-                configurable: true,
-                enumerable: propertyIsEnumerable.call(obj, prop)
-            };
-            var get = __lookupGetter__.call(obj, prop),
-                set = __lookupSetter__.call(obj, prop);
-            if (!get && !set) {
-                desc.value = obj[prop];
-                desc.writable = true;
-            }
-            if (get)
-                desc.get = get;
-            if (set)
-                desc.set = set;
-            return desc;
-        }
-        catch (e) {
-            throw e.stack ? e : Error(e);
-        }
-    };
-if (!Object.getOwnPropertyDescriptor)
-    Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
-        if (hasOwnProperty.call(obj, prop))
-            return Object.getPropertyDescriptor(obj, prop);
-    };
-if (!Object.getOwnPropertyNames)
-    Object.getOwnPropertyNames = function getOwnPropertyNames(obj, _debugger) {
-        try {
-            // This is an ugly and unfortunately necessary hack.
-            if (hasOwnProperty.call(obj, "__iterator__")) {
-                var oldIter = obj.__iterator__;
-                delete obj.__iterator__;
-            }
-            let res = [k for (k in obj) if (hasOwnProperty.call(obj, k))];
-            if (oldIter !== undefined) {
-                obj.__iterator__ = oldIter;
-                res.push("__iterator__");
-            }
-            return res;
-        }
-        catch (e) {
-            throw e.stack ? e : Error(e);
-        }
-    };
-if (!Object.getPrototypeOf)
-    Object.getPrototypeOf = function getPrototypeOf(obj) obj.__proto__;
-if (!Object.keys)
-    Object.keys = function keys(obj)
-        Object.getOwnPropertyNames(obj).filter(function (k) propertyIsEnumerable.call(obj, k));
 
 let getGlobalForObject = Cu.getGlobalForObject || function (obj) obj.__parent__;
 
-let jsmodules = {
-    lazyRequire: function lazyRequire(module, names, target) {
-        for each (let name in names)
-            memoize(target || this, name, function (name) require(module)[name]);
-    }
-};
+function require(module, target) JSMLoader.load(module, target);
+
+function lazyRequire(module, names, target) {
+    for each (let name in names)
+        memoize(target || this, name, function (name) require(module)[name]);
+}
+
+let jsmodules = { lazyRequire: lazyRequire };
 jsmodules.jsmodules = jsmodules;
+
+function toString() "[module-global " + this.NAME + "]";
 
 let use = {};
 let loaded = {};
@@ -136,7 +47,7 @@ let currentModule;
 let global = this;
 function defineModule(name, params, module) {
     if (!module)
-        module = getGlobalForObject(params);
+        module = this;
 
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
@@ -147,8 +58,7 @@ function defineModule(name, params, module) {
     defineModule.prefix += "  ";
 
     for (let [, mod] in Iterator(params.require || []))
-        require(module, mod, null, name);
-    module.__proto__ = jsmodules;
+        require(mod, module);
 
     module._lastModule = currentModule;
     currentModule = module;
@@ -196,11 +106,11 @@ function endModule() {
     defineModule.loadLog.push("(End   " + currentModule.NAME + ")");
 
     loaded[currentModule.NAME] = 1;
-    require(jsmodules, currentModule.NAME);
+    require(currentModule.NAME, jsmodules);
     currentModule = currentModule._lastModule;
 }
 
-function require(obj, name, from, targetName) {
+function require_(obj, name, from, targetName) {
     try {
         if (arguments.length === 1)
             [obj, name] = [{}, obj];
@@ -230,7 +140,7 @@ function require(obj, name, from, targetName) {
 defineModule("base", {
     // sed -n 's/^(const|var|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
-        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "JSMLoader", "Object",
+        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "JSMLoader",
         "Set", "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
         "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable", "ctypes", "curry",
         "debuggerProperties", "defineModule", "deprecated", "endModule", "forEach", "isArray",
@@ -238,10 +148,12 @@ defineModule("base", {
         "iterOwnProperties", "keys", "memoize", "octal", "properties", "require", "set", "update",
         "values", "withCallerGlobal"
     ]
-}, this);
+});
 
+this.lazyRequire("config", ["config"]);
 this.lazyRequire("messages", ["_", "Messages"]);
-this.lazyRequire("util", ["util"]);
+this.lazyRequire("services", ["services"]);
+this.lazyRequire("util", ["FailedAssertion", "util"]);
 
 /**
  * Returns a list of all of the top-level properties of an object, by
@@ -653,7 +565,7 @@ function memoize(obj, key, getter) {
     }
 }
 
-let sandbox = Cu.Sandbox(this);
+let sandbox = Cu.Sandbox(Cu.getGlobalForObject(this));
 sandbox.__proto__ = this;
 /**
  * Wraps a function so that when called, the global object of the caller
@@ -666,7 +578,7 @@ var withCallerGlobal = Cu.evalInSandbox(<![CDATA[
             fn.apply(this,
                      [Class.objectGlobal(withCallerGlobal_wrapped.caller)]
                         .concat(Array.slice(arguments))))
-]]>, Cu.Sandbox(this), "1.8");
+]]>, Cu.Sandbox(Cu.getGlobalForObject(this)), "1.8");
 
 /**
  * Updates an object with the properties of another object. Getters

@@ -8,10 +8,11 @@ let { getOwnPropertyNames } = Object;
 
 try {
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("javascript", {
     exports: ["JavaScript", "javascript"]
-}, this);
+});
+
+lazyRequire("template", ["template"]);
 
 let isPrototypeOf = Object.prototype.isPrototypeOf;
 

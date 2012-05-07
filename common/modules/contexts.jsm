@@ -4,13 +4,16 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("contexts", {
     exports: ["Contexts", "Group", "contexts"],
     require: ["services", "util"]
-}, this);
+});
 
-this.lazyRequire("overlay", ["overlay"]);
+lazyRequire("commands", ["ArgType", "CommandOption", "commands"]);
+lazyRequire("options", ["Option"]);
+lazyRequire("overlay", ["overlay"]);
+lazyRequire("storage", ["File"]);
+lazyRequire("template", ["template"]);
 
 var Const = function Const(val) Class.Property({ enumerable: true, value: val });
 

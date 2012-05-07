@@ -6,10 +6,12 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("completion", {
     exports: ["CompletionContext", "Completion", "completion"]
 }, this);
+
+lazyRequire("messages", ["_", "messages"]);
+lazyRequire("template", ["template"]);
 
 /**
  * Creates a new completion context.

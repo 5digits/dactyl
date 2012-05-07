@@ -6,11 +6,10 @@
 
 try {
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("main", {
     exports: ["ModuleBase"],
     require: ["config", "overlay", "services", "util"]
-}, this);
+});
 
 var BASE = "resource://dactyl-content/";
 
@@ -130,7 +129,7 @@ var Modules = function Modules(window) {
                 }
             }
             try {
-                require(jsmodules, script);
+                require(script, jsmodules);
             }
             catch (e) {
                 util.dump("Loading script " + script + ":");
@@ -150,7 +149,7 @@ var Modules = function Modules(window) {
                                                              wantXrays: false });
 
             // Hack:
-            sandbox.Object = jsmodules.Object;
+            // sandbox.Object = jsmodules.Object;
             sandbox.File = jsmodules.File;
             sandbox.Math = jsmodules.Math;
             sandbox.__proto__ = proto || modules;
@@ -181,7 +180,7 @@ overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
 
         defineModule.time("load", null, function _load() {
             config.modules.global
-                  .forEach(function (name) defineModule.time("load", name, require, null, modules.jsmodules, name));
+                  .forEach(function (name) defineModule.time("load", name, require, null, name, modules.jsmodules));
 
             config.modules.window
                   .forEach(function (name) defineModule.time("load", name, modules.load, modules, name));

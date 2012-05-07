@@ -7,11 +7,13 @@
 
 try {
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("addons", {
     exports: ["AddonManager", "Addons", "Addon", "addons"],
-    require: ["services"]
-}, this);
+    require: ["services", "util"]
+});
+
+this.lazyRequire("completion", ["completion"]);
+lazyRequire("template", ["template"]);
 
 var callResult = function callResult(method) {
     let args = Array.slice(arguments, 1);
@@ -496,7 +498,7 @@ var Addons = Module("addons", {
 });
 
 if (!services.has("extensionManager"))
-    Components.utils.import("resource://gre/modules/AddonManager.jsm");
+    Components.utils.import("resource://gre/modules/AddonManager.jsm", this);
 else
     var AddonManager = {
         PERM_CAN_UNINSTALL: 1,

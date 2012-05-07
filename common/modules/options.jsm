@@ -8,13 +8,18 @@
 
 try {
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("options", {
     exports: ["Option", "Options", "ValueError", "options"],
     require: ["contexts", "messages", "storage"]
-}, this);
+});
 
-this.lazyRequire("config", ["config"]);
+lazyRequire("cache", ["cache"]);
+lazyRequire("config", ["config"]);
+lazyRequire("commands", ["Commands"]);
+lazyRequire("completion", ["CompletionContext"]);
+lazyRequire("prefs", ["prefs"]);
+lazyRequire("styles", ["Styles"]);
+lazyRequire("template", ["template"]);
 
 /** @scope modules */
 

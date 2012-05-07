@@ -4,11 +4,13 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("cache", {
     exports: ["Cache", "cache"],
     require: ["config", "services", "util"]
-}, this);
+});
+
+lazyRequire("overlay", ["overlay"]);
+lazyRequire("storage", ["File"]);
 
 var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
     init: function init() {

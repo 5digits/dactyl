@@ -4,12 +4,12 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("downloads", {
-    exports: ["Download", "Downloads", "downloads"]
-}, this);
+    exports: ["Download", "Downloads", "downloads"],
+    require: ["util"]
+});
 
-this.lazyRequire("overlay", ["overlay"]);
+lazyRequire("overlay", ["overlay"]);
 
 Cu.import("resource://gre/modules/DownloadUtils.jsm", this);
 

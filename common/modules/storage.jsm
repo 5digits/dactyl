@@ -4,14 +4,14 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("storage", {
     exports: ["File", "Storage", "storage"],
     require: ["services", "util"]
-}, this);
+});
 
-this.lazyRequire("config", ["config"]);
-this.lazyRequire("io", ["IO"]);
+lazyRequire("config", ["config"]);
+lazyRequire("io", ["IO"]);
+lazyRequire("overlay", ["overlay"]);
 
 var win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 var myObject = JSON.parse("{}").constructor;

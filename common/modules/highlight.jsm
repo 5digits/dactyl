@@ -4,13 +4,13 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("highlight", {
     exports: ["Highlight", "Highlights", "highlight"],
     require: ["services", "util"]
-}, this);
+});
 
-this.lazyRequire("styles", ["Styles", "styles"]);
+lazyRequire("styles", ["Styles", "styles"]);
+lazyRequire("template", ["template"]);
 
 var Highlight = Struct("class", "selector", "sites",
                        "defaultExtends", "defaultValue",

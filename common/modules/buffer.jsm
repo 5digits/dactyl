@@ -4,18 +4,18 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-try {"use strict";
+// "use strict";
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("buffer", {
     exports: ["Buffer", "buffer"],
     require: ["prefs", "services", "util"]
-}, this);
+});
 
-this.lazyRequire("finder", ["RangeFind"]);
-this.lazyRequire("overlay", ["overlay"]);
-this.lazyRequire("storage", ["storage"]);
-this.lazyRequire("template", ["template"]);
+lazyRequire("bookmarkcache", ["bookmarkcache"]);
+lazyRequire("finder", ["RangeFind"]);
+lazyRequire("overlay", ["overlay"]);
+lazyRequire("storage", ["storage"]);
+lazyRequire("template", ["template"]);
 
 /**
  * A class to manage the primary web content buffer. The name comes
@@ -2529,7 +2529,7 @@ Buffer.addPageInfoSection("s", "Security", function (verbose) {
     }
 });
 
-} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+// catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 endModule();
 

@@ -1,13 +1,13 @@
+resource dactyl             ../common/modules/
+resource dactyl-common      ../common/
+resource dactyl-content     ../common/content/
+resource dactyl-skin        ../common/skin/
+resource dactyl-locale      ../common/locale/
+
 resource dactyl-local         ./
 resource dactyl-local-content content/
 resource dactyl-local-skin    skin/
 resource dactyl-local-locale  locale/
-
-resource dactyl-common      ../common/
-resource dactyl             ../common/modules/
-resource dactyl-content     ../common/content/
-resource dactyl-skin        ../common/skin/
-resource dactyl-locale      ../common/locale/
 
 content  dactyl  ../common/content/
 

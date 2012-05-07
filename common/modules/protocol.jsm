@@ -4,11 +4,10 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("protocol", {
     exports: ["LocaleChannel", "Protocol", "RedirectChannel", "StringChannel", "XMLChannel"],
     require: ["services", "util"]
-}, this);
+});
 
 var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
@@ -224,6 +223,7 @@ XMLChannel.prototype = {
             this.writes.push(services.io.newChannel(url, null, this.uri).open());
         }
         catch (e) {
+            util.dump("addChannel('" + url + "'):");
             util.reportError(e);
         }
     },

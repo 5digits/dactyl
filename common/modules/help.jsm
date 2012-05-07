@@ -4,14 +4,14 @@
 // given in the LICENSE.txt file included with this file.
 /* use strict */
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("help", {
     exports: ["help"],
     require: ["cache", "dom", "protocol", "services", "util"]
-}, this);
+});
 
-this.lazyRequire("completion", ["completion"]);
-this.lazyRequire("overlay", ["overlay"]);
+lazyRequire("completion", ["completion"]);
+lazyRequire("overlay", ["overlay"]);
+lazyRequire("template", ["template"]);
 
 var HelpBuilder = Class("HelpBuilder", {
     init: function init() {
@@ -202,7 +202,6 @@ var Help = Module("Help", {
 
             return '<?xml version="1.0"?>\n' +
                    '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
-                   '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
                    <document xmlns={NS} xmlns:dactyl={NS}
                        name="versions" title={config.appName + " Versions"}>
                        <h1 tag="versions news NEWS">{config.appName} Versions</h1>

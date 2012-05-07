@@ -5,11 +5,12 @@
 /* use strict */
 
 let global = this;
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("template", {
     exports: ["Binding", "Template", "template"],
     require: ["util"]
-}, this);
+});
+
+lazyRequire("help", ["help"]);
 
 default xml namespace = XHTML;
 
@@ -282,7 +283,8 @@ var Template = Module("Template", {
         }
     },
 
-    _sandbox: Class.Memoize(function () Cu.Sandbox(global, { wantXrays: false })),
+    _sandbox: Class.Memoize(function () Cu.Sandbox(Cu.getGlobalForObject(global),
+                                                   { wantXrays: false })),
 
     // if "processStrings" is true, any passed strings will be surrounded by " and
     // any line breaks are displayed as \n

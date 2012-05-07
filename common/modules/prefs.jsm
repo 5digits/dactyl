@@ -8,13 +8,13 @@
 
 try {
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("prefs", {
     exports: ["Prefs", "localPrefs", "prefs"],
     require: ["services", "util"]
-}, this);
+});
 
-this.lazyRequire("messages", ["_"]);
+lazyRequire("messages", ["_"]);
+lazyRequire("template", ["template"]);
 
 var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     ORIGINAL: "extensions.dactyl.original.",

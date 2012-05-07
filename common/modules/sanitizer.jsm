@@ -12,15 +12,14 @@
 // FIXME:
 //   - finish 1.9.0 support if we're going to support sanitizing in Melodactyl
 
-Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
     require: ["config", "prefs", "services", "util"]
-}, this);
+});
 
-this.lazyRequire("messages", ["_"]);
-this.lazyRequire("storage", ["storage"]);
-this.lazyRequire("template", ["teplate"]);
+lazyRequire("messages", ["_"]);
+lazyRequire("storage", ["storage"]);
+lazyRequire("template", ["template"]);
 
 let tmp = {};
 JSMLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);
