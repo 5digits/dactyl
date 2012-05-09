@@ -19,6 +19,7 @@ this.lazyRequire("highlight", ["highlight"]);
 this.lazyRequire("messages", ["_"]);
 this.lazyRequire("prefs", ["localPrefs", "prefs"]);
 this.lazyRequire("storage", ["storage", "File"]);
+this.lazyRequire("styles", ["Styles"]);
 
 function AboutHandler() {}
 AboutHandler.prototype = {
