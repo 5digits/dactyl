@@ -18,6 +18,7 @@ lazyRequire("highlight", ["highlight"]);
 lazyRequire("messages", ["_"]);
 lazyRequire("prefs", ["localPrefs", "prefs"]);
 lazyRequire("storage", ["storage", "File"]);
+lazyRequire("styles", ["Styles"]);
 
 function AboutHandler() {}
 AboutHandler.prototype = {
