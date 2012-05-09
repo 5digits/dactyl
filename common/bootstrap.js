@@ -233,6 +233,8 @@ function init() {
         }
     }
 
+    JSMLoader.config = JSON.parse(httpGet("resource://dactyl-local/config.json").responseText);
+
     bootstrap = module(BOOTSTRAP);
     bootstrap.require = JSMLoader.load("base").require;
 
@@ -346,7 +348,6 @@ function startup(data, reason) {
                 Services.io.newURI("jar:" + Services.io.newFileURI(basePath).spec.replace(/!/g, "%21") + "!" +
                                    "/" + path, null, null);
 
-        JSMLoader.config = JSON.parse(httpGet(getURI("config.json")).responseText);
         try {
             init();
         }
