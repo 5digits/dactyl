@@ -106,8 +106,8 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         let uri = newURI(node.uri);
         let keyword = services.bookmarks.getKeywordForBookmark(node.itemId);
 
-        let tags = tags in node ? (node.tags ? node.tags.split(/, /g) : [])
-                                : services.tagging.getTagsForURI(uri, {}) || [];
+        let tags = "tags" in node ? (node.tags ? node.tags.split(/, /g) : [])
+                                  : services.tagging.getTagsForURI(uri, {}) || [];
 
         let post = BookmarkCache.getAnnotation(node.itemId, this.POST);
         let charset = BookmarkCache.getAnnotation(node.itemId, this.CHARSET);
