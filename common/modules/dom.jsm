@@ -10,6 +10,7 @@ defineModule("dom", {
 });
 
 lazyRequire("highlight", ["highlight"]);
+lazyRequire("template", ["template"]);
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
 var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");

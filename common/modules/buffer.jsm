@@ -12,6 +12,7 @@ defineModule("buffer", {
 });
 
 lazyRequire("bookmarkcache", ["bookmarkcache"]);
+lazyRequire("io", ["io"]);
 lazyRequire("finder", ["RangeFind"]);
 lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["storage"]);
