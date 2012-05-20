@@ -13,6 +13,7 @@ defineModule("buffer", {
 }, this);
 
 this.lazyRequire("finder", ["RangeFind"]);
+this.lazyRequire("io", ["io"]);
 this.lazyRequire("overlay", ["overlay"]);
 this.lazyRequire("storage", ["storage"]);
 this.lazyRequire("template", ["template"]);

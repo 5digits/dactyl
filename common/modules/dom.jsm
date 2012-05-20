@@ -10,6 +10,9 @@ defineModule("dom", {
     exports: ["$", "DOM", "NS", "XBL", "XHTML", "XUL"]
 }, this);
 
+this.lazyRequire("highlight", ["highlight"]);
+this.lazyRequire("template", ["template"]);
+
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
 var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
 var XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
