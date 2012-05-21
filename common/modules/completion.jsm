@@ -410,7 +410,7 @@ var CompletionContext = Class("CompletionContext", {
             this._cache.offset = this.offset;
             this.lastActivated = this.top.runCount;
         }
-        if (!this.itemCache[this.key]) {
+        if (!this.itemCache[this.key] && !this.waitingForTab) {
             try {
                 let res = this._generate();
                 if (res != null)
@@ -1015,7 +1015,6 @@ var Completion = Module("completion", {
         context.hasItems = true;
         context.completions = context.completions.filter(function ({ url, title })
             words.every(function (w) (url + " " + title).toLowerCase().indexOf(w) >= 0))
-        context.incomplete = true;
 
         context.format = this.modules.bookmarks.format;
         context.keys.extra = function (item) {
@@ -1034,20 +1033,24 @@ var Completion = Module("completion", {
             running[provider] = false;
         };
 
-        service.startSearch(context.filter, "", context.result, {
-            onSearchResult: util.wrapCallback(function onSearchResult(search, result) {
-                if (result.searchResult <= result.RESULT_SUCCESS)
-                    running[provider] = null;
+        if (!context.waitingForTab) {
+            context.incomplete = true;
 
-                context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
-                context.completions = [
-                    { url: result.getValueAt(i), title: result.getCommentAt(i), icon: result.getImageAt(i) }
-                    for (i in util.range(0, result.matchCount))
-                ];
-            }),
-            get onUpdateSearchResult() this.onSearchResult
-        });
-        running[provider] = true;
+            service.startSearch(context.filter, "", context.result, {
+                onSearchResult: util.wrapCallback(function onSearchResult(search, result) {
+                    if (result.searchResult <= result.RESULT_SUCCESS)
+                        running[provider] = null;
+
+                    context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
+                    context.completions = [
+                        { url: result.getValueAt(i), title: result.getCommentAt(i), icon: result.getImageAt(i) }
+                        for (i in util.range(0, result.matchCount))
+                    ];
+                }),
+                get onUpdateSearchResult() this.onSearchResult
+            });
+            running[provider] = true;
+        }
     }),
 
     urls: function (context, tags) {
