@@ -634,6 +634,9 @@ var Buffer = Module("Buffer", {
                              | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
 
         let window = this.topWindow;
+        if (!file.exists())
+            file.create(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
+
         let downloadListener = new window.DownloadListener(window,
                 services.Transfer(uri, File(file).URI, "",
                                   null, null, null, persist));
