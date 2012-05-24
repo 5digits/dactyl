@@ -200,13 +200,6 @@ overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
         this.loaded = {};
         modules.loaded = this.loaded;
 
-        defineModule.modules.forEach(function defModule(mod) {
-            let names = Set(Object.keys(mod.INIT));
-            if ("init" in mod.INIT)
-                Set.add(names, "init");
-
-            keys(names).forEach(function (name) { self.deferInit(name, mod.INIT, mod); });
-        });
         this.modules = modules;
 
         this.scanModules();
@@ -311,27 +304,37 @@ overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
 
         let className = mod.className || mod.constructor.className;
 
-        init[className] = function callee() {
-            function finish() {
-                this.currentDependency = className;
-                defineModule.time(className, name, INIT[name], mod,
-                                  modules.dactyl, modules, window);
-            }
-            if (!callee.frobbed) {
-                callee.frobbed = true;
-                if (modules[name] instanceof Class)
-                    modules[name].withSavedValues(["currentDependency"], finish);
-                else
-                    finish.call({});
-            }
-        };
+        if (!Set.has(init, className)) {
+            init[className] = function callee() {
+                function finish() {
+                    this.currentDependency = className;
+                    defineModule.time(className, name, INIT[name], mod,
+                                      modules.dactyl, modules, window);
+                }
+                if (!callee.frobbed) {
+                    callee.frobbed = true;
+                    if (modules[name] instanceof Class)
+                        modules[name].withSavedValues(["currentDependency"], finish);
+                    else
+                        finish.call({});
+                }
+            };
 
-        INIT[name].require = function (name) { init[name](); };
+            INIT[name].require = function (name) { init[name](); };
+        }
     },
 
     scanModules: function scanModules() {
         let self = this;
         let { Module, modules } = this.modules;
+
+        defineModule.modules.forEach(function defModule(mod) {
+            let names = Set(Object.keys(mod.INIT));
+            if ("init" in mod.INIT)
+                Set.add(names, "init");
+
+            keys(names).forEach(function (name) { self.deferInit(name, mod.INIT, mod); });
+        });
 
         Module.list.forEach(function frobModule(mod) {
             if (!mod.frobbed) {

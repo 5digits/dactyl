@@ -19,6 +19,7 @@ defineModule("sanitizer", {
 }, this);
 
 this.lazyRequire("messages", ["_"]);
+this.lazyRequire("overlay", ["overlay"]);
 this.lazyRequire("storage", ["storage"]);
 this.lazyRequire("template", ["teplate"]);
 
@@ -180,60 +181,63 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             }
         });
 
-        let (branch = Item.PREFIX + Item.SHUTDOWN_BRANCH) {
-            util.overlayWindow("chrome://browser/content/preferences/sanitize.xul",
-                               function (win) prefOverlay(branch, true, {
-                append: {
-                    SanitizeDialogPane:
-                        <groupbox orient="horizontal" xmlns={XUL}>
-                          <caption label={config.appName + /*L*/" (see :help privacy)"}/>
-                          <grid flex="1">
-                            <columns><column flex="1"/><column flex="1"/></columns>
-                            <rows>{
-                              let (items = ourItems(true))
-                                 template.map(util.range(0, Math.ceil(items.length / 2)), function (i)
-                                   <row xmlns={XUL}>{
-                                     template.map(items.slice(i * 2, i * 2 + 2), function (item)
-                                       <checkbox xmlns={XUL} label={item.description} preference={branch + item.name}/>)
-                                   }</row>)
-                            }</rows>
-                          </grid>
-                        </groupbox>
-                }
-            }));
-        }
-        let (branch = Item.PREFIX + Item.BRANCH) {
-            util.overlayWindow("chrome://browser/content/sanitize.xul",
-                               function (win) prefOverlay(branch, false, {
-                append: {
-                    itemList: <>
-                        <listitem xmlns={XUL} label={/*L*/"See :help privacy for the following:"} disabled="true" style="font-style: italic; font-weight: bold;"/>
-                        {
-                          template.map(ourItems(), function ([item, desc])
-                            <listitem xmlns={XUL} type="checkbox"
-                                      label={config.appName + " " + desc}
-                                      preference={branch + item}
-                                      onsyncfrompreference="return gSanitizePromptDialog.onReadGeneric();"/>)
-                        }
-                    </>
-                },
-                ready: function ready(win) {
-                    let elem =  win.document.getElementById("itemList");
-                    elem.setAttribute("rows", elem.itemCount);
-                    win.Sanitizer = Class("Sanitizer", win.Sanitizer, {
-                        sanitize: function sanitize() {
-                            self.withSavedValues(["sanitizing"], function () {
-                                self.sanitizing = true;
-                                sanitize.superapply(this, arguments);
-                                sanitizer.sanitizeItems([item.name for (item in values(self.itemMap))
-                                                         if (item.shouldSanitize(false))],
-                                                        Range.fromArray(this.range || []));
-                            }, this);
-                        }
-                    });
-                }
-            }));
-        }
+        util.timeout(function () { // Load order issue...
+
+            let (branch = Item.PREFIX + Item.SHUTDOWN_BRANCH) {
+                overlay.overlayWindow("chrome://browser/content/preferences/sanitize.xul",
+                                   function (win) prefOverlay(branch, true, {
+                    append: {
+                        SanitizeDialogPane:
+                            <groupbox orient="horizontal" xmlns={XUL}>
+                              <caption label={config.appName + /*L*/" (see :help privacy)"}/>
+                              <grid flex="1">
+                                <columns><column flex="1"/><column flex="1"/></columns>
+                                <rows>{
+                                  let (items = ourItems(true))
+                                     template.map(util.range(0, Math.ceil(items.length / 2)), function (i)
+                                       <row xmlns={XUL}>{
+                                         template.map(items.slice(i * 2, i * 2 + 2), function (item)
+                                           <checkbox xmlns={XUL} label={item.description} preference={branch + item.name}/>)
+                                       }</row>)
+                                }</rows>
+                              </grid>
+                            </groupbox>
+                    }
+                }));
+            }
+            let (branch = Item.PREFIX + Item.BRANCH) {
+                overlay.overlayWindow("chrome://browser/content/sanitize.xul",
+                                   function (win) prefOverlay(branch, false, {
+                    append: {
+                        itemList: <>
+                            <listitem xmlns={XUL} label={/*L*/"See :help privacy for the following:"} disabled="true" style="font-style: italic; font-weight: bold;"/>
+                            {
+                              template.map(ourItems(), function ([item, desc])
+                                <listitem xmlns={XUL} type="checkbox"
+                                          label={config.appName + " " + desc}
+                                          preference={branch + item}
+                                          onsyncfrompreference="return gSanitizePromptDialog.onReadGeneric();"/>)
+                            }
+                        </>
+                    },
+                    ready: function ready(win) {
+                        let elem =  win.document.getElementById("itemList");
+                        elem.setAttribute("rows", elem.itemCount);
+                        win.Sanitizer = Class("Sanitizer", win.Sanitizer, {
+                            sanitize: function sanitize() {
+                                self.withSavedValues(["sanitizing"], function () {
+                                    self.sanitizing = true;
+                                    sanitize.superapply(this, arguments);
+                                    sanitizer.sanitizeItems([item.name for (item in values(self.itemMap))
+                                                             if (item.shouldSanitize(false))],
+                                                            Range.fromArray(this.range || []));
+                                }, this);
+                            }
+                        });
+                    }
+                }));
+            }
+        });
     },
 
     firstRun: 0,
