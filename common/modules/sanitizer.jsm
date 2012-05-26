@@ -22,7 +22,7 @@ lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["storage"]);
 lazyRequire("template", ["template"]);
 
-let tmp = {};
+let tmp = Object.create(this);
 JSMLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);
 tmp.Sanitizer.prototype.__proto__ = Class.prototype;
 
