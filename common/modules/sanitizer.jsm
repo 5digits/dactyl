@@ -22,7 +22,7 @@ this.lazyRequire("messages", ["_"]);
 this.lazyRequire("storage", ["storage"]);
 this.lazyRequire("template", ["teplate"]);
 
-let tmp = {};
+let tmp = Object.create(this);
 JSMLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);
 tmp.Sanitizer.prototype.__proto__ = Class.prototype;
 
