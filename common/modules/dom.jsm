@@ -413,7 +413,7 @@ var DOM = Class("DOM", {
         return editor;
     },
 
-    get isEditable() !!this.editor,
+    get isEditable() !!this.editor || this.style.MozUserModify == "read-write",
 
     get isInput() isinstance(this[0], [Ci.nsIDOMHTMLInputElement,
                                        Ci.nsIDOMHTMLTextAreaElement,
