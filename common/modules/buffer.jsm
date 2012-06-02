@@ -456,10 +456,11 @@ var Buffer = Module("Buffer", {
         let { dactyl } = this.modules;
 
         let ctrlKey = false, shiftKey = false;
+        let button = 0;
         switch (dactyl.forceTarget || where) {
         case dactyl.NEW_TAB:
         case dactyl.NEW_BACKGROUND_TAB:
-            ctrlKey = true;
+            button = 1;
             shiftKey = dactyl.forceBackground != null ? dactyl.forceBackground
                                                       : where != dactyl.NEW_BACKGROUND_TAB;
             break;
@@ -475,7 +476,7 @@ var Buffer = Module("Buffer", {
         prefs.withContext(function () {
             prefs.set("browser.tabs.loadInBackground", true);
             let params = {
-                screenX: offsetX, screenY: offsetY,
+                button: button, screenX: offsetX, screenY: offsetY,
                 ctrlKey: ctrlKey, shiftKey: shiftKey, metaKey: ctrlKey
             };
 
