@@ -470,10 +470,12 @@ var IO = Module("io", {
     // TODO: when https://bugzilla.mozilla.org/show_bug.cgi?id=68702 is
     // fixed use that instead of a tmpfile
     /**
-     * Runs *command* in a subshell and returns the output in a string. The
-     * shell used is that specified by the 'shell' option.
+     * Runs *command* in a subshell and returns the output. The shell used is
+     * that specified by the 'shell' option.
      *
-     * @param {string} command The command to run.
+     * @param {string|[string]} command The command to run. This can be a shell
+     *      command string or an array of strings (a command and arguments)
+     *      which will be escaped and concatenated.
      * @param {string} input Any input to be provided to the command on stdin.
      * @param {function(object)} callback A callback to be called when
      *      the command completes. @optional
