@@ -1585,18 +1585,19 @@ var Buffer = Module("Buffer", {
                 dactyl.assert(!arg || arg[0] == ">" && !config.OS.isWindows,
                               _("error.trailingCharacters"));
 
-                const PRINTER = "PostScript/default";
-                const BRANCH  = "print.printer_" + PRINTER + ".";
+                const PRINTER  = "PostScript/default";
+                const BRANCH   = "printer_" + PRINTER + ".";
+                const BRANCHES = ["print.", BRANCH, "print." + BRANCH];
+                function set(pref, value) {
+                    BRANCHES.forEach(function (branch) { prefs.set(branch + pref, value) });
+                }
 
                 prefs.withContext(function () {
                     if (arg) {
                         prefs.set("print.print_printer", PRINTER);
 
-                        prefs.set(   "print.print_to_file", true);
-                        prefs.set(BRANCH + "print_to_file", true);
-
-                        prefs.set(   "print.print_to_filename", io.File(arg.substr(1)).path);
-                        prefs.set(BRANCH + "print_to_filename", io.File(arg.substr(1)).path);
+                        set("print_to_file", true);
+                        set("print_to_filename", io.File(arg.substr(1)).path);
 
                         dactyl.echomsg(_("print.toFile", arg.substr(1)));
                     }
@@ -1604,15 +1605,13 @@ var Buffer = Module("Buffer", {
                         dactyl.echomsg(_("print.sending"));
 
                     prefs.set("print.always_print_silent", args.bang);
-                    prefs.set("print.show_print_progress", !args.bang);
+                    if (false)
+                        prefs.set("print.show_print_progress", !args.bang);
 
                     config.browser.contentWindow.print();
                 });
 
-                if (arg)
-                    dactyl.echomsg(_("print.printed", arg.substr(1)));
-                else
-                    dactyl.echomsg(_("print.sent"));
+                dactyl.echomsg(_("print.sent"));
             },
             {
                 argCount: "?",
