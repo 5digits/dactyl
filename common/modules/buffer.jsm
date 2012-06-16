@@ -1612,6 +1612,10 @@ var Buffer = Module("Buffer", {
             {
                 argCount: "?",
                 bang: true,
+                completer: function (context, args) {
+                    if (args.bang && /^>/.test(context.filter))
+                        context.fork("file", 1, modules.completion, "file");
+                },
                 literal: 0
             });
 
