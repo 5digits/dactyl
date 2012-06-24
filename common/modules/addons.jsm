@@ -356,7 +356,7 @@ var Addons = Module("addons", {
 }, {
 }, {
     commands: function (dactyl, modules, window) {
-        const { CommandOption, commands, completion } = modules;
+        const { CommandOption, commands, completion, io } = modules;
 
         commands.add(["addo[ns]", "ao"],
             "List installed extensions",
@@ -386,7 +386,7 @@ var Addons = Module("addons", {
             "Install an extension",
             function (args) {
                 let url  = args[0];
-                let file = modules.io.File(url);
+                let file = io.File(url);
                 function install(addonInstall) {
                     addonInstall.addListener(addonListener);
                     addonInstall.install();
