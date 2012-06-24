@@ -386,7 +386,7 @@ var Addons = Module("addons", {
             "Install an extension",
             function (args) {
                 let url  = args[0];
-                let file = io.File(url);
+                let file = modules.io.File(url);
                 function install(addonInstall) {
                     addonInstall.addListener(addonListener);
                     addonInstall.install();
