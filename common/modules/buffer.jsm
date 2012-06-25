@@ -2242,6 +2242,7 @@ var Buffer = Module("Buffer", {
                 "mxr.mozilla.org": 'a.l',
                 "pastebin.com": '#code_frame>div>ol>li',
                 "addons.mozilla.org": '.gutter>.line>a',
+                "bugzilla.mozilla.org": ".bz_comment:not(.bz_first_comment):not(.ih_history)",
                 "*": '/* Hgweb/Gitweb */ .completecodeline a.codeline, a.linenr'
             },
             {
