@@ -10,7 +10,8 @@ try {
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("javascript", {
-    exports: ["JavaScript", "javascript"]
+    exports: ["JavaScript", "javascript"],
+    require: ["util"]
 }, this);
 
 let isPrototypeOf = Object.prototype.isPrototypeOf;
