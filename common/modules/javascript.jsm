@@ -9,7 +9,8 @@ let { getOwnPropertyNames } = Object;
 try {
 
 defineModule("javascript", {
-    exports: ["JavaScript", "javascript"]
+    exports: ["JavaScript", "javascript"],
+    require: ["util"]
 });
 
 lazyRequire("template", ["template"]);

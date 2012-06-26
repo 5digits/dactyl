@@ -18,6 +18,7 @@ lazyRequire("config", ["config"]);
 lazyRequire("contexts", ["Contexts", "contexts"]);
 lazyRequire("storage", ["File", "storage"]);
 lazyRequire("styles", ["styles"]);
+lazyRequire("template", ["template"]);
 
 // TODO: why are we passing around strings rather than file objects?
 /**
