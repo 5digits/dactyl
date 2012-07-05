@@ -15,7 +15,7 @@ defineModule("buffer", {
 this.lazyRequire("finder", ["RangeFind"]);
 this.lazyRequire("io", ["io"]);
 this.lazyRequire("overlay", ["overlay"]);
-this.lazyRequire("storage", ["storage"]);
+this.lazyRequire("storage", ["File", "storage"]);
 this.lazyRequire("template", ["template"]);
 
 /**
@@ -642,14 +642,17 @@ var Buffer = Module("Buffer", {
                 services.Transfer(uri, File(file).URI, "",
                                   null, null, null, persist));
 
-        persist.progressListener = update(Object.create(downloadListener), {
-            onStateChange: util.wrapCallback(function onStateChange(progress, request, flags, status) {
-                if (callback && (flags & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
-                    util.trapErrors(callback, self, uri, file, progress, request, flags, status);
+        if (callback)
+            persist.progressListener = update(Object.create(downloadListener), {
+                onStateChange: util.wrapCallback(function onStateChange(progress, request, flags, status) {
+                    if (callback && (flags & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
+                        util.trapErrors(callback, self, uri, file, progress, request, flags, status);
 
-                return onStateChange.superapply(this, arguments);
-            })
-        });
+                    return onStateChange.superapply(this, arguments);
+                })
+            });
+        else
+            persist.progressListener = downloadListener;
 
         persist.saveURI(uri, null, null, null, null, file);
     },
