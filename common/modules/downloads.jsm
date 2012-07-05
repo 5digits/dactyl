@@ -28,6 +28,8 @@ var Download = Class("Download", {
         this.nodes = {
             commandTarget: self
         };
+        XML.ignoreWhitespace = true;
+        XML.prettyPrinting = false;
         util.xmlToDom(
             <tr highlight="Download" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
                 <td highlight="DownloadTitle">
@@ -224,8 +226,10 @@ var DownloadList = Class("DownloadList",
 
     message: Class.Memoize(function () {
 
+        XML.ignoreWhitespace = true;
+        XML.prettyPrinting = false;
         util.xmlToDom(<table highlight="Downloads" key="list" xmlns={XHTML}>
-                        <tr highlight="DownloadHead">
+                        <tr highlight="DownloadHead" key="head">
                             <span>{_("title.Title")}</span>
                             <span>{_("title.Status")}</span>
                             <span/>
@@ -253,6 +257,9 @@ var DownloadList = Class("DownloadList",
                         </tr>
                       </table>, this.document, this.nodes);
 
+        this.index = Array.indexOf(this.nodes.list.childNodes,
+                                   this.nodes.head);
+
         for (let row in iter(services.downloadManager.DBConnection
                                      .createStatement("SELECT id FROM moz_downloads")))
             this.addDownload(row.id);
@@ -274,7 +281,7 @@ var DownloadList = Class("DownloadList",
                                               .indexOf(download);
 
             this.nodes.list.insertBefore(download.nodes.row,
-                                         this.nodes.list.childNodes[index + 1]);
+                                         this.nodes.list.childNodes[index + this.index + 1]);
         }
     },
     removeDownload: function removeDownload(id) {
