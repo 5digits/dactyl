@@ -2297,7 +2297,7 @@ var Buffer = Module("Buffer", {
 
         options.add(["previouspattern"],
             "Patterns to use when guessing the previous page in a document sequence",
-            "regexplist", UTF8(/'[<«] Prev$','« Prev$','\bprev(ious)\b',^<$,^(<<|«)$,^(<|«),(<|«)$/.source),
+            "regexplist", UTF8(/'[<«] Prev$','« Prev$','\bprev(ious)?\b',^<$,^(<<|«)$,^(<|«),(<|«)$/.source),
             { regexpFlags: "i" });
 
         options.add(["pageinfo", "pa"],
