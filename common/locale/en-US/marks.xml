@@ -119,11 +119,10 @@
     <spec>:bmarks<oa>!</oa> <oa>filter</oa></spec>
     <description>
         <p>
-            List or open multiple bookmarks. Opens the message window
-            at the bottom of the screen with all bookmarks with
-            titles or URLs matching <oa>filter</oa>. The resulting
-            URLs can be clicked, or accessed via extended hint modes
-            such as <k>;o</k>.
+            List or open multiple bookmarks. Opens the message window at the
+            bottom of the screen with all bookmarks with URLs matching
+            <oa>filter</oa>. The resulting URLs can be clicked, or accessed via
+            extended hint modes such as <k>;o</k>.
         </p>
 
         <p>
