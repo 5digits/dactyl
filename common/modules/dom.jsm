@@ -415,7 +415,7 @@ var DOM = Class("DOM", {
         return editor;
     },
 
-    get isEditable() !!this.editor || this.style.MozUserModify == "read-write",
+    get isEditable() !!this.editor || this[0] instanceof Ci.nsIDOMElement && this.style.MozUserModify == "read-write",
 
     get isInput() isinstance(this[0], [Ci.nsIDOMHTMLInputElement,
                                        Ci.nsIDOMHTMLTextAreaElement,
