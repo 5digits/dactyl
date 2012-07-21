@@ -374,7 +374,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<Leader>]]></tags>
+    <tags><![CDATA['mapleader' <Leader>]]></tags>
     <strut/>
     <spec><![CDATA[<Leader>]]></spec>
     <description>
