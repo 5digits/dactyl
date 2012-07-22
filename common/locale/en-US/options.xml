@@ -1241,8 +1241,8 @@
     <description>
         <p>
             Pass certain keys through directly for the given URLs.
-            For any page with a URL matching a given regexp, all key
-            events for keys listed in that regexp's value are passed
+            For any page with a URL matching a given <t>site-filter</t>, all key
+            events for keys listed in the corresponding value are passed
             through directly to &dactyl.host;, and are not processed
             by &dactyl.appName; in any way. Key names are separated
             by commas, where the first key name is treated as a list
