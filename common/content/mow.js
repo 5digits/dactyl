@@ -400,7 +400,7 @@ var MOW = Module("mow", {
 
         // copy text to clipboard
         bind(["<C-y>"], "Yank selection to clipboard",
-             function () { dactyl.clipboardWrite(buffer.getCurrentWord(mow.window)); });
+             function () { dactyl.clipboardWrite(Buffer.currentWord(mow.window)); });
 
         // close the window
         bind(["q"], "Close the output window",
