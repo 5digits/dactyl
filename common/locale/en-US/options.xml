@@ -1266,8 +1266,8 @@
 <item>
     <tags>'pu' 'passunknown'</tags>
     <spec>'passunknown' 'pu'</spec>
-    <type>&option.showmode.type;</type>
-    <default>&option.showmode.default;</default>
+    <type>&option.passunknown.type;</type>
+    <default>&option.passunknown.default;</default>
     <description>
         <p>
             Pass unknown keys through to &dactyl.host; in these
