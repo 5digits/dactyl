@@ -12,7 +12,9 @@ defineModule("finder", {
 lazyRequire("buffer", ["Buffer"]);
 lazyRequire("overlay", ["overlay"]);
 
-function equals(a, b) XPCNativeWrapper(a) == XPCNativeWrapper(b);
+function id(w) w.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                .outerWindowID;
+function equals(a, b) id(a) == id(b);
 
 /** @instance rangefinder */
 var RangeFinder = Module("rangefinder", {

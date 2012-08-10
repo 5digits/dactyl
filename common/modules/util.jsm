@@ -364,7 +364,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             else if (close) {
                 stack.pop();
-                util.assert(stack.length, /*L*/"Unmatched %] in macro");
+                util.assert(stack.length, /*L*/"Unmatched }> in macro");
             }
             else {
                 let [, flags, name] = /^((?:[a-z]-)*)(.*)/.exec(macro);
