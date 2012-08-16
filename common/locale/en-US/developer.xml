@@ -216,7 +216,7 @@ XML.prettyPrinting   = <hl key="Boolean">false</hl>;
             </p>
         </description>
     </item>
-    <escape><oa>...</oa>
+    <escape><oa>…</oa>
 <hl key="HelpXMLTagEnd">&lt;/plugin></hl></escape>;</xml-block>
 
 <p>

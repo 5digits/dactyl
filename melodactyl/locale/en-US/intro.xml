@@ -122,7 +122,7 @@
 <ul replace="features-list">
     <li>Vim-like keybindings (<k>h</k>, <k>j</k>, <k>gg</k>, <k>ZZ</k>, <k name="C-f"/>, etc.)</li>
     <li>Ex commands (<ex>:quit</ex>, <ex>:open www.foo.com</ex>, …)</li>
-    <li>Tab completion for all commands, highly configurable via <o>wildmode</o>, <o>autocomplete</o>, ...</li>
+    <li>Tab completion for all commands, highly configurable via <o>wildmode</o>, <o>autocomplete</o>, …</li>
     <li>Hit-a-hint like navigation of links (start with <k>f</k> to follow a link)</li>
     <li>Advanced completion of bookmark and history URLs</li>
     <li>Vim-like status line with a Wget-like progress bar</li>
