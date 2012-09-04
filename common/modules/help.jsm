@@ -233,7 +233,7 @@ var Help = Module("Help", {
         init: function init() {
             dactyl.commands["dactyl.help"] = function (event) {
                 let elem = event.originalTarget;
-                help.help(elem.getAttribute("tag") || elem.textContent);
+                modules.help.help(elem.getAttribute("tag") || elem.textContent);
             };
         },
 

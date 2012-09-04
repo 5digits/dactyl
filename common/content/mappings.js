@@ -771,7 +771,9 @@ var Mappings = Module("mappings", {
             format: {
                 description: function (map) (XML.ignoreWhitespace = false, XML.prettyPrinting = false, <>
                         {options.get("passkeys").has(map.name)
-                            ? <span highlight="URLExtra">(passed by {template.helpLink("'passkeys'")})</span>
+                            ? <span highlight="URLExtra">
+                                ({template.linkifyHelp(_("option.passkeys.passedBy"))})
+                              </span>
                             : <></>}
                         {template.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))}
                 </>),
@@ -779,7 +781,7 @@ var Mappings = Module("mappings", {
                     char === "n" ? map.name : char ? char + "_" + map.name : "",
                 headings: ["Command", "Mode", "Group", "Description"]
             }
-        }
+        };
 
         dactyl.addUsageCommand({
             __proto__: args,

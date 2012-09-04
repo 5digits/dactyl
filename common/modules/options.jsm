@@ -1068,25 +1068,6 @@ var Options = Module("options", {
     commands: function initCommands(dactyl, modules, window) {
         const { commands, contexts, options } = modules;
 
-        let args = {
-            getMode: function (args) findMode(args["-mode"]),
-            iterate: function (args) {
-                for (let map in mappings.iterate(this.getMode(args)))
-                    for (let name in values(map.names))
-                        yield { name: name, __proto__: map };
-            },
-            format: {
-                description: function (map) (XML.ignoreWhitespace = false, XML.prettyPrinting = false, <>
-                        {options.get("passkeys").has(map.name)
-                            ? <span highlight="URLExtra">({
-                                tempate.linkifyHelp(_("option.passkeys.passedBy"))
-                              })</span>
-                            : <></>}
-                        {template.linkifyHelp(map.description)}
-                </>)
-            }
-        };
-
         dactyl.addUsageCommand({
             name: ["listo[ptions]", "lo"],
             description: "List all options along with their short descriptions",
