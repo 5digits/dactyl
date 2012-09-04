@@ -239,8 +239,8 @@ var Tabs = Module("tabs", {
         if (func)
             func = bind(function (func) { func(this._groups) }, this, func);
 
-        if (window.TabView && TabView._initFrame)
-            TabView._initFrame(func);
+        if (window.TabView && window.TabView._initFrame)
+            window.TabView._initFrame(func);
 
         this._groups = iframe ? iframe.contentWindow : null;
         if (this._groups && !func)
