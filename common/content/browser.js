@@ -267,12 +267,12 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
         mappings.add([modes.NORMAL], ["<open-homepage>", "gh"],
             "Open homepage",
-            function () { BrowserHome(); });
+            function () { window.BrowserHome(); });
 
         mappings.add([modes.NORMAL], ["<tab-open-homepage>", "gH"],
             "Open homepage in a new tab",
             function () {
-                let homepages = gHomeButton.getHomePage();
+                let homepages = window.gHomeButton.getHomePage();
                 dactyl.open(homepages, { from: "homepage", where: dactyl.NEW_TAB });
             });
 
