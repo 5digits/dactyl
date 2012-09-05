@@ -1933,7 +1933,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                     commandline.commandOutput([
                         ["div", {}, [config.appName, " ", config.version, date, " running on: "].join("")],
-                        ["div", {}, [navigator.userAgent].join("")]
+                        ["div", {}, [window.navigator.userAgent].join("")]
                     ])
                 }
             }, {
