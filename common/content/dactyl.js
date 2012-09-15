@@ -647,7 +647,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      */
     initHelp: function initHelp() {
         if ("noscriptOverlay" in window)
-            noscriptOverlay.safeAllow("dactyl:", true, false);
+            window.noscriptOverlay.safeAllow("dactyl:", true, false);
 
         help.initialize();
     },
