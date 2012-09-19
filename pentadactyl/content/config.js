@@ -67,7 +67,9 @@ var Config = Module("config", ConfigBase, {
         },
 
         removeTab: function removeTab(tab) {
-            if (this.tabbrowser.mTabs.length > 1)
+            if (window.gInPrintPreviewMode)
+                window.PrintUtils.exitPrintPreview();
+            else if (this.tabbrowser.mTabs.length > 1)
                 this.tabbrowser.removeTab(tab);
             else {
                 if (modules.buffer.uri.spec !== "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
