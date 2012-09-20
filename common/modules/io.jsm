@@ -675,12 +675,15 @@ var IO = Module("io", {
                     item.file = file;
                 }
 
-                rtItems.ftdetect.template = <![CDATA[au BufNewFile,BufRead *<name>rc*,*.<fileext> set filetype=<name>]]>;
+                rtItems.ftdetect.template = // {{{
+<![CDATA[" Vim filetype detection file
+<header>
+
+au BufNewFile,BufRead *<name>rc*,*.<fileext> set filetype=<name>
+]]>;//}}}
                 rtItems.ftplugin.template = // {{{
 <![CDATA[" Vim filetype plugin file
-" Language:         <appname> configuration file
-" Maintainer:       <maintainer>
-" Version:          <version>
+<header>
 
 if exists("b:did_ftplugin")
   finish
@@ -707,9 +710,7 @@ unlet s:cpo_save
 ]]>;//}}}
                 rtItems.syntax.template = // {{{
 <![CDATA[" Vim syntax file
-" Language:         <appname> configuration file
-" Maintainer:       <maintainer>
-" Version:          <version>
+<header>
 
 if exists("b:current_syntax")
   finish
@@ -786,28 +787,10 @@ let b:current_syntax = "<name>"
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: tw=130 et ts=4 sw=4:
+" vim: tw=130 et ts=8 sts=4 sw=4:
 ]]>;//}}}
 
                 const { options } = modules;
-
-                let params = {//{{{
-                    version: config.version,
-                    name: config.name,
-                    appname: config.appName,
-                    fileext: config.fileExtension,
-                    maintainer: "Doug Kearns <dougkearns@gmail.com>",
-                    autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
-                                       keys(config.autocommands)),
-                    commands: wrap("syn keyword " + config.name + "Command ",
-                                  array(c.specs for (c in commands.iterator())).flatten()),
-                    options: wrap("syn keyword " + config.name + "Option ",
-                                  array(o.names for (o in options) if (o.type != "boolean")).flatten()),
-                    toggleoptions: wrap("let s:toggleOptions = [",
-                                        array(o.realNames for (o in options) if (o.type == "boolean"))
-                                            .flatten().map(String.quote),
-                                        ", ") + "]"
-                };//}}}
 
                 const WIDTH = 80;
                 function wrap(prefix, items, sep) {//{{{
@@ -828,6 +811,26 @@ unlet s:cpo_save
                     lines.last.pop();
                     return lines.map(function (l) l.join("")).join("\n").replace(/\s+\n/gm, "\n");
                 }//}}}
+
+                let params = { // {{{
+                    header: ['" Language:    ' + config.appName + ' configuration file',
+                             '" Maintainer:  Doug Kearns <dougkearns@gmail.com>',
+                             '" Version:     ' + config.version].join("\n"),
+                    name: config.name,
+                    appname: config.appName,
+                    fileext: config.fileExtension,
+                    maintainer: "Doug Kearns <dougkearns@gmail.com>",
+                    autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
+                                       keys(config.autocommands)),
+                    commands: wrap("syn keyword " + config.name + "Command ",
+                                  array(c.specs for (c in commands.iterator())).flatten()),
+                    options: wrap("syn keyword " + config.name + "Option ",
+                                  array(o.names for (o in options) if (o.type != "boolean")).flatten()),
+                    toggleoptions: wrap("let s:toggleOptions = [",
+                                        array(o.realNames for (o in options) if (o.type == "boolean"))
+                                            .flatten().map(String.quote),
+                                        ", ") + "]"
+                }; // }}}
 
                 for (let { file, template } in values(rtItems)) {
                     try {
