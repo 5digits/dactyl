@@ -94,7 +94,11 @@ let JSMLoader = {
     },
 
     getTarget: function getTarget(url) {
-        let chan = Services.io.newChannel(url, null, null);
+        let uri = Services.io.newURI(url, null, null);
+        if (uri.schemeIs("resource"))
+            return resourceProto.resolveURI(uri);
+
+        let chan = Services.io.newChannelFromURI(uri);
         try { chan.cancel(Cr.NS_BINDING_ABORTED) } catch (e) {}
         return chan.name;
     },
@@ -121,7 +125,7 @@ let JSMLoader = {
 
         for each (let url in urls)
             try {
-                var uri = resourceProto.resolveURI(Services.io.newURI(url, null, null));
+                var uri = this.getTarget(url);
                 if (uri in this.globals)
                     return this.modules[name] = this.globals[uri];
 
