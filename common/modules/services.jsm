@@ -26,7 +26,6 @@ var Services = Module("Services", {
         this.add("appShell",            "@mozilla.org/appshell/appShellService;1",          "nsIAppShellService");
         this.add("appStartup",          "@mozilla.org/toolkit/app-startup;1",               "nsIAppStartup");
         this.add("bookmarks",           "@mozilla.org/browser/nav-bookmarks-service;1",     "nsINavBookmarksService");
-        this.add("bootstrap",           "@dactyl.googlecode.com/base/bootstrap");
         this.add("browserSearch",       "@mozilla.org/browser/search-service;1",            "nsIBrowserSearchService");
         this.add("cache",               "@mozilla.org/network/cache-service;1",             "nsICacheService");
         this.add("charset",             "@mozilla.org/charset-converter-manager;1",         "nsICharsetConverterManager");

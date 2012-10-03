@@ -182,9 +182,10 @@ var Storage = Module("Storage", {
     init: function () {
         this.cleanup();
 
-        if (services.bootstrap && !services.bootstrap.session)
-            services.bootstrap.session = {};
-        this.session = services.bootstrap ? services.bootstrap.session : {};
+        let { Services } = Cu.import("resource://gre/modules/Services.jsm", {});
+        if (!Services.dactylSession)
+            Services.dactylSession = {};
+        this.session = Services.dactylSession;
     },
 
     cleanup: function () {
