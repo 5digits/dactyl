@@ -596,10 +596,10 @@ var Tabs = Module("tabs", {
         services.sessionStore.setTabState(to, tabState);
     }
 }, {
-    load: function init_load() {
+    load: function initLoad() {
         tabs.updateTabCount();
     },
-    commands: function init_commands() {
+    commands: function initCommands() {
         [
             {
                 name: ["bd[elete]"],
@@ -1015,7 +1015,7 @@ var Tabs = Module("tabs", {
                 { argCount: "0" });
         }
     },
-    completion: function init_completion() {
+    completion: function initCompletion() {
 
         completion.buffer = function buffer(context, visible) {
             let { tabs } = modules;
@@ -1096,7 +1096,7 @@ var Tabs = Module("tabs", {
             };
         };
     },
-    events: function init_events() {
+    events: function initEvents() {
         let tabContainer = config.tabbrowser.mTabContainer;
         function callback() {
             tabs.timeout(function () { this.updateTabCount(); });
@@ -1105,7 +1105,7 @@ var Tabs = Module("tabs", {
             events.listen(tabContainer, event, callback, false);
         events.listen(tabContainer, "TabSelect", tabs.closure._onTabSelect, false);
     },
-    mappings: function init_mappings() {
+    mappings: function initMappings() {
 
         mappings.add([modes.COMMAND], ["<C-t>", "<new-tab-next>"],
             "Execute the next mapping in a new tab",
@@ -1199,7 +1199,7 @@ var Tabs = Module("tabs", {
                 { count: true });
         }
     },
-    options: function init_options() {
+    options: function initOptions() {
         options.add(["showtabline", "stal"],
             "Define when the tab bar is visible",
             "string", true,

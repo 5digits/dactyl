@@ -94,7 +94,7 @@ var Config = Module("config", ConfigBase, {
 
 }, {
 }, {
-    commands: function (dactyl, modules, window) {
+    commands: function initCommands(dactyl, modules, window) {
         const { commands, completion, config } = modules;
         const { document } = window;
 
@@ -205,7 +205,7 @@ var Config = Module("config", ConfigBase, {
                 privateData: true
             });
     },
-    completion: function (dactyl, modules, window) {
+    completion: function initCompletion(dactyl, modules, window) {
         const { CompletionContext, bookmarkcache, completion } = modules;
         const { document } = window;
 
@@ -224,7 +224,7 @@ var Config = Module("config", ConfigBase, {
             context.completions = Array.map(menu.childNodes, function (n) [n.getAttribute("label"), ""]);
         };
     },
-    events: function (dactyl, modules, window) {
+    events: function initEvents(dactyl, modules, window) {
         modules.events.listen(window, "SidebarFocused", function (event) {
             modules.config.lastSidebar = window.document.getElementById("sidebar-box")
                                                .getAttribute("sidebarcommand");
@@ -237,7 +237,7 @@ var Config = Module("config", ConfigBase, {
                      "Handled by " + config.host,
                      function () Events.PASS_THROUGH);
     },
-    options: function (dactyl, modules, window) {
+    options: function initOptions(dactyl, modules, window) {
         modules.options.add(["online"],
             "Enables or disables offline mode",
             "boolean", true,

@@ -261,7 +261,7 @@ var RangeFinder = Module("rangefinder", {
             get onSubmit() modules.rangefinder.closure.onSubmit
         });
     },
-    mappings: function (dactyl, modules, window) {
+    mappings: function initMappings(dactyl, modules, window) {
         const { Buffer, buffer, config, mappings, modes, rangefinder } = modules;
         var myModes = config.browserModes.concat([modes.CARET]);
 
@@ -296,7 +296,7 @@ var RangeFinder = Module("rangefinder", {
             });
 
     },
-    options: function (dactyl, modules, window) {
+    options: function initOptions(dactyl, modules, window) {
         const { options, rangefinder } = modules;
 
         options.add(["hlfind", "hlf"],

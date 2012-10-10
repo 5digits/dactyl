@@ -88,7 +88,7 @@ var Addressbook = Module("addressbook", {
     }
 }, {
 }, {
-    commands: function () {
+    commands: function initCommands() {
         commands.add(["con[tact]"],
             "Add an address book entry",
             function (args) {
@@ -117,7 +117,7 @@ var Addressbook = Module("addressbook", {
             function (args) { addressbook.list(args.string, args.bang); },
             { bang: true });
     },
-    mappings: function () {
+    mappings: function initMappings() {
         var myModes = config.mailModes;
 
         mappings.add(myModes, ["a"],

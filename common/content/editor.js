@@ -688,7 +688,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         return DOM(elem).editor;
     }
 }, {
-    modes: function init_modes() {
+    modes: function initModes() {
         modes.addMode("OPERATOR", {
             char: "o",
             description: "Mappings which move the cursor",
@@ -745,7 +745,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             bases: [modes.INSERT]
         });
     },
-    commands: function init_commands() {
+    commands: function initCommands() {
         commands.add(["reg[isters]"],
             "List the contents of known registers",
             function (args) {
@@ -753,7 +753,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             },
             { argCount: "*" });
     },
-    completion: function init_completion() {
+    completion: function initCompletion() {
         completion.register = function complete_register(context) {
             context = context.fork("registers");
             context.keys = { text: util.identity, description: editor.closure.getRegister };
@@ -777,7 +777,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             });
         };
     },
-    mappings: function init_mappings() {
+    mappings: function initMappings() {
 
         Map.types["editor"] = {
             preExecute: function preExecute(args) {
@@ -1346,7 +1346,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         bind(["<C-n>"], "Select the next autocomplete result",
              function () { events.feedkeys("<Down>", { skipmap: true }); });
     },
-    options: function init_options() {
+    options: function initOptions() {
         options.add(["editor"],
             "The external text editor",
             "string", 'gvim -f +<line> +"sil! call cursor(0, <column>)" <file>', {
@@ -1391,7 +1391,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 }
             });
     },
-    sanitizer: function () {
+    sanitizer: function initSanitizer() {
         sanitizer.addItem("registers", {
             description: "Register values",
             persistent: true,

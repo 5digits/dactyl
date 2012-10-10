@@ -1593,7 +1593,7 @@ var CommandLine = Module("commandline", {
         return arg;
     }
 }, {
-    commands: function init_commands() {
+    commands: function initCommands() {
         [
             {
                 name: "ec[ho]",
@@ -1679,7 +1679,7 @@ var CommandLine = Module("commandline", {
             bases: [modes.INSERT]
         });
     },
-    mappings: function init_mappings() {
+    mappings: function initMappings() {
 
         mappings.add([modes.COMMAND],
             [":"], "Enter Command Line mode",
@@ -1809,7 +1809,7 @@ var CommandLine = Module("commandline", {
         bind(["<C-]>", "<C-5>"], "Expand command line abbreviation",
              function () { editor.expandAbbreviation(modes.COMMAND_LINE); });
     },
-    options: function init_options() {
+    options: function initOptions() {
         options.add(["history", "hi"],
             "Number of Ex commands and search patterns to store in the command-line history",
             "number", 500,
@@ -1825,7 +1825,7 @@ var CommandLine = Module("commandline", {
             "number", 100,
             { validator: function (value) value >= 0 });
     },
-    sanitizer: function init_sanitizer() {
+    sanitizer: function initSanitizer() {
         sanitizer.addItem("commandline", {
             description: "Command-line and search history",
             persistent: true,

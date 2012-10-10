@@ -118,7 +118,7 @@ var QuickMarks = Module("quickmarks", {
     }
 }, {
 }, {
-    commands: function () {
+    commands: function initCommands() {
         commands.add(["delqm[arks]"],
             "Delete the specified QuickMarks",
             function (args) {
@@ -175,13 +175,13 @@ var QuickMarks = Module("quickmarks", {
                 completer: function (context) completion.quickmark(context),
             });
     },
-    completion: function () {
+    completion: function initCompletion() {
         completion.quickmark = function (context) {
             context.title = ["QuickMark", "URL"];
             context.generate = function () Iterator(quickmarks._qmarks);
         };
     },
-    mappings: function () {
+    mappings: function initMappings() {
         var myModes = config.browserModes;
 
         mappings.add(myModes,

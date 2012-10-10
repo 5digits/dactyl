@@ -357,7 +357,7 @@ var Addons = Module("addons", {
                 .toObject())
 }, {
 }, {
-    commands: function (dactyl, modules, window) {
+    commands: function initCommands(dactyl, modules, window) {
         const { CommandOption, commands, completion, io } = modules;
 
         commands.add(["addo[ns]", "ao"],
@@ -458,7 +458,7 @@ var Addons = Module("addons", {
                 });
         });
     },
-    completion: function (dactyl, modules, window) {
+    completion: function initCompletion(dactyl, modules, window) {
         completion.addonType = function addonType(context) {
             let base = ["extension", "theme"];
             function update(types) {

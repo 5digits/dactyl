@@ -168,7 +168,7 @@ var AutoCommands = Module("autocommands", {
     }
 }, {
 }, {
-    contexts: function () {
+    contexts: function initContexts() {
         update(AutoCommands.prototype, {
             hives: contexts.Hives("autocmd", AutoCmdHive),
             user: contexts.hives.autocmd.user,
@@ -176,7 +176,7 @@ var AutoCommands = Module("autocommands", {
             matchingHives: function matchingHives(uri, doc) contexts.matchingGroups(uri, doc).autocmd
         });
     },
-    commands: function () {
+    commands: function initCommands() {
         commands.add(["au[tocmd]"],
             "Execute commands automatically on events",
             function (args) {
@@ -280,15 +280,15 @@ var AutoCommands = Module("autocommands", {
                 });
         });
     },
-    completion: function () {
+    completion: function initCompletion() {
         completion.autocmdEvent = function autocmdEvent(context) {
             context.completions = Iterator(config.autocommands);
         };
     },
-    javascript: function () {
+    javascript: function initJavascript() {
         JavaScript.setCompleter(AutoCmdHive.prototype.get, [function () Iterator(config.autocommands)]);
     },
-    options: function () {
+    options: function initOptions() {
         options.add(["eventignore", "ei"],
             "List of autocommand event names which should be ignored",
             "stringlist", "",

@@ -299,7 +299,7 @@ var Abbreviations = Module("abbreviations", {
             user: contexts.hives.abbrevs.user
         });
     },
-    completion: function () {
+    completion: function initCompletion() {
         completion.abbreviation = function abbreviation(context, modes, group) {
             group = group || abbreviations.user;
             let fn = modes ? function (abbr) abbr.inModes(modes) : util.identity;
@@ -307,7 +307,7 @@ var Abbreviations = Module("abbreviations", {
             context.completions = group.merged.filter(fn);
         };
     },
-    commands: function () {
+    commands: function initCommands() {
         function addAbbreviationCommands(modes, ch, modeDescription) {
             modes.sort();
             modeDescription = modeDescription ? " in " + modeDescription + " mode" : "";

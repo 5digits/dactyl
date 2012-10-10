@@ -175,7 +175,7 @@ var History = Module("history", {
     }
 }, {
 }, {
-    commands: function () {
+    commands: function initCommands() {
         commands.add(["ba[ck]"],
             "Go back in the browser history",
             function (args) {
@@ -321,7 +321,7 @@ var History = Module("history", {
             { argCount: "0" });
 
     },
-    completion: function () {
+    completion: function initCompletion() {
         completion.domain = function (context) {
             context.anchored = false;
             context.compare = function (a, b) String.localeCompare(a.key, b.key);
@@ -351,7 +351,7 @@ var History = Module("history", {
 
         completion.addUrlCompleter("history", "History", completion.history);
     },
-    mappings: function () {
+    mappings: function initMappings() {
         function bind() mappings.add.apply(mappings, [config.browserModes].concat(Array.slice(arguments)));
 
         bind(["<C-o>"], "Go to an older position in the jump list",

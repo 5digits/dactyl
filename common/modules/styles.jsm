@@ -547,7 +547,7 @@ var Styles = Module("Styles", {
         return '"' + str.replace(/([\\"])/g, "\\$1").replace(/\n/g, "\\00000a") + '"';
     },
 }, {
-    commands: function (dactyl, modules, window) {
+    commands: function initCommands(dactyl, modules, window) {
         const { commands, contexts, styles } = modules;
 
         function sheets(context, args, filter) {
@@ -696,7 +696,7 @@ var Styles = Module("Styles", {
                 });
         });
     },
-    contexts: function (dactyl, modules, window) {
+    contexts: function initContexts(dactyl, modules, window) {
         modules.contexts.Hives("styles",
             Class("LocalHive", Contexts.Hive, {
                 init: function init(group) {
@@ -717,7 +717,7 @@ var Styles = Module("Styles", {
                 }
             }));
     },
-    completion: function (dactyl, modules, window) {
+    completion: function initCompletion(dactyl, modules, window) {
         const names = Array.slice(DOM(<div/>, window.document).style);
         modules.completion.css = function (context) {
             context.title = ["CSS Property"];
@@ -732,7 +732,7 @@ var Styles = Module("Styles", {
             }
         };
     },
-    javascript: function (dactyl, modules, window) {
+    javascript: function initJavascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter(["get", "add", "remove", "find"].map(function (m) Hive.prototype[m]),
             [ // Prototype: (name, filter, css, index)
                 function (context, obj, args) this.names,
@@ -741,7 +741,7 @@ var Styles = Module("Styles", {
                 function (context, obj, args) this.sheets
             ]);
     },
-    template: function () {
+    template: function initTemplate() {
         let patterns = Styles.patterns;
 
         template.highlightCSS = function highlightCSS(css) {
@@ -769,7 +769,7 @@ var Styles = Module("Styles", {
                 }{ match.postSpace }</>
             })
         }
-    },
+    }
 });
 
 endModule();

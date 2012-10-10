@@ -983,7 +983,7 @@ var Events = Module("events", {
         });
     },
 
-    commands: function () {
+    commands: function initCommands() {
         commands.add(["delmac[ros]"],
             "Delete macros",
             function (args) {
@@ -1009,13 +1009,13 @@ var Events = Module("events", {
                 completer: function (context) completion.macro(context)
             });
     },
-    completion: function () {
+    completion: function initCompletion() {
         completion.macro = function macro(context) {
             context.title = ["Macro", "Keys"];
             context.completions = [item for (item in events.getMacros())];
         };
     },
-    mappings: function () {
+    mappings: function initMappings() {
 
         mappings.add([modes.MAIN],
             ["<A-b>", "<pass-next-key-builtin>"], "Process the next key as a builtin mapping",
@@ -1097,7 +1097,7 @@ var Events = Module("events", {
             },
             { count: true });
     },
-    options: function () {
+    options: function initOptions() {
         const Hive = Class("Hive", {
             init: function init(values, map) {
                 this.name = "passkeys:" + map;

@@ -456,7 +456,7 @@ const Player = Module("player", {
         });
 
     },
-    commandline: function () {
+    commandline: function initCommandline() {
         player.CommandMode = Class("CommandSearchViewMode", modules.CommandMode, {
             init: function init(mode) {
                 this.mode = mode;
@@ -472,7 +472,7 @@ const Player = Module("player", {
             get onSubmit() player.closure.onSearchSubmit
         });
     },
-    commands: function () {
+    commands: function initCommands() {
         commands.add(["f[ilter]"],
                 "Filter tracks based on keywords {genre/artist/album/track}",
                 function (args) {
@@ -672,7 +672,7 @@ const Player = Module("player", {
             },
             { argCount: "1" });
     },
-    completion: function () {
+    completion: function initCompletion() {
         completion.album = function album(context, artist) {
             context.title = ["Album"];
             context.completions = [[v, ""] for ([, v] in Iterator(library.getAlbums(artist)))];
@@ -708,7 +708,7 @@ const Player = Module("player", {
             context.completions = [[v, ""] for ([, v] in Iterator(library.getTracks(artist, album)))];
         };
     },
-    mappings: function () {
+    mappings: function initMappings() {
         mappings.add([modes.PLAYER],
             ["x"], "Play track",
             function () { ex.playerplay(); });
@@ -806,7 +806,7 @@ const Player = Module("player", {
             };
         }
     },
-    options: function () {
+    options: function initOptions() {
         options.add(["repeat"],
             "Set the playback repeat mode",
             "number", 0,

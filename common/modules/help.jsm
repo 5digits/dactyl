@@ -413,7 +413,7 @@ var Help = Module("Help", {
     })
 }, {
 }, {
-    commands: function init_commands(dactyl, modules, window) {
+    commands: function initCommands(dactyl, modules, window) {
         const { commands, completion, help } = modules;
 
         [
@@ -440,7 +440,7 @@ var Help = Module("Help", {
                 });
         });
     },
-    completion: function init_completion(dactyl, modules, window) {
+    completion: function initCompletion(dactyl, modules, window) {
         const { completion } = modules;
 
         completion.help = function completion_help(context, consolidated) {
@@ -452,7 +452,7 @@ var Help = Module("Help", {
                 context.keys = { text: 0, description: function () "all" };
         };
     },
-    mappings: function init_mappings(dactyl, modules, window) {
+    mappings: function initMappings(dactyl, modules, window) {
         const { help, mappings, modes } = modules;
 
         mappings.add([modes.MAIN], ["<open-help>", "<F1>"],
@@ -463,7 +463,7 @@ var Help = Module("Help", {
             "Open the single, consolidated help page",
             function () { modules.ex.helpall(); });
     },
-    javascript: function init_javascript(dactyl, modules, window) {
+    javascript: function initJavascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter([modules.help.exportHelp],
             [function (context, args) overlay.activeModules.completion.file(context)]);
     }

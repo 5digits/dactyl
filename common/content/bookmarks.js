@@ -402,7 +402,7 @@ var Bookmarks = Module("bookmarks", {
     }
 }, {
 }, {
-    commands: function () {
+    commands: function initCommands() {
         // TODO: Clean this up.
         const tags = {
             names: ["-tags", "-T"],
@@ -565,7 +565,7 @@ var Bookmarks = Module("bookmarks", {
                 privateData: true
             });
     },
-    mappings: function () {
+    mappings: function initMappings() {
         var myModes = config.browserModes;
 
         mappings.add(myModes, ["a"],
@@ -605,7 +605,7 @@ var Bookmarks = Module("bookmarks", {
             "Toggle bookmarked state of current URL",
             function () { bookmarks.toggle(buffer.uri.spec); });
     },
-    options: function () {
+    options: function initOptions() {
         options.add(["defsearch", "ds"],
             "The default search engine",
             "string", "google",
@@ -622,7 +622,7 @@ var Bookmarks = Module("bookmarks", {
              { completer: function completer(context) completion.searchEngine(context, true), });
     },
 
-    completion: function () {
+    completion: function initCompletion() {
         completion.bookmark = function bookmark(context, tags, extra) {
             context.title = ["Bookmark", "Title"];
             context.format = bookmarks.format;

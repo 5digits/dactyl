@@ -1114,7 +1114,7 @@ var Completion = Module("completion", {
             get options() this.modules.options
         });
     },
-    commands: function (dactyl, modules, window) {
+    commands: function initCommands(dactyl, modules, window) {
         const { commands, completion } = modules;
         commands.add(["contexts"],
             "List the completion contexts used during completion of an Ex command",
@@ -1135,7 +1135,7 @@ var Completion = Module("completion", {
                 literal: 0
             });
     },
-    options: function (dactyl, modules, window) {
+    options: function initOptions(dactyl, modules, window) {
         const { completion, options } = modules;
         let wildmode = {
             values: {

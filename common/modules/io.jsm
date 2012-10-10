@@ -575,7 +575,7 @@ var IO = Module("io", {
      */
     PATH_SEP: deprecated("File.PATH_SEP", { get: function PATH_SEP() File.PATH_SEP })
 }, {
-    commands: function init_commands(dactyl, modules, window) {
+    commands: function initCommands(dactyl, modules, window) {
         const { commands, completion, io } = modules;
 
         commands.add(["cd", "chd[ir]"],
@@ -929,7 +929,7 @@ unlet s:cpo_save
                 literal: 0
             });
     },
-    completion: function init_completion(dactyl, modules, window) {
+    completion: function initCompletion(dactyl, modules, window) {
         const { completion, io } = modules;
 
         completion.charset = function (context) {
@@ -1077,7 +1077,7 @@ unlet s:cpo_save
                     completion.file(context, full);
         });
     },
-    javascript: function init_javascript(dactyl, modules, window) {
+    javascript: function initJavascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter([File, File.expandPath],
             [function (context, obj, args) {
                 context.quote[2] = "";
@@ -1096,7 +1096,7 @@ unlet s:cpo_save
             input: true
         });
     },
-    options: function init_options(dactyl, modules, window) {
+    options: function initOptions(dactyl, modules, window) {
         const { completion, options } = modules;
 
         var shell, shellcmdflag;

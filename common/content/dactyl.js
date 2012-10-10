@@ -1234,7 +1234,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 }, {
     toolbarHidden: function hidden(elem) (elem.getAttribute("autohide") || elem.getAttribute("collapsed")) == "true"
 }, {
-    cache: function () {
+    cache: function initCache() {
         cache.register("help/plugins.xml", function () {
             // Process plugin help entries.
             XML.ignoreWhiteSpace = XML.prettyPrinting = false;
@@ -1315,11 +1315,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                    </overlay>;
         });
     },
-    events: function () {
+    events: function initEvents() {
         events.listen(window, dactyl, "events", true);
     },
     // Only general options are added here, which are valid for all Dactyl extensions
-    options: function () {
+    options: function initOptions() {
         options.add(["errorbells", "eb"],
             "Ring the bell when an error message is displayed",
             "boolean", false);
@@ -1494,7 +1494,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             });
     },
 
-    mappings: function () {
+    mappings: function initMappings() {
         if (dactyl.has("session"))
             mappings.add([modes.NORMAL], ["ZQ"],
                 "Quit and don't save the session",
@@ -1505,7 +1505,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function () { dactyl.quit(true); });
     },
 
-    commands: function () {
+    commands: function initCommands() {
         commands.add(["dia[log]"],
             "Open a " + config.appName + " dialog",
             function (args) {
@@ -1838,7 +1838,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     },
 
-    completion: function () {
+    completion: function initCompletion() {
         completion.dialog = function dialog(context) {
             context.title = ["Dialog"];
             context.filters.push(function ({ item }) !item[2] || item[2]());
@@ -1869,7 +1869,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             context.completions = dactyl.windows;
         };
     },
-    load: function () {
+    load: function initLoad() {
         dactyl.triggerObserver("load");
 
         dactyl.log(_("dactyl.modulesLoaded"), 3);

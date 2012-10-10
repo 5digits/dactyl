@@ -332,7 +332,7 @@ var Marks = Module("marks", {
             { arg: true });
     },
 
-    commands: function () {
+    commands: function initCommands() {
         commands.add(["delm[arks]"],
             "Delete the specified marks",
             function (args) {
@@ -372,7 +372,7 @@ var Marks = Module("marks", {
             });
     },
 
-    completion: function () {
+    completion: function initCompletion() {
         completion.mark = function mark(context) {
             function percent(i) Math.round(i * 100);
 
@@ -383,7 +383,7 @@ var Marks = Module("marks", {
             context.completions = marks.all;
         };
     },
-    sanitizer: function () {
+    sanitizer: function initSanitizer() {
         sanitizer.addItem("marks", {
             description: "Local and URL marks",
             persistent: true,

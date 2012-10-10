@@ -386,12 +386,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 yield p;
     }
 }, {
-    load: function (dactyl, modules, window) {
+    load: function initLoad(dactyl, modules, window) {
         if (!sanitizer.firstRun++ && sanitizer.runAtShutdown && !sanitizer.ranAtShutdown)
             sanitizer.sanitizeItems(null, Range(), null, "shutdown");
         sanitizer.ranAtShutdown = false;
     },
-    autocommands: function (dactyl, modules, window) {
+    autocommands: function initAutocommands(dactyl, modules, window) {
         const { autocommands } = modules;
 
         storage.addObserver("private-mode",
@@ -406,7 +406,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     autocommands.trigger("Sanitize", { name: event.substr("clear-".length), domain: value[1] });
             }, window);
     },
-    commands: function (dactyl, modules, window) {
+    commands: function initCommands(dactyl, modules, window) {
         const { commands } = modules;
         commands.add(["sa[nitize]"],
             "Clear private data",
@@ -565,7 +565,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     },
                 });
     },
-    completion: function (dactyl, modules, window) {
+    completion: function initCompletion(dactyl, modules, window) {
         modules.completion.visibleHosts = function completeHosts(context) {
             let res = util.visibleHosts(window.content);
             if (context.filter && !res.some(function (host) host.indexOf(context.filter) >= 0))
@@ -578,7 +578,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             context.completions = res;
         };
     },
-    options: function (dactyl, modules) {
+    options: function initOptions(dactyl, modules) {
         const options = modules.options;
         if (services.has("privateBrowsing"))
             options.add(["private", "pornmode"],
