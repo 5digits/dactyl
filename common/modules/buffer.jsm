@@ -585,8 +585,9 @@ var Buffer = Module("Buffer", {
      * Saves a page link to disk.
      *
      * @param {HTMLAnchorElement} elem The page link to save.
+     * @param {boolean} overwrite If true, overwrite any existing file.
      */
-    saveLink: function saveLink(elem) {
+    saveLink: function saveLink(elem, overwrite) {
         let { completion, dactyl, io } = this.modules;
 
         let self = this;
@@ -603,6 +604,8 @@ var Buffer = Module("Buffer", {
                     let file = io.File(path);
                     if (file.exists() && file.isDirectory())
                         file.append(Buffer.getDefaultNames(elem)[0][0]);
+
+                    util.assert(!file.exists() || overwrite, _("io.existsNoOverride", file.path));
 
                     try {
                         if (!file.exists())

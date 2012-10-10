@@ -746,6 +746,7 @@ var Hints = Module("hints", {
         this.modes = {};
         this.addMode(";", "Focus hint",                           buffer.closure.focusElement);
         this.addMode("?", "Show information for hint",            function (elem) buffer.showElementInfo(elem));
+        // TODO: allow for ! override to overwrite existing paths -- where? --djk
         this.addMode("s", "Save hint",                            function (elem) buffer.saveLink(elem, false));
         this.addMode("f", "Focus frame",                          function (elem) dactyl.focus(elem.ownerDocument.defaultView));
         this.addMode("F", "Focus frame or pseudo-frame",          buffer.closure.focusElement, isScrollable);
