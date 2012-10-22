@@ -48,6 +48,8 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         util.addObserver(this);
         this.overlays = {};
 
+        this.weakMap = WeakMap();
+
         this.onWindowVisible = [];
     },
 
@@ -153,30 +155,28 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
     },
 
     getData: function getData(obj, key, constructor) {
-        let { id } = this;
 
-        if (!(id in obj && obj[id]))
-            obj[id] = {};
+        if (!this.weakMap.has(obj))
+            this.weakMap.set(obj, {});
+
+        let data = this.weakMap.get(obj);
 
         if (arguments.length == 1)
-            return obj[id];
+            return data;
 
-        if (obj[id][key] === undefined)
+        if (data[key] === undefined)
             if (constructor === undefined || callable(constructor))
-                obj[id][key] = (constructor || Array)();
+                data[key] = (constructor || Array)();
             else
-                obj[id][key] = constructor;
+                data[key] = constructor;
 
-        return obj[id][key];
+        return data[key];
     },
 
     setData: function setData(obj, key, val) {
-        let { id } = this;
+        let data = this.getData(obj);
 
-        if (!(id in obj))
-            obj[id] = {};
-
-        return obj[id][key] = val;
+        return data[key] = val;
     },
 
     overlayWindow: function (url, fn) {
