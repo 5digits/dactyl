@@ -133,7 +133,7 @@ var DOM = Class("DOM", {
             if (val instanceof Ci.nsIDOMNode)
                 return val;
 
-            if (typeof val == "xml") {
+            if (typeof val == "xml" || DOM.isJSONXML(val)) {
                 val = dom.constructor(val, dom.document);
                 if (container)
                     container[idx] = val[0];
@@ -1562,15 +1562,14 @@ var DOM = Class("DOM", {
             let [name, attr] = args;
             attr = attr || {};
 
-            if (Array.isArray(name) || args.length == 0) {
+            if (Array.isArray(name) || args.length == 0 || name == "") {
                 var frag = doc.createDocumentFragment();
                 Array.forEach(args, function (arg) {
-                    if (!Array.isArray(arg[0]))
+                    if (!isArray(arg[0]))
+                        arg = [arg];
+                    arg.forEach(function (arg) {
                         frag.appendChild(tag(arg, namespaces));
-                    else
-                        arg.forEach(function (arg) {
-                            frag.appendChild(tag(arg, namespaces));
-                        });
+                    });
                 });
                 return frag;
             }

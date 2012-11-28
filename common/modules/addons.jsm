@@ -3,7 +3,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 try {
 
@@ -146,21 +146,18 @@ var Addon = Class("Addon", {
         this.nodes = {
             commandTarget: this
         };
-        XML.ignoreWhitespace = true;
-        util.xmlToDom(
-            <tr highlight="Addon" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
-                <td highlight="AddonName" key="name"/>
-                <td highlight="AddonVersion" key="version"/>
-                <td highlight="AddonButtons Buttons">
-                    <a highlight="Button" href="javascript:0" key="enable">{_("addon.action.On")}</a>
-                    <a highlight="Button" href="javascript:0" key="disable">{_("addon.action.Off")}</a>
-                    <a highlight="Button" href="javascript:0" key="delete">{_("addon.action.Delete")}</a>
-                    <a highlight="Button" href="javascript:0" key="update">{_("addon.action.Update")}</a>
-                    <a highlight="Button" href="javascript:0" key="options">{_("addon.action.Options")}</a>
-                </td>
-                <td highlight="AddonStatus" key="status"/>
-                <td highlight="AddonDescription" key="description"/>
-            </tr>,
+        DOM.fromJSON(
+            ["tr", { highlight: "Addon", key: "row" },
+                ["td", { highlight: "AddonName", key: "name" }],
+                ["td", { highlight: "AddonVersion", key: "version" }],
+                ["td", { highlight: "AddonButtons Buttons" },
+                    ["a", { highlight: "Button", href: "javascript:0", key: "enable" }, _("addon.action.On")],
+                    ["a", { highlight: "Button", href: "javascript:0", key: "disable" }, _("addon.action.Off")],
+                    ["a", { highlight: "Button", href: "javascript:0", key: "delete" }, _("addon.action.Delete")],
+                    ["a", { highlight: "Button", href: "javascript:0", key: "update" }, _("addon.action.Update")],
+                    ["a", { highlight: "Button", href: "javascript:0", key: "options" }, _("addon.action.Options")]],
+                ["td", { highlight: "AddonStatus", key: "status" }],
+                ["td", { highlight: "AddonDescription", key: "description" }]],
             this.list.document, this.nodes);
 
         this.update();
@@ -190,11 +187,8 @@ var Addon = Class("Addon", {
     compare: function compare(other) String.localeCompare(this.name, other.name),
 
     get statusInfo() {
-        XML.ignoreWhitespace = XML.prettyPrinting = false;
-        default xml namespace = XHTML;
-
-        let info = this.isActive ? <span highlight="Enabled">enabled</span>
-                                 : <span highlight="Disabled">disabled</span>;
+        let info = this.isActive ? ["span", { highlight: "Enabled" }, "enabled"]
+                                 : ["span", { highlight: "Disabled" }, "disabled"];
 
         let pending;
         if (this.pendingOperations & AddonManager.PENDING_UNINSTALL)
@@ -208,8 +202,11 @@ var Addon = Class("Addon", {
         else if (this.pendingOperations & AddonManager.PENDING_UPGRADE)
             pending = ["Enabled", "upgraded"];
         if (pending)
-            return <>{info}&#xa0;(<span highlight={pending[0]}>{pending[1]}</span>
-                                  &#xa0;on <a href="#" dactyl:command="dactyl.restart" xmlns:dactyl={NS}>restart</a>)</>;
+            return [info, " (",
+                    ["span", { highlight: pending[0] }, pending[1]],
+                    " on ",
+                    ["a", { href: "#", "dactyl:command": "dactyl.restart" }, "restart"],
+                    ")"]
         return info;
     },
 
@@ -219,7 +216,8 @@ var Addon = Class("Addon", {
             let node = self.nodes[key];
             while (node.firstChild)
                 node.removeChild(node.firstChild);
-            node.appendChild(util.xmlToDom(<>{xml}</>, self.list.document));
+
+            DOM(node).append(isArray(xml) || isXML(xml) ? xml : DOM.DOMString(xml));
         }
 
         update("name", template.icon({ icon: this.iconURL }, this.name));
@@ -283,15 +281,14 @@ var AddonList = Class("AddonList", {
     message: Class.Memoize(function () {
 
         XML.ignoreWhitespace = true;
-        util.xmlToDom(<table highlight="Addons" key="list" xmlns={XHTML}>
-                        <tr highlight="AddonHead">
-                            <td>{_("title.Name")}</td>
-                            <td>{_("title.Version")}</td>
-                            <td/>
-                            <td>{_("title.Status")}</td>
-                            <td>{_("title.Description")}</td>
-                        </tr>
-                      </table>, this.document, this.nodes);
+        DOM.fromJSON(["table", { highlight: "Addons", key: "list" },
+                        ["tr", { highlight: "AddonHead" },
+                            ["td", {}, _("title.Name")],
+                            ["td", {}, _("title.Version")],
+                            ["td"],
+                            ["td", {}, _("title.Status")],
+                            ["td", {}, _("title.Description")]]],
+                      this.document, this.nodes);
 
         if (this._addons)
             this._init();
