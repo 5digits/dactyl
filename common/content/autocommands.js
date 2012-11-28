@@ -104,30 +104,29 @@ var AutoCommands = Module("autocommands", {
         }
 
         XML.prettyPrinting = XML.ignoreWhitespace = false;
-        commandline.commandOutput(
-            <table>
-                <tr highlight="Title">
-                    <td colspan="3">----- Auto Commands -----</td>
-                </tr>
-                {
-                    template.map(hives, function (hive)
-                        <tr>
-                            <td colspan="3"><span highlight="Title">{hive.name}</span>
-                                            {hive.filter}</td>
-                        </tr> +
-                        <tr style="height: .5ex;"/> +
-                        template.map(cmds(hive), function ([event, items])
-                            <tr style="height: .5ex;"/> +
-                            template.map(items, function (item, i)
-                                <tr>
-                                    <td highlight="Title" style="padding-left: 1em; padding-right: 1em;">{i == 0 ? event : ""}</td>
-                                    <td>{item.filter.toXML ? item.filter.toXML() : item.filter}</td>
-                                    <td>{item.command}</td>
-                                </tr>) +
-                            <tr style="height: .5ex;"/>) +
-                        <tr style="height: .5ex;"/>)
-                }
-            </table>);
+        let table = (
+            ["table", {},
+                ["tr", { highlight: "Title" },
+                    ["td", { colspan: "3" }, "----- Auto Commands -----"]],
+                hives.map(function (hive) [
+                    ["tr", {},
+                        ["td", { colspan: "3" },
+                            ["span", { highlight: "Title" }, hive.name],
+                            " ", /* E4X-FIXME: Filter is formatted E4X. */ String(hive.filter)]],
+                    ["tr", { style: "height: .5ex;" }],
+                    iter(cmds(hive)).map(function ([event, items]) [
+                        ["tr", { style: "height: .5ex;" }],
+                        items.map(function (item, i)
+                            ["tr", {},
+                                ["td", { highlight: "Title", style: "padding-left: 1em; padding-right: 1em;" },
+                                    i == 0 ? event : ""],
+                                // E4X-FIXME: ["td", {}, item.filter.toXML ? item.filter.toXML() : String(item.filter)],
+                                ["td", {}, String(item.filter)],
+                                ["td", {}, String(item.command)]]),
+                        ["tr", { style: "height: .5ex;" }]]).toArray(),
+                    ["tr", { style: "height: .5ex;" }],
+                ])]);
+        commandline.commandOutput(table);
     },
 
     /**
