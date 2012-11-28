@@ -262,33 +262,29 @@ var Abbreviations = Module("abbreviations", {
         function abbrevs(hive)
             hive.merged.filter(function (abbr) (abbr.inModes(modes) && abbr.lhs.indexOf(lhs) == 0));
 
-        let list = <table>
-                <tr highlight="Title">
-                    <td/>
-                    <td style="padding-right: 1em;">{_("title.Mode")}</td>
-                    <td style="padding-right: 1em;">{_("title.Abbrev")}</td>
-                    <td style="padding-right: 1em;">{_("title.Replacement")}</td>
-                </tr>
-                <col style="min-width: 6em; padding-right: 1em;"/>
-                {
-                    template.map(hives, function (hive) let (i = 0)
-                        <tr style="height: .5ex;"/> +
-                        template.map(abbrevs(hive), function (abbrev)
-                            <tr>
-                                <td highlight="Title">{!i++ ? hive.name : ""}</td>
-                                <td>{abbrev.modeChar}</td>
-                                <td>{abbrev.lhs}</td>
-                                <td>{abbrev.rhs}</td>
-                            </tr>) +
-                        <tr style="height: .5ex;"/>)
-                }
-                </table>;
+        let list = ["table", {},
+                ["tr", { highlight: "Title" },
+                    ["td"],
+                    ["td", { style: "padding-right: 1em;" }, _("title.Mode")],
+                    ["td", { style: "padding-right: 1em;" }, _("title.Abbrev")],
+                    ["td", { style: "padding-right: 1em;" }, _("title.Replacement")]],
+                ["col", { style: "min-width: 6em; padding-right: 1em;" }],
+                hives.map(function (hive) let (i = 0) [
+                    ["tr", { style: "height: .5ex;" }],
+                    abbrevs(hive).map(function (abbrev)
+                        ["tr", {},
+                            ["td", { highlight: "Title" }, !i++ ? String(hive.name) : ""],
+                            ["td", {}, abbrev.modeChar],
+                            ["td", {}, abbrev.lhs],
+                            ["td", {}, abbrev.rhs]]),
+                    ["tr", { style: "height: .5ex;" }]])];
 
-        // TODO: Move this to an ItemList to show this automatically
-        if (list.*.length() === list.text().length() + 2)
-            dactyl.echomsg(_("abbreviation.none"));
-        else
-            commandline.commandOutput(list);
+        // FIXME?
+        // // TODO: Move this to an ItemList to show this automatically
+        // if (list.*.length() === list.text().length() + 2)
+        //     dactyl.echomsg(_("abbreviation.none"));
+        // else
+        commandline.commandOutput(list);
     }
 
 }, {

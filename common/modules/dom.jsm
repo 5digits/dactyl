@@ -10,6 +10,7 @@ defineModule("dom", {
 });
 
 lazyRequire("highlight", ["highlight"]);
+lazyRequire("messages", ["_"]);
 lazyRequire("template", ["template"]);
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
@@ -1383,7 +1384,7 @@ var DOM = Class("DOM", {
         ? function (elem, dir) services.dactyl.getScrollable(elem) & (dir ? services.dactyl["DIRECTION_" + dir.toUpperCase()] : ~0)
         : function (elem, dir) true),
 
-    isJSONXML: function isJSONXML(val) isArray(val) && isString(val[0]) || isObject(val) && "toDOM" in val,
+    isJSONXML: function isJSONXML(val) isArray(val) && (isString(val[0]) || isArray(val[0])) || isObject(val) && "toDOM" in val,
 
     DOMString: function (val) ({
         toDOM: function toDOM(doc) doc.createTextNode(val)
@@ -1555,7 +1556,11 @@ var DOM = Class("DOM", {
         function tag(args, namespaces) {
             let _namespaces = namespaces;
 
+            if (isinstance(args, ["String", _]))
+                return doc.createTextNode(args);
+
             let [name, attr] = args;
+            attr = attr || {};
 
             if (Array.isArray(name) || args.length == 0) {
                 var frag = doc.createDocumentFragment();
@@ -1607,8 +1612,7 @@ var DOM = Class("DOM", {
                         elem.setAttribute(key, val);
                 }
             args.forEach(function(e) {
-                elem.appendChild(typeof e == "object" ? tag(e, namespaces) :
-                                 e instanceof Node    ? e : doc.createTextNode(e));
+                elem.appendChild(e instanceof Ci.nsIDOMNode ? e : tag(e, namespaces));
             });
 
             if ("highlight" in attr)

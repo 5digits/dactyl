@@ -1024,6 +1024,63 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return color ? <div style="white-space: pre-wrap;">{string}</div> : [s for each (s in string)].join("");
     },
 
+    prettifyJSON: function prettifyJSON(data, indent) {
+        const INDENT = indent || "    ";
+
+        function rec(data, level, seen) {
+            if (isObject(data)) {
+                if (~seen.indexOf(data))
+                    throw Error("Recursive object passed");
+                seen = seen.concat([data]);
+            }
+
+            let prefix = level + INDENT;
+
+            if (data === undefined)
+                data = null;
+
+            if (~["boolean", "number"].indexOf(typeof data) || data === null)
+                res.push(String(data));
+            else if (isinstance(data, ["String", _]))
+                res.push(String.quote(data));
+            else if (isArray(data)) {
+                if (data.length == 0)
+                    res.push("[]");
+                else {
+                    res.push("[\n")
+                    for (let [i, val] in Iterator(data)) {
+                        if (i)
+                            res.push(",\n");
+                        res.push(prefix)
+                        rec(val, prefix, seen);
+                    }
+                    res.push("\n", level, "]");
+                }
+            }
+            else if (isObject(data)) {
+                res.push("{\n")
+
+                let i = 0;
+                for (let [key, val] in Iterator(data)) {
+                    if (i++)
+                        res.push(",\n");
+                    res.push(prefix, String.quote(key), ": ")
+                    rec(val, prefix, seen);
+                }
+                if (i > 0)
+                    res.push("\n", level, "}")
+                else
+                    res[res.length - 1] = "{}";
+            }
+            else
+                throw Error("Invalid JSON object");
+        }
+
+        let res = [];
+        rec(data, "", []);
+        return res.join("");
+    },
+
     observers: {
         "dactyl-cleanup-modules": function (subject, reason) {
             defineModule.loadLog.push("dactyl: util: observe: dactyl-cleanup-modules " + reason);

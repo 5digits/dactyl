@@ -665,10 +665,14 @@ var CommandLine = Module("commandline", {
      */
     commandOutput: function commandOutput(xml) {
         XML.ignoreWhitespace = XML.prettyPrinting = false;
-        if (this.command)
-            this.echo(<><div xmlns={XHTML}>:{this.command}</div>&#x0d;{xml}</>, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
-        else
+        if (!this.command)
             this.echo(xml, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
+        else if (isXML(xml))
+            this.echo(<><div xmlns={XHTML}>:{this.command}</div>&#x0d;{xml}</>,
+                      this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
+        else
+            this.echo([["div", { xmlns: "html" }, ":" + this.command], "\n", xml],
+                      this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
         this.command = null;
     },
 
@@ -699,7 +703,7 @@ var CommandLine = Module("commandline", {
         let field = this.widgets.active.message.inputField;
         if (field.value && !forceSingle && field.editor.rootElement.scrollWidth > field.scrollWidth) {
             this.widgets.message = null;
-            mow.echo(<span highlight="Message">{str}</span>, highlightGroup, true);
+            mow.echo(["span", { highlight: "Message" }, str], highlightGroup, true);
         }
     },
 
@@ -737,7 +741,7 @@ var CommandLine = Module("commandline", {
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
         if (flags & this.APPEND_TO_MESSAGES) {
-            let message = isObject(data) ? data : { message: data };
+            let message = isObject(data) && !DOM.isJSONXML(data) ? data : { message: data };
 
             // Make sure the memoized message property is an instance property.
             message.message;

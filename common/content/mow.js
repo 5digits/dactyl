@@ -112,7 +112,7 @@ var MOW = Module("mow", {
 
         highlightGroup = "CommandOutput " + (highlightGroup || "");
 
-        if (isObject(data) && !isinstance(data, _)) {
+        if (isObject(data) && !isinstance(data, _) && !DOM.isJSONXML(data)) {
             this.lastOutput = null;
 
             var output = DOM(["div", { style: "white-space: nowrap", highlight: highlightGroup }],
@@ -127,9 +127,16 @@ var MOW = Module("mow", {
             }
             this.messages.push(data);
         }
+        else if (DOM.isJSONXML(data) || isString(data)) {
+            let style = isString(data) ? "pre-wrap" : "nowrap";
+            this.lastOutput = ["div", { style: "white-space: " + style, highlight: highlightGroup },
+                               data];
+
+            var output = DOM(this.lastOutput, this.document);
+        }
         else {
             let style = isString(data) ? "pre-wrap" : "nowrap";
-            this.lastOutput = <div style={"white-space: " + style} highlight={highlightGroup}>{data}</div>;
+            this.lastOutput = <div style="white-space: nowrap" highlight={highlightGroup}>{data}</div>;
 
             var output = DOM(this.lastOutput, this.document);
         }
