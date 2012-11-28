@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 /** @scope modules */
 
@@ -102,17 +102,14 @@ var Events = Module("events", {
     init: function () {
         this.keyEvents = [];
 
-        XML.ignoreWhitespace = true;
         overlay.overlayWindow(window, {
-            append: <e4x xmlns={XUL}>
-                <window id={document.documentElement.id}>
-                    <!-- http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands -->
-                    <commandset id="dactyl-onfocus" commandupdater="true" events="focus"
-                                oncommandupdate="dactyl.modules.events.onFocusChange(event);"/>
-                    <commandset id="dactyl-onselect" commandupdater="true" events="select"
-                                oncommandupdate="dactyl.modules.events.onSelectionChange(event);"/>
-                </window>
-            </e4x>.elements()
+            append: [
+                ["window", { id: document.documentElement.id, xmlns: "xul" },
+                    // http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands
+                    ["commandset", { id: "dactyl-onfocus", commandupdater: "true", events: "focus",
+                                     commandupdate: this.closure.onFocusChange }],
+                    ["commandset", { id: "dactyl-onselect", commandupdater: "true", events: "select",
+                                     commandupdate: this.closure.onSelectionChange }]]]
         });
 
         this._fullscreen = window.fullScreen;

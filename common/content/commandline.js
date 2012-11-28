@@ -14,56 +14,45 @@ var CommandWidgets = Class("CommandWidgets", {
     init: function init() {
         let s = "dactyl-statusline-field-";
 
-        XML.ignoreWhitespace = true;
         overlay.overlayWindow(window, {
             objects: {
                 eventTarget: commandline
             },
-            append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
-                <vbox id={config.ids.commandContainer}>
-                    <vbox class="dactyl-container" hidden="false" collapsed="true">
-                        <iframe class="dactyl-completions" id="dactyl-completions-dactyl-commandline" src="dactyl://content/buffer.xhtml"
-                                contextmenu="dactyl-contextmenu"
-                                flex="1" hidden="false" collapsed="false"
-                                highlight="Events" events="mowEvents" />
-                    </vbox>
+            append: [
+                ["vbox", { id: config.ids.commandContainer, xmlns: "xul" },
+                    ["vbox", { class: "dactyl-container", hidden: "false", collapsed: "true" },
+                        ["iframe", { class: "dactyl-completions", id: "dactyl-completions-dactyl-commandline",
+                                     src: "dactyl://content/buffer.xhtml", contextmenu: "dactyl-contextmenu",
+                                     flex: "1", hidden: "false", collapsed: "false",
+                                     highlight: "Events", events: "mowEvents" }]],
 
-                    <stack orient="horizontal" align="stretch" class="dactyl-container" id="dactyl-container" highlight="CmdLine CmdCmdLine">
-                        <textbox class="plain" id="dactyl-strut"   flex="1" crop="end" collapsed="true"/>
-                        <textbox class="plain" id="dactyl-mode"    flex="1" crop="end"/>
-                        <textbox class="plain" id="dactyl-message" flex="1" readonly="true"/>
+                    ["stack", { orient: "horizontal", align: "stretch", class: "dactyl-container",
+                                id: "dactyl-container", highlight: "CmdLine CmdCmdLine" },
+                        ["textbox", { class: "plain", id: "dactyl-strut",   flex: "1", crop: "end", collapsed: "true" }],
+                        ["textbox", { class: "plain", id: "dactyl-mode",    flex: "1", crop: "end" }],
+                        ["textbox", { class: "plain", id: "dactyl-message", flex: "1", readonly: "true" }],
 
-                        <hbox id="dactyl-commandline" hidden="false" class="dactyl-container" highlight="Normal CmdNormal" collapsed="true">
-                            <label   id="dactyl-commandline-prompt"  class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
-                            <textbox id="dactyl-commandline-command" class="dactyl-commandline-command plain" flex="1" type="input" timeout="100"
-                                     highlight="Events" />
-                        </hbox>
-                    </stack>
+                        ["hbox", { id: "dactyl-commandline", hidden: "false", foo: "bar", class: "dactyl-container", highlight: "Normal CmdNormal", collapsed: "true" },
+                            ["label", {   id: "dactyl-commandline-prompt",  class: "dactyl-commandline-prompt  plain", flex: "0", crop: "end", value: "", collapsed: "true" }],
+                            ["textbox", { id: "dactyl-commandline-command", class: "dactyl-commandline-command plain", flex: "1", type: "input", timeout: "100",
+                                          highlight: "Events" }]]],
 
-                    <vbox class="dactyl-container" hidden="false" collapsed="false" highlight="CmdLine">
-                        <textbox id="dactyl-multiline-input" class="plain" flex="1" rows="1" hidden="false" collapsed="true" multiline="true"
-                                 highlight="Normal Events" events="multilineInputEvents" />
-                    </vbox>
-                </vbox>
+                    ["vbox", { class: "dactyl-container", hidden: "false", collapsed: "false", highlight: "CmdLine" },
+                        ["textbox", { id: "dactyl-multiline-input", class: "plain", flex: "1", rows: "1", hidden: "false", collapsed: "true",
+                                      multiline: "true", highlight: "Normal Events", events: "multilineInputEvents" }]]],
 
-                <stack id="dactyl-statusline-stack">
-                    <hbox id={s + "commandline"} hidden="false" class="dactyl-container" highlight="Normal StatusNormal" collapsed="true">
-                        <label id={s + "commandline-prompt"}    class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
-                        <textbox id={s + "commandline-command"} class="dactyl-commandline-command plain" flex="1" type="text" timeout="100"
-                                 highlight="Events" />
-                    </hbox>
-                </stack>
-            </e4x>.elements(),
+                ["stack", { id: "dactyl-statusline-stack", xmlns: "xul" },
+                    ["hbox", { id: s + "commandline", hidden: "false", class: "dactyl-container", highlight: "Normal StatusNormal", collapsed: "true" },
+                        ["label", { id: s + "commandline-prompt",    class: "dactyl-commandline-prompt  plain", flex: "0", crop: "end", value: "", collapsed: "true" }],
+                        ["textbox", { id: s + "commandline-command", class: "dactyl-commandline-command plain", flex: "1", type: "text", timeout: "100",
+                                      highlight: "Events",  }]]]],
 
-            before: <e4x xmlns={XUL} xmlns:dactyl={NS}>
-                <toolbar id={statusline.statusBar.id}>
-                    <vbox id={"dactyl-completions-" + s + "commandline-container"} class="dactyl-container" hidden="false" collapsed="true">
-                        <iframe class="dactyl-completions" id={"dactyl-completions-" + s + "commandline"} src="dactyl://content/buffer.xhtml"
-                                contextmenu="dactyl-contextmenu" flex="1" hidden="false" collapsed="false"
-                                highlight="Events" events="mowEvents" />
-                    </vbox>
-                </toolbar>
-            </e4x>.elements()
+            before: [
+                ["toolbar", { id: statusline.statusBar.id, xmlns: "xul" },
+                    ["vbox", { id: "dactyl-completions-" + s + "commandline-container", class: "dactyl-container", hidden: "false", collapsed: "true" },
+                        ["iframe", { class: "dactyl-completions", id: "dactyl-completions-" + s + "commandline", src: "dactyl://content/buffer.xhtml",
+                                     contextmenu: "dactyl-contextmenu", flex: "1", hidden: "false", collapsed: "false", highlight: "Events",
+                                     events: "mowEvents" }]]]],
         });
 
         this.elements = {};

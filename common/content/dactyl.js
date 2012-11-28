@@ -304,20 +304,15 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 bell: document.getElementById("dactyl-bell"),
                 strut: document.getElementById("dactyl-bell-strut")
             };
-            XML.ignoreWhitespace = true;
             if (!elems.bell)
                 overlay.overlayWindow(window, {
                     objects: elems,
-                    prepend: <>
-                        <window id={document.documentElement.id} xmlns={XUL}>
-                            <hbox style="display: none" highlight="Bell" id="dactyl-bell" key="bell"/>
-                        </window>
-                    </>,
-                    append: <>
-                        <window id={document.documentElement.id} xmlns={XUL}>
-                            <hbox style="display: none" highlight="Bell" id="dactyl-bell-strut" key="strut"/>
-                        </window>
-                    </>
+                    prepend: [
+                        ["window", { id: document.documentElement.id, xmlns: "xul" },
+                            ["hbox", { style: "display: none",  highlight: "Bell", id: "dactyl-bell", key: "bell" }]]],
+                    append: [
+                        ["window", { id: document.documentElement.id, xmlns: "xul" },
+                            ["hbox", { style: "display: none", highlight: "Bell", id: "dactyl-bell-strut", key: "strut" }]]]
                 }, elems);
 
             elems.bell.style.height = window.innerHeight + "px";

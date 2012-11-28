@@ -215,32 +215,65 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
     _loadOverlay: function _loadOverlay(window, obj) {
         let doc = window.document;
-        let elems = this.getData(doc, "overlayElements");
-        let attrs = this.getData(doc, "overlayAttributes");
+        let savedElems = this.getData(doc, "overlayElements");
+        let savedAttrs = this.getData(doc, "overlayAttributes");
 
         function insert(key, fn) {
             if (obj[key]) {
                 let iterator = Iterator(obj[key]);
                 if (!isObject(obj[key]))
-                    iterator = ([elem.@id, elem.elements(), elem.@*::*.(function::name() != "id")] for each (elem in obj[key]));
+                    iterator = ([elem.@id, elem.elements(), elem.@*::*.(function::name() != "id")]
+                                for each (elem in obj[key]));
+                else if (isArray(obj[key])) {
+                    iterator = ([elem[1].id, elem.slice(2), elem[1]]
+                                for each (elem in obj[key]))
+                }
 
-                for (let [elem, xml, attr] in iterator) {
+                for (let [elem, xml, attrs] in iterator) {
                     if (elem = doc.getElementById(String(elem))) {
-                        let node = DOM.fromXML(xml, doc, obj.objects);
+                        // Urgh. Hack.
+                        let namespaces;
+                        if (attrs && !isXML(attrs))
+                            namespaces = iter([k.slice(6), DOM.fromJSON.namespaces[v] || v]
+                                              for ([k, v] in Iterator(attrs))
+                                              if (/^xmlns(?:$|:)/.test(k))).toObject();
+
+                        let node;
+                        if (isXML(xml))
+                            node = DOM.fromXML(xml, doc, obj.objects);
+                        else
+                            node = DOM.fromJSON(xml, doc, obj.objects, namespaces);
+
                         if (!(node instanceof Ci.nsIDOMDocumentFragment))
-                            elems.push(node);
+                            savedElems.push(node);
                         else
                             for (let n in array.iterValues(node.childNodes))
-                                elems.push(n);
+                                savedElems.push(n);
 
                         fn(elem, node);
-                        for each (let attr in attr || []) {
-                            let ns = attr.namespace(), name = attr.localName();
-                            attrs.push([elem, ns, name, getAttr(elem, ns, name), String(attr)]);
-                            if (attr.name() != "highlight")
-                                elem.setAttributeNS(ns, name, String(attr));
+
+                        if (isXML(attrs))
+                            // Evilness and such.
+                            let (oldAttrs = attrs) {
+                                attrs = (attr for each (attr in oldAttrs));
+                            }
+
+                        for (let attr in attrs || []) {
+                            let ns, name, localName, val;
+                            if (isXML(attr))
+                                ns = attr.namespace(), localName = attr.localName(),
+                                name = attr.name(), val = String(attr);
                             else
-                                highlight.highlightNode(elem, String(attr));
+                                [ns, localName] = DOM.parseNamespace(attr),
+                                name = attr, val = attrs[attr];
+
+                            savedAttrs.push([elem, ns, name, getAttr(elem, ns, name), val]);
+                            if (name === "highlight")
+                                highlight.highlightNode(elem, val);
+                            else if (ns)
+                                elem.setAttributeNS(ns, name, val);
+                            else
+                                elem.setAttribute(name, val);
                         }
                     }
                 }

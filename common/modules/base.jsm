@@ -144,7 +144,7 @@ defineModule("base", {
         "Set", "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
         "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable", "ctypes", "curry",
         "debuggerProperties", "defineModule", "deprecated", "endModule", "forEach", "isArray",
-        "isGenerator", "isinstance", "isObject", "isString", "isSubclass", "iter", "iterAll",
+        "isGenerator", "isinstance", "isObject", "isString", "isSubclass", "isXML", "iter", "iterAll",
         "iterOwnProperties", "keys", "memoize", "octal", "properties", "require", "set", "update",
         "values", "withCallerGlobal"
     ]
@@ -481,6 +481,12 @@ function isinstance(object, interfaces) {
  * Returns true if obj is a non-null object.
  */
 function isObject(obj) typeof obj === "object" && obj != null || obj instanceof Ci.nsISupports;
+
+/**
+ * Returns true if obje is an E4X XML object.
+ * @deprecated
+ */
+function isXML(obj) typeof obj === "xml";
 
 /**
  * Returns true if and only if its sole argument is an

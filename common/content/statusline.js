@@ -22,7 +22,10 @@ var StatusLine = Module("statusline", {
                 #addon-bar > xul|toolbarspring { visibility: collapse; }
             ]]></css>);
 
-            overlay.overlayWindow(window, { append: <><statusbar id="status-bar" ordinal="0"/></> });
+            overlay.overlayWindow(window, {
+                append: [
+                    ["statusbar", { id: "status-bar", ordinal: "0" }]]
+            });
 
             highlight.loadCSS(util.compileMacro(<![CDATA[
                 !AddonBar;#addon-bar {
@@ -52,39 +55,41 @@ var StatusLine = Module("statusline", {
 
         XML.ignoreWhitespace = true;
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
-        let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
-            <button id="appmenu-button" label="" image="chrome://branding/content/icon16.png" highlight="AppmenuButton" />
-            <toolbarbutton id="appmenu-toolbar-button" label="" image="chrome://branding/content/icon16.png" />
-            <statusbar id="status-bar" highlight="StatusLine">
-                <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
-                <hbox key="container" hidden="false" align="center"  flex="1">
-                    <stack orient="horizontal"       align="stretch" flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
-                        <hbox                                                 highlight="CmdLine StatusCmdLine" class="dactyl-container">
-                            <label key="mode"          crop="end"                                               class="plain" collapsed="true"/>
-                            <stack  id="dactyl-statusline-stack"     flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
-                                <textbox key="url"     crop="end"    flex="1" style="background: transparent;"  class="plain dactyl-status-field-url" readonly="true"/>
-                                <textbox key="message" crop="end"    flex="1" highlight="Normal StatusNormal"   class="plain"                         readonly="true"/>
-                            </stack>
-                        </hbox>
-                    </stack>
-                    <label class="plain" key="inputbuffer"    flex="0"/>
-                    <label class="plain" key="progress"       flex="0"/>
-                    <label class="plain" key="tabcount"       flex="0"/>
-                    <label class="plain" key="bufferposition" flex="0"/>
-                    <label class="plain" key="zoomlevel"      flex="0"/>
-                </hbox>
-                <!-- just hide them since other elements expect them -->
-                <statusbarpanel id="statusbar-display"       hidden="true"/>
-                <statusbarpanel id="statusbar-progresspanel" hidden="true"/>
-            </statusbar>
-        </e4x>;
+        let prepend = [
+            ["button", { id: "appmenu-button", label: "", image: "chrome://branding/content/icon16.png", highlight: "AppmenuButton", xmlns: "xul" }],
+            ["toolbarbutton", { id: "appmenu-toolbar-button", label: "", image: "chrome://branding/content/icon16.png" }],
+            ["statusbar", { id: "status-bar", highlight: "StatusLine", xmlns: "xul" },
+                // <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
+                ["hbox", { key: "container", hidden: "false", align: "center",  flex: "1" },
+                    ["stack", { orient: "horizontal",       align: "stretch", flex: "1", highlight: "CmdLine StatusCmdLine", class: "dactyl-container" },
+                        ["hbox", {                                                       highlight: "CmdLine StatusCmdLine", class: "dactyl-container" },
+                            ["label", { key: "mode",          crop: "end",                                                   class: "plain", collapsed: "true" }],
+                            ["stack", {  id: "dactyl-statusline-stack",       flex: "1", highlight: "CmdLine StatusCmdLine", class: "dactyl-container" },
+                                ["textbox", { key: "url",     crop: "end",    flex: "1", style: "background: transparent;",  class: "plain dactyl-status-field-url",
+                                              readonly: "true" }],
+                                ["textbox", { key: "message", crop: "end",    flex: "1", highlight: "Normal StatusNormal",   class: "plain",
+                                              readonly: "true" }]]]],
+                    ["label", { class: "plain", key: "inputbuffer",    flex: "0" }],
+                    ["label", { class: "plain", key: "progress",       flex: "0" }],
+                    ["label", { class: "plain", key: "tabcount",       flex: "0" }],
+                    ["label", { class: "plain", key: "bufferposition", flex: "0" }],
+                    ["label", { class: "plain", key: "zoomlevel",      flex: "0" }]],
+                // just hide them since other elements expect them
+                ["statusbarpanel", { id: "statusbar-display",       hidden: "true" }],
+                ["statusbarpanel", { id: "statusbar-progresspanel", hidden: "true" }]]];
 
-        for each (let attr in prepend..@key)
-            attr.parent().@id = "dactyl-statusline-field-" + attr;
+        (function rec(ary) {
+            ary.forEach(function (elem) {
+                if ("key" in elem[1])
+                    elem[1].id = "dactyl-statusline-field-" + elem[1].key;
+                if (elem.length > 2)
+                    rec(elem.slice(2));
+            });
+        })(prepend);
 
         overlay.overlayWindow(window, {
             objects: this.widgets = { get status() this.container },
-            prepend: prepend.elements()
+            prepend: prepend
         });
 
         try {

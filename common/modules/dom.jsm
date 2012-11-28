@@ -55,6 +55,12 @@ var DOM = Class("DOM", {
             ;
         else if (typeof val == "xml" && context instanceof Ci.nsIDOMDocument)
             this[length++] = DOM.fromXML(val, context, this.nodes);
+        else if (DOM.isJSONXML(val)) {
+            if (context instanceof Ci.nsIDOMDocument)
+                this[length++] = DOM.fromJSON(val, context, this.nodes);
+            else
+                this[length++] = val;
+        }
         else if (val instanceof Ci.nsIDOMNode || val instanceof Ci.nsIDOMWindow)
             this[length++] = val;
         else if ("__iterator__" in val || isinstance(val, ["Iterator", "Generator"]))
@@ -1377,6 +1383,12 @@ var DOM = Class("DOM", {
         ? function (elem, dir) services.dactyl.getScrollable(elem) & (dir ? services.dactyl["DIRECTION_" + dir.toUpperCase()] : ~0)
         : function (elem, dir) true),
 
+    isJSONXML: function isJSONXML(val) isArray(val) && isString(val[0]) || isObject(val) && "toDOM" in val,
+
+    DOMString: function (val) ({
+        toDOM: function toDOM(doc) doc.createTextNode(val)
+    }),
+
     /**
      * The set of input element type attribute values that mark the element as
      * an editable field.
@@ -1534,6 +1546,93 @@ var DOM = Class("DOM", {
         default:
             return null;
         }
+    },
+
+    fromJSON: update(function fromJSON(xml, doc, nodes, namespaces) {
+        if (!doc)
+            doc = document;
+
+        function tag(args, namespaces) {
+            let _namespaces = namespaces;
+
+            let [name, attr] = args;
+
+            if (Array.isArray(name) || args.length == 0) {
+                var frag = doc.createDocumentFragment();
+                Array.forEach(args, function (arg) {
+                    if (!Array.isArray(arg[0]))
+                        frag.appendChild(tag(arg, namespaces));
+                    else
+                        arg.forEach(function (arg) {
+                            frag.appendChild(tag(arg, namespaces));
+                        });
+                });
+                return frag;
+            }
+
+            if (isObject(name) && "toDOM" in name)
+                return name.toDOM(doc, namespaces, nodes);
+
+            function parseNamespace(name) {
+                var m = /^(?:(.*):)?(.*)$/.exec(name);
+                return [namespaces[m[1]], m[2]];
+            }
+
+            // FIXME: Surely we can do better.
+            for (var key in attr) {
+                if (/^xmlns(?:$|:)/.test(key)) {
+                    if (_namespaces === namespaces)
+                        namespaces = update({}, namespaces);
+
+                    namespaces[key.substr(6)] = namespaces[attr[key]] || attr[key];
+                }}
+
+            var args = Array.slice(args, 2);
+            var vals = parseNamespace(name);
+            var elem = doc.createElementNS(vals[0] || namespaces[""],
+                                           vals[1]);
+
+            for (var key in attr)
+                if (!/^xmlns(?:$|:)/.test(key)) {
+                    var val = attr[key];
+                    if (nodes && key == "key")
+                        nodes[val] = elem;
+
+                    vals = parseNamespace(key);
+                    if (typeof val == "function")
+                        elem.addEventListener(key.replace(/^on/, ""), val, false);
+                    else if (vals[0])
+                        elem.setAttributeNS(vals[0], key, val);
+                    else if (key != "highlight")
+                        elem.setAttribute(key, val);
+                }
+            args.forEach(function(e) {
+                elem.appendChild(typeof e == "object" ? tag(e, namespaces) :
+                                 e instanceof Node    ? e : doc.createTextNode(e));
+            });
+
+            if ("highlight" in attr)
+                highlight.highlightNode(elem, attr.highlight, nodes || true);
+            return elem;
+        }
+
+        if (namespaces)
+            namespaces = update({}, fromJSON.namespaces, namespaces);
+        else
+            namespaces = fromJSON.namespaces;
+
+        return tag(xml, namespaces)
+    }, {
+        namespaces: {
+            "": "http://www.w3.org/1999/xhtml",
+            html: "http://www.w3.org/1999/xhtml",
+            xul: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        }
+    }),
+
+    parseNamespace: function parseNamespace(name) {
+        var m = /^(?:(.*):)?(.*)$/.exec(name);
+        return [DOM.fromJSON.namespaces[m[1]], m[2]];
     },
 
     /**

@@ -41,38 +41,28 @@ var MOW = Module("mow", {
                            html|html > xul|scrollbar { visibility: collapse !important; }",
                           true);
 
-        XML.ignoreWhitespace = true;
         overlay.overlayWindow(window, {
             objects: {
                 eventTarget: this
             },
-            append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
-                <window id={document.documentElement.id}>
-                    <popupset>
-                        <menupopup id="dactyl-contextmenu" highlight="Events" events="contextEvents">
-                            <menuitem id="dactyl-context-copylink"
-                                      label={_("mow.contextMenu.copyLink")} dactyl:group="link"
-                                      oncommand="goDoCommand('cmd_copyLink');"/>
-                            <menuitem id="dactyl-context-copypath"
-                                      label={_("mow.contextMenu.copyPath")} dactyl:group="link path"
-                                      oncommand="dactyl.clipboardWrite(document.popupNode.getAttribute('path'));"/>
-                            <menuitem id="dactyl-context-copy"
-                                      label={_("mow.contextMenu.copy")} dactyl:group="selection"
-                                      command="cmd_copy"/>
-                            <menuitem id="dactyl-context-selectall"
-                                      label={_("mow.contextMenu.selectAll")}
-                                      command="cmd_selectAll"/>
-                        </menupopup>
-                    </popupset>
-                </window>
-                <vbox id={config.ids.commandContainer}>
-                    <vbox class="dactyl-container" id="dactyl-multiline-output-container" hidden="false" collapsed="true">
-                        <iframe id="dactyl-multiline-output" src="dactyl://content/buffer.xhtml"
-                                flex="1" hidden="false" collapsed="false" contextmenu="dactyl-contextmenu"
-                                highlight="Events" />
-                    </vbox>
-                </vbox>
-            </e4x>
+            append: [
+                ["window", { id: document.documentElement.id, xmlns: "xul" },
+                    ["popupset", {},
+                        ["menupopup", { id: "dactyl-contextmenu", highlight: "Events", events: "contextEvents" },
+                            ["menuitem", { id: "dactyl-context-copylink", label: _("mow.contextMenu.copyLink"),
+                                           "dactyl:group": "link",      oncommand: "goDoCommand('cmd_copyLink');" }],
+                            ["menuitem", { id: "dactyl-context-copypath", label: _("mow.contextMenu.copyPath"),
+                                           "dactyl:group": "link path", oncommand: "dactyl.clipboardWrite(document.popupNode.getAttribute('path'));" }],
+                            ["menuitem", { id: "dactyl-context-copy", label: _("mow.contextMenu.copy"),
+                                           "dactyl:group": "selection", command: "cmd_copy" }],
+                            ["menuitem", { id: "dactyl-context-selectall", label: _("mow.contextMenu.selectAll"),
+                                           command: "cmd_selectAll" }]]]],
+
+                ["vbox", { id: config.ids.commandContainer, xmlns: "xul" },
+                    ["vbox", { class: "dactyl-container", id: "dactyl-multiline-output-container", hidden: "false", collapsed: "true" },
+                        ["iframe", { id: "dactyl-multiline-output", src: "dactyl://content/buffer.xhtml",
+                                     flex: "1", hidden: "false", collapsed: "false",
+                                     contextmenu: "dactyl-contextmenu", highlight: "Events" }]]]]
         });
     },
 
@@ -125,7 +115,7 @@ var MOW = Module("mow", {
         if (isObject(data) && !isinstance(data, _)) {
             this.lastOutput = null;
 
-            var output = DOM(<div style="white-space: nowrap" highlight={highlightGroup}/>,
+            var output = DOM(["div", { style: "white-space: nowrap", highlight: highlightGroup }],
                              this.document);
             data.document = this.document;
             try {
