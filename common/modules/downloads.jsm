@@ -2,7 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 defineModule("downloads", {
     exports: ["Download", "Downloads", "downloads"],
@@ -28,35 +28,32 @@ var Download = Class("Download", {
         this.nodes = {
             commandTarget: self
         };
-        XML.ignoreWhitespace = true;
-        XML.prettyPrinting = false;
-        util.xmlToDom(
-            <tr highlight="Download" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
-                <td highlight="DownloadTitle">
-                    <span highlight="Link">
-                        <a key="launch"
-                           href={self.target.spec} path={self.targetFile.path}>{self.displayName}</a>
-                        <span highlight="LinkInfo">{self.targetFile.path}</span>
-                    </span>
-                </td>
-                <td highlight="DownloadState" key="state"/>
-                <td highlight="DownloadButtons Buttons">
-                    <a highlight="Button" href="javascript:0" key="pause">{_("download.action.Pause")}</a>
-                    <a highlight="Button" href="javascript:0" key="remove">{_("download.action.Remove")}</a>
-                    <a highlight="Button" href="javascript:0" key="resume">{_("download.action.Resume")}</a>
-                    <a highlight="Button" href="javascript:0" key="retry">{_("download.action.Retry")}</a>
-                    <a highlight="Button" href="javascript:0" key="cancel">{_("download.action.Cancel")}</a>
-                    <a highlight="Button" href="javascript:0" key="delete">{_("download.action.Delete")}</a>
-                </td>
-                <td highlight="DownloadProgress" key="progress">
-                    <span highlight="DownloadProgressHave" key="progressHave"
-                    />/<span highlight="DownloadProgressTotal" key="progressTotal"/>
-                </td>
-                <td highlight="DownloadPercent" key="percent"/>
-                <td highlight="DownloadSpeed" key="speed"/>
-                <td highlight="DownloadTime" key="time"/>
-                <td><a highlight="DownloadSource" key="source" href={self.source.spec}>{self.source.spec}</a></td>
-            </tr>,
+        DOM.fromJSON(
+            ["tr", { highlight: "Download", key: "row" },
+                ["td", { highlight: "DownloadTitle" },
+                    ["span", { highlight: "Link" },
+                        ["a", { key: "launch", href: self.target.spec, path: self.targetFile.path },
+                            self.displayName],
+                        ["span", { highlight: "LinkInfo" },
+                            self.targetFile.path]]],
+                ["td", { highlight: "DownloadState", key: "state" }],
+                ["td", { highlight: "DownloadButtons Buttons" },
+                    ["a", { highlight: "Button", href: "javascript:0", key: "pause" }, _("download.action.Pause")],
+                    ["a", { highlight: "Button", href: "javascript:0", key: "remove" }, _("download.action.Remove")],
+                    ["a", { highlight: "Button", href: "javascript:0", key: "resume" }, _("download.action.Resume")],
+                    ["a", { highlight: "Button", href: "javascript:0", key: "retry" }, _("download.action.Retry")],
+                    ["a", { highlight: "Button", href: "javascript:0", key: "cancel" }, _("download.action.Cancel")],
+                    ["a", { highlight: "Button", href: "javascript:0", key: "delete" }, _("download.action.Delete")]],
+                ["td", { highlight: "DownloadProgress", key: "progress" },
+                    ["span", { highlight: "DownloadProgressHave", key: "progressHave" }],
+                    "/",
+                    ["span", { highlight: "DownloadProgressTotal", key: "progressTotal" }]],,
+                ["td", { highlight: "DownloadPercent", key: "percent" }],
+                ["td", { highlight: "DownloadSpeed", key: "speed" }],
+                ["td", { highlight: "DownloadTime", key: "time" }],
+                ["td", {},
+                    ["a", { highlight: "DownloadSource", key: "source", href: self.source.spec },
+                        self.source.spec]]],
             this.list.document, this.nodes);
 
         this.nodes.launch.addEventListener("click", function (event) {
@@ -228,34 +225,37 @@ var DownloadList = Class("DownloadList",
 
         XML.ignoreWhitespace = true;
         XML.prettyPrinting = false;
-        util.xmlToDom(<table highlight="Downloads" key="list" xmlns={XHTML}>
-                        <tr highlight="DownloadHead" key="head">
-                            <span>{_("title.Title")}</span>
-                            <span>{_("title.Status")}</span>
-                            <span/>
-                            <span>{_("title.Progress")}</span>
-                            <span/>
-                            <span>{_("title.Speed")}</span>
-                            <span>{_("title.Time remaining")}</span>
-                            <span>{_("title.Source")}</span>
-                        </tr>
-                        <tr highlight="Download"><span><div style="min-height: 1ex; /* FIXME */"/></span></tr>
-                        <tr highlight="Download" key="totals" active="true">
-                            <td><span highlight="Title">{_("title.Totals")}:</span>&#xa0;<span key="total"/></td>
-                            <td/>
-                            <td highlight="DownloadButtons">
-                                <a highlight="Button" href="javascript:0" key="clear">{_("download.action.Clear")}</a>
-                            </td>
-                            <td highlight="DownloadProgress" key="progress">
-                                <span highlight="DownloadProgressHave" key="progressHave"
-                                />/<span highlight="DownloadProgressTotal" key="progressTotal"/>
-                            </td>
-                            <td highlight="DownloadPercent" key="percent"/>
-                            <td highlight="DownloadSpeed" key="speed"/>
-                            <td highlight="DownloadTime" key="time"/>
-                            <td/>
-                        </tr>
-                      </table>, this.document, this.nodes);
+        DOM.fromJSON(["table", { highlight: "Downloads", key: "list" },
+                        ["tr", { highlight: "DownloadHead", key: "head" },
+                            ["span", {}, _("title.Title")],
+                            ["span", {}, _("title.Status")],
+                            ["span"],
+                            ["span", {}, _("title.Progress")],
+                            ["span"],
+                            ["span", {}, _("title.Speed")],
+                            ["span", {}, _("title.Time remaining")],
+                            ["span", {}, _("title.Source")]],
+                        ["tr", { highlight: "Download" },
+                            ["span", {},
+                                ["div", { style: "min-height: 1ex; /* FIXME */" }]]],
+                        ["tr", { highlight: "Download", key: "totals", active: "true" },
+                            ["td", {},
+                                ["span", { highlight: "Title" },
+                                    _("title.Totals") + ":"],
+                                " ",
+                                ["span", { key: "total" }]],
+                            ["td"],
+                            ["td", { highlight: "DownloadButtons" },
+                                ["a", { highlight: "Button", href: "javascript:0", key: "clear" }, _("download.action.Clear")]],
+                            ["td", { highlight: "DownloadProgress", key: "progress" },
+                                ["span", { highlight: "DownloadProgressHave", key: "progressHave" }],
+                                "/",
+                                ["span", { highlight: "DownloadProgressTotal", key: "progressTotal" }]],
+                            ["td", { highlight: "DownloadPercent", key: "percent" }],
+                            ["td", { highlight: "DownloadSpeed", key: "speed" }],
+                            ["td", { highlight: "DownloadTime", key: "time" }],
+                            ["td"]]],
+                      this.document, this.nodes);
 
         this.index = Array.indexOf(this.nodes.list.childNodes,
                                    this.nodes.head);

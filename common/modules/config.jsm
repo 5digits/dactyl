@@ -451,21 +451,22 @@ var ConfigBase = Class("ConfigBase", {
         init: function init() {
             this.loadConfig(document.documentURI);
 
-            let append = <e4x xmlns={XUL} xmlns:dactyl={NS}>
-                    <menupopup id="viewSidebarMenu"/>
-                    <broadcasterset id="mainBroadcasterSet"/>
-            </e4x>;
+            let append = [
+                    ["menupopup", { id: "viewSidebarMenu", xmlns: "xul" }],
+                    ["broadcasterset", { id: "mainBroadcasterSet", xmlns: "xul" }]];
+
             for each (let [id, [name, key, uri]] in Iterator(this.sidebars)) {
-                append.XUL::menupopup[0].* +=
-                        <menuitem observes={"pentadactyl-" + id + "Sidebar"} label={name} accesskey={key} xmlns={XUL}/>;
-                append.XUL::broadcasterset[0].* +=
-                        <broadcaster id={"pentadactyl-" + id + "Sidebar"}
-                            autoCheck="false" type="checkbox" group="sidebar"
-                            sidebartitle={name} sidebarurl={uri}
-                            oncommand="toggleSidebar(this.id || this.observes);" xmlns={XUL}/>;
+                append[0].push(
+                        ["menuitem", { observes: "pentadactyl-" + id + "Sidebar", label: name,
+                                       accesskey: key }]);
+                append[1].push(
+                        ["broadcaster", { id: "pentadactyl-" + id + "Sidebar", autoCheck: "false",
+                                          type: "checkbox", group: "sidebar", sidebartitle: name,
+                                          sidebarurl: uri,
+                                          oncommand: "toggleSidebar(this.id || this.observes);" }]);
             }
 
-            util.overlayWindow(window, { append: append.elements() });
+            util.overlayWindow(window, { append: append });
         },
 
         get window() window,
