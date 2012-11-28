@@ -2,7 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
@@ -146,7 +146,7 @@ defineModule("base", {
         "debuggerProperties", "defineModule", "deprecated", "endModule", "forEach", "isArray",
         "isGenerator", "isinstance", "isObject", "isString", "isSubclass", "isXML", "iter", "iterAll",
         "iterOwnProperties", "keys", "memoize", "octal", "properties", "require", "set", "update",
-        "values", "withCallerGlobal"
+        "values"
     ]
 });
 
@@ -573,18 +573,6 @@ function memoize(obj, key, getter) {
 
 let sandbox = Cu.Sandbox(Cu.getGlobalForObject(this));
 sandbox.__proto__ = this;
-/**
- * Wraps a function so that when called, the global object of the caller
- * is prepended to its arguments.
- */
-// Hack to get around lack of access to caller in strict mode.
-var withCallerGlobal = Cu.evalInSandbox(<![CDATA[
-    (function withCallerGlobal(fn)
-        function withCallerGlobal_wrapped()
-            fn.apply(this,
-                     [Class.objectGlobal(withCallerGlobal_wrapped.caller)]
-                        .concat(Array.slice(arguments))))
-]]>, Cu.Sandbox(Cu.getGlobalForObject(this)), "1.8");
 
 /**
  * Updates an object with the properties of another object. Getters
@@ -677,17 +665,17 @@ function Class() {
             return res !== undefined ? res : self;
         };
     else
-        var Constructor = eval(String.replace(<![CDATA[
-            (function constructor(PARAMS) {
-                var self = Object.create(Constructor.prototype);
-                self.instance = self;
-
-                if ("_metaInit_" in self && self._metaInit_)
-                    self._metaInit_.apply(self, arguments);
-
-                var res = self.init.apply(self, arguments);
-                return res !== undefined ? res : self;
-            })]]>,
+        var Constructor = eval(String.replace('\n\
+            (function constructor(PARAMS) {                      \n\
+                var self = Object.create(Constructor.prototype); \n\
+                self.instance = self;                            \n\
+                                                                 \n\
+                if ("_metaInit_" in self && self._metaInit_)     \n\
+                    self._metaInit_.apply(self, arguments);      \n\
+                                                                 \n\
+                var res = self.init.apply(self, arguments);      \n\
+                return res !== undefined ? res : self;           \n\
+            })',
             "constructor", (name || superclass.className).replace(/\W/g, "_"))
                 .replace("PARAMS", /^function .*?\((.*?)\)/.exec(args[0] && args[0].init || Class.prototype.init)[1]
                                                            .replace(/\b(self|res|Constructor)\b/g, "$1_")));

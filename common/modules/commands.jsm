@@ -753,38 +753,34 @@ var Commands = Module("commands", {
 
             let hives = (hives || this.userHives).map(function (h) [h, cmds(h)]).filter(function ([h, c]) c.length);
 
-            let list = <table>
-                <tr highlight="Title">
-                    <td/>
-                    <td style="padding-right: 1em;"></td>
-                    <td style="padding-right: 1ex;">{_("title.Name")}</td>
-                    <td style="padding-right: 1ex;">{_("title.Args")}</td>
-                    <td style="padding-right: 1ex;">{_("title.Range")}</td>
-                    <td style="padding-right: 1ex;">{_("title.Complete")}</td>
-                    <td style="padding-right: 1ex;">{_("title.Definition")}</td>
-                </tr>
-                <col style="min-width: 6em; padding-right: 1em;"/>
-                {
-                    template.map(hives, function ([hive, cmds]) let (i = 0)
-                        <tr style="height: .5ex;"/> +
-                        template.map(cmds, function (cmd)
-                            <tr>
-                                <td highlight="Title">{!i++ ? hive.name : ""}</td>
-                                <td>{cmd.bang ? "!" : " "}</td>
-                                <td>{cmd.name}</td>
-                                <td>{cmd.argCount}</td>
-                                <td>{cmd.count ? "0c" : ""}</td>
-                                <td>{completerToString(cmd.completer)}</td>
-                                <td>{cmd.replacementText || "function () { ... }"}</td>
-                            </tr>) +
-                        <tr style="height: .5ex;"/>)
-                }
-            </table>;
+            let list = ["table", {},
+                ["tr", { highlight: "Title" },
+                    ["td"],
+                    ["td", { style: "padding-right: 1em;" }],
+                    ["td", { style: "padding-right: 1ex;" }, _("title.Name")],
+                    ["td", { style: "padding-right: 1ex;" }, _("title.Args")],
+                    ["td", { style: "padding-right: 1ex;" }, _("title.Range")],
+                    ["td", { style: "padding-right: 1ex;" }, _("title.Complete")],
+                    ["td", { style: "padding-right: 1ex;" }, _("title.Definition")]],
+                ["col", { style: "min-width: 6em; padding-right: 1em;" }],
+                hives.map(function ([hive, cmds]) let (i = 0) [
+                    ["tr", { style: "height: .5ex;" }],
+                    cmds.map(function (cmd)
+                        ["tr", {},
+                            ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
+                            ["td", {}, cmd.bang ? "!" : " "],
+                            ["td", {}, cmd.name],
+                            ["td", {}, cmd.argCount],
+                            ["td", {}, cmd.count ? "0c" : ""],
+                            ["td", {}, completerToString(cmd.completer)],
+                            ["td", {}, cmd.replacementText || "function () { ... }"]]),
+                    ["tr", { style: "height: .5ex;" }]])];
 
-            if (list.*.length() === list.text().length() + 2)
-                dactyl.echomsg(_("command.none"));
-            else
-                commandline.commandOutput(list);
+            // E4X-FIXME
+            // if (list.*.length() === list.text().length() + 2)
+            //     dactyl.echomsg(_("command.none"));
+            // else
+            commandline.commandOutput(list);
         }
     }),
 

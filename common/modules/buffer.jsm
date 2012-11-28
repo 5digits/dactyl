@@ -868,7 +868,7 @@ var Buffer = Module("Buffer", {
 
         // add the frame indicator
         let doc = frames[next].document;
-        let indicator = DOM(<div highlight="FrameIndicator"/>, doc)
+        let indicator = DOM(["div", { highlight: "FrameIndicator" }], doc)
                             .appendTo(doc.body || doc.documentElement || doc);
 
         util.timeout(function () { indicator.remove(); }, 500);
@@ -1533,7 +1533,7 @@ var Buffer = Module("Buffer", {
 
     _exWidth: function _exWidth(elem) {
         try {
-            let div = DOM(<elem style="width: 1ex !important; position: absolute !important; padding: 0 !important; display: block;"/>,
+            let div = DOM(["elem", { style: "width: 1ex !important; position: absolute !important; padding: 0 !important; display: block;" }],
                           elem.ownerDocument).appendTo(elem.body || elem);
             try {
                 return parseFloat(div.style.width);
