@@ -480,34 +480,30 @@ var Mappings = Module("mappings", {
             return maps;
         }
 
-        let list = <table>
-                <tr highlight="Title">
-                    <td/>
-                    <td style="padding-right: 1em;">{_("title.Mode")}</td>
-                    <td style="padding-right: 1em;">{_("title.Command")}</td>
-                    <td style="padding-right: 1em;">{_("title.Action")}</td>
-                </tr>
-                <col style="min-width: 6em; padding-right: 1em;"/>
-                {
-                    template.map(hives, function ([hive, maps]) let (i = 0)
-                        <tr style="height: .5ex;"/> +
-                        template.map(maps, function (map)
-                            template.map(map.names, function (name)
-                            <tr>
-                                <td highlight="Title">{!i++ ? hive.name : ""}</td>
-                                <td>{modeSign}</td>
-                                <td>{name}</td>
-                                <td>{map.rhs || map.action.toSource()}</td>
-                            </tr>)) +
-                        <tr style="height: .5ex;"/>)
-                }
-                </table>;
+        let list = ["table", {},
+                ["tr", { highlight: "Title" },
+                    ["td", {}],
+                    ["td", { style: "padding-right: 1em;" }, _("title.Mode")],
+                    ["td", { style: "padding-right: 1em;" }, _("title.Command")],
+                    ["td", { style: "padding-right: 1em;" }, _("title.Action")]],
+                ["col", { style: "min-width: 6em; padding-right: 1em;" }],
+                hives.map(function ([hive, maps]) let (i = 0) [
+                    ["tr", { style: "height: .5ex;" }],
+                    maps.map(function (map)
+                        map.names.map(function (name)
+                        ["tr", {},
+                            ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
+                            ["td", {}, modeSign],
+                            ["td", {}, name],
+                            ["td", {}, map.rhs || map.action.toSource()]])),
+                    ["tr", { style: "height: .5ex;" }]])]
 
-        // TODO: Move this to an ItemList to show this automatically
-        if (list.*.length() === list.text().length() + 2)
-            dactyl.echomsg(_("map.none"));
-        else
-            commandline.commandOutput(list);
+        // E4X-FIXME
+        // // TODO: Move this to an ItemList to show this automatically
+        // if (list.*.length() === list.text().length() + 2)
+        //     dactyl.echomsg(_("map.none"));
+        // else
+        commandline.commandOutput(list);
     }
 }, {
 }, {

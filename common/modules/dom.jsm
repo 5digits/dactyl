@@ -1629,6 +1629,7 @@ var DOM = Class("DOM", {
     }, {
         namespaces: {
             "": "http://www.w3.org/1999/xhtml",
+            dactyl: String(NS),
             html: "http://www.w3.org/1999/xhtml",
             xul: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         }

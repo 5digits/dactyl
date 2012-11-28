@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 /** @scope modules */
 /** @instance hints */
@@ -312,11 +312,11 @@ var HintSession = Class("HintSession", CommandMode, {
 
         let body = doc.body || doc.querySelector("body");
         if (body) {
-            let fragment = DOM(<div highlight="hints"/>, doc).appendTo(body);
+            let fragment = DOM(["div", { highlight: "hints" }], doc).appendTo(body);
             fragment.style.height; // Force application of binding.
             let container = doc.getAnonymousElementByAttribute(fragment[0], "anonid", "hints") || fragment[0];
 
-            let baseNode = DOM(<span highlight="Hint" style="display: none;"/>, doc)[0];
+            let baseNode = DOM(["span", { highlight: "Hint", style: "display: none;" }], doc)[0];
 
             let mode = this.hintMode;
             let res = mode.matcher(doc);
@@ -593,7 +593,7 @@ var HintSession = Class("HintSession", CommandMode, {
                         if (!rect)
                             continue;
 
-                        hint.imgSpan = DOM(<span highlight="Hint" dactyl:hl="HintImage" xmlns:dactyl={NS}/>, doc).css({
+                        hint.imgSpan = DOM(["span", { highlight: "Hint", "dactyl:hl": "HintImage" }], doc).css({
                             display: "none",
                             left: (rect.left + offsetX) + "px",
                             top: (rect.top + offsetY) + "px",

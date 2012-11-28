@@ -78,10 +78,14 @@ var Tabs = Module("tabs", {
                 if (!node("dactyl-tab-number")) {
                     let img = node("tab-icon-image");
                     if (img) {
-                        let dom = DOM(<xul xmlns:xul={XUL} xmlns:html={XHTML}>
-                            <xul:hbox highlight="tab-number"><xul:label key="icon" align="center" highlight="TabIconNumber" class="dactyl-tab-icon-number"/></xul:hbox>
-                            <xul:hbox highlight="tab-number"><html:div key="label" highlight="TabNumber" class="dactyl-tab-number"/></xul:hbox>
-                        </xul>.elements(), document).appendTo(img.parentNode);
+                        let dom = DOM([
+                            ["xul:hbox", { highlight: "tab-number" },
+                                ["xul:label", { key: "icon", align: "center", highlight: "TabIconNumber",
+                                                class: "dactyl-tab-icon-number" }]],
+                            ["xul:hbox", { highlight: "tab-number" },
+                                ["html:div", { key: "label", highlight: "TabNumber",
+                                               class: "dactyl-tab-number" }]]],
+                            document).appendTo(img.parentNode);
 
                         update(tab, {
                             get dactylOrdinal() Number(dom.nodes.icon.value),
