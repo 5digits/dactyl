@@ -10,7 +10,7 @@ defineModule("styles", {
 });
 
 lazyRequire("contexts", ["Contexts"]);
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 function cssUri(css) "chrome-data:text/css," + encodeURI(css);
 var namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
@@ -316,38 +316,34 @@ var Styles = Module("Styles", {
 
         let uris = util.visibleURIs(content);
 
-        let list = <table>
-                <tr highlight="Title">
-                    <td/>
-                    <td/>
-                    <td style="padding-right: 1em;">{_("title.Name")}</td>
-                    <td style="padding-right: 1em;">{_("title.Filter")}</td>
-                    <td style="padding-right: 1em;">{_("title.CSS")}</td>
-                </tr>
-                <col style="min-width: 4em; padding-right: 1em;"/>
-                <col style="min-width: 1em; text-align: center; color: red; font-weight: bold;"/>
-                <col style="padding: 0 1em 0 1ex; vertical-align: top;"/>
-                <col style="padding: 0 1em 0 0; vertical-align: top;"/>
-                {
-                    template.map(hives, function (hive) let (i = 0)
-                        <tr style="height: .5ex;"/> +
-                        template.map(sheets(hive), function (sheet)
-                            <tr>
-                                <td highlight="Title">{!i++ ? hive.name : ""}</td>
-                                <td>{sheet.enabled ? "" : UTF8("×")}</td>
-                                <td>{sheet.name || hive.sheets.indexOf(sheet)}</td>
-                                <td>{sheet.formatSites(uris)}</td>
-                                <td>{sheet.css}</td>
-                            </tr>) +
-                        <tr style="height: .5ex;"/>)
-                }
-                </table>;
+        let list = ["table", {},
+                ["tr", { highlight: "Title" },
+                    ["td"],
+                    ["td"],
+                    ["td", { style: "padding-right: 1em;" }, _("title.Name")],
+                    ["td", { style: "padding-right: 1em;" }, _("title.Filter")],
+                    ["td", { style: "padding-right: 1em;" }, _("title.CSS")]],
+                ["col", { style: "min-width: 4em; padding-right: 1em;" }],
+                ["col", { style: "min-width: 1em; text-align: center; color: red; font-weight: bold;" }],
+                ["col", { style: "padding: 0 1em 0 1ex; vertical-align: top;" }],
+                ["col", { style: "padding: 0 1em 0 0; vertical-align: top;" }],
+                template_.map(hives, function (hive) let (i = 0) [
+                    ["tr", { style: "height: .5ex;" }],
+                    template_.map(sheets(hive), function (sheet)
+                        ["tr", {},
+                            ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
+                            ["td", {}, sheet.enabled ? "" : UTF8("×")],
+                            ["td", {}, sheet.name || hive.sheets.indexOf(sheet)],
+                            ["td", {}, sheet.formatSites(uris)],
+                            ["td", {}, sheet.css]]),
+                    ["tr", { style: "height: .5ex;" }]])];
 
-        // TODO: Move this to an ItemList to show this automatically
-        if (list.*.length() === list.text().length() + 5)
-            dactyl.echomsg(_("style.none"));
-        else
-            commandline.commandOutput(list);
+        // E4X-FIXME
+        // // TODO: Move this to an ItemList to show this automatically
+        // if (list.*.length() === list.text().length() + 5)
+        //     dactyl.echomsg(_("style.none"));
+        // else
+        commandline.commandOutput(list);
     },
 
     registerSheet: function registerSheet(url, agent, reload) {
@@ -555,7 +551,7 @@ var Styles = Module("Styles", {
             context.compare = modules.CompletionContext.Sort.number;
             context.generate = function () args["-group"].sheets;
             context.keys.active = function (sheet) uris.some(sheet.closure.match);
-            context.keys.description = function (sheet) <>{sheet.formatSites(uris)}: {sheet.css.replace("\n", "\\n")}</>
+            context.keys.description = function (sheet) [sheet.formatSites(uris), ": ", sheet.css.replace("\n", "\\n")];
             if (filter)
                 context.filters.push(function ({ item }) filter(item));
             Styles.splitContext(context);
@@ -718,7 +714,7 @@ var Styles = Module("Styles", {
             }));
     },
     completion: function initCompletion(dactyl, modules, window) {
-        const names = Array.slice(DOM(<div/>, window.document).style);
+        const names = Array.slice(DOM(["div"], window.document).style);
         modules.completion.css = function (context) {
             context.title = ["CSS Property"];
             context.keys = { text: function (p) p + ":", description: function () "" };
