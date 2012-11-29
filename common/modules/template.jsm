@@ -573,6 +573,56 @@ var Template_ = Module("Template_", {
         return res;
     },
 
+
+    highlightFilter: function highlightFilter(str, filter, highlight, isURI) {
+        if (isURI)
+            str = util.losslessDecodeURI(str);
+
+        return this.highlightSubstrings(str, (function () {
+            if (filter.length == 0)
+                return;
+
+            let lcstr = String.toLowerCase(str);
+            let lcfilter = filter.toLowerCase();
+            let start = 0;
+            while ((start = lcstr.indexOf(lcfilter, start)) > -1) {
+                yield [start, filter.length];
+                start += filter.length;
+            }
+        })(), highlight || template.filter);
+    },
+
+    highlightRegexp: function highlightRegexp(str, re, highlight) {
+        return this.highlightSubstrings(str, (function () {
+            for (let res in util.regexp.iterate(re, str))
+                yield [res.index, res[0].length, res.wholeMatch ? [res] : res];
+        })(), highlight || template.filter);
+    },
+
+    highlightSubstrings: function highlightSubstrings(str, iter, highlight) {
+        if (!isString(str))
+            return str;
+
+        if (str == "")
+            return DOM.DOMString(str);
+
+        let s = [""];
+        let start = 0;
+        let n = 0, _i;
+        for (let [i, length, args] in iter) {
+            if (i == _i || i < _i)
+                break;
+            _i = i;
+
+            XML.ignoreWhitespace = false;
+            s.push(str.substring(start, i),
+                   highlight.apply(this, Array.concat(args || str.substr(i, length))));
+            start = i + length;
+        }
+        s.push(str.substr(start));
+        return s;
+    },
+
     table: function table(title, data, indent) {
         let table = ["table", {},
             ["tr", { highlight: "Title", align: "left" },
@@ -584,6 +634,19 @@ var Template_ = Module("Template_", {
 
         if (table[3].length)
             return table;
+    },
+
+    tabular: function tabular(headings, style, iter) {
+        let self = this;
+        // TODO: This might be mind-bogglingly slow. We'll see.
+        return ["table", {},
+            ["tr", { highlight: "Title", align: "left" },
+                this.map(headings, function (h)
+                    ["th", {}, h])],
+            this.map(iter, function (row)
+                ["tr", {},
+                    self.map(Iterator(row), function ([i, d])
+                        ["td", { style: style[i] || "" }, d])])];
     },
 });
 

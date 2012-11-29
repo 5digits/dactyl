@@ -10,8 +10,9 @@ defineModule("completion", {
     exports: ["CompletionContext", "Completion", "completion"]
 }, this);
 
+lazyRequire("dom", ["DOM"]);
 lazyRequire("messages", ["_", "messages"]);
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 /**
  * Creates a new completion context.
@@ -654,17 +655,16 @@ var CompletionContext = Class("CompletionContext", {
         if (cache) {
             if (idx in this.items && !(idx in this.cache.rows))
                 try {
-                    cache[idx] = util.xmlToDom(this.createRow(this.items[idx]),
-                                               doc || this.doc);
+                    cache[idx] = DOM.fromJSON(this.createRow(this.items[idx]),
+                                              doc || this.doc);
                 }
                 catch (e) {
                     util.reportError(e);
-                    XML.ignoreWhitespace = XML.prettyPrinting = false;
-                    cache[idx] = util.xmlToDom(
-                        <div highlight="CompItem" style="white-space: nowrap">
-                            <li highlight="CompResult">{this.text}&#xa0;</li>
-                            <li highlight="CompDesc ErrorMsg">{e}&#xa0;</li>
-                        </div>, doc || this.doc);
+                    cache[idx] = DOM.fromJSON(
+                        ["div", { highlight: "CompItem", style: "white-space: nowrap" },
+                            ["li", { highlight: "CompResult" }, this.text + "\u00a0"],
+                            ["li", { highlight: "CompDesc ErrorMsg" }, e + "\u00a0"]],
+                        doc || this.doc);
                 }
             return cache[idx];
         }
@@ -935,11 +935,10 @@ var Completion = Module("completion", {
                 contexts = context.contextList.slice(-1);
 
             modules.commandline.commandOutput(
-                <div highlight="Completions">
-                    { template.map(contexts, function (context)
-                            template.completionRow(context.title, "CompTitle") +
-                            template.map(context.items, function (item) context.createRow(item), null, 100)) }
-                </div>);
+                ["div", { highlight: "Completions" },
+                    template_.map(contexts, function (context)
+                        [template.completionRow(context.title, "CompTitle"),
+                         template_.map(context.items, function (item) context.createRow(item), null, 100)])]);
         },
     }),
 
@@ -1120,10 +1119,10 @@ var Completion = Module("completion", {
             "List the completion contexts used during completion of an Ex command",
             function (args) {
                 modules.commandline.commandOutput(
-                    <div highlight="Completions">
-                        { template.completionRow(["Context", "Title"], "CompTitle") }
-                        { template.map(completion.contextList || [], function (item) template.completionRow(item, "CompItem")) }
-                    </div>);
+                    ["div", { highlight: "Completions" },
+                        template.completionRow(["Context", "Title"], "CompTitle"),
+                        template_.map(completion.contextList || [],
+                                      function (item) template.completionRow(item, "CompItem"))]);
             },
             {
                 argCount: "*",
