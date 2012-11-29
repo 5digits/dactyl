@@ -1024,7 +1024,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return color ? <div style="white-space: pre-wrap;">{string}</div> : [s for each (s in string)].join("");
     },
 
-    prettifyJSON: function prettifyJSON(data, indent) {
+    prettifyJSON: function prettifyJSON(data, indent, invalidOK) {
         const INDENT = indent || "    ";
 
         function rec(data, level, seen) {
@@ -1072,6 +1072,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 else
                     res[res.length - 1] = "{}";
             }
+            else if (invalidOK)
+                res.push({}.toString.call(data));
             else
                 throw Error("Invalid JSON object");
         }

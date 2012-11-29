@@ -1397,8 +1397,8 @@ var CommandLine = Module("commandline", {
             substring = substring.substr(value.length);
             this.removeSubstring = substring;
 
-            let node = DOM.fromXML(<span highlight="Preview">{substring}</span>,
-                                   document);
+            let node = DOM.fromJSON(["span", { highlight: "Preview" }, substring],
+                                    document);
 
             this.withSavedValues(["caret"], function () {
                 this.editor.insertNode(node, this.editor.rootElement, 1);
@@ -1889,19 +1889,18 @@ var ItemList = Class("ItemList", {
         DOM(this.win).resize(this._onResize.closure.tell);
     },
 
-    get rootXML() <e4x>
-        <div highlight="Normal" style="white-space: nowrap" key="root">
-            <div key="wrapper">
-                <div highlight="Completions" key="noCompletions"><span highlight="Title">{_("completion.noCompletions")}</span></div>
-                <div key="completions"/>
-            </div>
+    get rootXML()
+        ["div", { highlight: "Normal", style: "white-space: nowrap", key: "root" },
+            ["div", { key: "wrapper" },
+                ["div", { highlight: "Completions", key: "noCompletions" },
+                    ["span", { highlight: "Title" },
+                        _("completion.noCompletions")]],
+                ["div", { key: "completions" }]],
 
-            <div highlight="Completions">{
-            template.map(util.range(0, options["maxitems"] * 2), function (i)
-                <div highlight="CompItem NonText"><li>~</li></div>)
-            }</div>
-        </div>
-    </e4x>.elements(),
+            ["div", { highlight: "Completions" },
+                template_.map(util.range(0, options["maxitems"] * 2), function (i)
+                    ["div", { highlight: "CompItem NonText" },
+                        "~"])]],
 
     get itemCount() this.context.contextList.reduce(function (acc, ctxt) acc + ctxt.items.length, 0),
 
@@ -2225,21 +2224,19 @@ var ItemList = Class("ItemList", {
         },
 
         get rootXML()
-            <div key="root" highlight="CompGroup">
-                <div highlight="Completions">
-                    { this.context.createRow(this.context.title || [], "CompTitle") }
-                </div>
-                <div highlight="CompTitleSep"/>
-                <div key="contents">
-                    <div key="up" highlight="CompLess"/>
-                    <div key="message" highlight="CompMsg">{this.context.message}</div>
-                    <div key="itemsContainer" class="completion-items-container">
-                        <div key="items" highlight="Completions"/>
-                    </div>
-                    <div key="waiting" highlight="CompMsg">{ItemList.WAITING_MESSAGE}</div>
-                    <div key="down" highlight="CompMore"/>
-                </div>
-            </div>,
+            ["div", { key: "root", highlight: "CompGroup" },
+                ["div", { highlight: "Completions" },
+                    this.context.createRow(this.context.title || [], "CompTitle")],
+                ["div", { highlight: "CompTitleSep" }],
+                ["div", { key: "contents" },
+                    ["div", { key: "up", highlight: "CompLess" }],
+                    ["div", { key: "message", highlight: "CompMsg" },
+                        this.context.message || []],
+                    ["div", { key: "itemsContainer", class: "completion-items-container" },
+                        ["div", { key: "items", highlight: "Completions" }]],
+                    ["div", { key: "waiting", highlight: "CompMsg" },
+                        ItemList.WAITING_MESSAGE],
+                    ["div", { key: "down", highlight: "CompMore" }]]],
 
         get doc() this.parent.doc,
         get win() this.parent.win,
@@ -2281,7 +2278,7 @@ var ItemList = Class("ItemList", {
             this.nodes = {};
             this.generatedRange = ItemList.Range(0, 0);
 
-            DOM.fromXML(this.rootXML, this.doc, this.nodes);
+            DOM.fromJSON(this.rootXML, this.doc, this.nodes);
         },
 
         /**
@@ -2292,7 +2289,8 @@ var ItemList = Class("ItemList", {
             DOM(this.nodes.items).empty();
 
             if (this.context.message)
-                DOM(this.nodes.message).empty().append(<>{this.context.message}</>);
+                DOM(this.nodes.message).empty()
+                    .append(DOM.fromJSON(this.context.message, this.doc));
 
             if (!this.selectedIdx > this.itemCount)
                 this.selectedIdx = null;

@@ -2,7 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 let { getOwnPropertyNames } = Object;
 
@@ -13,7 +13,7 @@ defineModule("javascript", {
     require: ["util"]
 });
 
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 let isPrototypeOf = Object.prototype.isPrototypeOf;
 
@@ -489,10 +489,10 @@ var JavaScript = Module("javascript", {
                     if (callable(func)) {
                         let [, prefix, args] = /^(function .*?)\((.*?)\)/.exec(Function.prototype.toString.call(func));
                         let n = this._get(i).comma.length;
-                        args = template.map(Iterator(args.split(", ")),
-                            function ([i, arg]) <span highlight={i == n ? "Filter" : ""}>{arg}</span>,
-                            <>,&#xa0;</>);
-                        this.context.message = <>{prefix}({args})</>;
+                        args = template_.map(Iterator(args.split(", ")),
+                            function ([i, arg]) ["span", { highlight: i == n ? "Filter" : "" }, arg],
+                            ",\u00a0");
+                        this.context.message = ["", prefix + "(", args, ")"];
                     }
                 }
             }
@@ -596,8 +596,8 @@ var JavaScript = Module("javascript", {
         if (!this.context.tabPressed && key == "" && obj.length > 1) {
             let message = this.context.message || "";
             this.context.waitingForTab = true;
-            this.context.message = <>{message}
-                                     {_("completion.waitingForKeyPress")}</>;
+            this.context.message = ["", message, "\n",
+                                    _("completion.waitingForKeyPress")];
             return null;
         }
 
@@ -716,7 +716,6 @@ var JavaScript = Module("javascript", {
             },
 
             addOutput: function addOutput(js) {
-                default xml namespace = XHTML;
                 this.count++;
 
                 try {
@@ -729,19 +728,21 @@ var JavaScript = Module("javascript", {
 
                     if (e.fileName)
                         e = util.fixURI(e.fileName) + ":" + e.lineNumber + ": " + e;
-                    xml = <span highlight="ErrorMsg">{e}</span>;
+                    xml = ["span", { highlight: "ErrorMsg" }, e];
                 }
 
                 let prompt = "js" + this.count;
                 Class.replaceProperty(this.context, prompt, result);
 
-                XML.ignoreWhitespace = XML.prettyPrinting = false;
                 let nodes = {};
                 this.rootNode.appendChild(
-                    util.xmlToDom(<e4x>
-                        <div highlight="REPL-E" key="e"><span highlight="REPL-R">{prompt}></span> {js}</div>
-                        <div highlight="REPL-P" key="p">{xml}</div>
-                    </e4x>.elements(), this.document, nodes));
+                    DOM.fromJSON(
+                        [["div", { highlight: "REPL-E", key: "e" },
+                            ["span", { highlight: "REPL-R" },
+                                prompt, ">"], " ", js],
+                         ["div", { highlight: "REPL-P", key: "p" },
+                            xml]],
+                        this.document, nodes));
 
                 this.rootNode.scrollTop += nodes.e.getBoundingClientRect().top
                                          - this.rootNode.getBoundingClientRect().top;
@@ -750,7 +751,6 @@ var JavaScript = Module("javascript", {
             count: 0,
 
             message: Class.Memoize(function () {
-                default xml namespace = XHTML;
                 DOM.fromJSON(["div", { highlight: "REPL", key: "rootNode" }],
                               this.document, this);
 
