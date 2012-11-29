@@ -2,7 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 defineModule("highlight", {
     exports: ["Highlight", "Highlights", "highlight"],
@@ -224,14 +224,14 @@ var Highlights = Module("Highlight", {
                 (self.highlight[hl] && self.highlight[hl].class != class_
                     ? self.highlight[hl].selector : "[dactyl|highlight~=" + hl + "]")),
 
-    groupRegexp: util.regexp(<![CDATA[
+    groupRegexp: util.regexp(literal(/*
         ^
         (\s* (?:\S|\s\S)+ \s+)
         \{ ([^}]*) \}
         \s*
         $
-    ]]>, "gmx"),
-    sheetRegexp: util.regexp(<![CDATA[
+    */), "gmx"),
+    sheetRegexp: util.regexp(literal(/*
         ^\s*
         !? \*?
              (?P<group>    (?:[^;\s]|\s[^;\s])+ )
@@ -240,7 +240,7 @@ var Highlights = Module("Highlight", {
         (?:; (?P<extends>  (?:[^;\s]|\s[^;\s])+ )? )?
         \s*  (?P<css>      .*)
         $
-    ]]>, "x"),
+    */), "x"),
 
     /**
      * Bulk loads new CSS rules, in the format of,
@@ -322,7 +322,7 @@ var Highlights = Module("Highlight", {
         commands.add(["hi[ghlight]"],
             "Set the style of certain display elements",
             function (args) {
-                let style = <![CDATA[
+                let style = literal(/*
                     ;
                     display: inline-block !important;
                     position: static !important;
@@ -330,7 +330,7 @@ var Highlights = Module("Highlight", {
                     width: 3em !important; min-width: 3em !important; max-width: 3em !important;
                     height: 1em !important; min-height: 1em !important; max-height: 1em !important;
                     overflow: hidden !important;
-                ]]>;
+                */);
                 let clear = args[0] == "clear";
                 if (clear)
                     args.shift();

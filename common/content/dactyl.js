@@ -57,9 +57,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         delete window.liberator;
 
         // Prevents box ordering bugs after our stylesheet is removed.
-        styles.system.add("cleanup-sheet", config.styleableChrome, <![CDATA[
+        styles.system.add("cleanup-sheet", config.styleableChrome, literal(/*
             #TabsToolbar tab { display: none; }
-        ]]>);
+        */));
         styles.unregisterSheet("resource://dactyl-skin/dactyl.css");
         DOM('#TabsToolbar tab', document).style.display;
     },
@@ -1055,15 +1055,15 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }, this);
     },
     stringToURLArray: deprecated("dactyl.parseURLs", "parseURLs"),
-    urlish: Class.Memoize(function () util.regexp(<![CDATA[
+    urlish: Class.Memoize(function () util.regexp(literal(/*
             ^ (
                 <domain>+ (:\d+)? (/ .*) |
                 <domain>+ (:\d+) |
                 <domain>+ \. [a-z0-9]+ |
                 localhost
             ) $
-        ]]>, "ix", {
-        domain: util.regexp(String.replace(<![CDATA[
+        */), "ix", {
+        domain: util.regexp(String.replace(literal(/*
             [^
                 U0000-U002c // U002d-U002e --.
                 U002f       // /
@@ -1072,7 +1072,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 U005b-U0060 // U0061-U007a A-Z
                 U007b-U007f
             ]
-        ]]>, /U/g, "\\u"), "x")
+        */), /U/g, "\\u"), "x")
     })),
 
     pluginFiles: {},

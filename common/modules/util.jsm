@@ -341,14 +341,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         let defaults = { lt: "<", gt: ">" };
 
-        let re = util.regexp(<![CDATA[
+        let re = util.regexp(literal(/*
             ([^]*?) // 1
             (?:
                 (<\{) | // 2
                 (< ((?:[a-z]-)?[a-z-]+?) (?:\[([0-9]+)\])? >) | // 3 4 5
                 (\}>) // 6
             )
-        ]]>, "gixy");
+        */), "gixy");
         macro = String(macro);
         let end = 0;
         for (let match in re.iterate(macro)) {
@@ -864,7 +864,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     // ripped from Firefox; modified
-    unsafeURI: Class.Memoize(function () util.regexp(String.replace(<![CDATA[
+    unsafeURI: Class.Memoize(function () util.regexp(String.replace(literal(/*
             [
                 \s
                 // Invisible characters (bug 452979)
@@ -878,7 +878,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 // Bidi formatting characters. (RFC 3987 sections 3.2 and 4.1 paragraph 6)
                 U200E U200F U202A U202B U202C U202D U202E
             ]
-        ]]>, /U/g, "\\u"),
+        */), /U/g, "\\u"),
         "gx")),
     losslessDecodeURI: function losslessDecodeURI(url) {
         return url.split("%25").map(function (url) {

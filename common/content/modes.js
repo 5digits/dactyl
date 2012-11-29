@@ -487,7 +487,9 @@ var Modes = Module("modes", {
         update(StackElement.prototype, {
             get toStringParams() !loaded.modes ? this.main.name : [
                 this.main.name,
-                <>({ modes.all.filter(function (m) this.extended & m, this).map(function (m) m.name).join("|") })</>
+                ["(", modes.all.filter(function (m) this.extended & m, this)
+                           .map(function (m) m.name).join("|"),
+                 ")"].join("")
             ]
         });
         return StackElement;

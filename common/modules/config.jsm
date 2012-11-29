@@ -155,7 +155,7 @@ var ConfigBase = Class("ConfigBase", {
         highlight.loadCSS(this.helpCSS.replace(/__MSG_(.*?)__/g, function (m0, m1) _(m1)));
 
         if (!this.haveGecko("2b"))
-            highlight.loadCSS(<![CDATA[
+            highlight.loadCSS(literal(/*
                 !TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex;
                 !TabIconNumber  {
                     font-weight: bold;
@@ -163,7 +163,7 @@ var ConfigBase = Class("ConfigBase", {
                     text-align: center;
                     text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
                 }
-            ]]>);
+            */));
 
         let hl = highlight.set("Find", "");
         hl.onChange = function () {

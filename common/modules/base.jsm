@@ -144,16 +144,39 @@ defineModule("base", {
         "Set", "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
         "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable", "ctypes", "curry",
         "debuggerProperties", "defineModule", "deprecated", "endModule", "forEach", "isArray",
-        "isGenerator", "isinstance", "isObject", "isString", "isSubclass", "isXML", "iter", "iterAll",
-        "iterOwnProperties", "keys", "memoize", "octal", "properties", "require", "set", "update",
-        "values"
+        "isGenerator", "isinstance", "isObject", "isString", "isSubclass", "isXML", "iter",
+        "iterAll", "iterOwnProperties", "keys", "literal", "memoize", "octal", "properties",
+        "require", "set", "update", "values"
     ]
 });
 
+this.lazyRequire("cache", ["cache"]);
 this.lazyRequire("config", ["config"]);
 this.lazyRequire("messages", ["_", "Messages"]);
 this.lazyRequire("services", ["services"]);
 this.lazyRequire("util", ["FailedAssertion", "util"]);
+
+function literal(/* comment */) {
+    let { caller } = Components.stack;
+    let file = caller.filename.replace(/.* -> /, "");
+    let key = "literal:" + file + ":" + caller.line;
+
+    let source = util.httpGet(file).responseText;
+
+    let match = RegExp("(?:.*\\n){" + (caller.lineNumber - 1) + "}" +
+                       ".*literal\\(/\\*([^]*?)\\*/\\)").exec(source);
+    return match[1];
+
+    // Later...
+    return cache.get(key, function () {
+        let source = cache.get("literal:" + file,
+                               function () util.httpGet(file).responseText);
+
+        let match = RegExp("(?:.*\\n){" + (caller.lineNumber - 1) + "}" +
+                           ".*literal\\(/\\*([^]*?)\\*/\\)").exec(source);
+        return match[1];
+    });
+}
 
 /**
  * Returns a list of all of the top-level properties of an object, by

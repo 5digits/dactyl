@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 /** @scope modules */
 
@@ -15,28 +15,26 @@ var StatusLine = Module("statusline", {
         this.baseGroup = this.statusBar == this._statusLine ? "StatusLine " : "";
 
         if (this.statusBar.localName == "toolbar") {
-            styles.system.add("addon-bar", config.styleableChrome, <css><![CDATA[
+            styles.system.add("addon-bar", config.styleableChrome, literal(/*
                 #status-bar { margin-top: 0 !important; }
                 #addon-bar > statusbar { -moz-box-flex: 1 }
                 #addon-bar > #addonbar-closebutton { visibility: collapse; }
                 #addon-bar > xul|toolbarspring { visibility: collapse; }
-            ]]></css>);
+            */));
 
             overlay.overlayWindow(window, {
                 append: [
                     ["statusbar", { id: "status-bar", ordinal: "0" }]]
             });
 
-            highlight.loadCSS(util.compileMacro(<![CDATA[
+            highlight.loadCSS(util.compileMacro(literal(/*
                 !AddonBar;#addon-bar {
-                    /* The Add-on Bar */
                     padding-left: 0 !important;
                     min-height: 18px !important;
                     -moz-appearance: none !important;
                     <padding>
                 }
                 !AddonButton;#addon-bar xul|toolbarbutton {
-                    /* An Add-on Bar button */
                     -moz-appearance: none !important;
                     padding: 0 !important;
                     border-width: 0px !important;
@@ -44,13 +42,12 @@ var StatusLine = Module("statusline", {
                     color: inherit !important;
                 }
                 AddonButton:not(:hover)  background: transparent;
-            ]]>)({ padding: config.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
+            */))({ padding: config.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
 
             if (document.getElementById("appmenu-button"))
-                highlight.loadCSS(<![CDATA[
-                    AppmenuButton       /* The app-menu button */ \
-                                        min-width: 0 !important; padding: 0 .5em !important;
-                ]]>);
+                highlight.loadCSS(literal(/*
+                    AppmenuButton       min-width: 0 !important; padding: 0 .5em !important;
+                */));
         }
 
         XML.ignoreWhitespace = true;

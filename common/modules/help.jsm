@@ -108,7 +108,7 @@ var Help = Module("Help", {
                                     { mimeType: "text/plain;charset=UTF-8" })
                            .responseText;
 
-            let re = util.regexp(UTF8(<![CDATA[
+            let re = util.regexp(UTF8(literal(/*
                   ^ (?P<comment> \s* # .*\n)
 
                 | ^ (?P<space> \s*)
@@ -124,7 +124,7 @@ var Help = Module("Help", {
                   )
 
                 | (?: ^ [^\S\n]* \n) +
-            ]]>), "gmxy");
+            */)), "gmxy");
 
             let betas = util.regexp(/\[((?:b|rc)\d)\]/, "gx");
 

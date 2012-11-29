@@ -202,17 +202,15 @@ var Template = Module("Template", {
             var desc = this.processor[1].call(this, item, item.description);
         }
 
-        XML.ignoreWhitespace = XML.prettyPrinting = false;
-        // <e4x>
-        return <div highlight={highlightGroup || "CompItem"} style="white-space: nowrap">
-                   <!-- The non-breaking spaces prevent empty elements
-                      - from pushing the baseline down and enlarging
-                      - the row.
-                      -->
-                   <li highlight={"CompResult " + item.highlight}>{text}&#xa0;</li>
-                   <li highlight="CompDesc">{desc}&#xa0;</li>
-               </div>;
-        // </e4x>
+        return ["div", { highlight: highlightGroup || "CompItem", style: "white-space: nowrap" },
+                   /* The non-breaking spaces prevent empty elements
+                    * from pushing the baseline down and enlarging
+                    * the row.
+                    */
+                   ["li", { highlight: "CompResult " + item.highlight },
+                       text, "\u00a0"],
+                   ["li", { highlight: "CompDesc" },
+                       desc, "\u00a0"]];
     },
 
     helpLink: function (token, text, type) {
@@ -257,11 +255,11 @@ var Template = Module("Template", {
         return <{tag} xmlns={NS}>{topic}</{tag}>;
     },
     linkifyHelp: function linkifyHelp(str, help) {
-        let re = util.regexp(<![CDATA[
+        let re = util.regexp(literal(/*
             (?P<pre> [/\s]|^)
             (?P<tag> '[\w-]+' | :(?:[\w-]+!?|!) | (?:._)?<[\w-]+>\w* | \b[a-zA-Z]_(?:[\w[\]]+|.) | \[[\w-;]+\] | E\d{3} )
             (?=      [[\)!,:;./\s]|$)
-        ]]>, "gx");
+        */), "gx");
         return this.highlightSubstrings(str, (function () {
             for (let res in re.iterate(str))
                 yield [res.index + res.pre.length, res.tag.length];
@@ -621,6 +619,23 @@ var Template_ = Module("Template_", {
         }
         s.push(str.substr(start));
         return s;
+    },
+
+    options: function options(title, opts, verbose) {
+        return ["table", {},
+                ["tr", { highlight: "Title", align: "left" },
+                    ["th", {}, "--- " + title + " ---"]],
+                this.map(opts, function (opt)
+                    ["tr", {},
+                        ["td", {},
+                            ["div", { highlight: "Message" },
+                                ["span", { style: opt.isDefault ? "" : "font-weight: bold" },
+                                    opt.pre, opt.name],
+                                ["span", {}, opt.value],
+                                opt.isDefault || opt.default == null ? "" : ["span", { class: "extra-info" }, " (default: ", opt.default, ")"]],
+                            verbose && opt.setFrom ? ["div", { highlight: "Message" },
+                                                         "       Last set from ",
+                                                         template.sourceLink(opt.setFrom)] : ""]])];
     },
 
     table: function table(title, data, indent) {

@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 try {
 
@@ -14,7 +14,7 @@ defineModule("prefs", {
 });
 
 lazyRequire("messages", ["_"]);
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     ORIGINAL: "extensions.dactyl.original.",
@@ -404,7 +404,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                 let option = {
                     isDefault: !userValue,
                     default:   this.defaults.get(pref, null),
-                    value:     <>={template.highlight(value, true, 100)}</>,
+                    value:     ["", "=", template.highlight(value, true, 100)],
                     name:      pref,
                     pre:       "\u00a0\u00a0" // Unicode nonbreaking space.
                 };
@@ -413,7 +413,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             }
         };
 
-        return template.options(_("pref.hostPreferences", config.host), prefs.call(this));
+        return template_.options(_("pref.hostPreferences", config.host), prefs.call(this));
     },
 }, {
 }, {

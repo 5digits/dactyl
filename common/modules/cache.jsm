@@ -118,7 +118,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         }
     },
 
-    closeWriter: function closeWriter() {
+    closeWriter: util.wrapCallback(function closeWriter() {
         this.closeReader();
 
         if (this._cacheWriter) {
@@ -129,7 +129,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
             if (this.cacheFile.fileSize <= 22)
                 this.cacheFile.remove(false);
         }
-    },
+    }),
 
     flush: function flush() {
         cache.cache = {};
@@ -202,8 +202,12 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
             return cache.force(name);
     },
 
-    get: function get(name) {
+    get: function get(name, callback, self) {
         if (!Set.has(this.cache, name)) {
+            if (callback && !(Set.has(this.providers, name) ||
+                              Set.has(this.localProviders, name)))
+                this.register(name, callback, self);
+
             this.cache[name] = this.force(name);
             util.assert(this.cache[name] !== undefined,
                         "No such cache key", false);

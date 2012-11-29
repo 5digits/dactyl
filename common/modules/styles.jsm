@@ -461,7 +461,7 @@ var Styles = Module("Styles", {
         }
     },
 
-    propertyPattern: util.regexp(<![CDATA[
+    propertyPattern: util.regexp(literal(/*
             (?:
                 (?P<preSpace> <space>*)
                 (?P<name> [-a-z]*)
@@ -483,14 +483,14 @@ var Styles = Module("Styles", {
                 )?
             )
             (?P<postSpace> <space>* (?: ; | $) )
-        ]]>, "gix",
+        */), "gix",
         {
             space: /(?: \s | \/\* .*? \*\/ )/,
             string: /(?:" (?:[^\\"]|\\.)* (?:"|$) | '(?:[^\\']|\\.)* (?:'|$) )/
         }),
 
     patterns: memoize({
-        get property() util.regexp(<![CDATA[
+        get property() util.regexp(literal(/*
                 (?:
                     (?P<preSpace> <space>*)
                     (?P<name> [-a-z]*)
@@ -501,26 +501,26 @@ var Styles = Module("Styles", {
                     )?
                 )
                 (?P<postSpace> <space>* (?: ; | $) )
-            ]]>, "gix", this),
+            */), "gix", this),
 
-        get function() util.regexp(<![CDATA[
+        get function() util.regexp(literal(/*
                 (?P<function>
                     \s* \( \s*
                         (?: <string> | [^)]*  )
                     \s* (?: \) | $)
                 )
-            ]]>, "gx", this),
+            */), "gx", this),
 
         space: /(?: \s | \/\* .*? \*\/ )/,
 
-        get string() util.regexp(<![CDATA[
+        get string() util.regexp(literal(/*
                 (?P<string>
                     " (?:[^\\"]|\\.)* (?:"|$) |
                     ' (?:[^\\']|\\.)* (?:'|$)
                 )
-            ]]>, "gx", this),
+            */), "gx", this),
 
-        get token() util.regexp(<![CDATA[
+        get token() util.regexp(literal(/*
             (?P<token>
                 (?P<word> [-\w]+)
                 <function>?
@@ -530,7 +530,7 @@ var Styles = Module("Styles", {
                 | <space>+
                 | [^;}\s]+
             )
-        ]]>, "gix", this)
+        */), "gix", this)
     }),
 
     /**

@@ -488,7 +488,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         let { cache } = this.modules;
         this.cached = true;
 
-        cache.register(this.cacheKey, function () {
+        let cached = cache.get(this.cacheKey, function () {
             self.cached = false;
             this.modules.moduleManager.initDependencies("commands");
 
@@ -1225,14 +1225,14 @@ var Commands = Module("commands", {
         }
     },
 
-    nameRegexp: util.regexp(<![CDATA[
+    nameRegexp: util.regexp(literal(/*
             [^
                 0-9
                 <forbid>
             ]
             [^ <forbid> ]*
-        ]]>, "gx", {
-        forbid: util.regexp(String.replace(<![CDATA[
+        */), "gx", {
+        forbid: util.regexp(String.replace(literal(/*
             U0000-U002c // U002d -
             U002e-U002f
             U003a-U0040 // U0041-U005a a-z
@@ -1255,12 +1255,12 @@ var Commands = Module("commands", {
             Ufe70-Ufeff // Arabic Presentation Forms-B
             Uff00-Uffef // Halfwidth and Fullwidth Forms
             Ufff0-Uffff // Specials
-        ]]>, /U/g, "\\u"), "x")
+        */), /U/g, "\\u"), "x")
     }),
 
     validName: Class.Memoize(function validName() util.regexp("^" + this.nameRegexp.source + "$")),
 
-    commandRegexp: Class.Memoize(function commandRegexp() util.regexp(<![CDATA[
+    commandRegexp: Class.Memoize(function commandRegexp() util.regexp(literal(/*
             ^
             (?P<spec>
                 (?P<prespace> [:\s]*)
@@ -1275,7 +1275,7 @@ var Commands = Module("commands", {
                 (?:. | \n)*?
             )?
             $
-        ]]>, "x", {
+        */), "x", {
             name: this.nameRegexp
         })),
 
