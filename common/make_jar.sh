@@ -37,14 +37,35 @@ then
     }
 fi
 
+mungeliterals=$(cat <<'!'
+    local $/;
+    $_ = <>;
+    s{(?<!function )\bliteral\(/\*(.*?)\*/\)}{
+        my $s = $1;
+        $s =~ s/[\\']/\\$&/g;
+        $s =~ s/\n/\\n\\$&/g;
+        "/* Preprocessors FTW. */ '$s'";
+    }ges;
+    print;
+!
+)
+
+mungeliterals() {
+    if which perl >/dev/null 2>&1
+    then perl -e "$mungeliterals"
+    else cat
+    fi
+}
+
 getfiles() {
     filter="\.($(echo $1 | tr ' ' '|'))$"; shift
     find "$@" -not -path '*\.hg*' 2>/dev/null | grep -E "$filter" || true
 }
 copytext() {
+    mungeliterals <"$1" |
     sed -e "s,@VERSION@,$VERSION,g" \
         -e "s,@DATE@,$BUILD_DATE,g" \
-        <"$1" >"$2"
+        >"$2"
     cmp -s -- "$1" "$2" ||
     ( echo "modified: $1"; diff -u -- "$1" "$2" | grep '^[-+][^-+]' )
 }
@@ -68,7 +89,7 @@ do
             for f in $(getfiles "$bin" "$dir")
             do
                 mkdir -p "$stage/${f%/*}"
-                cp -- $f "$stage/$f"
+                cp -- "$f" "$stage/$f"
             done
             for f in $(getfiles "$text" "$dir")
             do
@@ -78,7 +99,15 @@ do
         done
         for f in $files
         do
-            [ -f "$f" ] && copytext "$f" "$stage/$f"
+            if [ -f "$f" ]
+            then
+                case "$f" in
+                *.js|*.jsm|*.css|*.dtd|*.xml|*.xul|*.html|*.xhtml|*.xsl|*.properties|*.json)
+                    copytext "$f" "$stage/$f";;
+                *)
+                    cp -- "$f" "$stage/$f";;
+                esac
+            fi
         done
 	true
     ) || exit 1
