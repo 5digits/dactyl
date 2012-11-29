@@ -3,7 +3,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 // TODO:
 //   - fix Sanitize autocommand
@@ -20,7 +20,7 @@ defineModule("sanitizer", {
 lazyRequire("messages", ["_"]);
 lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["storage"]);
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 let tmp = Object.create(this);
 JSMLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);
@@ -165,13 +165,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         ];
 
         function prefOverlay(branch, persistent, local) update(Object.create(local), {
-            before: array.toObject([
-                [branch.substr(Item.PREFIX.length) + "history",
-                    <preferences xmlns={XUL}>{
-                      template.map(ourItems(persistent), function (item)
-                        <preference type="bool" id={branch + item.name} name={branch + item.name}/>)
-                    }</preferences>.*::*]
-            ]),
+            before: [
+                ["preferences", { id: branch.substr(Item.PREFIX.length) + "history",
+                                  xmlns: "xul" },
+                  template_.map(ourItems(persistent), function (item)
+                      ["preference", { type: "bool", id: branch + item.name, name: branch + item.name }])]
+            ],
             init: function init(win) {
                 let pane = win.document.getElementById("SanitizeDialogPane");
                 for (let [, pref] in iter(pane.preferences))
@@ -187,20 +186,18 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                    function (win) prefOverlay(branch, true, {
                     append: {
                         SanitizeDialogPane:
-                            <groupbox orient="horizontal" xmlns={XUL}>
-                              <caption label={config.appName + /*L*/" (see :help privacy)"}/>
-                              <grid flex="1">
-                                <columns><column flex="1"/><column flex="1"/></columns>
-                                <rows>{
+                            ["groupbox", { orient: "horizontal", xmlns: "xul" },
+                              ["caption", { label: config.appName + /*L*/" (see :help privacy)" }],
+                              ["grid", { flex: "1" },
+                                ["columns", {},
+                                    ["column", { flex: "1" }],
+                                    ["column", { flex: "1" }]],
+                                ["rows", {},
                                   let (items = ourItems(true))
-                                     template.map(util.range(0, Math.ceil(items.length / 2)), function (i)
-                                       <row xmlns={XUL}>{
-                                         template.map(items.slice(i * 2, i * 2 + 2), function (item)
-                                           <checkbox xmlns={XUL} label={item.description} preference={branch + item.name}/>)
-                                       }</row>)
-                                }</rows>
-                              </grid>
-                            </groupbox>
+                                     template_.map(util.range(0, Math.ceil(items.length / 2)), function (i)
+                                         ["row", {},
+                                             template_.map(items.slice(i * 2, i * 2 + 2), function (item)
+                                                ["checkbox", { xmlns: XUL, label: item.description, preference: branch + item.name }])])]]],
                     }
                 }));
             }
@@ -208,16 +205,14 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 overlay.overlayWindow("chrome://browser/content/sanitize.xul",
                                    function (win) prefOverlay(branch, false, {
                     append: {
-                        itemList: <>
-                            <listitem xmlns={XUL} label={/*L*/"See :help privacy for the following:"} disabled="true" style="font-style: italic; font-weight: bold;"/>
-                            {
-                              template.map(ourItems(), function ([item, desc])
-                                <listitem xmlns={XUL} type="checkbox"
-                                          label={config.appName + " " + desc}
-                                          preference={branch + item}
-                                          onsyncfrompreference="return gSanitizePromptDialog.onReadGeneric();"/>)
-                            }
-                        </>
+                        itemList: [
+                            ["listitem", { xmlns: "xul", label: /*L*/"See :help privacy for the following:",
+                                           disabled: "true", style: "font-style: italic; font-weight: bold;" }],
+                            template_.map(ourItems(), function ([item, desc])
+                                ["listitem", { xmlns: "xul", preference: branch + item,
+                                               type: "checkbox", label: config.appName + ", " + desc,
+                                               onsyncfrompreference: "return gSanitizePromptDialog.onReadGeneric();" }]),
+                        ]
                     },
                     ready: function ready(win) {
                         let elem =  win.document.getElementById("itemList");
@@ -529,11 +524,11 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                             return;
 
                         case "list":
-                            modules.commandline.commandOutput(template.tabular(
+                            modules.commandline.commandOutput(template_.tabular(
                                 ["Host", "Expiry (UTC)", "Path", "Name", "Value"],
                                 ["padding-right: 1em", "padding-right: 1em", "padding-right: 1em", "max-width: 12em; overflow: hidden;", "padding-left: 1ex;"],
                                 ([c.host,
-                                  c.isSession ? <span highlight="Enabled">session</span>
+                                  c.isSession ? ["span", { highlight: "Enabled" }, "session"]
                                               : (new Date(c.expiry * 1000).toJSON() || "Never").replace(/:\d\d\.000Z/, "").replace("T", " ").replace(/-/g, "/"),
                                   c.path,
                                   c.name,
@@ -555,7 +550,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                 let count = [0, 0];
                                 for (let c in Sanitizer.iterCookies(host))
                                     count[c.isSession + 0]++;
-                                return <>{Sanitizer.COMMANDS[getPerms(host)]} (session: {count[1]} persistent: {count[0]})</>;
+                                return [Sanitizer.COMMANDS[getPerms(host)], " (session: ", count[1], " persistent: ", count[0], ")"].join("");
                             };
                             break;
                         case 1:
