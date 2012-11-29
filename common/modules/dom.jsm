@@ -1384,9 +1384,12 @@ var DOM = Class("DOM", {
         ? function (elem, dir) services.dactyl.getScrollable(elem) & (dir ? services.dactyl["DIRECTION_" + dir.toUpperCase()] : ~0)
         : function (elem, dir) true),
 
-    isJSONXML: function isJSONXML(val) isArray(val) && (isString(val[0]) || isArray(val[0])) || isObject(val) && "toDOM" in val,
+    isJSONXML: function isJSONXML(val) isArray(val) && isinstance(val[0], ["String", "Array", "XML", DOM.DOMString])
+                                    || isObject(val) && "toDOM" in val,
 
-    DOMString: function (val) ({
+    DOMString: function DOMString(val) ({
+        __proto__: DOMString.prototype,
+
         toDOM: function toDOM(doc) doc.createTextNode(val)
     }),
 
@@ -1558,11 +1561,13 @@ var DOM = Class("DOM", {
 
             if (isinstance(args, ["String", _]))
                 return doc.createTextNode(args);
+            if (isXML(args))
+                return DOM.fromXML(args, doc, nodes);
 
             let [name, attr] = args;
             attr = attr || {};
 
-            if (Array.isArray(name) || args.length == 0 || name == "") {
+            if (!isString(name) || args.length == 0 || name === "") {
                 var frag = doc.createDocumentFragment();
                 Array.forEach(args, function (arg) {
                     if (!isArray(arg[0]))

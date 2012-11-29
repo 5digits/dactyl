@@ -6,7 +6,7 @@
 
 let global = this;
 defineModule("template", {
-    exports: ["Binding", "Template", "template"],
+    exports: ["Binding", "Template", "template", "template_"],
     require: ["util"]
 });
 
@@ -551,6 +551,40 @@ var Template = Module("Template", {
         </table>;
         // </e4x>
     }
+});
+
+var Template_ = Module("Template_", {
+    map: function map(iter, func, sep, interruptable) {
+        if (typeof iter.length == "number") // FIXME: Kludge?
+            iter = array.iterValues(iter);
+
+        let res = [];
+        let n = 0;
+        for each (let i in Iterator(iter)) {
+            let val = func(i, n);
+            if (val == undefined)
+                continue;
+            if (n++ && sep)
+                res.push(sep);
+            if (interruptable && n % interruptable == 0)
+                util.threadYield(true, true);
+            res.push(val);
+        }
+        return res;
+    },
+
+    table: function table(title, data, indent) {
+        let table = ["table", {},
+            ["tr", { highlight: "Title", align: "left" },
+                ["th", { colspan: "2" }, title]],
+            this.map(data, function (datum)
+                ["tr", {},
+                    ["td", { style: "font-weight: bold; min-width: 150px; padding-left: " + (indent || "2ex") }, datum[0]],
+                    ["td", {}, datum[1]]])];
+
+        if (table[3].length)
+            return table;
+    },
 });
 
 endModule();

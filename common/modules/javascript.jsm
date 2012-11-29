@@ -751,7 +751,7 @@ var JavaScript = Module("javascript", {
 
             message: Class.Memoize(function () {
                 default xml namespace = XHTML;
-                util.xmlToDom(<div highlight="REPL" key="rootNode"/>,
+                DOM.fromJSON(["div", { highlight: "REPL", key: "rootNode" }],
                               this.document, this);
 
                 return this.rootNode;

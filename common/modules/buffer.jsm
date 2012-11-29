@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-// "use strict";
+"use strict";
 
 defineModule("buffer", {
     exports: ["Buffer", "buffer"],
@@ -16,7 +16,7 @@ lazyRequire("io", ["io"]);
 lazyRequire("finder", ["RangeFind"]);
 lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["File", "storage"]);
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 /**
  * A class to manage the primary web content buffer. The name comes
@@ -888,8 +888,7 @@ var Buffer = Module("Buffer", {
     showElementInfo: function showElementInfo(elem) {
         let { dactyl } = this.modules;
 
-        XML.ignoreWhitespace = XML.prettyPrinting = false;
-        dactyl.echo(<><!--L-->Element:<br/>{util.objectToString(elem, true)}</>);
+        dactyl.echo(["", /*L*/"Element:", ["br"], util.objectToString(elem, true)]);
     },
 
     /**
@@ -918,15 +917,15 @@ var Buffer = Module("Buffer", {
             if (bookmarkcache.isBookmarked(this.URL))
                 info += ", " + _("buffer.bookmarked");
 
-            let pageInfoText = <>{file.quote()} [{info}] {title}</>;
+            let pageInfoText = [file.quote(), " [", info, "] ", title].join("");
             dactyl.echo(pageInfoText, commandline.FORCE_SINGLELINE);
             return;
         }
 
-        let list = template.map(sections || options["pageinfo"], function (option) {
+        let list = template_.map(sections || options["pageinfo"], function (option) {
             let { action, title } = Buffer.pageInfo[option];
-            return template.table(title, action.call(self, true));
-        }, <br/>);
+            return template_.table(title, action.call(self, true));
+        }, ["br"]);
 
         commandline.commandOutput(list);
     },
@@ -1693,7 +1692,7 @@ var Buffer = Module("Buffer", {
                             function (file) {
                                 let output = io.system(filename.substr(1), file);
                                 commandline.command = command;
-                                commandline.commandOutput(<span highlight="CmdOutput">{output}</span>);
+                                commandline.commandOutput(["span", { highlight: "CmdOutput" }, output]);
                             });
 
                     if (/^>>/.test(filename)) {
@@ -2372,9 +2371,9 @@ Buffer.addPageInfoSection("e", "Search Engines", function (verbose) {
         if (verbose)
             for (let link in engines)
                 yield [link.title || /*L*/ "Engine " + n++,
-                       <a xmlns={XHTML} href={link.href}
-                          onclick="if (event.button == 0) { window.external.AddSearchProvider(this.href); return false; }"
-                          highlight="URL">{link.href}</a>];
+                       ["a", { href: link.href, highlight: "URL",
+                               onclick: "if (event.button == 0) { window.external.AddSearchProvider(this.href); return false; }" },
+                            link.href]];
     }
 
     if (!verbose && nEngines)
@@ -2430,7 +2429,8 @@ Buffer.addPageInfoSection("f", "Feeds", function (verbose) {
                 nFeed++;
                 let type = feedTypes[feed.type] || "RSS";
                 if (verbose)
-                    yield [feed.title, template.highlightURL(feed.href, true) + <span class="extra-info">&#xa0;({type})</span>];
+                    yield [feed.title, [template.highlightURL(feed.href, true),
+                                        ["span", { class: "extra-info" }, " (" + type + ")"]]];
             }
         }
 
