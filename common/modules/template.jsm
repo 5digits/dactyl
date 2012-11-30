@@ -572,6 +572,47 @@ var Template_ = Module("Template_", {
     },
 
 
+    bookmarkDescription: function (item, text) [
+        !(item.extra && item.extra.length) ? [] :
+        ["span", { highlight: "URLExtra" },
+            " (",
+            this.map(item.extra, function (e)
+                ["", e[0], ": ",
+                 ["span", { highlight: e[2] }, e[1]]],
+                "\u00a0"),
+            ")\u00a0"],
+        ["a", { identifier: item.id == null ? "" : item.id,
+                "dactyl:command": item.command || "",
+                href: item.item.url, highlight: "URL" },
+            text || ""]
+    ],
+
+    filter: function (str) ["span", { highlight: "Filter" }, str],
+
+    completionRow: function completionRow(item, highlightGroup) {
+        if (typeof icon == "function")
+            icon = icon();
+
+        if (highlightGroup) {
+            var text = item[0] || "";
+            var desc = item[1] || "";
+        }
+        else {
+            var text = this.processor[0].call(this, item, item.result);
+            var desc = this.processor[1].call(this, item, item.description);
+        }
+
+        return ["div", { highlight: highlightGroup || "CompItem", style: "white-space: nowrap" },
+                   /* The non-breaking spaces prevent empty elements
+                    * from pushing the baseline down and enlarging
+                    * the row.
+                    */
+                   ["li", { highlight: "CompResult " + item.highlight },
+                       text, "\u00a0"],
+                   ["li", { highlight: "CompDesc" },
+                       desc, "\u00a0"]];
+    },
+
     helpLink: function (token, text, type) {
         if (!help.initialized)
             util.dactyl.initHelp();

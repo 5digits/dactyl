@@ -1039,11 +1039,12 @@ var Tabs = Module("tabs", {
                 group[1].push([i, tab.linkedBrowser]);
             });
 
-            context.pushProcessor(0, function (item, text, next) <>
-                <span highlight="Indicator" style="display: inline-block;">{item.indicator}</span>
-                { next.call(this, item, text) }
-            </>);
-            context.process[1] = function (item, text) template.bookmarkDescription(item, template.highlightFilter(text, this.filter));
+            context.pushProcessor(0, function (item, text, next) [
+                ["span", { highlight: "Indicator", style: "display: inline-block;" },
+                    item.indicator],
+                next.call(this, item, text)
+            ]);
+            context.process[1] = function (item, text) template_.bookmarkDescription(item, template_.highlightFilter(text, this.filter));
 
             context.anchored = false;
             context.keys = {

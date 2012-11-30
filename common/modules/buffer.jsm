@@ -2429,7 +2429,7 @@ Buffer.addPageInfoSection("f", "Feeds", function (verbose) {
                 nFeed++;
                 let type = feedTypes[feed.type] || "RSS";
                 if (verbose)
-                    yield [feed.title, [template.highlightURL(feed.href, true),
+                    yield [feed.title, [template_.highlightURL(feed.href, true),
                                         ["span", { class: "extra-info" }, " (" + type + ")"]]];
             }
         }

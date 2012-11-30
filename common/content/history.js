@@ -316,7 +316,7 @@ var History = Module("history", {
                              .concat(jumps)
                              .concat(sh.slice(sh.index + 1));
 
-                commandline.commandOutput(template.jumps(index, list));
+                commandline.commandOutput(template_.jumps(index, list));
             },
             { argCount: "0" });
 

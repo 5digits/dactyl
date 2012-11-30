@@ -353,7 +353,7 @@ var JavaScript = Module("javascript", {
 
         if (!compl) {
             base.process[1] = function highlight(item, v)
-                template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true, 200);
+                template_.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true, 200);
 
             // Sort in a logical fashion for object keys:
             //  Numbers are sorted as numbers, rather than strings, and appear first.
