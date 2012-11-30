@@ -256,7 +256,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     results = results.filter(function (item) filters.every(function (re) keys(item).some(re.closure.test)));
 
                 commandline.commandOutput(
-                    template.usage(results, params.format));
+                    template_.usage(results, params.format));
             },
             {
                 argCount: "*",
@@ -1166,7 +1166,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 error.message = prefix + error.message;
 
             if (error.message)
-                dactyl.echoerr(template.linkifyHelp(error.message));
+                dactyl.echoerr(template_.linkifyHelp(error.message));
             else
                 dactyl.beep();
 

@@ -241,6 +241,7 @@ var Highlights = Module("Highlight", {
         \s*  (?P<css>      .*)
         $
     */), "x"),
+    // </css>
 
     /**
      * Bulk loads new CSS rules, in the format of,
@@ -350,7 +351,7 @@ var Highlights = Module("Highlight", {
                              "text-align: center"],
                             ([h.class,
                               ["span", { style: "text-align: center; line-height: 1em;" + h.value + style }, "XXX"],
-                              template_.map(h.extends, function (s) template.highlight(s), ","),
+                              template_.map(h.extends, function (s) template_.highlight(s), ","),
                               template_.highlightRegexp(h.value, /\b[-\w]+(?=:)|\/\*.*?\*\//g,
                                                         function (match) ["span", { highlight: match[0] == "/" ? "Comment" : "Key" }, match])
                              ]

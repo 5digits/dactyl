@@ -169,7 +169,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         if (saved == null && curval != defval || saved != null && curval != saved) {
             let msg = _("pref.safeSet.warnChanged", name);
             if (message)
-                msg = template.linkifyHelp(msg + " " + message);
+                msg = template_.linkifyHelp(msg + " " + message);
             util.dactyl.warn(msg);
         }
     },
@@ -404,7 +404,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                 let option = {
                     isDefault: !userValue,
                     default:   this.defaults.get(pref, null),
-                    value:     ["", "=", template.highlight(value, true, 100)],
+                    value:     ["", "=", template_.highlight(value, true, 100)],
                     name:      pref,
                     pre:       "\u00a0\u00a0" // Unicode nonbreaking space.
                 };

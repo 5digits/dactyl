@@ -113,7 +113,7 @@ var QuickMarks = Module("quickmarks", {
             dactyl.assert(marks.length >= 0, _("quickmark.noMatching", filter.quote()));
         }
 
-        commandline.commandOutput(template.tabular(["QuickMark", "URL"], [],
+        commandline.commandOutput(template_.tabular(["QuickMark", "URL"], [],
             ([mark, quickmarks._qmarks.get(mark)] for ([k, mark] in Iterator(marks)))));
     }
 }, {

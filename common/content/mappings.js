@@ -765,14 +765,13 @@ var Mappings = Module("mappings", {
                                 }
             },
             format: {
-                description: function (map) (XML.ignoreWhitespace = false, XML.prettyPrinting = false, <>
-                        {options.get("passkeys").has(map.name)
-                            ? <span highlight="URLExtra">
-                                ({template.linkifyHelp(_("option.passkeys.passedBy"))})
-                              </span>
-                            : <></>}
-                        {template.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))}
-                </>),
+                description: function (map) [
+                        options.get("passkeys").has(map.name)
+                            ? ["span", { highlight: "URLExtra" },
+                                "(", template_.linkifyHelp(_("option.passkeys.passedBy")), ")"]
+                            : [],
+                        template_.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))
+                ],
                 help: function (map) let (char = array.compact(map.modes.map(function (m) m.char))[0])
                     char === "n" ? map.name : char ? char + "_" + map.name : "",
                 headings: ["Command", "Mode", "Group", "Description"]

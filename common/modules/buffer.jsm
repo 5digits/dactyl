@@ -908,11 +908,11 @@ var Buffer = Module("Buffer", {
             let file = this.win.location.pathname.split("/").pop() || _("buffer.noName");
             let title = this.win.document.title || _("buffer.noTitle");
 
-            let info = template.map(
+            let info = template_.map(
                 (sections || options["pageinfo"])
                     .map(function (opt) Buffer.pageInfo[opt].action.call(self)),
                 function (res) res && iter(res).join(", ") || undefined,
-                ", ");
+                ", ").join("");
 
             if (bookmarkcache.isBookmarked(this.URL))
                 info += ", " + _("buffer.bookmarked");
@@ -2478,11 +2478,11 @@ Buffer.addPageInfoSection("g", "General Info", function (verbose) {
     }
 
     yield ["Title", doc.title];
-    yield ["URL", template.highlightURL(doc.location.href, true)];
+    yield ["URL", template_.highlightURL(doc.location.href, true)];
 
     let ref = "referrer" in doc && doc.referrer;
     if (ref)
-        yield ["Referrer", template.highlightURL(ref, true)];
+        yield ["Referrer", template_.highlightURL(ref, true)];
 
     if (pageSize[0])
         yield ["File Size", pageSize[1] ? pageSize[1] + " (" + pageSize[0] + ")"
@@ -2502,7 +2502,8 @@ Buffer.addPageInfoSection("m", "Meta Tags", function (verbose) {
     // get meta tag data, sort and put into pageMeta[]
     let metaNodes = this.focusedFrame.document.getElementsByTagName("meta");
 
-    return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv), template.highlightURL(node.content)])
+    return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv),
+                                                 template_.highlightURL(node.content)])
                 .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
 });
 

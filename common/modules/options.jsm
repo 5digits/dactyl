@@ -19,7 +19,7 @@ lazyRequire("commands", ["Commands"]);
 lazyRequire("completion", ["CompletionContext"]);
 lazyRequire("prefs", ["prefs"]);
 lazyRequire("styles", ["Styles"]);
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 /** @scope modules */
 
@@ -859,7 +859,7 @@ var Options = Module("options", {
                         isDefault: opt.isDefault,
                         default:   opt.stringDefaultValue,
                         pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
-                        value:     <></>
+                        value:     []
                     };
 
                     if (filter && !filter(opt))
@@ -873,16 +873,19 @@ var Options = Module("options", {
                         option.default = (opt.defaultValue ? "" : "no") + opt.name;
                     }
                     else if (isArray(opt.value) && opt.type != "charlist")
-                        option.value = <>={template.map(opt.value,
-                            function (v) template.highlight(String(v)),
-                            <>,<span style="width: 0; display: inline-block"> </span></>)}</>;
+                        option.value = ["", "=",
+                                        template_.map(opt.value,
+                                                      function (v) template_.highlight(String(v)),
+                                                      ["", ",",
+                                                       ["span", { style: "width: 0; display: inline-block" }, " "]])];
                     else
-                        option.value = <>={template.highlight(opt.stringValue)}</>;
+                        option.value = ["", "=", template_.highlight(opt.stringValue)];
                     yield option;
                 }
             };
 
-            modules.commandline.commandOutput(template.options("Options", opts.call(this), this["verbose"] > 0));
+            modules.commandline.commandOutput(
+                template_.options("Options", opts.call(this), this["verbose"] > 0));
         },
 
         cleanup: function cleanup() {
@@ -1074,11 +1077,13 @@ var Options = Module("options", {
             index: "option",
             iterate: function (args) options,
             format: {
-                description: function (opt) (XML.ignoreWhitespace = false, XML.prettyPrinting = false, <>
-                        {opt.scope == Option.SCOPE_LOCAL
-                            ? <span highlight="URLExtra">({_("option.bufferLocal")})</span> : ""}
-                        {template.linkifyHelp(opt.description)}
-                </>),
+                description: function (opt) [
+                        opt.scope == Option.SCOPE_LOCAL
+                            ? ["span", { highlight: "URLExtra" },
+                                  "(" + _("option.bufferLocal") + ")"]
+                            : "",
+                        template_.linkifyHelp(opt.description)
+                ],
                 help: function (opt) "'" + opt.name + "'"
             }
         });

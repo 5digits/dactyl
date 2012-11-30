@@ -1582,7 +1582,7 @@ var CommandLine = Module("commandline", {
         else if (callable(arg))
             arg = String.replace(arg, "/* use strict */ \n", "/* use strict */ ");
         else if (!isString(arg) && useColor)
-            arg = template.highlight(arg);
+            arg = template_.highlight(arg);
         return arg;
     }
 }, {

@@ -572,6 +572,132 @@ var Template_ = Module("Template_", {
     },
 
 
+    helpLink: function (token, text, type) {
+        if (!help.initialized)
+            util.dactyl.initHelp();
+
+        let topic = token; // FIXME: Evil duplication!
+        if (/^\[.*\]$/.test(topic))
+            topic = topic.slice(1, -1);
+        else if (/^n_/.test(topic))
+            topic = topic.slice(2);
+
+        if (help.initialized && !Set.has(help.tags, topic))
+            return <span highlight={type || ""}>{text || token}</span>;
+
+        type = type || (/^'.*'$/.test(token)   ? "HelpOpt" :
+                        /^\[.*\]$|^E\d{3}$/.test(token) ? "HelpTopic" :
+                        /^:\w/.test(token)     ? "HelpEx"  : "HelpKey");
+
+        return ["a", { highlight: "InlineHelpLink " + type, tag: topic,
+                       href: "dactyl://help-tag/" + topic,
+                       "dactyl:command": "dactyl.help" },
+                    text || topic];
+    },
+    HelpLink: function (token) {
+        if (!help.initialized)
+            util.dactyl.initHelp();
+
+        let topic = token; // FIXME: Evil duplication!
+        if (/^\[.*\]$/.test(topic))
+            topic = topic.slice(1, -1);
+        else if (/^n_/.test(topic))
+            topic = topic.slice(2);
+
+        if (help.initialized && !Set.has(help.tags, topic))
+            return token;
+
+        let tag = (/^'.*'$/.test(token)            ? "o" :
+                   /^\[.*\]$|^E\d{3}$/.test(token) ? "t" :
+                   /^:\w/.test(token)              ? "ex"  : "k");
+
+        topic = topic.replace(/^'(.*)'$/, "$1");
+        return [tag, { xmlns: "dactyl" }, topic];
+    },
+    linkifyHelp: function linkifyHelp(str, help) {
+        let re = util.regexp(literal(/*
+            (?P<pre> [/\s]|^)
+            (?P<tag> '[\w-]+' | :(?:[\w-]+!?|!) | (?:._)?<[\w-]+>\w* | \b[a-zA-Z]_(?:[\w[\]]+|.) | \[[\w-;]+\] | E\d{3} )
+            (?=      [[\)!,:;./\s]|$)
+        */), "gx");
+        return this.highlightSubstrings(str, (function () {
+            for (let res in re.iterate(str))
+                yield [res.index + res.pre.length, res.tag.length];
+        })(), template[help ? "HelpLink" : "helpLink"]);
+    },
+
+
+    // Fixes some strange stack rewinds on NS_ERROR_OUT_OF_MEMORY
+    // exceptions that we can't catch.
+    stringify: function stringify(arg) {
+        if (!callable(arg))
+            return String(arg);
+
+        try {
+            this._sandbox.arg = arg;
+            return Cu.evalInSandbox("String(arg)", this._sandbox);
+        }
+        finally {
+            this._sandbox.arg = null;
+        }
+    },
+
+    _sandbox: Class.Memoize(function () Cu.Sandbox(Cu.getGlobalForObject(global),
+                                                   { wantXrays: false })),
+
+    // if "processStrings" is true, any passed strings will be surrounded by " and
+    // any line breaks are displayed as \n
+    highlight: function highlight(arg, processStrings, clip, bw) {
+        // some objects like window.JSON or getBrowsers()._browsers need the try/catch
+        try {
+            let str = this.stringify(arg);
+            if (clip)
+                str = util.clip(str, clip);
+            switch (arg == null ? "undefined" : typeof arg) {
+            case "number":
+                return ["span", { highlight: "Number" }, str];
+            case "string":
+                if (processStrings)
+                    str = str.quote();
+                return ["span", { highlight: "String" }, str];
+            case "boolean":
+                return ["span", { highlight: "Boolean" }, str];
+            case "function":
+                if (arg instanceof Ci.nsIDOMElement) // wtf?
+                    return util.objectToString(arg, !bw);
+
+                str = str.replace("/* use strict */ \n", "/* use strict */ ");
+                if (processStrings)
+                    return ["span", { highlight: "Function" },
+                                str.replace(/\{(.|\n)*(?:)/g, "{ ... }")];
+                arg = String(arg).replace("/* use strict */ \n", "/* use strict */ ");
+                return arg;
+            case "undefined":
+                return ["span", { highlight: "Null" }, arg];
+            case "object":
+                if (arg instanceof Ci.nsIDOMElement)
+                    return util.objectToString(arg, !bw);
+
+                // for java packages value.toString() would crash so badly
+                // that we cannot even try/catch it
+                if (/^\[JavaPackage.*\]$/.test(arg))
+                    return "[JavaPackage]";
+                if (processStrings && false)
+                    str = template._highlightFilter(str, "\n",
+                                                    function () ["span", { highlight: "NonText" },
+                                                                     "^J"]);
+                return ["span", { highlight: "Object" }, str];
+            case "xml":
+                return arg;
+            default:
+                return "<unknown type>";
+            }
+        }
+        catch (e) {
+            return "<unknown>";
+        }
+    },
+
     highlightFilter: function highlightFilter(str, filter, highlight, isURI) {
         if (isURI)
             str = util.losslessDecodeURI(str);
@@ -621,6 +747,42 @@ var Template_ = Module("Template_", {
         return s;
     },
 
+    highlightURL: function highlightURL(str, force) {
+        if (force || /^[a-zA-Z]+:\/\//.test(str))
+            return ["a", { highlight: "URL", href: str },
+                        util.losslessDecodeURI(str)];
+        else
+            return str;
+    },
+
+    icon: function (item, text) [
+        ["span", { highlight: "CompIcon" },
+            item.icon ? ["img", { src: item.icon }] : []],
+        ["span", { class: "td-strut" }],
+        text
+    ],
+
+    jumps: function jumps(index, elems) {
+        return ["table", {},
+                ["tr", { style: "text-align: left;", highlight: "Title" },
+                    ["th", { colspan: "2" }, _("title.Jump")],
+                    ["th", {}, _("title.HPos")],
+                    ["th", {}, _("title.VPos")],
+                    ["th", {}, _("title.Title")],
+                    ["th", {}, _("title.URI")]],
+                this.map(Iterator(elems), function ([idx, val])
+                    ["tr", {},
+                        ["td", { class: "indicator" }, idx == index ? ">" : ""],
+                        ["td", {}, Math.abs(idx - index)],
+                        ["td", {}, val.offset ? val.offset.x : ""],
+                        ["td", {}, val.offset ? val.offset.y : ""],
+                        ["td", { style: "width: 250px; max-width: 500px; overflow: hidden;" }, val.title],
+                        ["td", {},
+                            ["a", { href: val.URI.spec, highlight: "URL jump-list" },
+                                util.losslessDecodeURI(val.URI.spec)]]])];
+    },
+
+
     options: function options(title, opts, verbose) {
         return ["table", {},
                 ["tr", { highlight: "Title", align: "left" },
@@ -636,6 +798,16 @@ var Template_ = Module("Template_", {
                             verbose && opt.setFrom ? ["div", { highlight: "Message" },
                                                          "       Last set from ",
                                                          template.sourceLink(opt.setFrom)] : ""]])];
+    },
+
+    sourceLink: function (frame) {
+        let url = util.fixURI(frame.filename || "unknown");
+        let path = util.urlPath(url);
+
+        return ["a", { "dactyl:command": "buffer.viewSource",
+                        href: url, path: path, line: frame.lineNumber,
+                        highlight: "URL" },
+            path + ":" + frame.lineNumber];
     },
 
     table: function table(title, data, indent) {
@@ -663,6 +835,43 @@ var Template_ = Module("Template_", {
                     self.map(Iterator(row), function ([i, d])
                         ["td", { style: style[i] || "" }, d])])];
     },
+
+    usage: function usage(iter, format) {
+        let self = this;
+
+        format = format || {};
+        let desc = format.description || function (item) self.linkifyHelp(item.description);
+        let help = format.help || function (item) item.name;
+        function sourceLink(frame) {
+            let source = self.sourceLink(frame);
+            source[1]["dactyl:hint"] = source[2];
+            return source;
+        }
+        return ["table", {},
+            format.headings ?
+                ["thead", { highlight: "UsageHead" },
+                    ["tr", { highlight: "Title", align: "left" },
+                        this.map(format.headings, function (h) ["th", {}, h])]] :
+                [],
+            format.columns ?
+                ["colgroup", {},
+                    this.map(format.columns, function (c) ["col", { style: c }])] :
+                [],
+            ["tbody", { highlight: "UsageBody" },
+                this.map(iter, function (item)
+                    // Urgh.
+                    let (name = item.name || item.names[0], frame = item.definedAt)
+                        ["tr", { highlight: "UsageItem" },
+                            ["td", { style: "padding-right: 2em;" },
+                                ["span", { highlight: "Usage Link" },
+                                    !frame ? name :
+                                        [self.helpLink(help(item), name, "Title"),
+                                         ["span", { highlight: "LinkInfo" },
+                                            _("io.definedAt"), " ",
+                                            sourceLink(frame)]]]],
+                            item.columns ? self.map(item.columns, function (c) ["td", {}, c]) : [],
+                            ["td", {}, desc(item)]])]]
+    }
 });
 
 endModule();

@@ -1704,7 +1704,8 @@ var Commands = Module("commands", {
             iterate: function (args) commands.iterator().map(function (cmd) ({
                 __proto__: cmd,
                 columns: [
-                    cmd.hive == commands.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{cmd.hive.name}</span>
+                    cmd.hive == commands.builtin ? "" : ["span", { highlight: "Object", style: "padding-right: 1em;" },
+                                                            cmd.hive.name]
                 ]
             })),
             iterateIndex: function (args) let (tags = help.tags)

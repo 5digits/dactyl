@@ -1390,7 +1390,9 @@ var DOM = Class("DOM", {
     DOMString: function DOMString(val) ({
         __proto__: DOMString.prototype,
 
-        toDOM: function toDOM(doc) doc.createTextNode(val)
+        toDOM: function toDOM(doc) doc.createTextNode(val),
+
+        toString: function () val
     }),
 
     /**
@@ -1563,9 +1565,12 @@ var DOM = Class("DOM", {
                 return doc.createTextNode(args);
             if (isXML(args))
                 return DOM.fromXML(args, doc, nodes);
+            if (isObject(args) && "toDOM" in args)
+                return args.toDOM(doc, namespaces, nodes);
+            if (args instanceof Ci.nsIDOMNode)
+                return args;
 
             let [name, attr] = args;
-            attr = attr || {};
 
             if (!isString(name) || args.length == 0 || name === "") {
                 var frag = doc.createDocumentFragment();
@@ -1579,8 +1584,7 @@ var DOM = Class("DOM", {
                 return frag;
             }
 
-            if (isObject(name) && "toDOM" in name)
-                return name.toDOM(doc, namespaces, nodes);
+            attr = attr || {};
 
             function parseNamespace(name) {
                 var m = /^(?:(.*):)?(.*)$/.exec(name);
@@ -1616,7 +1620,7 @@ var DOM = Class("DOM", {
                         elem.setAttribute(key, val);
                 }
             args.forEach(function(e) {
-                elem.appendChild(e instanceof Ci.nsIDOMNode ? e : tag(e, namespaces));
+                elem.appendChild(tag(e, namespaces));
             });
 
             if ("highlight" in attr)
