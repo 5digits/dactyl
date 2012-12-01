@@ -1501,11 +1501,14 @@ var DOM = Class("DOM", {
      * entities.
      *
      * @param {string} str
+     * @param {boolean} simple If true, only escape for the simple case
+     *     of text nodes.
      * @returns {string}
      */
-    escapeHTML: function escapeHTML(str) {
+    escapeHTML: function escapeHTML(str, simple) {
         let map = { "'": "&apos;", '"': "&quot;", "%": "&#x25;", "&": "&amp;", "<": "&lt;", ">": "&gt;" };
-        return str.replace(/['"&<>]/g, function (m) map[m]);
+        let regexp = simple ? /[<>]/g : /['"&<>]/g;
+        return str.replace(regexp, function (m) map[m]);
     },
 
     /**

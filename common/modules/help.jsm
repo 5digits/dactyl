@@ -2,7 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 defineModule("help", {
     exports: ["help"],
@@ -11,7 +11,7 @@ defineModule("help", {
 
 lazyRequire("completion", ["completion"]);
 lazyRequire("overlay", ["overlay"]);
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 var HelpBuilder = Class("HelpBuilder", {
     init: function init() {
@@ -132,11 +132,8 @@ var Help = Module("Help", {
                         .map(function (m) m[1]).uniq().slice(-1)[0];
 
 
-            default xml namespace = NS;
             function rec(text, level, li) {
-                XML.ignoreWhitespace = XML.prettyPrinting = false;
-
-                let res = <></>;
+                let res = [];
                 let list, space, i = 0;
 
 
@@ -145,10 +142,13 @@ var Help = Module("Help", {
                         continue;
                     else if (match.char) {
                         if (!list)
-                            res += list = <ul/>;
-                        let li = <li/>;
-                        li.* += rec(match.content.replace(RegExp("^" + match.space, "gm"), ""), level + 1, li);
-                        list.* += li;
+                            res.push(list = ["ul", {}]);
+                        let li = ["li", {}];
+                        li.push(rec(match.content
+                                         .replace(RegExp("^" + match.space, "gm"), ""),
+                                    level + 1,
+                                    li));
+                        list.push(li);
                     }
                     else if (match.par) {
                         let [, par, tags] = /([^]*?)\s*((?:\[[^\]]+\])*)\n*$/.exec(match.par);
@@ -158,57 +158,52 @@ var Help = Module("Help", {
                         let group = !tags.length                       ? "" :
                                     !tags.some(function (t) t == beta) ? "HelpNewsOld" : "HelpNewsNew";
                         if (i === 0 && li) {
-                            li.@highlight = group;
+                            li[1]["dactyl:highlight"] = group;
                             group = "";
                         }
 
                         list = null;
                         if (level == 0 && /^.*:\n$/.test(match.par)) {
                             let text = par.slice(0, -1);
-                            res += <h2 tag={"news-" + text}>{template.linkifyHelp(text, true)}</h2>;
+                            res.push(["h2", { tag: "news-" + text },
+                                          template_.linkifyHelp(text, true)]);
                         }
                         else {
                             let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(par);
-                            res += <p highlight={group + " HelpNews"}>{
-                                !tags.length ? "" :
-                                <hl key="HelpNewsTag">{tags.join(" ")}</hl>
-                            }{
-                                a ? <hl key="HelpWarning">{a}</hl> : ""
-                            }{
-                                template.linkifyHelp(b, true)
-                            }</p>;
+
+                            res.push(["p", { "dactyl:highlight": group + " HelpNews" },
+                                !tags.length ? "" : ["hl", { key: "HelpNewsTag" }, tags.join(" ")],
+                                a ? ["hl", { key: "HelpWarning" }, a] : "",
+                                template_.linkifyHelp(b, true)]);
                         }
                     }
                     i++;
                 }
-                for each (let attr in res..@highlight) {
-                    attr.parent().@NS::highlight = attr;
-                    delete attr.parent().@highlight;
-                }
+
                 return res;
             }
 
-            XML.ignoreWhitespace = XML.prettyPrinting = false;
             let body = rec(NEWS, 0);
-            for each (let li in body..li) {
-                let list = li..li.(@NS::highlight == "HelpNewsOld");
-                if (list.length() && list.length() == li..li.(@NS::highlight != "").length()) {
-                    for each (let li in list)
-                        li.@NS::highlight = "";
-                    li.@NS::highlight = "HelpNewsOld";
-                }
-            }
+
+            // E4X-FIXME
+            // for each (let li in body..li) {
+            //     let list = li..li.(@NS::highlight == "HelpNewsOld");
+            //     if (list.length() && list.length() == li..li.(@NS::highlight != "").length()) {
+            //         for each (let li in list)
+            //             li.@NS::highlight = "";
+            //         li.@NS::highlight = "HelpNewsOld";
+            //     }
+            // }
 
 
             return '<?xml version="1.0"?>\n' +
                    '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
-                   <document xmlns={NS} xmlns:dactyl={NS}
-                       name="versions" title={config.appName + " Versions"}>
-                       <h1 tag="versions news NEWS">{config.appName} Versions</h1>
-                       <toc start="2"/>
+                   DOM.toXML(["document", { xmlns: "dactyl", name: "versions",
+                                  title: config.appName + " Versions" },
+                       ["h1", { tag: "versions news NEWS" }, config.appName + " Versions"],
+                       ["toc", { start: "2" }],
 
-                       {body}
-                   </document>.toXMLString()
+                       body]);
         });
     },
 
@@ -351,22 +346,20 @@ var Help = Module("Help", {
                             value = value.replace(/.*\//, "");
                         }
 
-                        data.push(" ", name, '="',
-                                  <>{value}</>.toXMLString().replace(/"/g, "&quot;"),
-                                  '"');
+                        data.push(" ", name, '="', DOM.escapeHTML(value), '"');
                     }
                     if (node.localName in empty)
                         data.push(" />");
                     else {
                         data.push(">");
                         if (node instanceof Ci.nsIDOMHTMLHeadElement)
-                            data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
+                            data.push('<link rel="stylesheet" type="text/css" href="help.css"/>');
                         Array.map(node.childNodes, fix);
                         data.push("</", node.localName, ">");
                     }
                     break;
                 case Ci.nsIDOMNode.TEXT_NODE:
-                    data.push(<>{node.textContent}</>.toXMLString());
+                    data.push(DOM.escapeHTML(node.textContent, true));
                 }
             }
 
