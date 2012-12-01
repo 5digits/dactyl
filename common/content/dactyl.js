@@ -1234,7 +1234,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             // Process plugin help entries.
             XML.ignoreWhiteSpace = XML.prettyPrinting = false;
 
-            let body = XML();
+            let body = [];
             for (let [, context] in Iterator(plugins.contexts))
                 try {
                     let info = contexts.getDocs(context);
@@ -1249,8 +1249,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                     if (elem[attr].length())
                                         info[attr] = elem[attr];
                         }
-                        body += <h2 xmlns={NS.uri} tag={info.@name + '-plugin'}>{info.@summary}</h2> +
-                            info;
+                        body.push(["h2", { xmlns: NS.uri, tag: info.@name + '-plugin' },
+                                       String(info.@summary)]);
+                        body.push(info);
                     }
                 }
                 catch (e) {
@@ -1259,55 +1260,47 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             return '<?xml version="1.0"?>\n' +
                    '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
-                   <document xmlns={NS}
-                       name="plugins" title={config.appName + " Plugins"}>
-                       <h1 tag="using-plugins">{_("help.title.Using Plugins")}</h1>
-                       <toc start="2"/>
+                   DOM.toXML(
+                       ["document", { xmlns: "dactyl", name: "plugins",
+                                      title: config.appName + ", Plugins" },
+                           ["h1", { tag: "using-plugins" }, _("help.title.Using Plugins")],
+                           ["toc", { start: "2" }],
 
-                       {body}
-                   </document>.toXMLString();
+                           body]);
         });
 
         cache.register("help/index.xml", function () {
-            default xml namespace = NS;
-
             return '<?xml version="1.0"?>\n' +
-                   <overlay xmlns={NS}>{
-                   template.map(dactyl.indices, function ([name, iter])
-                       <dl insertafter={name + "-index"}>{
-                           template.map(iter(), util.identity)
-                       }</dl>, <>{"\n\n"}</>)
-                   }</overlay>;
+                   DOM.toXML(["overlay", { xmlns: "dactyl" },
+                       template_.map(dactyl.indices, function ([name, iter])
+                           ["dl", { insertafter: name + "-index" },
+                               template_.map(iter(), util.identity)],
+                           "\n\n")]);
         });
 
         cache.register("help/gui.xml", function () {
-            default xml namespace = NS;
-
             return '<?xml version="1.0"?>\n' +
-                   <overlay xmlns={NS}>
-                       <dl insertafter="dialog-list">{
-                       template.map(config.dialogs, function ([name, val])
-                           (!val[2] || val[2]())
-                               ? <><dt>{name}</dt><dd>{val[0]}</dd></>
-                               : undefined,
-                           <>{"\n"}</>)
-                       }</dl>
-                   </overlay>;
+                   DOM.toXML(["overlay", { xmlns: "dactyl" },
+                       ["dl", { insertafter: "dialog-list" },
+                           template_.map(config.dialogs, function ([name, val])
+                               (!val[2] || val[2]())
+                                   ? [["dt", {}, name],
+                                      ["dd", {}, val[0]]]
+                                   : undefined,
+                               "\n")]]);
         });
 
         cache.register("help/privacy.xml", function () {
-            default xml namespace = NS;
-
             return '<?xml version="1.0"?>\n' +
-                   <overlay xmlns={NS}>
-                       <dl insertafter="sanitize-items">{
-                       template.map(options.get("sanitizeitems").values
-                           .sort(function (a, b) String.localeCompare(a.name, b.name)),
-                           function ({ name, description })
-                           <><dt>{name}</dt><dd>{template.linkifyHelp(description, true)}</dd></>,
-                           <>{"\n"}</>)
-                       }</dl>
-                   </overlay>;
+                   DOM.toXML(["overlay", { xmlns: "dactyl" },
+                       ["dl", { insertafter: "sanitize-items" },
+                           template_.map(options.get("sanitizeitems").values
+                                                .sort(function (a, b) String.localeCompare(a.name,
+                                                                                           b.name)),
+                               function ({ name, description })
+                               [["dt", {}, name],
+                                ["dd", {}, template.linkifyHelp(description, true)]],
+                               "\n")]]);
         });
     },
     events: function initEvents() {
@@ -1747,14 +1740,24 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             totalUnits = "msec";
 
                         commandline.commandOutput(
-                                <table>
-                                    <tr highlight="Title" align="left">
-                                        <th colspan="3">{_("title.Code execution summary")}</th>
-                                    </tr>
-                                    <tr><td>&#xa0;&#xa0;{_("title.Executed")}:</td><td align="right"><span class="times-executed">{count}</span></td><td><!--L-->times</td></tr>
-                                    <tr><td>&#xa0;&#xa0;{_("title.Average time")}:</td><td align="right"><span class="time-average">{each.toFixed(2)}</span></td><td>{eachUnits}</td></tr>
-                                    <tr><td>&#xa0;&#xa0;{_("title.Total time")}:</td><td align="right"><span class="time-total">{total.toFixed(2)}</span></td><td>{totalUnits}</td></tr>
-                                </table>);
+                                ["table", {}
+                                    ["tr", { highlight: "Title", align: "left" },
+                                        ["th", { colspan: "3" }, _("title.Code execution summary")]],
+                                    ["tr", {},
+                                        ["td", {}, _("title.Executed"), ":"],
+                                        ["td", { align: "right" },
+                                            ["span", { class: "times-executed" }, count]],
+                                        ["td", {}, /*L*/"times"]],
+                                    ["tr", {},
+                                        ["td", {}, _("title.Average time"), ":"],
+                                        ["td", { align: "right" },
+                                            ["span", { class: "time-average" }, each.toFixed(2)]],
+                                        ["td", {}, eachUnits]],
+                                    ["tr", {},
+                                        ["td", {}, _("title.Total time"), ":"],
+                                        ["td", { align: "right" },
+                                            ["span", { class: "time-total" }, total.toFixed(2)]],
+                                        ["td", {}, totalUnits]]]);
                     }
                     else {
                         let beforeTime = Date.now();
@@ -1822,9 +1825,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     let date = config.buildDate;
                     date = date ? " (" + date + ")" : "";
 
-                    commandline.commandOutput(
-                        <div>{config.appName} {config.version}{date} running on: </div> +
-                        <div>{navigator.userAgent}</div>)
+                    commandline.commandOutput([
+                        ["div", {}, [config.appName, " ", config.version, date, " running on: "].join("")],
+                        ["div", {}, [navigator.userAgent].join("")]
+                    ])
                 }
             }, {
                 argCount: "0",

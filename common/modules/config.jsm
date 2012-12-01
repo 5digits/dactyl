@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 let global = this;
 defineModule("config", {
@@ -592,12 +592,14 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
         let img = window.Image();
         img.src = this.logo || "resource://dactyl-local-content/logo.png";
         img.onload = util.wrapCallback(function () {
-            highlight.loadCSS(<>{"!Logo  {"}
+            highlight.loadCSS(literal(/*
+                !Logo  {
                      display:    inline-block;
-                     background: url({img.src});
-                     width:      {img.width}px;
-                     height:     {img.height}px;
-                 {"}"}</>);
+                     background: url({src});
+                     width:      {width}px;
+                     height:     {height}px;
+                }
+            */).replace(/\{(.*?)\}/g, function (m, m1) img[m1]));
             img = null;
         });
     },
