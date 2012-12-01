@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 /** @scope modules */
 
@@ -757,8 +757,10 @@ var Mappings = Module("mappings", {
                                     yield {
                                         name: name,
                                         columns: [
-                                            i === 0 ? "" : <span highlight="Object" style="padding-right: 1em;">{mode.name}</span>,
-                                            hive == mappings.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.name}</span>
+                                            i === 0 ? "" : ["span", { highlight: "Object", style: "padding-right: 1em;" },
+                                                                mode.name],
+                                            hive == mappings.builtin ? "" : ["span", { highlight: "Object", style: "padding-right: 1em;" },
+                                                                                 hive.name]
                                         ],
                                         __proto__: map
                                     };

@@ -154,6 +154,7 @@ this.lazyRequire("cache", ["cache"]);
 this.lazyRequire("config", ["config"]);
 this.lazyRequire("messages", ["_", "Messages"]);
 this.lazyRequire("services", ["services"]);
+this.lazyRequire("storage", ["File"]);
 this.lazyRequire("util", ["FailedAssertion", "util"]);
 
 function literal(/* comment */) {
@@ -161,7 +162,7 @@ function literal(/* comment */) {
     let file = caller.filename.replace(/.* -> /, "");
     let key = "literal:" + file + ":" + caller.line;
 
-    let source = util.httpGet(file).responseText;
+    let source = File.readURL(file);
 
     let match = RegExp("(?:.*\\n){" + (caller.lineNumber - 1) + "}" +
                        ".*literal\\(/\\*([^]*?)\\*/\\)").exec(source);

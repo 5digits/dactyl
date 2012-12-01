@@ -660,6 +660,7 @@ var CompletionContext = Class("CompletionContext", {
                 }
                 catch (e) {
                     util.reportError(e);
+                    util.dump(util.prettifyJSON(this.createRow(this.items[idx]), null, true));
                     cache[idx] = DOM.fromJSON(
                         ["div", { highlight: "CompItem", style: "white-space: nowrap" },
                             ["li", { highlight: "CompResult" }, this.text + "\u00a0"],

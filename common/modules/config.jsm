@@ -422,9 +422,9 @@ var ConfigBase = Class("ConfigBase", {
         "xmlns.html":   "http://www.w3.org/1999/xhtml",
         "xmlns.xul":    "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul",
 
-        "tag.command-line": <link topic="command-line">command line</link>,
-        "tag.status-line":  <link topic="status-line">status line</link>,
-        "mode.command-line": <link topic="command-line-mode">Command Line</link>,
+        "tag.command-line": ["link", { xmlns: "dactyl", topic: "command-line" }, "command line"],
+        "tag.status-line":  ["link", { xmlns: "dactyl", topic: "status-line" }, "status line"],
+        "mode.command-line": ["link", { xmlns: "dactyl", topic: "command-line-mode" }, "Command Line"]
     },
 
     dtdStrings: [

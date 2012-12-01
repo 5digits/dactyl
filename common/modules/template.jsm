@@ -714,15 +714,11 @@ var Template_ = Module("Template_", {
                 arg = String(arg).replace("/* use strict */ \n", "/* use strict */ ");
                 return arg;
             case "undefined":
-                return ["span", { highlight: "Null" }, arg];
+                return ["span", { highlight: "Null" }, "undefined"];
             case "object":
                 if (arg instanceof Ci.nsIDOMElement)
                     return util.objectToString(arg, !bw);
 
-                // for java packages value.toString() would crash so badly
-                // that we cannot even try/catch it
-                if (/^\[JavaPackage.*\]$/.test(arg))
-                    return "[JavaPackage]";
                 if (processStrings && false)
                     str = template._highlightFilter(str, "\n",
                                                     function () ["span", { highlight: "NonText" },

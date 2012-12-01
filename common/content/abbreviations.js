@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 /** @scope modules */
 
@@ -213,18 +213,18 @@ var Abbreviations = Module("abbreviations", {
             nonkeyword: /[   "']/
         };
 
-        this._match = util.regexp(<><![CDATA[
+        this._match = util.regexp(literal(/*
             (^ | \s | <nonkeyword>) (<keyword>+             )$ | // full-id
             (^ | \s | <keyword>   ) (<nonkeyword>+ <keyword>)$ | // end-id
             (^ | \s               ) (\S* <nonkeyword>       )$   // non-id
-        ]]></>, "x", params);
-        this._check = util.regexp(<><![CDATA[
+        */), "x", params);
+        this._check = util.regexp(literal(/*
             ^ (?:
               <keyword>+              | // full-id
               <nonkeyword>+ <keyword> | // end-id
               \S* <nonkeyword>          // non-id
             ) $
-        ]]></>, "x", params);
+        */), "x", params);
     },
 
     get: deprecated("group.abbrevs.get", { get: function get() this.user.closure.get }),

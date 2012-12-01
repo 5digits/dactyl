@@ -902,12 +902,21 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *      for *obj*.
      */
     makeDTD: let (map = { "'": "&apos;", '"': "&quot;", "%": "&#x25;", "&": "&amp;", "<": "&lt;", ">": "&gt;" })
-        function makeDTD(obj) iter(obj)
-          .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v == null ? "null" : typeof v == "xml" ? v.toXMLString() : v,
-                                                                       typeof v == "xml" ? /['%]/g : /['"%&<>]/g,
-                                                                       function (m) map[m]),
-                                  "'>"].join(""))
-          .join("\n"),
+        function makeDTD(obj) {
+            function escape(val) {
+               let isDOM = DOM.isJSONXML(val);
+               return String.replace(val == null ? "null" :
+                                     isDOM       ? DOM.toXML(val)
+                                                 : val,
+                                     isDOM ? /['%]/g
+                                           : /['"%&<>]/g,
+                                     function (m) map[m]);
+            }
+
+            return iter(obj).map(function ([k, v])
+                                 ["<!ENTITY ", k, " '", escape(v), "'>"].join(""))
+                            .join("\n");
+        },
 
     /**
      * Converts a URI string into a URI object.

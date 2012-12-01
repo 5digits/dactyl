@@ -17,11 +17,8 @@ Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 function init() {
     Cu.import("resource://dactyl/bootstrap.jsm");
-    if (!JSMLoader.initialized)
-        JSMLoader.init();
-    JSMLoader.load("base.jsm", global);
-    require(global, "config");
-    require(global, "util");
+    require("config", global);
+    require("util", global);
 }
 
 function CommandLineHandler() {

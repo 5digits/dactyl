@@ -107,6 +107,7 @@ var Services = Module("Services", {
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   [], "open");
         this.addClass("XPathEvaluator", "@mozilla.org/dom/xpath-evaluator;1",      "nsIDOMXPathEvaluator");
         this.addClass("XMLDocument",  "@mozilla.org/xml/xml-document;1",           ["nsIDOMXMLDocument", "nsIDOMNodeSelector"]);
+        this.addClass("XMLSerializer","@mozilla.org/xmlextras/xmlserializer;1",    ["nsIDOMSerializer"]);
         this.addClass("ZipReader",    "@mozilla.org/libjar/zip-reader;1",          "nsIZipReader", "open", false);
         this.addClass("ZipWriter",    "@mozilla.org/zipwriter;1",                  "nsIZipWriter", "open", false);
     },

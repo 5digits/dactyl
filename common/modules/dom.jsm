@@ -1643,6 +1643,14 @@ var DOM = Class("DOM", {
         }
     }),
 
+    toXML: function toXML(xml) {
+        // Meh. For now.
+        let doc = services.XMLDocument();
+        let node = this.fromJSON(xml, doc);
+        return services.XMLSerializer()
+                       .serializeToString(node);
+    },
+
     parseNamespace: function parseNamespace(name) {
         var m = /^(?:(.*):)?(.*)$/.exec(name);
         return [DOM.fromJSON.namespaces[m[1]], m[2]];
