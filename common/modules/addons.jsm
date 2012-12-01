@@ -279,8 +279,6 @@ var AddonList = Class("AddonList", {
     },
 
     message: Class.Memoize(function () {
-
-        XML.ignoreWhitespace = true;
         DOM.fromJSON(["table", { highlight: "Addons", key: "list" },
                         ["tr", { highlight: "AddonHead" },
                             ["td", {}, _("title.Name")],

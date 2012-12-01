@@ -35,9 +35,9 @@ Sheet.liveProperty("css");
 Sheet.liveProperty("sites");
 update(Sheet.prototype, {
     formatSites: function (uris)
-          template.map(this.sites,
-                       function (filter) <span highlight={uris.some(Styles.matchFilter(filter)) ? "Filter" : ""}>{filter}</span>,
-                       <>,</>),
+          template_.map(this.sites,
+                        function (filter) ["span", { highlight: uris.some(Styles.matchFilter(filter)) ? "Filter" : "" }, filter],
+                        ","),
 
     remove: function () { this.hive.remove(this); },
 

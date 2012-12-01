@@ -17,6 +17,14 @@ lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["File", "storage"]);
 lazyRequire("template", ["template"]);
 
+var Magic = Class("Magic", {
+    init: function init(str) {
+        this.str = str;
+    },
+
+    toString: function () this.str
+});
+
 var FailedAssertion = Class("FailedAssertion", ErrorBase, {
     init: function init(message, level, noTrace) {
         if (noTrace !== undefined)
@@ -52,6 +60,8 @@ var wrapCallback = function wrapCallback(fn, isEvent) {
 }
 
 var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
+    Magic: Magic,
+
     init: function () {
         this.Array = array;
 
@@ -997,7 +1007,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 keyIter = keys(object)
 
             for (let i in keyIter) {
-                let value = <![CDATA[<no value>]]>;
+                let value = Magic("<no value>");
                 try {
                     value = object[i];
                 }
@@ -1204,7 +1214,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         // Replace replacement <tokens>.
         if (tokens)
-            expr = String.replace(expr, /(\(?P)?<(\w+)>/g, function (m, n1, n2) !n1 && Set.has(tokens, n2) ? tokens[n2].dactylSource || tokens[n2].source || tokens[n2] : m);
+            expr = String.replace(expr, /(\(?P)?<(\w+)>/g,
+                                  function (m, n1, n2) !n1 && Set.has(tokens, n2) ?    tokens[n2].dactylSource
+                                                                                    || tokens[n2].source
+                                                                                    || tokens[n2]
+                                                                                  : m);
 
         // Strip comments and white space.
         if (/x/.test(flags))
@@ -1322,7 +1336,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             let obj = update({}, error, {
                 toString: function () String(error),
-                stack: <>{util.stackLines(String(error.stack || Error().stack)).join("\n").replace(/^/mg, "\t")}</>
+                stack: Magic(util.stackLines(String(error.stack || Error().stack)).join("\n").replace(/^/mg, "\t"))
             });
 
             services.console.logStringMessage(obj.stack);

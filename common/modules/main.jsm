@@ -90,20 +90,13 @@ var Modules = function Modules(window) {
     Module.list = [];
     Module.constructors = {};
 
-    const create = window.Object.create || (function () {
-        window.__dactyl_eval_string = "(function (proto) ({ __proto__: proto }))";
-        JSMLoader.loadSubScript(BASE + "eval.js", window);
-
-        let res = window.__dactyl_eval_result;
-        delete window.__dactyl_eval_string;
-        delete window.__dactyl_eval_result;
-        return res;
-    })();
+    const create = window.Object.create.bind(window.Object);
 
 
     const BASES = [BASE, "resource://dactyl-local-content/"];
 
-    const jsmodules = { NAME: "jsmodules" };
+    jsmodules = Cu.createObjectIn(window);
+    jsmodules.NAME = "jsmodules";
     const modules = update(create(jsmodules), {
         yes_i_know_i_should_not_report_errors_in_these_branches_thanks: [],
 

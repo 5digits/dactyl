@@ -17,7 +17,6 @@ var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
 var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
 var XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 var NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
-default xml namespace = XHTML;
 
 function BooleanAttribute(attr) ({
     get: function (elem) elem.getAttribute(attr) == "true",
@@ -117,7 +116,6 @@ var DOM = Class("DOM", {
     },
 
     eachDOM: function eachDOM(val, fn, self) {
-        XML.prettyPrinting = XML.ignoreWhitespace = false;
         if (isString(val))
             val = XML(val);
 

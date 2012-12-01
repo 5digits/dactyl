@@ -159,6 +159,9 @@ this.lazyRequire("util", ["FailedAssertion", "util"]);
 
 function literal(/* comment */) {
     let { caller } = Components.stack;
+    while (caller && caller.language != 2)
+        caller = caller.caller;
+
     let file = caller.filename.replace(/.* -> /, "");
     let key = "literal:" + file + ":" + caller.line;
 

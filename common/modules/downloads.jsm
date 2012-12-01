@@ -223,8 +223,6 @@ var DownloadList = Class("DownloadList",
 
     message: Class.Memoize(function () {
 
-        XML.ignoreWhitespace = true;
-        XML.prettyPrinting = false;
         DOM.fromJSON(["table", { highlight: "Downloads", key: "list" },
                         ["tr", { highlight: "DownloadHead", key: "head" },
                             ["span", {}, _("title.Title")],

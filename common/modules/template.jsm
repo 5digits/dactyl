@@ -317,6 +317,8 @@ var Template = Module("Template", {
             case "object":
                 if (arg instanceof Ci.nsIDOMElement)
                     return util.objectToString(arg, !bw);
+                if (arg instanceof util.Magic)
+                    return <>{arg}</>;
 
                 // for java packages value.toString() would crash so badly
                 // that we cannot even try/catch it
@@ -718,6 +720,8 @@ var Template_ = Module("Template_", {
             case "object":
                 if (arg instanceof Ci.nsIDOMElement)
                     return util.objectToString(arg, !bw);
+                if (arg instanceof Magic)
+                    return String(arg);
 
                 if (processStrings && false)
                     str = template._highlightFilter(str, "\n",

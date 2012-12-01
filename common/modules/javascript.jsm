@@ -119,7 +119,8 @@ var JavaScript = Module("javascript", {
 
         context[JavaScript.EVAL_TMP] = tmp;
         try {
-            cache[key] = this.modules.dactyl.userEval(arg, context, /*L*/"[Command Line Completion]", 1);
+            cache[key] = this.modules.dactyl.userEval(arg, context,
+                                                      /*L*/"[Command Line Completion]", 1);
 
             return cache[key];
         }

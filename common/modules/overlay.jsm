@@ -157,9 +157,20 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
     getData: function getData(obj, key, constructor) {
 
         if (!this.weakMap.has(obj))
-            this.weakMap.set(obj, {});
+            try {
+                this.weakMap.set(obj, {});
+            }
+            catch (e if e instanceof TypeError) {
+                // util.dump("Bad WeakMap key: " + obj + " " + Components.stack.caller);
+                let { id } = this;
 
-        let data = this.weakMap.get(obj);
+                if (!(id in obj && obj[id]))
+                    obj[id] = {};
+
+                var data = obj[id];
+            }
+
+        data = data || this.weakMap.get(obj);
 
         if (arguments.length == 1)
             return data;

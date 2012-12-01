@@ -1295,24 +1295,7 @@ var Options = Module("options", {
                 function fmt(value) (typeof value == "number"   ? "#" :
                                      typeof value == "function" ? "*" :
                                                                   " ") + value;
-                if (!args || args == "g:") {
-                    let str =
-                        <table>
-                        {
-                            template.map(globalVariables, function ([i, value]) {
-                                return <tr>
-                                            <td style="width: 200px;">{i}</td>
-                                            <td>{fmt(value)}</td>
-                                       </tr>;
-                            })
-                        }
-                        </table>;
-                    if (str.text().length() == str.*.length())
-                        dactyl.echomsg(_("variable.none"));
-                    else
-                        dactyl.echo(str, modules.commandline.FORCE_MULTILINE);
-                    return;
-                }
+                util.assert(!(!args || args == "g:"));
 
                 let matches = args.match(/^([a-z]:)?([\w]+)(?:\s*([-+.])?=\s*(.*)?)?$/);
                 if (matches) {

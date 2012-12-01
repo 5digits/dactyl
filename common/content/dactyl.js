@@ -418,7 +418,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (isObject(str) && "echoerr" in str)
             str = str.echoerr;
         else if (isinstance(str, ["Error", FailedAssertion]) && str.fileName)
-            str = <>{str.fileName.replace(/^.* -> /, "")}: {str.lineNumber}: {str}</>;
+            str = util.Magic([str.fileName.replace(/^.* -> /, ""), ": ", str.lineNumber, ": ", str].join(""));
 
         if (options["errorbells"])
             dactyl.beep();
