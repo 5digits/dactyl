@@ -483,10 +483,10 @@ var Contexts = Module("contexts", {
     getDocs: function getDocs(context) {
         try {
             if (isinstance(context, ["Sandbox"])) {
-                let info = "INFO" in context && Cu.evalInSandbox("this.INFO instanceof XML && INFO.toXMLString()", context);
-                return info && XML(info);
+                let info = "INFO" in context && Cu.evalInSandbox("this.INFO instanceof XML ? INFO.toXMLString() : this.INFO", context);
+                return /^</.test(info) ? XML(info) : info;
             }
-            if (typeof context.INFO == "xml")
+            if (typeof context.INFO == "xml" || DOM.isJSONXML(context.INFO))
                 return context.INFO;
         }
         catch (e) {}

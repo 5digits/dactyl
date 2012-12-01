@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 /** @scope modules */
 
@@ -532,23 +532,23 @@ var Modes = Module("modes", {
                 for (let base in values(mode.bases))
                     tree[base.name][mode.name] = tree[mode.name];
 
-            let roots = iter([m.name, tree[m.name]] for (m in values(list)) if (!m.bases.length)).toObject();
+            let roots = iter([m.name, tree[m.name]]
+                             for (m in values(list))
+                             if (!m.bases.length)).toObject();
 
-            default xml namespace = NS;
             function rec(obj) {
-                XML.ignoreWhitespace = XML.prettyPrinting = false;
-
-                let res = <ul dactyl:highlight="Dense" xmlns:dactyl={NS}/>;
+                let res = ["ul", { "dactyl:highlight": "Dense" }];
                 Object.keys(obj).sort().forEach(function (name) {
                     let mode = modes.getMode(name);
-                    res.* += <li><em>{mode.displayName}</em>: {mode.description}{
-                        rec(obj[name])
-                    }</li>;
+                    res.push(["li", {},
+                                ["em", {}, mode.displayName],
+                                ": ", mode.description,
+                                rec(obj[name])]);
                 });
 
-                if (res.*.length())
+                if (res.length > 2)
                     return res;
-                return <></>;
+                return [];
             }
 
             return rec(roots);

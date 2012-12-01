@@ -50,7 +50,6 @@ var StatusLine = Module("statusline", {
                 */));
         }
 
-        XML.ignoreWhitespace = true;
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let prepend = [
             ["button", { id: "appmenu-button", label: "", image: "chrome://branding/content/icon16.png", highlight: "AppmenuButton", xmlns: "xul" }],

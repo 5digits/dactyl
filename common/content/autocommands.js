@@ -103,7 +103,6 @@ var AutoCommands = Module("autocommands", {
             return cmds;
         }
 
-        XML.prettyPrinting = XML.ignoreWhitespace = false;
         let table = (
             ["table", {},
                 ["tr", { highlight: "Title" },

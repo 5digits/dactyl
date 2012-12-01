@@ -8,10 +8,6 @@
 
 /** @scope modules */
 
-default xml namespace = XHTML;
-XML.ignoreWhitespace = false;
-XML.prettyPrinting = false;
-
 var EVAL_ERROR = "__dactyl_eval_error";
 var EVAL_RESULT = "__dactyl_eval_result";
 var EVAL_STRING = "__dactyl_eval_string";
@@ -656,12 +652,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         help.initialize();
     },
 
-    stringifyXML: function (xml) {
-        XML.prettyPrinting = false;
-        XML.ignoreWhitespace = false;
-        return UTF8(xml.toXMLString());
-    },
-
     /**
      * Generates a help entry and returns it as a string.
      *
@@ -769,6 +759,105 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         }</>
                     ]));
         return res.*.toXMLString()
+                  .replace(' xmlns="' + NS + '"', "", "g")
+                  .replace(/^ {12}|[ \t]+$/gm, "")
+                  .replace(/^\s*\n|\n\s*$/g, "") + "\n";
+    },
+    _generateHelp: function generateHelp(obj, extraHelp, str, specOnly) {
+        // E4X-FIXME
+
+        let link, tag, spec;
+        link = tag = spec = util.identity;
+        let args = null;
+
+        if (obj instanceof Command) {
+            link = function (cmd) ["ex", {}, cmd];
+            args = obj.parseArgs("", CompletionContext(str || ""));
+            tag  = function (cmd) DOM.DOMString(":" + cmd);
+            spec = function (cmd) [
+                obj.count ? ["oa", {}, "count"] : [],
+                cmd,
+                obj.bang ? ["oa", {}, "!"] : []
+            ];
+        }
+        else if (obj instanceof Map) {
+            spec = function (map) obj.count ? [["oa", {}, "count"], map] : DOM.DOMString(map);
+            tag = function (map) [
+                let (c = obj.modes[0].char) c ? c + "_" : "",
+                map
+            ]
+            link = function (map) {
+                let [, mode, name, extra] = /^(?:(.)_)?(?:<([^>]+)>)?(.*)$/.exec(map);
+                let k = ["k", {}, extra];
+                if (name)
+                    k[1].name = name;
+                if (mode)
+                    k[1].mode = mode;
+                return k;
+            };
+        }
+        else if (obj instanceof Option) {
+            spec = function () template_.map(obj.names, tag, " ");
+            tag = function (name) DOM.DOMString("'" + name + "'");
+            link = function (opt, name) ["o", {}, name];
+            args = { value: "", values: [] };
+        }
+
+        let br = "\n\
+                    ";
+
+        let res = [
+                ["dt", {}, link(obj.helpTag || tag(obj.name), obj.name)], " ",
+                ["dd", {},
+                    template_.linkifyHelp(obj.description ? obj.description.replace(/\.$/, "") : "", true)]];
+        if (specOnly)
+            return res;
+
+        res.push(
+            ["item", {},
+                ["tags", {}, template_.map(obj.names.slice().reverse(),
+                                           tag,
+                                           " ")],
+                ["spec", {},
+                    let (name = (obj.specs || obj.names)[0])
+                          spec(template_.highlightRegexp(tag(name),
+                               /\[(.*?)\]/g,
+                               function (m, n0) ["oa", {}, n0]),
+                               name)],
+                !obj.type ? "" : [
+                    ["type", {}, obj.type],
+                    ["default", {}, obj.stringDefaultValue],
+                    ["description", {},
+                        obj.description ? /*br*/ ["p", {}, template_.linkifyHelp(obj.description.replace(/\.?$/, "."), true)] : "",
+                        extraHelp ? /*br*/ extraHelp : "",
+                        !(extraHelp || obj.description) ? /*br*/ ["p", {}, /*L*/ "Sorry, no help available."] : ""]]]);
+
+        function add(ary) {
+            res.item.description.* += br +
+                let (br = br + "    ")
+                    ["dl", {}, /*br*/ template_.map(ary,
+                                                    function ([a, b]) [["dt", {}, a], " ",
+                                                                       ["dd", {}, b]],
+                                                    br)]
+        }
+
+        if (obj.completer && false)
+            add(completion._runCompleter(obj.closure.completer, "", null, args).items
+                          .map(function (i) [i.text, i.description]));
+
+        if (obj.options && obj.options.some(function (o) o.description) && false)
+            add(obj.options.filter(function (o) o.description)
+                   .map(function (o) [
+                        o.names[0],
+                        [o.description,
+                         o.names.length == 1 ? "" :
+                             ["", " (short name: ",
+                                 template_.map(o.names.slice(1), function (n) ["em", {}, n], ", "),
+                              ")"]]
+                    ]));
+
+        util.dump(util.prettifyJSON(res, null, true));
+        return DOM.toXML(res)
                   .replace(' xmlns="' + NS + '"', "", "g")
                   .replace(/^ {12}|[ \t]+$/gm, "")
                   .replace(/^\s*\n|\n\s*$/g, "") + "\n";
@@ -1232,7 +1321,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     cache: function initCache() {
         cache.register("help/plugins.xml", function () {
             // Process plugin help entries.
-            XML.ignoreWhiteSpace = XML.prettyPrinting = false;
 
             let body = [];
             for (let [, context] in Iterator(plugins.contexts))
@@ -1249,8 +1337,26 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                     if (elem[attr].length())
                                         info[attr] = elem[attr];
                         }
-                        body.push(["h2", { xmlns: NS.uri, tag: info.@name + '-plugin' },
+                        body.push(["h2", { xmlns: "dactyl", tag: info.@name + '-plugin' },
                                        String(info.@summary)]);
+                        body.push(info);
+                    }
+                    else if (DOM.isJSONXML(info)) {
+                        let langs = info.slice(2).filter(function (e) isArray(e) && isObject(e[1]) && e[1].leng);
+                        if (langs) {
+                            let lang = config.bestLocale(l[1].lang for each (l in langs));
+
+                            info = info.slice(0, 2).concat(
+                                info.slice(2).filter(function (e) !isArray(e) || !isObject(e[1])
+                                                               || e[1].lang == lang));
+
+                            for each (let elem in info.slice(2).filter(function (e) isArray(e) && e[0] == "info" && isObject(e[1])))
+                                for (let attr in values(["name", "summary", "href"]))
+                                    if (attr in elem[1])
+                                        info[attr] = elem[1][attr];
+                        }
+                        body.push(["h2", { xmlns: "dactyl", tag: info.name + '-plugin' },
+                                       String(info.summary)]);
                         body.push(info);
                     }
                 }
