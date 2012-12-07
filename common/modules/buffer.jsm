@@ -234,8 +234,8 @@ var Buffer = Module("Buffer", {
         })(win || this.win);
 
         if (focusedFirst)
-            return frames.filter(function (f) f === this.focusedFrame).concat(
-                   frames.filter(function (f) f !== this.focusedFrame));
+            return frames.filter(function (f) f === this.focusedFrame, this).concat(
+                   frames.filter(function (f) f !== this.focusedFrame, this));
         return frames;
     },
 
