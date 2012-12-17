@@ -279,12 +279,12 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                                 name = attr, val = attrs[attr];
 
                             savedAttrs.push([elem, ns, name, getAttr(elem, ns, name), val]);
-                            if (name === "highlight")
+                            if (ns == "xmlns")
+                                ;
+                            else if (name === "highlight")
                                 highlight.highlightNode(elem, val);
-                            else if (ns)
-                                elem.setAttributeNS(ns, name, val);
                             else
-                                elem.setAttribute(name, val);
+                                elem.setAttributeNS(ns || "", name, val);
                         }
                     }
                 }

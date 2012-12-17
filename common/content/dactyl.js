@@ -763,9 +763,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                   .replace(/^ {12}|[ \t]+$/gm, "")
                   .replace(/^\s*\n|\n\s*$/g, "") + "\n";
     },
-    _generateHelp: function generateHelp(obj, extraHelp, str, specOnly) {
-        // E4X-FIXME
 
+    _generateHelp: function generateHelp(obj, extraHelp, str, specOnly) {
         let link, tag, spec;
         link = tag = spec = util.identity;
         let args = null;
@@ -803,21 +802,23 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             args = { value: "", values: [] };
         }
 
-        let br = "\n\
-                    ";
-
         let res = [
-                ["dt", {}, link(obj.helpTag || tag(obj.name), obj.name)], " ",
+                ["dt", {}, link(obj.helpTag || tag(obj.name), obj.name)],
                 ["dd", {},
                     template_.linkifyHelp(obj.description ? obj.description.replace(/\.$/, "") : "", true)]];
         if (specOnly)
             return res;
 
+        let description = ["description", {},
+            obj.description ? ["p", {}, template_.linkifyHelp(obj.description.replace(/\.?$/, "."), true)] : "",
+            extraHelp ? extraHelp : "",
+            !(extraHelp || obj.description) ? ["p", {}, /*L*/ "Sorry, no help available."] : ""]
+
         res.push(
             ["item", {},
                 ["tags", {}, template_.map(obj.names.slice().reverse(),
                                            tag,
-                                           " ")],
+                                           " ").join("")],
                 ["spec", {},
                     let (name = (obj.specs || obj.names)[0])
                           spec(template_.highlightRegexp(tag(name),
@@ -826,19 +827,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                name)],
                 !obj.type ? "" : [
                     ["type", {}, obj.type],
-                    ["default", {}, obj.stringDefaultValue],
-                    ["description", {},
-                        obj.description ? /*br*/ ["p", {}, template_.linkifyHelp(obj.description.replace(/\.?$/, "."), true)] : "",
-                        extraHelp ? /*br*/ extraHelp : "",
-                        !(extraHelp || obj.description) ? /*br*/ ["p", {}, /*L*/ "Sorry, no help available."] : ""]]]);
+                    ["default", {}, obj.stringDefaultValue]],
+                description]);
 
         function add(ary) {
-            res.item.description.* += br +
-                let (br = br + "    ")
-                    ["dl", {}, /*br*/ template_.map(ary,
-                                                    function ([a, b]) [["dt", {}, a], " ",
-                                                                       ["dd", {}, b]],
-                                                    br)]
+            description.push(
+                ["dl", {}, template_.map(ary,
+                                         function ([a, b]) [["dt", {}, a], " ",
+                                                            ["dd", {}, b]])]);
         }
 
         if (obj.completer && false)
@@ -856,11 +852,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                               ")"]]
                     ]));
 
-        util.dump(util.prettifyJSON(res, null, true));
-        return DOM.toXML(res)
-                  .replace(' xmlns="' + NS + '"', "", "g")
-                  .replace(/^ {12}|[ \t]+$/gm, "")
-                  .replace(/^\s*\n|\n\s*$/g, "") + "\n";
+        return DOM.toPrettyXML(res, true, null, { "": String(NS) });
     },
 
     /**

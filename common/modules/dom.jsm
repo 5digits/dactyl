@@ -1588,6 +1588,9 @@ var DOM = Class("DOM", {
             attr = attr || {};
 
             function parseNamespace(name) {
+                if (name == "xmlns")
+                    return ["xmlns", ""];
+
                 var m = /^(?:(.*):)?(.*)$/.exec(name);
                 return [namespaces[m[1]], m[2]];
             }
@@ -1604,7 +1607,7 @@ var DOM = Class("DOM", {
             var args = Array.slice(args, 2);
             var vals = parseNamespace(name);
             var elem = doc.createElementNS(vals[0] || namespaces[""],
-                                           vals[1]);
+                                           name);
 
             for (var key in attr)
                 if (!/^xmlns(?:$|:)/.test(key)) {
@@ -1613,12 +1616,12 @@ var DOM = Class("DOM", {
                         nodes[val] = elem;
 
                     vals = parseNamespace(key);
-                    if (typeof val == "function")
+                    if (vals[0] == "xmlns" || key == "highlight")
+                        ;
+                    else if (typeof val == "function")
                         elem.addEventListener(key.replace(/^on/, ""), val, false);
-                    else if (vals[0])
-                        elem.setAttributeNS(vals[0], key, val);
-                    else if (key != "highlight")
-                        elem.setAttribute(key, val);
+                    else
+                        elem.setAttributeNS(vals[0] || "", key, val);
                 }
             args.forEach(function(e) {
                 elem.appendChild(tag(e, namespaces));
@@ -1640,6 +1643,7 @@ var DOM = Class("DOM", {
             "": "http://www.w3.org/1999/xhtml",
             dactyl: String(NS),
             html: "http://www.w3.org/1999/xhtml",
+            xmlns: "xmlns",
             xul: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         }
     }),
@@ -1652,7 +1656,161 @@ var DOM = Class("DOM", {
                        .serializeToString(node);
     },
 
+    toPrettyXML: function toPrettyXML(xml, asXML, indent, namespaces) {
+        const INDENT = indent || "    ";
+
+        const EMPTY = Set("area base basefont br col frame hr img input isindex link meta param"
+                            .split(" "));
+
+        function namespaced(namespaces, namespace, localName) {
+            for (let [k, v] in Iterator(namespaces))
+                if (v == namespace)
+                    return (k ? k + ":" + localName : localName);
+
+            throw Error("No such namespace");
+        }
+
+        function isFragment(args) !isString(args[0]) || args.length == 0 || args[0] === "";
+
+        function hasString(args) {
+            return args.some(function (a) isString(a) || isFragment(a) && hasString(a))
+        }
+
+        function isStrings(args) {
+            if (!isArray(args))
+                return util.dump("ARGS: " + {}.toString.call(args) + " " + args), false;
+            return args.every(function (a) isinstance(a, ["String", DOM.DOMString]) || isFragment(a) && isStrings(a))
+        }
+
+        function tag(args, namespaces, indent) {
+            let _namespaces = namespaces;
+
+            if (args == "")
+                return "";
+
+            if (isinstance(args, ["String", "Number", _, DOM.DOMString]))
+                return indent +
+                       DOM.escapeHTML(String(args), true);
+
+            if (isXML(args))
+                return indent +
+                       args.toXMLString()
+                           .replace(/^/m, indent);
+
+            if (isObject(args) && "toDOM" in args)
+                return indent +
+                       services.XMLSerializer()
+                               .serializeToString(args.toDOM(services.XMLDocument()))
+                               .replace(/^/m, indent);
+
+            if (args instanceof Ci.nsIDOMNode)
+                return indent +
+                       services.XMLSerializer()
+                               .serializeToString(args)
+                               .replace(/^/m, indent);
+
+            let [name, attr] = args;
+
+            if (isFragment(args)) {
+                let res = [];
+                let join = isArray(args) && isStrings(args) ? "" : "\n";
+                Array.forEach(args, function (arg) {
+                    if (!isArray(arg[0]))
+                        arg = [arg];
+
+                    let contents = [];
+                    arg.forEach(function (arg) {
+                        let string = tag(arg, namespaces, indent);
+                        if (string)
+                            contents.push(string);
+                    });
+                    if (contents.length)
+                        res.push(contents.join("\n"), join)
+                });
+                if (res[res.length - 1] == join)
+                    res.pop();
+                return res.join("");
+            }
+
+            attr = attr || {};
+
+            function parseNamespace(name) {
+                var m = /^(?:(.*):)?(.*)$/.exec(name);
+                return [namespaces[m[1]], m[2]];
+            }
+
+            // FIXME: Surely we can do better.
+            let skipAttr = {};
+            for (var key in attr) {
+                if (/^xmlns(?:$|:)/.test(key)) {
+                    if (_namespaces === namespaces)
+                        namespaces = update({}, namespaces);
+
+                    let ns = namespaces[attr[key]] || attr[key];
+                    if (ns == namespaces[key.substr(6)])
+                        skipAttr[key] = true;
+
+                    attr[key] = namespaces[key.substr(6)] = ns;
+                }}
+
+            var args = Array.slice(args, 2);
+            var vals = parseNamespace(name);
+
+            let res = [indent, "<", name];
+
+            for (let [key, val] in Iterator(attr)) {
+                if (Set.has(skipAttr, key))
+                    continue;
+
+                let vals = parseNamespace(key);
+                if (typeof val == "function") {
+                    key = key.replace(/^(?:on)?/, "on");
+                    val = val.toSource() + "(event)";
+                }
+
+                if (key != "highlight" || vals[0] == String(NS))
+                    res.push(" ", key, '="', DOM.escapeHTML(val), '"');
+                else
+                    res.push(" ", namespaced(namespaces, String(NS), "highlight"),
+                             '="', DOM.escapeHTML(val), '"');
+            }
+
+            if ((vals[0] || namespaces[""]) == String(XHTML) && Set.has(EMPTY, vals[1])
+                    || asXML && !args.length)
+                res.push("/>");
+            else {
+                res.push(">");
+
+                if (isStrings(args))
+                    res.push(args.map(function (e) tag(e, namespaces, "")).join(""),
+                             "</", name, ">");
+                else {
+                    let contents = [];
+                    args.forEach(function(e) {
+                        let string = tag(e, namespaces, indent + INDENT);
+                        if (string)
+                            contents.push(string);
+                    });
+
+                    res.push("\n", contents.join("\n"), "\n", indent, "</", name, ">");
+                }
+            }
+
+            return res.join("");
+        }
+
+        if (namespaces)
+            namespaces = update({}, DOM.fromJSON.namespaces, namespaces);
+        else
+            namespaces = DOM.fromJSON.namespaces;
+
+        return tag(xml, namespaces, "")
+    },
+
     parseNamespace: function parseNamespace(name) {
+        if (name == "xmlns")
+            return ["xmlns", ""];
+
         var m = /^(?:(.*):)?(.*)$/.exec(name);
         return [DOM.fromJSON.namespaces[m[1]], m[2]];
     },

@@ -315,7 +315,7 @@ var Help = Module("Help", {
                     if (isinstance(node, [Ci.nsIDOMHTMLBaseElement]))
                         return;
 
-                    data.push("<"); data.push(node.localName);
+                    data.push("<", node.localName);
                     if (node instanceof Ci.nsIDOMHTMLHtmlElement)
                         data.push(" xmlns=" + XHTML.uri.quote(),
                                   " xmlns:dactyl=" + NS.uri.quote());
