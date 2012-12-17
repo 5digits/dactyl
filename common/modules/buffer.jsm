@@ -638,6 +638,7 @@ var Buffer = Module("Buffer", {
                              | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
 
         let window = this.topWindow;
+        file = File(file);
         if (!file.exists())
             file.create(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
 
@@ -649,7 +650,7 @@ var Buffer = Module("Buffer", {
             persist.progressListener = update(Object.create(downloadListener), {
                 onStateChange: util.wrapCallback(function onStateChange(progress, request, flags, status) {
                     if (callback && (flags & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
-                        util.trapErrors(callback, self, uri, file, progress, request, flags, status);
+                        util.trapErrors(callback, self, uri, file.file, progress, request, flags, status);
 
                     return onStateChange.superapply(this, arguments);
                 })
@@ -657,7 +658,7 @@ var Buffer = Module("Buffer", {
         else
             persist.progressListener = downloadListener;
 
-        persist.saveURI(uri, null, null, null, null, file);
+        persist.saveURI(uri, null, null, null, null, file.path);
     },
 
     /**

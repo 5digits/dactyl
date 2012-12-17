@@ -298,7 +298,7 @@ var Help = Module("Help", {
                 var addURIEntry  = function addURIEntry(file, uri) addDataEntry(file, util.httpGet(uri).responseText);
             }
             else {
-                var zip = services.ZipWriter(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
+                var zip = services.ZipWriter(FILE.file, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
 
                 addURIEntry = function addURIEntry(file, uri)
                     zip.addEntryChannel(PATH + file, TIME, 9,

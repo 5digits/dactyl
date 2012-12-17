@@ -105,7 +105,7 @@ var Download = Class("Download", {
             function action() {
                 try {
                     if (this.MIMEInfo && this.MIMEInfo.preferredAction == this.MIMEInfo.useHelperApp)
-                        this.MIMEInfo.launchWithFile(file);
+                        this.MIMEInfo.launchWithFile(file.file);
                     else
                         file.launch();
                 }

@@ -361,7 +361,7 @@ var IO = Module("io", {
         file = util.getFile(file);
         if (file && file.exists() && file.isFile() && file.isReadable()) {
             // let jar = services.zipReader.getZip(file); Crashes.
-            let jar = services.ZipReader(file);
+            let jar = services.ZipReader(file.file);
             try {
                 let filter = RegExp("^" + util.regexp.escape(decodeURI(path))
                                     + "[^/]*/?$");
@@ -444,7 +444,7 @@ var IO = Module("io", {
             return -1;
         }
 
-        let process = services.Process(file);
+        let process = services.Process(file.file);
         process.run(false, args.map(String), args.length);
         try {
             if (callable(blocking))
@@ -668,9 +668,7 @@ var IO = Module("io", {
 
                 // require bang if any of the paths exist
                 for (let [type, item] in iter(rtItems)) {
-                    let file = io.File(rtDir);
-                    file.append(type);
-                    file.append(config.name + ".vim");
+                    let file = io.File(rtDir).child(type, config.name + ".vim");
                     dactyl.assert(!file.exists() || args.bang, _("io.exists", file.path.quote()));
                     item.file = file;
                 }

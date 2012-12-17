@@ -1007,7 +1007,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     // Try to find a matching file.
                     let file = io.File(url);
                     if (file.exists() && file.isReadable())
-                        return services.io.newFileURI(file).spec;
+                        return file.URI.spec;
                 }
                 catch (e) {}
             }

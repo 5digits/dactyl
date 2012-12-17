@@ -79,7 +79,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         if (!this._cacheReader && this.cacheFile.exists()
                 && !this.inQueue)
             try {
-                this._cacheReader = services.ZipReader(this.cacheFile);
+                this._cacheReader = services.ZipReader(this.cacheFile.file);
             }
             catch (e if e.result == Cr.NS_ERROR_FILE_CORRUPTED) {
                 util.reportError(e);
@@ -99,14 +99,14 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
                 if (!this.cacheFile.exists())
                     mode |= File.MODE_CREATE;
 
-                cache._cacheWriter = services.ZipWriter(this.cacheFile, mode);
+                cache._cacheWriter = services.ZipWriter(this.cacheFile.file, mode);
             }
             catch (e if e.result == Cr.NS_ERROR_FILE_CORRUPTED) {
                 util.reportError(e);
                 this.cacheFile.remove(false);
 
                 mode |= File.MODE_CREATE;
-                cache._cacheWriter = services.ZipWriter(this.cacheFile, mode);
+                cache._cacheWriter = services.ZipWriter(this.cacheFile.file, mode);
             }
         return this._cacheWriter;
     },
@@ -159,7 +159,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
     },
 
     flushJAR: function flushJAR(file) {
-        services.observer.notifyObservers(file, "flush-cache-entry", "");
+        services.observer.notifyObservers(File(file).file, "flush-cache-entry", "");
     },
 
     flushStartup: function flushStartup() {

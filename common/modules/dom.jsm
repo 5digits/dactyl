@@ -1562,7 +1562,7 @@ var DOM = Class("DOM", {
         function tag(args, namespaces) {
             let _namespaces = namespaces;
 
-            if (isinstance(args, ["String", "Number", _]))
+            if (isinstance(args, ["String", "Number", "Boolean", _]))
                 return doc.createTextNode(args);
             if (isXML(args))
                 return DOM.fromXML(args, doc, nodes);

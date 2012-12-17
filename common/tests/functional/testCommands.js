@@ -827,7 +827,6 @@ var tests = {
     time: {
         error: ["", ":some-nonexistent-command"/*, "some_nonexistent_reference"*/], // FIXME
         singleOutput: [":js null", "null"]
-
     },
     get tlistkeys() this.listcommands,
     tmap: {},
@@ -903,7 +902,7 @@ var tests = {
         error: ["foo"],
         multiOutput: [
             ["", function (msg) {
-                var res = /(\w+dactyl) (\S+) \(([\^)]+)\) running on:\nMozilla/;
+                var res = /(\w+dactyl) (\S+) \(([\^)]+)\) running on:\nMozilla/.exec(msg);
                 return res && res[2] != "null" && res[3] != "null";
             }]
         ]

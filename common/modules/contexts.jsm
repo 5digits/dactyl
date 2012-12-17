@@ -377,7 +377,7 @@ var Contexts = Module("contexts", {
            return {
                 __proto__: frame,
                 filename: this.context.file[0] == "[" ? this.context.file
-                                                      : services.io.newFileURI(File(this.context.file)).spec,
+                                                      : File(this.context.file).URI.spec,
                 lineNumber: this.context.line
             };
         return frame;

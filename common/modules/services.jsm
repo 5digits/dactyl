@@ -113,7 +113,7 @@ var Services = Module("Services", {
     },
     reinit: function () {},
 
-    _create: function (name, args) {
+    _create: function _create(name, args) {
         try {
             var service = this.services[name];
 
@@ -130,7 +130,10 @@ var Services = Module("Services", {
             }
             return res;
         }
-        catch (e if service.quiet !== false) {
+        catch (e) {
+            if (service.quiet === false)
+                throw e.stack ? e : Error(e);
+
             if (typeof util !== "undefined")
                 util.reportError(e);
             else
@@ -149,7 +152,7 @@ var Services = Module("Services", {
      * @param {string} meth The name of the function used to instantiate
      *     the service.
      */
-    add: function (name, class_, ifaces, meth) {
+    add: function add(name, class_, ifaces, meth) {
         const self = this;
         this.services[name] = { method: meth, class: class_, interfaces: Array.concat(ifaces || []) };
         if (name in this && ifaces && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
@@ -167,14 +170,14 @@ var Services = Module("Services", {
      * @param {string} init Name of a property or method used to initialize the
      *     class.
      */
-    addClass: function (name, class_, ifaces, init, quiet) {
+    addClass: function addClass(name, class_, ifaces, init, quiet) {
         const self = this;
         this.services[name] = { class: class_, interfaces: Array.concat(ifaces || []), method: "createInstance", init: init, quiet: quiet };
         if (init)
             memoize(this.services[name], "callable",
                     function () callable(XPCOMShim(this.interfaces)[this.init]));
 
-        this[name] = function () self._create(name, arguments);
+        this[name] = function Create() self._create(name, arguments);
         update.apply(null, [this[name]].concat([Ci[i] for each (i in Array.concat(ifaces))]));
         return this[name];
     },
@@ -198,7 +201,7 @@ var Services = Module("Services", {
      *
      * @param {string} name The service's cache key.
      */
-    has: function (name) Set.has(this.services, name) && this.services[name].class in Cc &&
+    has: function has(name) Set.has(this.services, name) && this.services[name].class in Cc &&
         this.services[name].interfaces.every(function (iface) iface in Ci)
 });
 

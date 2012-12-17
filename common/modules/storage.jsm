@@ -179,7 +179,7 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
 var Storage = Module("Storage", {
     alwaysReload: {},
 
-    init: function () {
+    init: function init() {
         this.cleanup();
 
         let { Services } = Cu.import("resource://gre/modules/Services.jsm", {});
@@ -341,7 +341,7 @@ var File = Class("File", {
         if (path instanceof Ci.nsIFileURL)
             path = path.file;
 
-        if (path instanceof Ci.nsIFile)
+        if (path instanceof Ci.nsIFile || path instanceof File)
             file = path.clone();
         else if (/file:\/\//.test(path))
             file = services["file:"].getFileFromURLSpec(path);
@@ -359,11 +359,8 @@ var File = Class("File", {
                 return File.DoesNotExist(path, e);
             }
         }
-        this.file = file;
-
-        let self = XPCSafeJSObjectWrapper(file.QueryInterface(Ci.nsILocalFile));
-        self.__proto__ = this;
-        return self;
+        this.file = file.QueryInterface(Ci.nsILocalFile);
+        return this;
     },
 
     charset: Class.Memoize(function () File.defaultEncoding),
@@ -372,7 +369,8 @@ var File = Class("File", {
      * @property {nsIFileURL} Returns the nsIFileURL object for this file.
      */
     URI: Class.Memoize(function () {
-        let uri = services.io.newFileURI(this).QueryInterface(Ci.nsIFileURL);
+        let uri = services.io.newFileURI(this.file)
+                          .QueryInterface(Ci.nsIFileURL);
         uri.QueryInterface(Ci.nsIMutable).mutable = false;
         return uri;
     }),
@@ -380,7 +378,7 @@ var File = Class("File", {
     /**
      * Iterates over the objects in this directory.
      */
-    iterDirectory: function () {
+    iterDirectory: function iterDirectory() {
         if (!this.exists())
             throw Error(_("io.noSuchFile"));
         if (!this.isDirectory())
@@ -392,17 +390,18 @@ var File = Class("File", {
     /**
      * Returns a new file for the given child of this directory entry.
      */
-    child: function (name) {
+    child: function child() {
         let f = this.constructor(this);
-        for each (let elem in name.split(File.pathSplit))
-            f.append(elem);
+        for (let [, name] in Iterator(arguments))
+            for each (let elem in name.split(File.pathSplit))
+                f.append(elem);
         return f;
     },
 
     /**
      * Returns an iterator for all lines in a file.
      */
-    get lines() File.readLines(services.FileInStream(this, -1, 0, 0),
+    get lines() File.readLines(services.FileInStream(this.file, -1, 0, 0),
                                this.charset),
 
     /**
@@ -413,8 +412,8 @@ var File = Class("File", {
      *          @default #charset
      * @returns {string}
      */
-    read: function (encoding) {
-        let ifstream = services.FileInStream(this, -1, 0, 0);
+    read: function read(encoding) {
+        let ifstream = services.FileInStream(this.file, -1, 0, 0);
 
         return File.readStream(ifstream, encoding || this.charset);
     },
@@ -426,7 +425,7 @@ var File = Class("File", {
      *     entries.
      * @returns {[nsIFile]}
      */
-    readDirectory: function (sort) {
+    readDirectory: function readDirectory(sort) {
         if (!this.isDirectory())
             throw Error(_("io.eNotDir"));
 
@@ -441,7 +440,7 @@ var File = Class("File", {
      *
      * @returns {nsIFileURL}
      */
-    toURI: function toURI() services.io.newFileURI(this),
+    toURI: function toURI() services.io.newFileURI(this.file),
 
     /**
      * Writes the string *buf* to this file.
@@ -467,7 +466,7 @@ var File = Class("File", {
      * @param {string} encoding The encoding to used to write the file.
      * @default #charset
      */
-    write: function (buf, mode, perms, encoding) {
+    write: function write(buf, mode, perms, encoding) {
         function getStream(defaultChar) {
             return services.ConvOutStream(ofstream, encoding, 0, defaultChar);
         }
@@ -487,7 +486,7 @@ var File = Class("File", {
         if (!this.exists()) // OCREAT won't create the directory
             this.create(this.NORMAL_FILE_TYPE, perms);
 
-        let ofstream = services.FileOutStream(this, mode, perms, 0);
+        let ofstream = services.FileOutStream(this.file, mode, perms, 0);
         try {
             var ocstream = getStream(0);
             ocstream.writeString(buf);
@@ -506,7 +505,34 @@ var File = Class("File", {
             ofstream.close();
         }
         return true;
-    }
+    },
+
+    // Wrapped native methods:
+    copyTo: function copyTo(dir, name)
+        this.file.copyTo(this.constructor(dir).file,
+                         name),
+
+    copyToFollowingLinks: function copyToFollowingLinks(dir, name)
+        this.file.copyToFollowingLinks(this.constructor(dir).file,
+                                       name),
+
+    moveTo: function moveTo(dir, name)
+        this.file.moveTo(this.constructor(dir).file,
+                         name),
+
+    equals: function equals(file)
+        this.file.equals(this.constructor(file).file),
+
+    contains: function contains(dir, recur)
+        this.file.contains(this.constructor(dir).file,
+                           recur),
+
+    getRelativeDescriptor: function getRelativeDescriptor(file)
+        this.file.getRelativeDescriptor(this.constructor(file).file),
+
+    setRelativeDescriptor: function setRelativeDescriptor(file, path)
+        this.file.setRelativeDescriptor(this.constructor(file).file,
+                                        path)
 }, {
     /**
      * @property {number} Open for reading only.
@@ -696,6 +722,28 @@ var File = Class("File", {
 
     replacePathSep: function (path) path.replace("/", File.PATH_SEP, "g")
 });
+
+let (file = services.directory.get("ProfD", Ci.nsIFile)) {
+    Object.keys(file).forEach(function (prop) {
+        if (!(prop in File.prototype)) {
+            let isFunction;
+            try {
+                isFunction = callable(file[prop])
+            }
+            catch (e) {}
+
+            if (isFunction)
+                File.prototype[prop] = util.wrapCallback(function wrapper() this.file[prop].apply(this.file, arguments));
+            else
+                Object.defineProperty(File.prototype, prop, {
+                    configurable: true,
+                    get: function wrap_get() this.file[prop],
+                    set: function wrap_set(val) { this.file[prop] = val; }
+                });
+        }
+    });
+    file = null;
+}
 
 endModule();
 

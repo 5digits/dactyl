@@ -260,7 +260,7 @@ var ConfigBase = Class("ConfigBase", {
             }
         }
         function processJar(file) {
-            let jar = services.ZipReader(file);
+            let jar = services.ZipReader(file.file);
             if (jar)
                 try {
                     if (jar.hasEntry("chrome.manifest"))
