@@ -720,7 +720,7 @@ var Template_ = Module("Template_", {
             case "object":
                 if (arg instanceof Ci.nsIDOMElement)
                     return util.objectToString(arg, !bw);
-                if (arg instanceof Magic)
+                if (arg instanceof util.Magic)
                     return String(arg);
 
                 if (processStrings && false)
@@ -735,7 +735,7 @@ var Template_ = Module("Template_", {
             }
         }
         catch (e) {
-            return "<unknown>";
+            return "<error: " + e + ">";
         }
     },
 

@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 try {
 
@@ -15,7 +15,7 @@ defineModule("util", {
 
 lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["File", "storage"]);
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 var Magic = Class("Magic", {
     init: function init(str) {
@@ -965,13 +965,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {string}
      */
     objectToString: function objectToString(object, color) {
-        // Use E4X literals so html is automatically quoted
-        // only when it's asked for. No one wants to see &lt;
-        // on their console or :map :foo in their buffer
-        // when they expect :map <C-f> :foo.
-        XML.prettyPrinting = false;
-        XML.ignoreWhitespace = false;
-
         if (object == null)
             return object + "\n";
 
@@ -992,8 +985,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         catch (e) {
             obj = Object.prototype.toString.call(obj);
         }
-        obj = template.highlightFilter(util.clip(obj, 150), "\n", !color ? function () "^J" : function () <span highlight="NonText">^J</span>);
-        let string = <><span highlight="Title Object">{obj}</span>::&#x0a;</>;
+
+        if (color) {
+            obj = template_.highlightFilter(util.clip(obj, 150), "\n",
+                                            function () ["span", { highlight: "NonText" }, "^J"]);
+            var head = ["span", { highlight: "Title Object" }, obj, "::\n"];
+        }
+        else
+            head = util.clip(obj, 150).replace(/\n/g, "^J") + "::\n";
 
         let keys = [];
 
@@ -1023,13 +1022,25 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     }
                 }
 
-                value = template.highlight(value, true, 150, !color);
-                let key = <span highlight="Key">{i}</span>;
+                let key = i;
                 if (!isNaN(i))
                     i = parseInt(i);
                 else if (/^[A-Z_]+$/.test(i))
                     i = "";
-                keys.push([i, <>{noVal ? value : <>{key}: {value}</>}&#x0a;</>]);
+
+                if (color)
+                    value = template_.highlight(value, true, 150, !color);
+                else
+                    value = util.clip(String(value).replace(/\n/g, "^J"), 150);
+
+                if (noVal)
+                    var val = value;
+                else if (color)
+                    val = [["span", { highlight: "Key" }, key], ": ", value];
+                else
+                    val = key + ": " + value;
+
+                keys.push([i, val]);
             }
         }
         catch (e) {
@@ -1041,8 +1052,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 return a[0] - b[0];
             return String.localeCompare(a[0], b[0]);
         }
-        string += template.map(keys.sort(compare), function (f) f[1]);
-        return color ? <div style="white-space: pre-wrap;">{string}</div> : [s for each (s in string)].join("");
+
+        let vals = template_.map(keys.sort(compare), function (f) f[1], "\n");
+        if (color) {
+            return ["div", { style: "white-space: pre-wrap" }, head, vals];
+        }
+        return head + vals.join("");
     },
 
     prettifyJSON: function prettifyJSON(data, indent, invalidOK) {

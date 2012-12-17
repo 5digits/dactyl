@@ -5,7 +5,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 try {
 
@@ -173,7 +173,7 @@ var IO = Module("io", {
                                         e.fileName = util.fixURI(e.fileName);
                                         if (e.fileName == uri.spec)
                                             e.fileName = filename;
-                                        e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>;
+                                        e.echoerr = [e.fileName, ":", e.lineNumber, ": ", e].join("");
                                     }
                                     catch (e) {}
                                 throw e;
