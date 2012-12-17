@@ -16,7 +16,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     init: function () {
         window.dactyl = this;
         // cheap attempt at compatibility
-        let prop = { get: deprecated("dactyl", function liberator() dactyl) };
+        let prop = { get: deprecated("dactyl", function liberator() dactyl),
+                     configurable: true };
         Object.defineProperty(window, "liberator", prop);
         Object.defineProperty(modules, "liberator", prop);
         this.commands = {};
@@ -108,7 +109,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     signals: {
         "io.source": function ioSource(context, file, modTime) {
-            if (context.INFO)
+            if (contexts.getDocs(context))
                 help.flush("help/plugins.xml", modTime);
         }
     },
@@ -1243,8 +1244,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                     if (attr in elem[1])
                                         info[attr] = elem[1][attr];
                         }
-                        body.push(["h2", { xmlns: "dactyl", tag: info.name + '-plugin' },
-                                       String(info.summary)]);
+                        body.push(["h2", { xmlns: "dactyl", tag: info[1].name + '-plugin' },
+                                       String(info[1].summary)]);
                         body.push(info);
                     }
                 }

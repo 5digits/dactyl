@@ -486,7 +486,9 @@ var Contexts = Module("contexts", {
                 let info = "INFO" in context && Cu.evalInSandbox("this.INFO instanceof XML ? INFO.toXMLString() : this.INFO", context);
                 return /^</.test(info) ? XML(info) : info;
             }
-            if (typeof context.INFO == "xml" || DOM.isJSONXML(context.INFO))
+            if (DOM.isJSONXML(context.INFO))
+                return context.INFO;
+            if (typeof context.INFO == "xml" && config.haveGecko(null, "14.*"))
                 return context.INFO;
         }
         catch (e) {}
