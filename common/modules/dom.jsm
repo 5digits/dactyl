@@ -1570,6 +1570,8 @@ var DOM = Class("DOM", {
                 return args.toDOM(doc, namespaces, nodes);
             if (args instanceof Ci.nsIDOMNode)
                 return args;
+            if ("toJSONXML" in args)
+                args = args.toJSONXML();
 
             let [name, attr] = args;
 
@@ -1606,8 +1608,13 @@ var DOM = Class("DOM", {
 
             var args = Array.slice(args, 2);
             var vals = parseNamespace(name);
-            var elem = doc.createElementNS(vals[0] || namespaces[""],
-                                           name);
+            try {
+                var elem = doc.createElementNS(vals[0] || namespaces[""],
+                                               name);
+            }
+            catch (e) {
+                util.dump("FOO", vals[0] || namespaces[""], name);
+            }
 
             for (var key in attr)
                 if (!/^xmlns(?:$|:)/.test(key)) {
@@ -1688,7 +1695,7 @@ var DOM = Class("DOM", {
             if (args == "")
                 return "";
 
-            if (isinstance(args, ["String", "Number", _, DOM.DOMString]))
+            if (isinstance(args, ["String", "Number", "Boolean", _, DOM.DOMString]))
                 return indent +
                        DOM.escapeHTML(String(args), true);
 
@@ -1708,6 +1715,15 @@ var DOM = Class("DOM", {
                        services.XMLSerializer()
                                .serializeToString(args)
                                .replace(/^/m, indent);
+
+            if ("toJSONXML" in args)
+                args = args.toJSONXML();
+
+            // Deal with common error case
+            if (args == null) {
+                util.reportError(Error("Unexpected null when processing XML."));
+                return "[NULL]";
+            }
 
             let [name, attr] = args;
 

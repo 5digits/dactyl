@@ -13,7 +13,7 @@ lazyRequire("commands", ["ArgType", "CommandOption", "commands"]);
 lazyRequire("options", ["Option"]);
 lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["File"]);
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 var Const = function Const(val) Class.Property({ enumerable: true, value: val });
 
@@ -78,10 +78,11 @@ var Group = Class("Group", {
         return update(siteFilter, {
             toString: function () this.filters.join(","),
 
-            toXML: function (modules) let (uri = modules && modules.buffer.uri)
-                template.map(this.filters,
-                             function (f) <span highlight={uri && f(uri) ? "Filter" : ""}>{f}</span>,
-                             <>,</>),
+            toJSONXML: function (modules) let (uri = modules && modules.buffer.uri)
+                template_.map(this.filters,
+                              function (f) ["span", { highlight: uri && f(uri) ? "Filter" : "" },
+                                                "toJSONXML" in f ? f.toJSONXML() : String(f)],
+                              ","),
 
             filters: Option.parse.sitelist(patterns)
         });
@@ -668,12 +669,12 @@ var Contexts = Module("contexts", {
                     {
                         names: ["-description", "-desc", "-d"],
                         description: "A description of this group",
-                        default: ["User-defined group"],
+                        default: "User-defined group",
                         type: CommandOption.STRING
                     },
                     {
                         names: ["-locations", "-locs", "-loc", "-l"],
-                        description: ["The URLs for which this group should be active"],
+                        description: "The URLs for which this group should be active",
                         default: ["*"],
                         type: CommandOption.LIST
                     },
@@ -799,7 +800,7 @@ var Contexts = Module("contexts", {
             context.keys = {
                 active: function (group) group.filter(uri),
                 text: "name",
-                description: function (g) <>{g.filter.toXML ? g.filter.toXML(modules) + <>&#xa0;</> : ""}{g.description || ""}</>
+                description: function (g) ["", g.filter.toJSONXML ? g.filter.toJSONXML(modules).concat("\u00a0") : "", g.description || ""]
             };
             context.completions = (active === undefined ? contexts.groupList : contexts.initializedGroups(active))
                                     .slice(0, -1);

@@ -1294,7 +1294,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                                                                            b.name)),
                                function ({ name, description })
                                [["dt", {}, name],
-                                ["dd", {}, template.linkifyHelp(description, true)]],
+                                ["dd", {}, template_.linkifyHelp(description, true)]],
                                "\n")]]);
         });
     },
