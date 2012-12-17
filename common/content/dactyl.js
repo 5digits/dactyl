@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+// "use strict";
 
 /** @scope modules */
 
@@ -281,7 +281,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 for (let obj in values(results)) {
                     let res = dactyl.generateHelp(obj, null, null, true);
                     if (!haveTag(obj.helpTag))
-                        res[1].@tag = obj.helpTag;
+                        res[0][1].tag = obj.helpTag;
 
                     yield res;
                 }
@@ -418,7 +418,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (isObject(str) && "echoerr" in str)
             str = str.echoerr;
         else if (isinstance(str, ["Error", FailedAssertion]) && str.fileName)
-            str = util.Magic([str.fileName.replace(/^.* -> /, ""), ": ", str.lineNumber, ": ", str].join(""));
+            str = [str.fileName.replace(/^.* -> /, ""), ": ", str.lineNumber, ": ", str].join("");
 
         if (options["errorbells"])
             dactyl.beep();
@@ -661,110 +661,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @returns {string}
      */
     generateHelp: function generateHelp(obj, extraHelp, str, specOnly) {
-        default xml namespace = "";
-
-        let link, tag, spec;
-        link = tag = spec = util.identity;
-        let args = null;
-
-        if (obj instanceof Command) {
-            link = function (cmd) <ex>{cmd}</ex>;
-            args = obj.parseArgs("", CompletionContext(str || ""));
-            tag  = function (cmd) <>:{cmd}</>;
-            spec = function (cmd) <>{
-                    obj.count ? <oa>count</oa> : <></>
-                }{
-                    cmd
-                }{
-                    obj.bang ? <oa>!</oa> : <></>
-                }</>;
-        }
-        else if (obj instanceof Map) {
-            spec = function (map) obj.count ? <><oa>count</oa>{map}</> : <>{map}</>;
-            tag = function (map) <>{
-                    let (c = obj.modes[0].char) c ? c + "_" : ""
-                }{ map }</>;
-            link = function (map) {
-                let [, mode, name, extra] = /^(?:(.)_)?(?:<([^>]+)>)?(.*)$/.exec(map);
-                let k = <k>{extra}</k>;
-                if (name)
-                    k.@name = name;
-                if (mode)
-                    k.@mode = mode;
-                return k;
-            };
-        }
-        else if (obj instanceof Option) {
-            spec = function () template.map(obj.names, tag, " ");
-            tag = function (name) <>'{name}'</>;
-            link = function (opt, name) <o>{name}</o>;
-            args = { value: "", values: [] };
-        }
-
-        XML.prettyPrinting = false;
-        XML.ignoreWhitespace = false;
-        default xml namespace = NS;
-
-        // E4X has its warts.
-        let br = <>
-                    </>;
-
-        let res = <res>
-                <dt>{link(obj.helpTag || tag(obj.name), obj.name)}</dt> <dd>{
-                    template.linkifyHelp(obj.description ? obj.description.replace(/\.$/, "") : "", true)
-                }</dd></res>;
-        if (specOnly)
-            return res.elements();
-
-        res.* += <>
-            <item>
-                <tags>{template.map(obj.names.slice().reverse(), tag, " ")}</tags>
-                <spec>{let (name = (obj.specs || obj.names)[0])
-                          spec(template.highlightRegexp(tag(name),
-                               /\[(.*?)\]/g,
-                               function (m, n0) <oa>{n0}</oa>),
-                               name)
-                }</spec>{
-                !obj.type ? "" : <>
-                <type>{obj.type}</type>
-                <default>{obj.stringDefaultValue}</default></>}
-                <description>{
-                    obj.description ? br + <p>{template.linkifyHelp(obj.description.replace(/\.?$/, "."), true)}</p> : "" }{
-                        extraHelp ? br + extraHelp : "" }{
-                        !(extraHelp || obj.description) ? br + <p><!--L-->Sorry, no help available.</p> : "" }
-                </description>
-            </item></>;
-
-        function add(ary) {
-            res.item.description.* += br +
-                let (br = br + <>    </>)
-                    <><dl>{ br + template.map(ary, function ([a, b]) <><dt>{a}</dt> <dd>{b}</dd></>, br) }
-                    </dl>
-                </>;
-        }
-
-        if (obj.completer)
-            add(completion._runCompleter(obj.closure.completer, "", null, args).items
-                          .map(function (i) [i.text, i.description]));
-
-        if (obj.options && obj.options.some(function (o) o.description))
-            add(obj.options.filter(function (o) o.description)
-                   .map(function (o) [
-                        o.names[0],
-                        <>{o.description}{
-                            o.names.length == 1 ? "" :
-                                <> (short name: {
-                                    template.map(o.names.slice(1), function (n) <em>{n}</em>, <>, </>)
-                                })</>
-                        }</>
-                    ]));
-        return res.*.toXMLString()
-                  .replace(' xmlns="' + NS + '"', "", "g")
-                  .replace(/^ {12}|[ \t]+$/gm, "")
-                  .replace(/^\s*\n|\n\s*$/g, "") + "\n";
-    },
-
-    _generateHelp: function generateHelp(obj, extraHelp, str, specOnly) {
         let link, tag, spec;
         link = tag = spec = util.identity;
         let args = null;

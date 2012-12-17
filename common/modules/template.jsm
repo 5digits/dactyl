@@ -666,7 +666,7 @@ var Template_ = Module("Template_", {
         return this.highlightSubstrings(str, (function () {
             for (let res in re.iterate(str))
                 yield [res.index + res.pre.length, res.tag.length];
-        })(), template[help ? "HelpLink" : "helpLink"]);
+        })(), this[help ? "HelpLink" : "helpLink"]);
     },
 
 
@@ -779,7 +779,6 @@ var Template_ = Module("Template_", {
                 break;
             _i = i;
 
-            XML.ignoreWhitespace = false;
             s.push(str.substring(start, i),
                    highlight.apply(this, Array.concat(args || str.substr(i, length))));
             start = i + length;

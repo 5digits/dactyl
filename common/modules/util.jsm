@@ -22,6 +22,8 @@ var Magic = Class("Magic", {
         this.str = str;
     },
 
+    get message() this.str,
+
     toString: function () this.str
 });
 

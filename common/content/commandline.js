@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 /** @scope modules */
 
@@ -664,12 +664,8 @@ var CommandLine = Module("commandline", {
      * @param {XML} xml The output as an E4X XML object.
      */
     commandOutput: function commandOutput(xml) {
-        XML.ignoreWhitespace = XML.prettyPrinting = false;
         if (!this.command)
             this.echo(xml, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
-        else if (isXML(xml))
-            this.echo(<><div xmlns={XHTML}>:{this.command}</div>&#x0d;{xml}</>,
-                      this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
         else
             this.echo([["div", { xmlns: "html" }, ":" + this.command], "\n", xml],
                       this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
@@ -765,7 +761,7 @@ var CommandLine = Module("commandline", {
             this._lastEcho = null;
         else {
             if (this.widgets.message && this.widgets.message[1] == this._lastEcho)
-                mow.echo(<span highlight="Message">{this._lastEcho}</span>,
+                mow.echo(["span", { highlight: "Message" }, this._lastEcho],
                          this.widgets.message[0], true);
 
             if (action === this._echoLine && !(flags & this.FORCE_MULTILINE)
@@ -1624,10 +1620,10 @@ var CommandLine = Module("commandline", {
                     commandline.echo(message.message, message.highlight, commandline.FORCE_SINGLELINE);
                 }
                 else if (commandline._messageHistory.length > 1) {
-                    XML.ignoreWhitespace = false;
                     commandline.commandOutput(
-                        template.map(commandline._messageHistory.messages, function (message)
-                            <div highlight={message.highlight + " Message"}>{message.message}</div>));
+                        template_.map(commandline._messageHistory.messages, function (message)
+                           ["div", { highlight: message.highlight + " Message" },
+                               message.message]));
                 }
             },
             { argCount: "0" });

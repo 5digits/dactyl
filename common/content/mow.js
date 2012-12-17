@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 var MOW = Module("mow", {
     init: function init() {
@@ -104,12 +104,6 @@ var MOW = Module("mow", {
             this.messages = [];
         }
 
-        // If it's already XML, assume it knows what it's doing.
-        // Otherwise, white space is significant.
-        // The problem elsewhere is that E4X tends to insert new lines
-        // after interpolated data.
-        XML.ignoreWhitespace = XML.prettyPrinting = false;
-
         highlightGroup = "CommandOutput " + (highlightGroup || "");
 
         if (isObject(data) && !isinstance(data, _) && !DOM.isJSONXML(data)) {
@@ -127,16 +121,10 @@ var MOW = Module("mow", {
             }
             this.messages.push(data);
         }
-        else if (DOM.isJSONXML(data) || isString(data)) {
+        else {
             let style = isString(data) ? "pre-wrap" : "nowrap";
             this.lastOutput = ["div", { style: "white-space: " + style, highlight: highlightGroup },
                                data];
-
-            var output = DOM(this.lastOutput, this.document);
-        }
-        else {
-            let style = isString(data) ? "pre-wrap" : "nowrap";
-            this.lastOutput = <div style="white-space: nowrap" highlight={highlightGroup}>{data}</div>;
 
             var output = DOM(this.lastOutput, this.document);
         }
