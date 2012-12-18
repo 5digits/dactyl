@@ -4,7 +4,7 @@ catch (e) { __dactyl_eval_error = e; }
 // IMPORTANT: The eval statement *must* remain on the first line
 // in order for line numbering in any errors to remain correct.
 
-// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.

@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2011 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.

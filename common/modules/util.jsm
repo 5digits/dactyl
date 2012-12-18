@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2011 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -1078,7 +1078,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (~["boolean", "number"].indexOf(typeof data) || data === null)
                 res.push(String(data));
             else if (isinstance(data, ["String", _]))
-                res.push(String.quote(data));
+                res.push(JSON.stringify(String(data)));
             else if (isArray(data)) {
                 if (data.length == 0)
                     res.push("[]");
@@ -1100,7 +1100,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 for (let [key, val] in Iterator(data)) {
                     if (i++)
                         res.push(",\n");
-                    res.push(prefix, String.quote(key), ": ")
+                    res.push(prefix, JSON.stringify(key), ": ")
                     rec(val, prefix, seen);
                 }
                 if (i > 0)

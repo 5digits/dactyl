@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2011 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -1231,7 +1231,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         body.push(info);
                     }
                     else if (DOM.isJSONXML(info)) {
-                        let langs = info.slice(2).filter(function (e) isArray(e) && isObject(e[1]) && e[1].leng);
+                        let langs = info.slice(2).filter(function (e) isArray(e) && isObject(e[1]) && e[1].lang);
                         if (langs) {
                             let lang = config.bestLocale(l[1].lang for each (l in langs));
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2011 by Kris Maglione <kris@vimperator.org>
+// Copyright (c) 2009-2012 Kris Maglione <kris@vimperator.org>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.

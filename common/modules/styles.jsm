@@ -1,8 +1,8 @@
-// Copyright (c) 2008-2011 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 defineModule("styles", {
     exports: ["Style", "Styles", "styles"],
@@ -741,28 +741,29 @@ var Styles = Module("Styles", {
         let patterns = Styles.patterns;
 
         template.highlightCSS = function highlightCSS(css) {
-            XML.prettyPrinting = XML.ignoreWhitespace = false;
-
             return this.highlightRegexp(css, patterns.property, function (match) {
                 if (!match.length)
-                    return <></>;
-                return <>{match.preSpace}{template.filter(match.name)}: {
+                    return [];
+                return ["", match.preSpace, template_.filter(match.name), ": ",
 
-                    template.highlightRegexp(match.value, patterns.token, function (match) {
+                    template_.highlightRegexp(match.value, patterns.token, function (match) {
                         if (match.function)
-                            return <>{template.filter(match.word)}{
-                                template.highlightRegexp(match.function, patterns.string,
-                                    function (match) <span highlight="String">{match.string}</span>)
-                            }</>;
+                            return ["", template_.filter(match.word),
+                                template_.highlightRegexp(match.function, patterns.string,
+                                    function (match) ["span", { highlight: "String" }, match.string])
+                            ];
                         if (match.important == "!important")
-                            return <span highlight="String">{match.important}</span>;
+                            return ["span", { highlight: "String" }, match.important];
                         if (match.string)
-                            return <span highlight="String">{match.string}</span>;
+                            return ["span", { highlight: "String" }, match.string];
                         return template.highlightRegexp(match.wholeMatch, /^(\d+)(em|ex|px|in|cm|mm|pt|pc)?/g,
-                                                        function (m, n, u) <><span highlight="Number">{n}</span><span highlight="Object">{u || ""}</span></>);
-                    })
-
-                }{ match.postSpace }</>
+                                                        function (m, n, u) [
+                                                            ["span", { highlight: "Number" }, n],
+                                                            ["span", { highlight: "Object" }, u || ""]
+                                                        ]);
+                    }),
+                    match.postSpace
+                ]
             })
         }
     }

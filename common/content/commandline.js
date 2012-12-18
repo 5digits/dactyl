@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2011 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -1898,7 +1898,8 @@ var ItemList = Class("ItemList", {
                     ["div", { highlight: "CompItem NonText" },
                         "~"])]],
 
-    get itemCount() this.context.contextList.reduce(function (acc, ctxt) acc + ctxt.items.length, 0),
+    get itemCount() this.context.contextList
+                        .reduce(function (acc, ctxt) acc + ctxt.items.length, 0),
 
     get visible() !this.container.collapsed,
     set visible(val) this.container.collapsed = !val,
@@ -2168,9 +2169,11 @@ var ItemList = Class("ItemList", {
                 let off = group.getOffset(idx);
 
                 start = Math.constrain(start,
-                                       off + Math.min(this.CONTEXT_LINES, group.itemCount - idx + group.offsets.end)
+                                       off + Math.min(this.CONTEXT_LINES,
+                                                      group.itemCount - idx + group.offsets.end)
                                            - this.maxItems + 1,
-                                       off - Math.min(this.CONTEXT_LINES, idx + group.offsets.start));
+                                       off - Math.min(this.CONTEXT_LINES,
+                                                      idx + group.offsets.start));
             }
 
             let count = this.maxItems;

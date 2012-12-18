@@ -1,5 +1,5 @@
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2011 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -11,7 +11,7 @@ defineModule("dom", {
 
 lazyRequire("highlight", ["highlight"]);
 lazyRequire("messages", ["_"]);
-lazyRequire("template", ["template"]);
+lazyRequire("template", ["template", "template_"]);
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
 var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
@@ -561,14 +561,13 @@ var DOM = Class("DOM", {
      *  representation of this node.
      */
     repr: function repr(color) {
-        XML.ignoreWhitespace = XML.prettyPrinting = false;
-
         function namespaced(node) {
-            var ns = DOM.namespaceNames[node.namespaceURI] || /^(?:(.*?):)?/.exec(node.name)[0];
+            var ns = DOM.namespaceNames[node.namespaceURI] || /^(?:(.*?):)?/.exec(node.name)[1];
             if (!ns)
                 return node.localName;
             if (color)
-                return <><span highlight="HelpXMLNamespace">{ns}</span>{node.localName}</>
+                return [["span", { highlight: "HelpXMLNamespace" }, ns],
+                        node.localName];
             return ns + ":" + node.localName;
         }
 
@@ -577,20 +576,24 @@ var DOM = Class("DOM", {
             try {
                 let hasChildren = elem.firstChild && (!/^\s*$/.test(elem.firstChild) || elem.firstChild.nextSibling)
                 if (color)
-                    res.push(<span highlight="HelpXML"><span highlight="HelpXMLTagStart">&lt;{
-                            namespaced(elem)} {
-                                template.map(array.iterValues(elem.attributes),
-                                    function (attr)
-                                        <span highlight="HelpXMLAttribute">{namespaced(attr)}</span> +
-                                        <span highlight="HelpXMLString">{attr.value}</span>,
-                                    <> </>)
-                            }{ !hasChildren ? "/>" : ">"
-                        }</span>{ !hasChildren ? "" : <>...</> +
-                            <span highlight="HtmlTagEnd">&lt;{namespaced(elem)}></span>
-                    }</span>);
+                    res.push(["span", { highlight: "HelpXML" },
+                        ["span", { highlight: "HelpXMLTagStart" },
+                            "<", namespaced(elem), " ",
+                            template_.map(array.iterValues(elem.attributes),
+                                function (attr) [
+                                    ["span", { highlight: "HelpXMLAttribute" }, namespaced(attr)],
+                                    ["span", { highlight: "HelpXMLString" }, attr.value]
+                                ],
+                                " "),
+                            !hasChildren ? "/>" : ">",
+                        ],
+                        !hasChildren ? "" :
+                            ["", "...",
+                             ["span", { highlight: "HtmlTagEnd" },"<", namespaced(elem), ">"]]
+                    ]);
                 else {
                     let tag = "<" + [namespaced(elem)].concat(
-                        [namespaced(a) + "=" + template.highlight(a.value, true)
+                        [namespaced(a) + '="' + String.replace(a.value, /["<]/, DOM.escapeHTML) + '"'
                          for ([i, a] in array.iterItems(elem.attributes))]).join(" ");
 
                     res.push(tag + (!hasChildren ? "/>" : ">...</" + namespaced(elem) + ">"));
@@ -600,7 +603,8 @@ var DOM = Class("DOM", {
                 res.push({}.toString.call(elem));
             }
         }, this);
-        return template.map(res, util.identity, <>,</>);
+        res = template_.map(res, util.identity, ",");
+        return color ? res : res.join("");
     },
 
     attr: function attr(key, val) {
@@ -1589,13 +1593,7 @@ var DOM = Class("DOM", {
 
             attr = attr || {};
 
-            function parseNamespace(name) {
-                if (name == "xmlns")
-                    return ["xmlns", ""];
-
-                var m = /^(?:(.*):)?(.*)$/.exec(name);
-                return [namespaces[m[1]], m[2]];
-            }
+            function parseNamespace(name) DOM.parseNamespace(name, namespaces);
 
             // FIXME: Surely we can do better.
             for (var key in attr) {
@@ -1608,13 +1606,8 @@ var DOM = Class("DOM", {
 
             var args = Array.slice(args, 2);
             var vals = parseNamespace(name);
-            try {
-                var elem = doc.createElementNS(vals[0] || namespaces[""],
-                                               name);
-            }
-            catch (e) {
-                util.dump("FOO", vals[0] || namespaces[""], name);
-            }
+            var elem = doc.createElementNS(vals[0] || namespaces[""],
+                                           name);
 
             for (var key in attr)
                 if (!/^xmlns(?:$|:)/.test(key)) {
@@ -1623,7 +1616,7 @@ var DOM = Class("DOM", {
                         nodes[val] = elem;
 
                     vals = parseNamespace(key);
-                    if (vals[0] == "xmlns" || key == "highlight")
+                    if (key == "highlight")
                         ;
                     else if (typeof val == "function")
                         elem.addEventListener(key.replace(/^on/, ""), val, false);
@@ -1650,7 +1643,7 @@ var DOM = Class("DOM", {
             "": "http://www.w3.org/1999/xhtml",
             dactyl: String(NS),
             html: "http://www.w3.org/1999/xhtml",
-            xmlns: "xmlns",
+            xmlns: "http://www.w3.org/2000/xmlns/",
             xul: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         }
     }),
@@ -1823,12 +1816,13 @@ var DOM = Class("DOM", {
         return tag(xml, namespaces, "")
     },
 
-    parseNamespace: function parseNamespace(name) {
+    parseNamespace: function parseNamespace(name, namespaces) {
         if (name == "xmlns")
-            return ["xmlns", ""];
+            return [DOM.fromJSON.namespaces.xmlns, "xmlns"];
 
         var m = /^(?:(.*):)?(.*)$/.exec(name);
-        return [DOM.fromJSON.namespaces[m[1]], m[2]];
+        return [(namespaces || DOM.fromJSON.namespaces)[m[1]],
+                m[2]];
     },
 
     /**

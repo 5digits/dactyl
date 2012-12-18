@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2011 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2012 Kris Maglione <maglione.k@gmail.com>
 // Copyright (c) 2009-2010 by Doug Kearns <dougkearns@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are

@@ -135,6 +135,7 @@ let JSMLoader = {
             }
             catch (e) {
                 debug("Loading " + name + ": " + e);
+                delete this.globals[uri];
 
                 if (typeof e != "string")
                     throw e;

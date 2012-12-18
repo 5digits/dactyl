@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2011 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2012 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -279,9 +279,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                                 name = attr, val = attrs[attr];
 
                             savedAttrs.push([elem, ns, name, getAttr(elem, ns, name), val]);
-                            if (ns == "xmlns")
-                                ;
-                            else if (name === "highlight")
+                            if (name === "highlight")
                                 highlight.highlightNode(elem, val);
                             else
                                 elem.setAttributeNS(ns || "", name, val);

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2010 by anekos <anekos@snca.net>
-// Copyright (c) 2010-2011 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2010-2012 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
