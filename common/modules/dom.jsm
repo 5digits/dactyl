@@ -3,7 +3,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 defineModule("dom", {
     exports: ["$", "DOM", "NS", "XBL", "XHTML", "XUL"]
@@ -13,10 +13,10 @@ lazyRequire("highlight", ["highlight"]);
 lazyRequire("messages", ["_"]);
 lazyRequire("template", ["template"]);
 
-var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
-var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
-var XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
-var NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
+var XBL = "http://www.mozilla.org/xbl";
+var XHTML = "http://www.w3.org/1999/xhtml";
+var XUL = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+var NS = "http://vimperator.org/namespaces/liberator";
 
 function BooleanAttribute(attr) ({
     get: function (elem) elem.getAttribute(attr) == "true",
@@ -116,14 +116,6 @@ var DOM = Class("DOM", {
     },
 
     eachDOM: function eachDOM(val, fn, self) {
-        if (isString(val))
-            val = XML(val);
-
-        if (typeof val == "xml")
-            return this.each(function (elem, i) {
-                fn.call(this, DOM.fromXML(val, elem.ownerDocument), elem, i);
-            }, self || this);
-
         let dom = this;
         function munge(val, container, idx) {
             if (val instanceof Ci.nsIDOMRange)
@@ -1524,40 +1516,9 @@ var DOM = Class("DOM", {
      *     stored here, keyed to the value thereof.
      * @returns {Node}
      */
-    fromXML: function fromXML(node, doc, nodes) {
-        XML.ignoreWhitespace = XML.prettyPrinting = false;
-        if (typeof node === "string") // Sandboxes can't currently pass us XML objects.
-            node = XML(node);
-
-        if (node.length() != 1) {
-            let domnode = doc.createDocumentFragment();
-            for each (let child in node)
-                domnode.appendChild(fromXML(child, doc, nodes));
-            return domnode;
-        }
-
-        switch (node.nodeKind()) {
-        case "text":
-            return doc.createTextNode(String(node));
-        case "element":
-            let domnode = doc.createElementNS(node.namespace(), node.localName());
-
-            for each (let attr in node.@*::*)
-                if (attr.name() != "highlight")
-                    domnode.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
-
-            for each (let child in node.*::*)
-                domnode.appendChild(fromXML(child, doc, nodes));
-            if (nodes && node.@key)
-                nodes[node.@key] = domnode;
-
-            if ("@highlight" in node)
-                highlight.highlightNode(domnode, String(node.@highlight), nodes || true);
-            return domnode;
-        default:
-            return null;
-        }
-    },
+    fromXML: Class.Memoize(function ()
+               prefs.get("javascript.options.xml.chrome") !== false
+            && require("dom-e4x.xml").fromXML),
 
     fromJSON: update(function fromJSON(xml, doc, nodes, namespaces) {
         if (!doc)
@@ -1892,11 +1853,11 @@ var DOM = Class("DOM", {
     },
 
     namespaces: {
-        xul: XUL.uri,
-        xhtml: XHTML.uri,
-        html: XHTML.uri,
+        xul: XUL,
+        xhtml: XHTML,
+        html: XHTML,
         xhtml2: "http://www.w3.org/2002/06/xhtml2",
-        dactyl: NS.uri
+        dactyl: NS
     },
 
     namespaceNames: Class.Memoize(function ()

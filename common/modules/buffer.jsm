@@ -875,8 +875,8 @@ var Buffer = Module("Buffer", {
         util.timeout(function () { indicator.remove(); }, 500);
 
         // Doesn't unattach
-        //doc.body.setAttributeNS(NS.uri, "activeframe", "true");
-        //util.timeout(function () { doc.body.removeAttributeNS(NS.uri, "activeframe"); }, 500);
+        //doc.body.setAttributeNS(NS, "activeframe", "true");
+        //util.timeout(function () { doc.body.removeAttributeNS(NS, "activeframe"); }, 500);
     },
 
     // similar to pageInfo

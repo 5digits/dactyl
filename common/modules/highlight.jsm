@@ -197,7 +197,7 @@ var Highlights = Module("Highlight", {
      * @param {string} group
      */
     highlightNode: function highlightNode(node, group, applyBindings) {
-        node.setAttributeNS(NS.uri, "highlight", group);
+        node.setAttributeNS(NS, "highlight", group);
 
         let groups = group.split(" ");
         for each (let group in groups)

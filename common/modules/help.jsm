@@ -317,8 +317,8 @@ var Help = Module("Help", {
 
                     data.push("<", node.localName);
                     if (node instanceof Ci.nsIDOMHTMLHtmlElement)
-                        data.push(" xmlns=" + XHTML.uri.quote(),
-                                  " xmlns:dactyl=" + NS.uri.quote());
+                        data.push(" xmlns=" + XHTML.quote(),
+                                  " xmlns:dactyl=" + NS.quote());
 
                     for (let { name, value } in array.iterValues(node.attributes)) {
                         if (name == "dactyl:highlight") {

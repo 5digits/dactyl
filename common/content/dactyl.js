@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-// "use strict";
+"use strict";
 
 /** @scope modules */
 
@@ -1215,22 +1215,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             for (let [, context] in Iterator(plugins.contexts))
                 try {
                     let info = contexts.getDocs(context);
-                    if (info instanceof XML) {
-                        if (info.*.@lang.length()) {
-                            let lang = config.bestLocale(String(a) for each (a in info.*.@lang));
-
-                            info.* = info.*.(function::attribute("lang").length() == 0 || @lang == lang);
-
-                            for each (let elem in info.NS::info)
-                                for (let attr in values(["@name", "@summary", "@href"]))
-                                    if (elem[attr].length())
-                                        info[attr] = elem[attr];
-                        }
-                        body.push(["h2", { xmlns: "dactyl", tag: info.@name + '-plugin' },
-                                       String(info.@summary)]);
-                        body.push(info);
-                    }
-                    else if (DOM.isJSONXML(info)) {
+                    if (DOM.isJSONXML(info)) {
                         let langs = info.slice(2).filter(function (e) isArray(e) && isObject(e[1]) && e[1].lang);
                         if (langs) {
                             let lang = config.bestLocale(l[1].lang for each (l in langs));

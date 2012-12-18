@@ -2,7 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-/* use strict */
+"use strict";
 
 try {
 
@@ -232,10 +232,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         function insert(key, fn) {
             if (obj[key]) {
                 let iterator = Iterator(obj[key]);
-                if (!isObject(obj[key]))
-                    iterator = ([elem.@id, elem.elements(), elem.@*::*.(function::name() != "id")]
-                                for each (elem in obj[key]));
-                else if (isArray(obj[key])) {
+                if (isArray(obj[key])) {
                     iterator = ([elem[1].id, elem.slice(2), elem[1]]
                                 for each (elem in obj[key]))
                 }
@@ -270,13 +267,9 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                             }
 
                         for (let attr in attrs || []) {
-                            let ns, name, localName, val;
-                            if (isXML(attr))
-                                ns = attr.namespace(), localName = attr.localName(),
-                                name = attr.name(), val = String(attr);
-                            else
-                                [ns, localName] = DOM.parseNamespace(attr),
-                                name = attr, val = attrs[attr];
+                            let [ns, localName] = DOM.parseNamespace(attr);
+                            let name = attr;
+                            let val = attrs[attr];
 
                             savedAttrs.push([elem, ns, name, getAttr(elem, ns, name), val]);
                             if (name === "highlight")
