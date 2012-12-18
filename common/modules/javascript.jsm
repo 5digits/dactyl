@@ -13,7 +13,7 @@ defineModule("javascript", {
     require: ["util"]
 });
 
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 let isPrototypeOf = Object.prototype.isPrototypeOf;
 
@@ -354,7 +354,7 @@ var JavaScript = Module("javascript", {
 
         if (!compl) {
             base.process[1] = function highlight(item, v)
-                template_.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true, 200);
+                template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true, 200);
 
             // Sort in a logical fashion for object keys:
             //  Numbers are sorted as numbers, rather than strings, and appear first.
@@ -490,7 +490,7 @@ var JavaScript = Module("javascript", {
                     if (callable(func)) {
                         let [, prefix, args] = /^(function .*?)\((.*?)\)/.exec(Function.prototype.toString.call(func));
                         let n = this._get(i).comma.length;
-                        args = template_.map(Iterator(args.split(", ")),
+                        args = template.map(Iterator(args.split(", ")),
                             function ([i, arg]) ["span", { highlight: i == n ? "Filter" : "" }, arg],
                             ",\u00a0");
                         this.context.message = ["", prefix + "(", args, ")"];

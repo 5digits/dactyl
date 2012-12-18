@@ -11,7 +11,7 @@ defineModule("help", {
 
 lazyRequire("completion", ["completion"]);
 lazyRequire("overlay", ["overlay"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 var HelpBuilder = Class("HelpBuilder", {
     init: function init() {
@@ -166,7 +166,7 @@ var Help = Module("Help", {
                         if (level == 0 && /^.*:\n$/.test(match.par)) {
                             let text = par.slice(0, -1);
                             res.push(["h2", { tag: "news-" + text },
-                                          template_.linkifyHelp(text, true)]);
+                                          template.linkifyHelp(text, true)]);
                         }
                         else {
                             let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(par);
@@ -174,7 +174,7 @@ var Help = Module("Help", {
                             res.push(["p", { "dactyl:highlight": group + " HelpNews" },
                                 !tags.length ? "" : ["hl", { key: "HelpNewsTag" }, tags.join(" ")],
                                 a ? ["hl", { key: "HelpWarning" }, a] : "",
-                                template_.linkifyHelp(b, true)]);
+                                template.linkifyHelp(b, true)]);
                         }
                     }
                     i++;

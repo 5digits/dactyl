@@ -10,7 +10,7 @@ defineModule("styles", {
 });
 
 lazyRequire("contexts", ["Contexts"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 function cssUri(css) "chrome-data:text/css," + encodeURI(css);
 var namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
@@ -35,9 +35,9 @@ Sheet.liveProperty("css");
 Sheet.liveProperty("sites");
 update(Sheet.prototype, {
     formatSites: function (uris)
-          template_.map(this.sites,
-                        function (filter) ["span", { highlight: uris.some(Styles.matchFilter(filter)) ? "Filter" : "" }, filter],
-                        ","),
+          template.map(this.sites,
+                       function (filter) ["span", { highlight: uris.some(Styles.matchFilter(filter)) ? "Filter" : "" }, filter],
+                       ","),
 
     remove: function () { this.hive.remove(this); },
 
@@ -327,9 +327,9 @@ var Styles = Module("Styles", {
                 ["col", { style: "min-width: 1em; text-align: center; color: red; font-weight: bold;" }],
                 ["col", { style: "padding: 0 1em 0 1ex; vertical-align: top;" }],
                 ["col", { style: "padding: 0 1em 0 0; vertical-align: top;" }],
-                template_.map(hives, function (hive) let (i = 0) [
+                template.map(hives, function (hive) let (i = 0) [
                     ["tr", { style: "height: .5ex;" }],
-                    template_.map(sheets(hive), function (sheet)
+                    template.map(sheets(hive), function (sheet)
                         ["tr", {},
                             ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
                             ["td", {}, sheet.enabled ? "" : UTF8("×")],
@@ -744,23 +744,23 @@ var Styles = Module("Styles", {
             return this.highlightRegexp(css, patterns.property, function (match) {
                 if (!match.length)
                     return [];
-                return ["", match.preSpace, template_.filter(match.name), ": ",
+                return ["", match.preSpace, template.filter(match.name), ": ",
 
-                    template_.highlightRegexp(match.value, patterns.token, function (match) {
+                    template.highlightRegexp(match.value, patterns.token, function (match) {
                         if (match.function)
-                            return ["", template_.filter(match.word),
-                                template_.highlightRegexp(match.function, patterns.string,
+                            return ["", template.filter(match.word),
+                                template.highlightRegexp(match.function, patterns.string,
                                     function (match) ["span", { highlight: "String" }, match.string])
                             ];
                         if (match.important == "!important")
                             return ["span", { highlight: "String" }, match.important];
                         if (match.string)
                             return ["span", { highlight: "String" }, match.string];
-                        return template.highlightRegexp(match.wholeMatch, /^(\d+)(em|ex|px|in|cm|mm|pt|pc)?/g,
-                                                        function (m, n, u) [
-                                                            ["span", { highlight: "Number" }, n],
-                                                            ["span", { highlight: "Object" }, u || ""]
-                                                        ]);
+                        return template._highlightRegexp(match.wholeMatch, /^(\d+)(em|ex|px|in|cm|mm|pt|pc)?/g,
+                                                         function (m, n, u) [
+                                                             ["span", { highlight: "Number" }, n],
+                                                             ["span", { highlight: "Object" }, u || ""]
+                                                         ]);
                     }),
                     match.postSpace
                 ]

@@ -15,7 +15,7 @@ defineModule("commands", {
 
 lazyRequire("help", ["help"]);
 lazyRequire("options", ["Option"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 /**
  * A structure representing the options available for a command.
@@ -1712,7 +1712,7 @@ var Commands = Module("commands", {
                 this.iterate(args).filter(function (cmd) cmd.hive === commands.builtin || Set.has(tags, cmd.helpTag)),
             format: {
                 headings: ["Command", "Group", "Description"],
-                description: function (cmd) template_.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),
+                description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),
                 help: function (cmd) ":" + cmd.name
             }
         });

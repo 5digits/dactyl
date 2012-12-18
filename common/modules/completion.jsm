@@ -12,7 +12,7 @@ defineModule("completion", {
 
 lazyRequire("dom", ["DOM"]);
 lazyRequire("messages", ["_", "messages"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 /**
  * Creates a new completion context.
@@ -321,7 +321,7 @@ var CompletionContext = Class("CompletionContext", {
             util.trapErrors("onUpdate", this);
     },
 
-    get createRow() this._createRow || template_.completionRow, // XXX
+    get createRow() this._createRow || template.completionRow, // XXX
     set createRow(createRow) this._createRow = createRow,
 
     get filterFunc() this._filterFunc || util.identity,
@@ -494,7 +494,7 @@ var CompletionContext = Class("CompletionContext", {
         this.processor = Array.slice(this.process);
         if (!this.anchored)
             this.processor[0] = function (item, text) self.process[0].call(self, item,
-                    template_.highlightFilter(item.text, self.filter, null, item.isURI));
+                    template.highlightFilter(item.text, self.filter, null, item.isURI));
 
         try {
             // Item prototypes
@@ -824,7 +824,7 @@ var CompletionContext = Class("CompletionContext", {
             throw Error();
 
         this.offset = 0;
-        this.process = [template_.icon, function (item, k) k];
+        this.process = [template.icon, function (item, k) k];
         this.filters = [CompletionContext.Filter.text];
         this.tabPressed = false;
         this.title = ["Completions"];
@@ -937,9 +937,9 @@ var Completion = Module("completion", {
 
             modules.commandline.commandOutput(
                 ["div", { highlight: "Completions" },
-                    template_.map(contexts, function (context)
-                        [template_.completionRow(context.title, "CompTitle"),
-                         template_.map(context.items, function (item) context.createRow(item), null, 100)])]);
+                    template.map(contexts, function (context)
+                        [template.completionRow(context.title, "CompTitle"),
+                         template.map(context.items, function (item) context.createRow(item), null, 100)])]);
         },
     }),
 
@@ -1090,7 +1090,7 @@ var Completion = Module("completion", {
                                    contains(item.title, tok)));
 
             let re = RegExp(tokens.filter(util.identity).map(util.regexp.escape).join("|"), "g");
-            function highlight(item, text, i) process[i].call(this, item, template_.highlightRegexp(text, re));
+            function highlight(item, text, i) process[i].call(this, item, template.highlightRegexp(text, re));
             let process = context.process;
             context.process = [
                 function (item, text) highlight.call(this, item, item.text, 0),
@@ -1121,9 +1121,9 @@ var Completion = Module("completion", {
             function (args) {
                 modules.commandline.commandOutput(
                     ["div", { highlight: "Completions" },
-                        template_.completionRow(["Context", "Title"], "CompTitle"),
-                        template_.map(completion.contextList || [],
-                                      function (item) template_.completionRow(item, "CompItem"))]);
+                        template.completionRow(["Context", "Title"], "CompTitle"),
+                        template.map(completion.contextList || [],
+                                     function (item) template.completionRow(item, "CompItem"))]);
             },
             {
                 argCount: "*",

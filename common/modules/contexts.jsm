@@ -13,7 +13,7 @@ lazyRequire("commands", ["ArgType", "CommandOption", "commands"]);
 lazyRequire("options", ["Option"]);
 lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["File"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 var Const = function Const(val) Class.Property({ enumerable: true, value: val });
 
@@ -79,10 +79,10 @@ var Group = Class("Group", {
             toString: function () this.filters.join(","),
 
             toJSONXML: function (modules) let (uri = modules && modules.buffer.uri)
-                template_.map(this.filters,
-                              function (f) ["span", { highlight: uri && f(uri) ? "Filter" : "" },
-                                                "toJSONXML" in f ? f.toJSONXML() : String(f)],
-                              ","),
+                template.map(this.filters,
+                             function (f) ["span", { highlight: uri && f(uri) ? "Filter" : "" },
+                                               "toJSONXML" in f ? f.toJSONXML() : String(f)],
+                             ","),
 
             filters: Option.parse.sitelist(patterns)
         });

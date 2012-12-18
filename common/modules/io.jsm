@@ -18,7 +18,7 @@ lazyRequire("config", ["config"]);
 lazyRequire("contexts", ["Contexts", "contexts"]);
 lazyRequire("storage", ["File", "storage"]);
 lazyRequire("styles", ["styles"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 // TODO: why are we passing around strings rather than file objects?
 /**
@@ -865,7 +865,7 @@ unlet s:cpo_save
                     dactyl.echomsg(_("command.scriptnames.none"));
                 else
                     modules.commandline.commandOutput(
-                        template_.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
+                        template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
                             ([i + 1, file] for ([i, file] in Iterator(names)))));
 
             },

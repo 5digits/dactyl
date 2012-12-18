@@ -15,7 +15,7 @@ defineModule("util", {
 
 lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["File", "storage"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 var Magic = Class("Magic", {
     init: function init(str) {
@@ -987,8 +987,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
 
         if (color) {
-            obj = template_.highlightFilter(util.clip(obj, 150), "\n",
-                                            function () ["span", { highlight: "NonText" }, "^J"]);
+            obj = template.highlightFilter(util.clip(obj, 150), "\n",
+                                           function () ["span", { highlight: "NonText" }, "^J"]);
             var head = ["span", { highlight: "Title Object" }, obj, "::\n"];
         }
         else
@@ -1029,7 +1029,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     i = "";
 
                 if (color)
-                    value = template_.highlight(value, true, 150, !color);
+                    value = template.highlight(value, true, 150, !color);
                 else
                     value = util.clip(String(value).replace(/\n/g, "^J"), 150);
 
@@ -1053,7 +1053,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             return String.localeCompare(a[0], b[0]);
         }
 
-        let vals = template_.map(keys.sort(compare), function (f) f[1], "\n");
+        let vals = template.map(keys.sort(compare), function (f) f[1], "\n");
         if (color) {
             return ["div", { style: "white-space: pre-wrap" }, head, vals];
         }

@@ -19,7 +19,7 @@ lazyRequire("commands", ["Commands"]);
 lazyRequire("completion", ["CompletionContext"]);
 lazyRequire("prefs", ["prefs"]);
 lazyRequire("styles", ["Styles"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 /** @scope modules */
 
@@ -874,18 +874,18 @@ var Options = Module("options", {
                     }
                     else if (isArray(opt.value) && opt.type != "charlist")
                         option.value = ["", "=",
-                                        template_.map(opt.value,
-                                                      function (v) template_.highlight(String(v)),
-                                                      ["", ",",
-                                                       ["span", { style: "width: 0; display: inline-block" }, " "]])];
+                                        template.map(opt.value,
+                                                     function (v) template.highlight(String(v)),
+                                                     ["", ",",
+                                                      ["span", { style: "width: 0; display: inline-block" }, " "]])];
                     else
-                        option.value = ["", "=", template_.highlight(opt.stringValue)];
+                        option.value = ["", "=", template.highlight(opt.stringValue)];
                     yield option;
                 }
             };
 
             modules.commandline.commandOutput(
-                template_.options("Options", opts.call(this), this["verbose"] > 0));
+                template.options("Options", opts.call(this), this["verbose"] > 0));
         },
 
         cleanup: function cleanup() {
@@ -1082,7 +1082,7 @@ var Options = Module("options", {
                             ? ["span", { highlight: "URLExtra" },
                                   "(" + _("option.bufferLocal") + ")"]
                             : "",
-                        template_.linkifyHelp(opt.description)
+                        template.linkifyHelp(opt.description)
                 ],
                 help: function (opt) "'" + opt.name + "'"
             }

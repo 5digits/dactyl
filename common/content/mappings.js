@@ -770,9 +770,9 @@ var Mappings = Module("mappings", {
                 description: function (map) [
                         options.get("passkeys").has(map.name)
                             ? ["span", { highlight: "URLExtra" },
-                                "(", template_.linkifyHelp(_("option.passkeys.passedBy")), ")"]
+                                "(", template.linkifyHelp(_("option.passkeys.passedBy")), ")"]
                             : [],
-                        template_.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))
+                        template.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))
                 ],
                 help: function (map) let (char = array.compact(map.modes.map(function (m) m.char))[0])
                     char === "n" ? map.name : char ? char + "_" + map.name : "",

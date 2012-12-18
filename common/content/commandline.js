@@ -1578,7 +1578,7 @@ var CommandLine = Module("commandline", {
         else if (callable(arg))
             arg = String.replace(arg, "/* use strict */ \n", "/* use strict */ ");
         else if (!isString(arg) && useColor)
-            arg = template_.highlight(arg);
+            arg = template.highlight(arg);
         return arg;
     }
 }, {
@@ -1621,7 +1621,7 @@ var CommandLine = Module("commandline", {
                 }
                 else if (commandline._messageHistory.length > 1) {
                     commandline.commandOutput(
-                        template_.map(commandline._messageHistory.messages, function (message)
+                        template.map(commandline._messageHistory.messages, function (message)
                            ["div", { highlight: message.highlight + " Message" },
                                message.message]));
                 }
@@ -1894,7 +1894,7 @@ var ItemList = Class("ItemList", {
                 ["div", { key: "completions" }]],
 
             ["div", { highlight: "Completions" },
-                template_.map(util.range(0, options["maxitems"] * 2), function (i)
+                template.map(util.range(0, options["maxitems"] * 2), function (i)
                     ["div", { highlight: "CompItem NonText" },
                         "~"])]],
 

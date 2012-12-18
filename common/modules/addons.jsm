@@ -13,7 +13,7 @@ defineModule("addons", {
 });
 
 this.lazyRequire("completion", ["completion"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 var callResult = function callResult(method) {
     let args = Array.slice(arguments, 1);

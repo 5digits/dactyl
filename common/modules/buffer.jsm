@@ -16,7 +16,7 @@ lazyRequire("io", ["io"]);
 lazyRequire("finder", ["RangeFind"]);
 lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["File", "storage"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 /**
  * A class to manage the primary web content buffer. The name comes
@@ -909,7 +909,7 @@ var Buffer = Module("Buffer", {
             let file = this.win.location.pathname.split("/").pop() || _("buffer.noName");
             let title = this.win.document.title || _("buffer.noTitle");
 
-            let info = template_.map(
+            let info = template.map(
                 (sections || options["pageinfo"])
                     .map(function (opt) Buffer.pageInfo[opt].action.call(self)),
                 function (res) res && iter(res).join(", ") || undefined,
@@ -923,9 +923,9 @@ var Buffer = Module("Buffer", {
             return;
         }
 
-        let list = template_.map(sections || options["pageinfo"], function (option) {
+        let list = template.map(sections || options["pageinfo"], function (option) {
             let { action, title } = Buffer.pageInfo[option];
-            return template_.table(title, action.call(self, true));
+            return template.table(title, action.call(self, true));
         }, ["br"]);
 
         commandline.commandOutput(list);
@@ -2430,7 +2430,7 @@ Buffer.addPageInfoSection("f", "Feeds", function (verbose) {
                 nFeed++;
                 let type = feedTypes[feed.type] || "RSS";
                 if (verbose)
-                    yield [feed.title, [template_.highlightURL(feed.href, true),
+                    yield [feed.title, [template.highlightURL(feed.href, true),
                                         ["span", { class: "extra-info" }, " (" + type + ")"]]];
             }
         }
@@ -2479,11 +2479,11 @@ Buffer.addPageInfoSection("g", "General Info", function (verbose) {
     }
 
     yield ["Title", doc.title];
-    yield ["URL", template_.highlightURL(doc.location.href, true)];
+    yield ["URL", template.highlightURL(doc.location.href, true)];
 
     let ref = "referrer" in doc && doc.referrer;
     if (ref)
-        yield ["Referrer", template_.highlightURL(ref, true)];
+        yield ["Referrer", template.highlightURL(ref, true)];
 
     if (pageSize[0])
         yield ["File Size", pageSize[1] ? pageSize[1] + " (" + pageSize[0] + ")"
@@ -2504,7 +2504,7 @@ Buffer.addPageInfoSection("m", "Meta Tags", function (verbose) {
     let metaNodes = this.focusedFrame.document.getElementsByTagName("meta");
 
     return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv),
-                                                 template_.highlightURL(node.content)])
+                                                 template.highlightURL(node.content)])
                 .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
 });
 

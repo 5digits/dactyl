@@ -253,7 +253,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     results = results.filter(function (item) filters.every(function (re) keys(item).some(re.closure.test)));
 
                 commandline.commandOutput(
-                    template_.usage(results, params.format));
+                    template.usage(results, params.format));
             },
             {
                 argCount: "*",
@@ -693,7 +693,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             };
         }
         else if (obj instanceof Option) {
-            spec = function () template_.map(obj.names, tag, " ");
+            spec = function () template.map(obj.names, tag, " ");
             tag = function (name) DOM.DOMString("'" + name + "'");
             link = function (opt, name) ["o", {}, name];
             args = { value: "", values: [] };
@@ -702,23 +702,23 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let res = [
                 ["dt", {}, link(obj.helpTag || tag(obj.name), obj.name)],
                 ["dd", {},
-                    template_.linkifyHelp(obj.description ? obj.description.replace(/\.$/, "") : "", true)]];
+                    template.linkifyHelp(obj.description ? obj.description.replace(/\.$/, "") : "", true)]];
         if (specOnly)
             return res;
 
         let description = ["description", {},
-            obj.description ? ["p", {}, template_.linkifyHelp(obj.description.replace(/\.?$/, "."), true)] : "",
+            obj.description ? ["p", {}, template.linkifyHelp(obj.description.replace(/\.?$/, "."), true)] : "",
             extraHelp ? extraHelp : "",
             !(extraHelp || obj.description) ? ["p", {}, /*L*/ "Sorry, no help available."] : ""]
 
         res.push(
             ["item", {},
-                ["tags", {}, template_.map(obj.names.slice().reverse(),
-                                           tag,
-                                           " ").join("")],
+                ["tags", {}, template.map(obj.names.slice().reverse(),
+                                          tag,
+                                          " ").join("")],
                 ["spec", {},
                     let (name = (obj.specs || obj.names)[0])
-                          spec(template_.highlightRegexp(tag(name),
+                          spec(template.highlightRegexp(tag(name),
                                /\[(.*?)\]/g,
                                function (m, n0) ["oa", {}, n0]),
                                name)],
@@ -729,9 +729,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         function add(ary) {
             description.push(
-                ["dl", {}, template_.map(ary,
-                                         function ([a, b]) [["dt", {}, a], " ",
-                                                            ["dd", {}, b]])]);
+                ["dl", {}, template.map(ary,
+                                        function ([a, b]) [["dt", {}, a], " ",
+                                                           ["dd", {}, b]])]);
         }
 
         if (obj.completer && false)
@@ -745,7 +745,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         [o.description,
                          o.names.length == 1 ? "" :
                              ["", " (short name: ",
-                                 template_.map(o.names.slice(1), function (n) ["em", {}, n], ", "),
+                                 template.map(o.names.slice(1), function (n) ["em", {}, n], ", "),
                               ")"]]
                     ]));
 
@@ -1144,7 +1144,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 error.message = prefix + error.message;
 
             if (error.message)
-                dactyl.echoerr(template_.linkifyHelp(error.message));
+                dactyl.echoerr(template.linkifyHelp(error.message));
             else
                 dactyl.beep();
 
@@ -1267,9 +1267,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         cache.register("help/index.xml", function () {
             return '<?xml version="1.0"?>\n' +
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
-                       template_.map(dactyl.indices, function ([name, iter])
+                       template.map(dactyl.indices, function ([name, iter])
                            ["dl", { insertafter: name + "-index" },
-                               template_.map(iter(), util.identity)],
+                               template.map(iter(), util.identity)],
                            "\n\n")]);
         });
 
@@ -1277,7 +1277,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return '<?xml version="1.0"?>\n' +
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
                        ["dl", { insertafter: "dialog-list" },
-                           template_.map(config.dialogs, function ([name, val])
+                           template.map(config.dialogs, function ([name, val])
                                (!val[2] || val[2]())
                                    ? [["dt", {}, name],
                                       ["dd", {}, val[0]]]
@@ -1289,12 +1289,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return '<?xml version="1.0"?>\n' +
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
                        ["dl", { insertafter: "sanitize-items" },
-                           template_.map(options.get("sanitizeitems").values
+                           template.map(options.get("sanitizeitems").values
                                                 .sort(function (a, b) String.localeCompare(a.name,
                                                                                            b.name)),
                                function ({ name, description })
                                [["dt", {}, name],
-                                ["dd", {}, template_.linkifyHelp(description, true)]],
+                                ["dd", {}, template.linkifyHelp(description, true)]],
                                "\n")]]);
         });
     },

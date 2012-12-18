@@ -265,7 +265,7 @@ var Marks = Module("marks", {
         }
 
         commandline.commandOutput(
-            template_.tabular(
+            template.tabular(
                 ["Mark",   "HPos",              "VPos",              "File"],
                 ["",       "text-align: right", "text-align: right", "color: green"],
                 ([name,

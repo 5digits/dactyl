@@ -1044,7 +1044,7 @@ var Tabs = Module("tabs", {
                     item.indicator],
                 next.call(this, item, text)
             ]);
-            context.process[1] = function (item, text) template_.bookmarkDescription(item, template_.highlightFilter(text, this.filter));
+            context.process[1] = function (item, text) template.bookmarkDescription(item, template.highlightFilter(text, this.filter));
 
             context.anchored = false;
             context.keys = {

@@ -10,7 +10,7 @@ defineModule("highlight", {
 });
 
 lazyRequire("styles", ["Styles", "styles"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 var Highlight = Struct("class", "selector", "sites",
                        "defaultExtends", "defaultValue",
@@ -346,14 +346,14 @@ var Highlights = Module("Highlight", {
 
                 if (!modify)
                     modules.commandline.commandOutput(
-                        template_.tabular(["Key", "Sample", "Link", "CSS"],
+                        template.tabular(["Key", "Sample", "Link", "CSS"],
                             ["padding: 0 1em 0 0; vertical-align: top; max-width: 16em; overflow: hidden;",
                              "text-align: center"],
                             ([h.class,
                               ["span", { style: "text-align: center; line-height: 1em;" + h.value + style }, "XXX"],
-                              template_.map(h.extends, function (s) template_.highlight(s), ","),
-                              template_.highlightRegexp(h.value, /\b[-\w]+(?=:)|\/\*.*?\*\//g,
-                                                        function (match) ["span", { highlight: match[0] == "/" ? "Comment" : "Key" }, match])
+                              template.map(h.extends, function (s) template.highlight(s), ","),
+                              template.highlightRegexp(h.value, /\b[-\w]+(?=:)|\/\*.*?\*\//g,
+                                                       function (match) ["span", { highlight: match[0] == "/" ? "Comment" : "Key" }, match])
                              ]
                              for (h in highlight)
                              if (!key || h.class.indexOf(key) > -1))));

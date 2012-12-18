@@ -37,7 +37,7 @@ var Bookmarks = Module("bookmarks", {
         anchored: false,
         title: ["URL", "Info"],
         keys: { text: "url", description: "title", icon: "icon", extra: "extra", tags: "tags", isURI: function () true },
-        process: [template_.icon, template_.bookmarkDescription]
+        process: [template.icon, template.bookmarkDescription]
     }),
 
     // TODO: why is this a filter? --djk

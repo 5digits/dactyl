@@ -11,7 +11,7 @@ defineModule("dom", {
 
 lazyRequire("highlight", ["highlight"]);
 lazyRequire("messages", ["_"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
 var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
@@ -579,7 +579,7 @@ var DOM = Class("DOM", {
                     res.push(["span", { highlight: "HelpXML" },
                         ["span", { highlight: "HelpXMLTagStart" },
                             "<", namespaced(elem), " ",
-                            template_.map(array.iterValues(elem.attributes),
+                            template.map(array.iterValues(elem.attributes),
                                 function (attr) [
                                     ["span", { highlight: "HelpXMLAttribute" }, namespaced(attr)],
                                     ["span", { highlight: "HelpXMLString" }, attr.value]
@@ -603,7 +603,7 @@ var DOM = Class("DOM", {
                 res.push({}.toString.call(elem));
             }
         }, this);
-        res = template_.map(res, util.identity, ",");
+        res = template.map(res, util.identity, ",");
         return color ? res : res.join("");
     },
 

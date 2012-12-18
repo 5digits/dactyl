@@ -20,7 +20,7 @@ defineModule("sanitizer", {
 lazyRequire("messages", ["_"]);
 lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["storage"]);
-lazyRequire("template", ["template", "template_"]);
+lazyRequire("template", ["template"]);
 
 let tmp = Object.create(this);
 JSMLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);
@@ -168,7 +168,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             before: [
                 ["preferences", { id: branch.substr(Item.PREFIX.length) + "history",
                                   xmlns: "xul" },
-                  template_.map(ourItems(persistent), function (item)
+                  template.map(ourItems(persistent), function (item)
                       ["preference", { type: "bool", id: branch + item.name, name: branch + item.name }])]
             ],
             init: function init(win) {
@@ -194,9 +194,9 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                     ["column", { flex: "1" }]],
                                 ["rows", {},
                                   let (items = ourItems(true))
-                                     template_.map(util.range(0, Math.ceil(items.length / 2)), function (i)
+                                     template.map(util.range(0, Math.ceil(items.length / 2)), function (i)
                                          ["row", {},
-                                             template_.map(items.slice(i * 2, i * 2 + 2), function (item)
+                                             template.map(items.slice(i * 2, i * 2 + 2), function (item)
                                                 ["checkbox", { xmlns: XUL, label: item.description, preference: branch + item.name }])])]]],
                     }
                 }));
@@ -208,7 +208,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         itemList: [
                             ["listitem", { xmlns: "xul", label: /*L*/"See :help privacy for the following:",
                                            disabled: "true", style: "font-style: italic; font-weight: bold;" }],
-                            template_.map(ourItems(), function ([item, desc])
+                            template.map(ourItems(), function ([item, desc])
                                 ["listitem", { xmlns: "xul", preference: branch + item,
                                                type: "checkbox", label: config.appName + ", " + desc,
                                                onsyncfrompreference: "return gSanitizePromptDialog.onReadGeneric();" }]),
@@ -524,7 +524,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                             return;
 
                         case "list":
-                            modules.commandline.commandOutput(template_.tabular(
+                            modules.commandline.commandOutput(template.tabular(
                                 ["Host", "Expiry (UTC)", "Path", "Name", "Value"],
                                 ["padding-right: 1em", "padding-right: 1em", "padding-right: 1em", "max-width: 12em; overflow: hidden;", "padding-left: 1ex;"],
                                 ([c.host,
