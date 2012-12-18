@@ -498,7 +498,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             }
             function setPerms(host, perm) {
                 let uri = util.createURI(host);
-                services.permissions.remove(uri, "cookie");
+                services.permissions.remove(uri.host, "cookie");
                 services.permissions.add(uri, "cookie", Sanitizer.PERMS[perm]);
             }
             commands.add(["cookies", "ck"],

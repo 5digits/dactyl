@@ -719,6 +719,15 @@ var DOM = Class("DOM", {
         }, this);
     },
 
+    fragment: function fragment() {
+        let frag = this.document.createDocumentFragment();
+        this.appendTo(frag);
+        return this;
+    },
+
+    clone: function clone(deep)
+        this.map(function (elem) elem.cloneNode(deep)),
+
     toggle: function toggle(val, self) {
         if (callable(val))
             return this.each(function (elem, i) {
@@ -1535,6 +1544,8 @@ var DOM = Class("DOM", {
                 return args.toDOM(doc, namespaces, nodes);
             if (args instanceof Ci.nsIDOMNode)
                 return args;
+            if (args instanceof DOM)
+                return args.fragment();
             if ("toJSONXML" in args)
                 args = args.toJSONXML();
 
