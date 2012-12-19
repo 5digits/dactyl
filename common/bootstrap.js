@@ -5,6 +5,7 @@
 //
 // See https://wiki.mozilla.org/Extension_Manager:Bootstrapped_Extensions
 // for details.
+"use strict";
 
 const global = this;
 
@@ -16,9 +17,9 @@ const DEBUG = true;
 
 __defineGetter__("BOOTSTRAP", function () "resource://" + moduleName + "/bootstrap.jsm");
 
-const { AddonManager } = module("resource://gre/modules/AddonManager.jsm");
-const { XPCOMUtils }   = module("resource://gre/modules/XPCOMUtils.jsm");
-const { Services }     = module("resource://gre/modules/Services.jsm");
+var { AddonManager } = module("resource://gre/modules/AddonManager.jsm");
+var { XPCOMUtils }   = module("resource://gre/modules/XPCOMUtils.jsm");
+var { Services }     = module("resource://gre/modules/Services.jsm");
 
 const resourceProto = Services.io.getProtocolHandler("resource")
                               .QueryInterface(Ci.nsIResProtocolHandler);
@@ -262,8 +263,7 @@ function init() {
 
     Services.obs.notifyObservers(null, "dactyl-rehash", null);
 
-    JSMLoader.name = name;
-    JSMLoader.bootstrap = this;
+    JSMLoader.bootstrap = global;
 
     JSMLoader.load("config", global);
     JSMLoader.load("main", global);
@@ -300,8 +300,8 @@ function init() {
  * Performs necessary migrations after a version change.
  */
 function updateVersion() {
+    function isDev(ver) /^hg|pre$/.test(ver);
     try {
-        function isDev(ver) /^hg|pre$/.test(ver);
         if (typeof require === "undefined" || addon === addonData)
             return;
 
