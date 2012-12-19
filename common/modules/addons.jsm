@@ -220,7 +220,7 @@ var Addon = Class("Addon", {
             DOM(node).append(isArray(xml) || isXML(xml) ? xml : DOM.DOMString(xml));
         }
 
-        update("name", template_.icon({ icon: this.iconURL }, this.name));
+        update("name", template.icon({ icon: this.iconURL }, this.name));
         this.nodes.version.textContent = this.version;
         update("status", this.statusInfo);
         this.nodes.description.textContent = this.description;

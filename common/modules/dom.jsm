@@ -782,7 +782,7 @@ var DOM = Class("DOM", {
     html: function html(txt, self) {
         return this.getSet(arguments,
                            function (elem) elem.innerHTML,
-                           function (elem, val) { elem.innerHTML = val });
+                           util.wrapCallback(function (elem, val) { elem.innerHTML = val }));
     },
 
     text: function text(txt, self) {
