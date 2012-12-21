@@ -400,7 +400,7 @@ var Downloads = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
         services.downloadManager.addListener(this);
     },
 
-    destroy: function destroy() {
+    cleanup: function destroy() {
         services.downloadManager.removeListener(this);
     },
 
