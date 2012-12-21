@@ -270,8 +270,8 @@ function deprecated(alternative, fn) {
 deprecated.warn = function warn(func, name, alternative, frame) {
     if (!func.seenCaller)
         func.seenCaller = Set([
-            "resource://dactyl" + JSMLoader.suffix + "/javascript.jsm",
-            "resource://dactyl" + JSMLoader.suffix + "/util.jsm"
+            "resource://dactyl/javascript.jsm",
+            "resource://dactyl/util.jsm"
         ]);
 
     frame = frame || Components.stack.caller.caller;

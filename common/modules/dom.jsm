@@ -11,6 +11,7 @@ defineModule("dom", {
 
 lazyRequire("highlight", ["highlight"]);
 lazyRequire("messages", ["_"]);
+lazyRequire("prefs", ["prefs"]);
 lazyRequire("template", ["template"]);
 
 var XBL = "http://www.mozilla.org/xbl";
@@ -1022,6 +1023,9 @@ var DOM = Class("DOM", {
                 }
 
             for (let [k, v] in Iterator(Ci.nsIDOMKeyEvent)) {
+                if (!/^DOM_VK_/.test(k))
+                    continue;
+
                 this.code_nativeKey[v] = k.substr(4);
 
                 k = k.substr(7).toLowerCase();
@@ -1525,9 +1529,9 @@ var DOM = Class("DOM", {
      *     stored here, keyed to the value thereof.
      * @returns {Node}
      */
-    fromXML: Class.Memoize(function ()
+    fromXML: deprecated("DOM.fromJSON", { get: function fromXML()
                prefs.get("javascript.options.xml.chrome") !== false
-            && require("dom-e4x.xml").fromXML),
+            && require("dom-e4x").fromXML }),
 
     fromJSON: update(function fromJSON(xml, doc, nodes, namespaces) {
         if (!doc)

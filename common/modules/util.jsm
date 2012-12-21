@@ -89,6 +89,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     parseForm: deprecated("DOM#formData", function parseForm(elem) values(DOM(elem).formData).toArray()),
     scrollIntoView: deprecated("DOM#scrollIntoView", function scrollIntoView(elem, alignWithTop) DOM(elem).scrollIntoView(alignWithTop)),
     validateMatcher: deprecated("DOM.validateMatcher", { get: function validateMatcher() DOM.validateMatcher }),
+    xmlToDom: deprecated("DOM.fromJSON", function xmlToDom() DOM.fromXML.apply(DOM, arguments)),
 
     map: deprecated("iter.map", function map(obj, fn, self) iter(obj).map(fn, self).toArray()),
     writeToClipboard: deprecated("dactyl.clipboardWrite", function writeToClipboard(str, verbose) util.dactyl.clipboardWrite(str, verbose)),
@@ -1702,9 +1703,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         catch (e) {
             throw e.stack ? e : Error(e);
         }
-    },
-
-    xmlToDom: function () DOM.fromXML.apply(DOM, arguments)
+    }
 }, {
     Array: array
 });
