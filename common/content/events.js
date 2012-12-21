@@ -661,13 +661,15 @@ var Events = Module("events", {
             let duringFeed = this.duringFeed || [];
             this.duringFeed = [];
             try {
-                if (DOM.Event.feedingEvent)
-                    for (let [k, v] in Iterator(DOM.Event.feedingEvent))
+                let ourEvent = DOM.Event.feedingEvent;
+                DOM.Event.feedingEvent = null;
+                if (ourEvent)
+                    for (let [k, v] in Iterator(ourEvent))
                         if (!(k in event))
                             event[k] = v;
-                DOM.Event.feedingEvent = null;
 
-                let key = DOM.Event.stringify(event);
+                let key = DOM.Event.stringify(ourEvent || event);
+                event.dactylString = key;
 
                 // Hack to deal with <BS> and so forth not dispatching input
                 // events

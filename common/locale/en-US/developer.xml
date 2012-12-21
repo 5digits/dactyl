@@ -24,9 +24,8 @@
 </p>
 
 <xml-block><item>
-    <tags>&lt;F1> :help :h help</tags>
+    <tags>:help :h help</tags>
     <spec>:h<oa>elp</oa> <oa>subject</oa></spec>
-    <spec>&lt;F1></spec>
     <description>
         <p>
             Open the help page. The default page, as specified by <o>helpfile</o> is shown
@@ -37,11 +36,11 @@
 </item></xml-block>
 
 <p>
-    creates a new help section for the command <ex>:help</ex> and for
-    the related key binding, <k name="F1"/>. It also creates help tags
-    for the command, its shortcuts, the key binding, and the general
-    topic, ‘help’. These tags enable linking to this section from
-    other mentions of the topic and from the <ex>:help</ex> command.
+    creates a new help section for the command <ex>:help</ex>. It
+    also creates help tags for the command, its shortcuts, the key
+    binding, and the general topic, ‘help’. These tags enable
+    linking to this section from other mentions of the topic and
+    from the <ex>:help</ex> command.
 </p>
 
 <h3 tag="help-tags help-xml">Help tags</h3>

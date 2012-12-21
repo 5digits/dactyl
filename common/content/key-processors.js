@@ -159,7 +159,7 @@ var ProcessorStack = Class("ProcessorStack", {
         if (this.timer)
             this.timer.cancel();
 
-        let key = DOM.Event.stringify(event);
+        let key = event.dactylString || DOM.Event.stringify(event);
         this.events.push(event);
         if (this.keyEvents)
             this.keyEvents.push(event);
@@ -233,7 +233,7 @@ var KeyProcessor = Class("KeyProcessor", {
 
     append: function append(event) {
         this.events.push(event);
-        let key = DOM.Event.stringify(event);
+        let key = event.dactylString || DOM.Event.stringify(event);
 
         if (this.wantCount && !this.command &&
                 (this.countStr ? /^[0-9]$/ : /^[1-9]$/).test(key))

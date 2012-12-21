@@ -217,7 +217,7 @@ var Addon = Class("Addon", {
             while (node.firstChild)
                 node.removeChild(node.firstChild);
 
-            DOM(node).append(isArray(xml) || isXML(xml) ? xml : DOM.DOMString(xml));
+            DOM(node).append(isArray(xml) ? xml : DOM.DOMString(xml));
         }
 
         update("name", template.icon({ icon: this.iconURL }, this.name));

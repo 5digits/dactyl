@@ -2291,7 +2291,7 @@ var ItemList = Class("ItemList", {
                 DOM(this.nodes.message).empty()
                     .append(DOM.fromJSON(this.context.message, this.doc));
 
-            if (!this.selectedIdx > this.itemCount)
+            if (this.selectedIdx > this.itemCount)
                 this.selectedIdx = null;
         },
 

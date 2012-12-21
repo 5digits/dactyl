@@ -445,17 +445,6 @@ var Help = Module("Help", {
                 context.keys = { text: 0, description: function () "all" };
         };
     },
-    mappings: function initMappings(dactyl, modules, window) {
-        const { help, mappings, modes } = modules;
-
-        mappings.add([modes.MAIN], ["<open-help>", "<F1>"],
-            "Open the introductory help page",
-            function () { help.help(); });
-
-        mappings.add([modes.MAIN], ["<open-single-help>", "<A-F1>"],
-            "Open the single, consolidated help page",
-            function () { modules.ex.helpall(); });
-    },
     javascript: function initJavascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter([modules.help.exportHelp],
             [function (context, args) overlay.activeModules.completion.file(context)]);
