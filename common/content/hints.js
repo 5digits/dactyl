@@ -569,7 +569,9 @@ var HintSession = Class("HintSession", CommandMode, {
     /**
      * Display the hints in pageHints that are still valid.
      */
+    showCount: 0,
     show: function _show() {
+        let count = ++this.showCount;
         let hintnum = 1;
         let validHint = hints.hintMatcher(this.hintString.toLowerCase());
         let activeHint = this.hintNumber || 1;
@@ -581,6 +583,9 @@ var HintSession = Class("HintSession", CommandMode, {
 
         inner:
             for (let i in (util.interruptibleRange(start, end + 1, 500))) {
+                if (this.showCount != count)
+                    return;
+
                 let hint = this.pageHints[i];
 
                 hint.valid = validHint(hint.text);
