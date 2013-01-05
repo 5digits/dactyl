@@ -146,7 +146,7 @@ defineModule("base", {
         "debuggerProperties", "defineModule", "deprecated", "endModule", "forEach", "isArray",
         "isGenerator", "isinstance", "isObject", "isString", "isSubclass", "isXML", "iter",
         "iterAll", "iterOwnProperties", "keys", "literal", "memoize", "octal", "properties",
-        "require", "set", "update", "values"
+        "require", "set", "update", "values", "update_"
     ]
 });
 
@@ -598,7 +598,7 @@ function memoize(obj, key, getter) {
     }
 }
 
-let sandbox = Cu.Sandbox(Cu.getGlobalForObject(this));
+let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance());
 sandbox.__proto__ = this;
 
 /**
@@ -632,11 +632,38 @@ function update(target) {
                 if (typeof desc.value === "function" && target.__proto__ && !(desc.value instanceof Ci.nsIDOMElement /* wtf? */)) {
                     let func = desc.value.wrapped || desc.value;
                     if (!func.superapply) {
-                        func.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
+                        func.__defineGetter__("super", function get_super() Object.getPrototypeOf(target)[k]);
                         func.superapply = function superapply(self, args)
                             let (meth = Object.getPrototypeOf(target)[k])
                                 meth && meth.apply(self, args);
                         func.supercall = function supercall(self)
+                            func.superapply(self, Array.slice(arguments, 1));
+                    }
+                }
+                Object.defineProperty(target, k, desc);
+            }
+            catch (e) {}
+        });
+    }
+    return target;
+}
+function update_(target) {
+    for (let i = 1; i < arguments.length; i++) {
+        let src = arguments[i];
+        Object.getOwnPropertyNames(src || {}).forEach(function (k) {
+            let desc = Object.getOwnPropertyDescriptor(src, k);
+            if (desc.value instanceof Class.Property)
+                desc = desc.value.init(k, target) || desc.value;
+
+            try {
+                if (typeof desc.value === "function" && target.__proto__ && !(desc.value instanceof Ci.nsIDOMElement /* wtf? */)) {
+                    let func = desc.value.wrapped || desc.value;
+                    if (!func.superapply) {
+                        func.__defineGetter__("super", function get_super_() Object.getPrototypeOf(target)[k]);
+                        func.superapply = function super_apply(self, args)
+                            let (meth = Object.getPrototypeOf(target)[k])
+                                meth && meth.apply(self, args);
+                        func.supercall = function super_call(self)
                             func.superapply(self, Array.slice(arguments, 1));
                     }
                 }

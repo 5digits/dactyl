@@ -173,7 +173,7 @@ var Template = Module("Template", {
         !(item.extra && item.extra.length) ? [] :
         ["span", { highlight: "URLExtra" },
             " (",
-            this.map(item.extra, function (e)
+            template.map(item.extra, function (e)
                 ["", e[0], ": ",
                  ["span", { highlight: e[2] }, e[1]]],
                 "\u00a0"),

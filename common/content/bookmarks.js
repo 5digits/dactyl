@@ -135,7 +135,7 @@ var Bookmarks = Module("bookmarks", {
 
     checkBookmarked: function checkBookmarked(uri) {
         if (PlacesUtils.asyncGetBookmarkIds)
-            PlacesUtils.asyncGetBookmarkIds(uri, function (ids) {
+            PlacesUtils.asyncGetBookmarkIds(uri, function withBookmarkIDs(ids) {
                 statusline.bookmarked = ids.length;
             });
         else

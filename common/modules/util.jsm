@@ -64,7 +64,7 @@ var wrapCallback = function wrapCallback(fn, isEvent) {
 var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     Magic: Magic,
 
-    init: function () {
+    init: function init() {
         this.Array = array;
 
         this.addObserver(this);
@@ -104,7 +104,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             var global = Class.objectGlobal(obj);
 
         return {
-            __noSuchMethod__: function (meth, args) {
+            __noSuchMethod__: function __noSuchMethod__(meth, args) {
                 let win = overlay.activeWindow;
 
                 var dactyl = global && global.dactyl || win && win.dactyl;
@@ -118,7 +118,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
         };
     }, {
-        __noSuchMethod__: function () this().__noSuchMethod__.apply(null, arguments)
+        __noSuchMethod__: function __noSuchMethod__() this().__noSuchMethod__.apply(null, arguments)
     }),
 
     /**
@@ -173,7 +173,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} message The message to present to the
      *     user on failure.
      */
-    assert: function (condition, message, quiet) {
+    assert: function assert(condition, message, quiet) {
         if (!condition)
             throw FailedAssertion(message, 1, quiet === undefined ? true : quiet);
         return condition;
@@ -266,7 +266,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             {
                 elements: [],
                 seen: {},
-                valid: function (obj) this.elements.every(function (e) !e.test || e.test(obj))
+                valid: function valid(obj) this.elements.every(function (e) !e.test || e.test(obj))
             });
 
         let end = 0;
@@ -296,7 +296,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
                 stack.top.elements.push(update(
                     function (obj) obj[char] != null ? quote(obj, char) : "",
-                    { test: function (obj) obj[char] != null }));
+                    { test: function test(obj) obj[char] != null }));
 
                 for (let elem in array.iterValues(stack))
                     elem.seen[char] = true;
@@ -349,7 +349,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             {
                 elements: [],
                 seen: {},
-                valid: function (obj) this.elements.every(function (e) !e.test || e.test(obj))
+                valid: function valid(obj) this.elements.every(function (e) !e.test || e.test(obj))
             });
 
         let defaults = { lt: "<", gt: ">" };
@@ -399,9 +399,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                             function (obj) obj[name] != null && idx in obj[name] ? quote(obj[name][idx])
                                                                                  : Set.has(obj, name) ? "" : unknown(full),
                             {
-                                test: function (obj) obj[name] != null && idx in obj[name]
-                                                  && obj[name][idx] !== false
-                                                  && (!flags.e || obj[name][idx] != "")
+                                test: function test(obj) obj[name] != null && idx in obj[name]
+                                                      && obj[name][idx] !== false
+                                                      && (!flags.e || obj[name][idx] != "")
                             }));
                     }
                     else {
@@ -409,9 +409,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                             function (obj) obj[name] != null ? quote(obj[name])
                                                              : Set.has(obj, name) ? "" : unknown(full),
                             {
-                                test: function (obj) obj[name] != null
-                                                  && obj[name] !== false
-                                                  && (!flags.e || obj[name] != "")
+                                test: function test(obj) obj[name] != null
+                                                      && obj[name] !== false
+                                                      && (!flags.e || obj[name] != "")
                             }));
                     }
 
@@ -520,6 +520,17 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     /**
+     * Briefly delay the execution of the passed function.
+     *
+     * @param {function} callback The function to delay.
+     */
+    delay: function delay(callback) {
+        let { mainThread } = services.threading;
+        mainThread.dispatch(callback,
+                            mainThread.DISPATCH_NORMAL);
+    },
+
+    /**
      * Removes certain backslash-quoted characters while leaving other
      * backslash-quoting sequences untouched.
      *
@@ -556,7 +567,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} stack The stack trace from an Error.
      * @returns {[string]} The stack frames.
      */
-    stackLines: function (stack) {
+    stackLines: function stackLines(stack) {
         let lines = [];
         let match, re = /([^]*?)@([^@\n]*)(?:\n|$)/g;
         while (match = re.exec(stack))
@@ -688,7 +699,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} url
      * @returns {string|null}
      */
-    getHost: function (url) {
+    getHost: function getHost(url) {
         try {
             return util.createURI(url).host;
         }
@@ -809,7 +820,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {Object} r2
      * @returns {Object}
      */
-    intersection: function (r1, r2) ({
+    intersection: function intersection(r1, r2) ({
         get width()  this.right - this.left,
         get height() this.bottom - this.top,
         left: Math.max(r1.left, r2.left),
@@ -1031,6 +1042,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
                 if (color)
                     value = template.highlight(value, true, 150, !color);
+                else if (value instanceof Magic)
+                    value = String(value);
                 else
                     value = util.clip(String(value).replace(/\n/g, "^J"), 150);
 
@@ -1121,7 +1134,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     observers: {
-        "dactyl-cleanup-modules": function (subject, reason) {
+        "dactyl-cleanup-modules": function cleanupModules(subject, reason) {
             defineModule.loadLog.push("dactyl: util: observe: dactyl-cleanup-modules " + reason);
 
             for (let module in values(defineModule.modules))
@@ -1135,7 +1148,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (!this.rehashing)
                 services.observer.addObserver(this, "dactyl-rehash", true);
         },
-        "dactyl-rehash": function () {
+        "dactyl-rehash": function dactylRehash() {
             services.observer.removeObserver(this, "dactyl-rehash");
 
             defineModule.loadLog.push("dactyl: util: observe: dactyl-rehash");
@@ -1148,7 +1161,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                         module.init();
                 }
         },
-        "dactyl-purge": function () {
+        "dactyl-purge": function dactylPurge() {
             this.rehashing = 1;
         },
     },
@@ -1258,7 +1271,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let res = update(RegExp(expr, flags.replace("x", "")), {
             closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
             dactylPropertyNames: ["exec", "match", "test", "toSource", "toString", "global", "ignoreCase", "lastIndex", "multiLine", "source", "sticky"],
-            iterate: function (str, idx) util.regexp.iterate(this, str, idx)
+            iterate: function iterate(str, idx) util.regexp.iterate(this, str, idx)
         });
 
         // Return a struct with properties for named parameters if we
@@ -1321,8 +1334,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * Reloads dactyl in entirety by disabling the add-on and
      * re-enabling it.
      */
-    rehash: function (args) {
-        storage.session.commandlineArgs = args;
+    rehash: function rehash(args) {
+        storage.storeForSession("commandlineArgs", args);
         this.timeout(function () {
             this.flushCache();
             this.rehashing = true;
@@ -1408,7 +1421,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {Window} window
      * @returns {nsISelectionController}
      */
-    selectionController: function (win)
+    selectionController: function selectionController(win)
         win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
            .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay)
            .QueryInterface(Ci.nsISelectionController),
@@ -1427,7 +1440,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *
      * @param {number} delay The time period for which to sleep in milliseconds.
      */
-    sleep: function (delay) {
+    sleep: function sleep(delay) {
         let mainThread = services.threading.mainThread;
 
         let end = Date.now() + delay;
@@ -1448,7 +1461,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {number} limit The maximum number of elements to return.
      * @returns {[string]}
      */
-    split: function (str, re, limit) {
+    split: function split(str, re, limit) {
         re.lastIndex = 0;
         if (!re.global)
             re = RegExp(re.source || re, "g");
@@ -1508,7 +1521,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *      interrupted by pressing <C-c>, in which case,
      *      Error("Interrupted") will be thrown.
      */
-    threadYield: function (flush, interruptable) {
+    threadYield: function threadYield(flush, interruptable) {
         this.yielders++;
         try {
             let mainThread = services.threading.mainThread;
@@ -1647,7 +1660,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {nsIDOMWindow} win The window for which to find domains.
      * @returns {[string]} The visible domains.
      */
-    visibleHosts: function (win) {
+    visibleHosts: function visibleHosts(win) {
         let res = [], seen = {};
         (function rec(frame) {
             try {
@@ -1667,7 +1680,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {nsIDOMWindow} win The window for which to find URIs.
      * @returns {[nsIURI]} The visible URIs.
      */
-    visibleURIs: function (win) {
+    visibleURIs: function visibleURIs(win) {
         let res = [], seen = {};
         (function rec(frame) {
             try {

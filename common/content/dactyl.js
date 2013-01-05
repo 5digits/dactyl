@@ -467,11 +467,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {Object} context The context object into which the script
      *     should be loaded.
      */
-    loadScript: function (uri, context) {
+    loadScript: function loadScript(uri, context) {
         JSMLoader.loadSubScript(uri, context, File.defaultEncoding);
     },
 
-    userEval: function (str, context, fileName, lineNumber) {
+    userEval: function userEval(str, context, fileName, lineNumber) {
         let ctxt;
         if (jsmodules.__proto__ != window && jsmodules.__proto__ != XPCNativeWrapper(window) &&
                 jsmodules.isPrototypeOf(context))
@@ -523,7 +523,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Acts like the Function builtin, but the code executes in the
      * userContext global.
      */
-    userFunc: function () {
+    userFunc: function userFunc() {
         return this.userEval(
             "(function userFunction(" + Array.slice(arguments, 0, -1).join(", ") + ")" +
             " { " + arguments[arguments.length - 1] + " })");
@@ -538,7 +538,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {boolean} silent Whether the command should be echoed on the
      *     command line.
      */
-    execute: function (str, modifiers, silent) {
+    execute: function execute(str, modifiers, silent) {
         // skip comments and blank lines
         if (/^\s*("|$)/.test(str))
             return;
@@ -622,7 +622,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {string} feature The feature name.
      * @returns {boolean}
      */
-    has: function (feature) Set.has(config.features, feature),
+    has: function has(feature) Set.has(config.features, feature),
 
     /**
      * @private
@@ -762,7 +762,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         get: function globalVariables() this._globalVariables
     }),
 
-    loadPlugins: function (args, force) {
+    loadPlugins: function loadPlugins(args, force) {
         function sourceDirectory(dir) {
             dactyl.assert(dir.isReadable(), _("io.notReadable", dir.path));
 
@@ -819,7 +819,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {string|Object} msg The message to print.
      * @param {number} level The logging level 0 - 15.
      */
-    log: function (msg, level) {
+    log: function log(msg, level) {
         let verbose = config.prefs.get("loglevel", 0);
 
         if (!level || level <= verbose) {
@@ -889,7 +889,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     tabs.
      * @returns {boolean}
      */
-    open: function (urls, params, force) {
+    open: function open(urls, params, force) {
         if (typeof urls == "string")
             urls = dactyl.parseURLs(urls);
 
@@ -1078,7 +1078,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {boolean} force Forcibly quit irrespective of whether all
      *    windows could be closed individually.
      */
-    quit: function (saveSession, force) {
+    quit: function quit(saveSession, force) {
         if (!force && !this.confirmQuit())
             return;
 
@@ -1095,7 +1095,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     /**
      * Restart the host application.
      */
-    restart: function (args) {
+    restart: function restart(args) {
         if (!this.confirmQuit())
             return;
 
@@ -1171,7 +1171,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @returns {Object}
      * @see Commands#parseArgs
      */
-    parseCommandLine: function (cmdline) {
+    parseCommandLine: function parseCommandLine(cmdline) {
         try {
             return commands.get("rehash").parseArgs(cmdline);
         }
@@ -1180,7 +1180,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return [];
         }
     },
-    wrapCallback: function (callback, self) {
+    wrapCallback: function wrapCallback(callback, self) {
         self = self || this;
         let save = ["forceOpen"];
         let saved = save.map(function (p) dactyl[p]);
@@ -1616,13 +1616,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             "Reload the " + config.appName + " add-on",
             function (args) {
                 if (args.trailing)
-                    storage.session.rehashCmd = args.trailing; // Hack.
+                    storage.storeForSession("rehashCmd", args.trailing); // Hack.
                 args.break = true;
 
                 if (args["+purgecaches"])
                     cache.flush();
 
-                util.rehash(args);
+                util.delay(function () { util.rehash(args) });
             },
             {
                 argCount: "0", // FIXME

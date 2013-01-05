@@ -176,6 +176,8 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
     }
 });
 
+var sessionGlobal = Cu.import("resource://gre/modules/Services.jsm", {})
+
 var Storage = Module("Storage", {
     alwaysReload: {},
 
@@ -184,7 +186,7 @@ var Storage = Module("Storage", {
 
         let { Services } = Cu.import("resource://gre/modules/Services.jsm", {});
         if (!Services.dactylSession)
-            Services.dactylSession = {};
+            Services.dactylSession = Cu.createObjectIn(sessionGlobal);
         this.session = Services.dactylSession;
     },
 
@@ -199,6 +201,13 @@ var Storage = Module("Storage", {
 
         this.keys = {};
         this.observers = {};
+    },
+
+    storeForSession: function storeForSession(key, val) {
+        if (val)
+            this.session[key] = sessionGlobal.JSON.parse(JSON.stringify(val));
+        else
+            delete this.dactylSession[key];
     },
 
     infoPath: Class.Memoize(function ()

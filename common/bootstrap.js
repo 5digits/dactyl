@@ -56,12 +56,15 @@ let addon = null;
 let addonData = null;
 let basePath = null;
 let bootstrap;
+let bootstrap_jsm;
 let categories = [];
 let components = {};
 let resources = [];
 let getURI = null;
 
 let JSMLoader = {
+    SANDBOX: Cu.nukeSandbox && false,
+
     get addon() addon,
 
     currentModule: null,
@@ -131,7 +134,7 @@ let JSMLoader = {
                     return this.modules[name] = this.globals[uri];
 
                 this.globals[uri] = this.modules[name];
-                bootstrap.loadSubScript(url, this.modules[name]);
+                bootstrap_jsm.loadSubScript(url, this.modules[name]);
                 return;
             }
             catch (e) {
@@ -175,7 +178,7 @@ let JSMLoader = {
     },
 
     // Cuts down on stupid, fscking url mangling.
-    get loadSubScript() bootstrap.loadSubScript,
+    get loadSubScript() bootstrap_jsm.loadSubScript,
 
     cleanup: function unregister() {
         for each (let factory in this.factories.splice(0))
@@ -242,7 +245,14 @@ function init() {
 
     JSMLoader.config = JSON.parse(httpGet("resource://dactyl-local/config.json").responseText);
 
-    bootstrap = module(BOOTSTRAP);
+    bootstrap_jsm = module(BOOTSTRAP);
+    if (!JSMLoader.SANDBOX)
+        bootstrap = bootstrap_jsm;
+    else {
+        bootstrap = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance(),
+                               { sandboxName: BOOTSTRAP });
+        Services.scriptloader.loadSubScript(BOOTSTRAP, bootstrap);
+    }
     bootstrap.require = JSMLoader.load("base").require;
 
     // Flush the cache if necessary, just to be paranoid
@@ -273,7 +283,7 @@ function init() {
 
     if (!(BOOTSTRAP_CONTRACT in Cc)) {
         // Use Sandbox to prevent closures over this scope
-        let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].getService());
+        let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance());
         let factory = Cu.evalInSandbox("({ createInstance: function () this })", sandbox);
 
         factory.classID         = Components.ID("{f541c8b0-fe26-4621-a30b-e77d21721fb5}");
@@ -416,11 +426,12 @@ function shutdown(data, reason) {
         JSMLoader.atexit(strReason);
         JSMLoader.cleanup(strReason);
 
-        if (Cu.unload)
-            Cu.unload(BOOTSTRAP);
-        else
-            bootstrap.require = null;
-
+        if (JSMLoader.SANDBOX)
+            Cu.nukeSandbox(bootstrap);
+        bootstrap_jsm.require = null;
+        Cu.unload(BOOTSTRAP);
+        bootstrap = null;
+        bootstrap_jsm = null;
 
         for each (let [category, entry] in categories)
             categoryManager.deleteCategoryEntry(category, entry, false);

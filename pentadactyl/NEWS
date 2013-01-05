@@ -3,6 +3,7 @@
       - renamed :mksyntax to :mkvimruntime which now generates
         all Vim related files.
       - Vimball packages are no longer available.
+    • Removed <F1> and <A-F1> mappings.
 
 1.0:
     • Extensive Firefox 4 support, including:
