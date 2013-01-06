@@ -213,6 +213,7 @@ var CommandWidgets = Class("CommandWidgets", {
     },
 
     updateVisibility: function updateVisibility() {
+        let changed = 0;
         for (let elem in values(this.elements))
             if (elem.getGroup) {
                 let value = elem.getValue ? elem.getValue.call(this)
@@ -223,6 +224,7 @@ var CommandWidgets = Class("CommandWidgets", {
                     let meth, node = group[elem.name];
                     let visible = (value && group === activeGroup);
                     if (node && !node.collapsed == !visible) {
+                        changed++;
                         node.collapsed = !visible;
                         if (elem.onVisibility)
                             elem.onVisibility.call(this, node, visible);
@@ -236,11 +238,21 @@ var CommandWidgets = Class("CommandWidgets", {
         function check(node) {
             if (DOM(node).style.display === "-moz-stack") {
                 let nodes = Array.filter(node.children, function (n) !n.collapsed && n.boxObject.height);
-                nodes.forEach(function (node, i) node.style.opacity = (i == nodes.length - 1) ? "" : "0");
+                nodes.forEach(function (node, i) { node.style.opacity = (i == nodes.length - 1) ? "" : "0" });
             }
             Array.forEach(node.children, check);
         }
         [this.commandbar.container, this.statusbar.container].forEach(check);
+
+        // Work around a redrawing bug.
+        if (changed && util.haveGecko("16")) {
+            util.delay(function () {
+                // Urgh.
+                statusline.statusBar.style.paddingRight = "1px";
+                DOM(statusline.statusBar).rect; // Force reflow.
+                statusline.statusBar.style.paddingRight = "";
+            }, 0);
+        }
 
         if (this.initialized && loaded.mow && mow.visible)
             mow.resize(false);

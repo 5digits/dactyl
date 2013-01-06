@@ -202,11 +202,11 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         commands.add(["redr[aw]"],
             "Redraw the screen",
             function () {
-                window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
-                      .redraw();
                 statusline.overLink = null;
                 statusline.updateStatus();
                 commandline.clear();
+                window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                      .redraw();
             },
             { argCount: "0" });
     },
