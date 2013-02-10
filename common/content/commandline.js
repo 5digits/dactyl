@@ -245,7 +245,7 @@ var CommandWidgets = Class("CommandWidgets", {
         [this.commandbar.container, this.statusbar.container].forEach(check);
 
         // Work around a redrawing bug.
-        if (changed && util.haveGecko("16")) {
+        if (changed && config.haveGecko("16")) {
             util.delay(function () {
                 // Urgh.
                 statusline.statusBar.style.paddingRight = "1px";
