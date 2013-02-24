@@ -1719,7 +1719,7 @@ var Buffer = Module("Buffer", {
 
                     dactyl.assert(args.bang || !file.exists(), _("io.exists"));
 
-                    chosenData = { file: file, uri: util.newURI(doc.location.href) };
+                    chosenData = { file: file.file, uri: util.newURI(doc.location.href) };
                 }
 
                 // if browser.download.useDownloadDir = false then the "Save As"

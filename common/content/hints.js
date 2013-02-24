@@ -863,6 +863,7 @@ var Hints = Module("hints", {
                 else if (option == "label") {
                     if (elem.id) {
                         let label = (elem.ownerDocument.dactylLabels || {})[elem.id];
+                        // Urgh.
                         if (label)
                             return [label.textContent.toLowerCase(), true];
                     }
