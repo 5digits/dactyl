@@ -352,7 +352,7 @@
 <item>
     <tags>:lpl :loadplugins</tags>
     <strut/>
-    <spec>:loadplugins <oa>pattern</oa> …</spec>
+    <spec>:loadplugins[!] <oa>pattern</oa> …</spec>
     <description>
         <p>
             Immediately load all plugins which have yet to be loaded. Because
@@ -366,6 +366,9 @@
         <p>
             If <oa>pattern</oa>s are provided, the given regular expressions are
             used as filters rather than those in <o>loadplugins</o>.
+        </p>
+        <p>
+            If <oa>!</oa> is given the plugins are forcibly loaded.
         </p>
     </description>
 </item>
