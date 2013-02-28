@@ -1910,7 +1910,7 @@ var Buffer = Module("Buffer", {
             function (args) { buffer.scrollVertical("lines", -Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.COMMAND], dactyl.has("mail") ? ["h", "<scroll-left-column>"] : ["h", "<Left>", "<scroll-left-column>"],
+        mappings.add([modes.NORMAL], dactyl.has("mail") ? ["h", "<scroll-left-column>"] : ["h", "<Left>", "<scroll-left-column>"],
             "Scroll document to the left",
             function (args) { buffer.scrollHorizontal("columns", -Math.max(args.count, 1)); },
             { count: true });
