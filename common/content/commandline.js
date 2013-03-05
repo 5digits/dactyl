@@ -30,9 +30,11 @@ var CommandWidgets = Class("CommandWidgets", {
                                 id: "dactyl-container", highlight: "CmdLine CmdCmdLine" },
                         ["textbox", { class: "plain", id: "dactyl-strut",   flex: "1", crop: "end", collapsed: "true" }],
                         ["textbox", { class: "plain", id: "dactyl-mode",    flex: "1", crop: "end" }],
-                        ["textbox", { class: "plain", id: "dactyl-message", flex: "1", readonly: "true" }],
+                        ["hbox", { id: "dactyl-message-box" },
+                            ["label", { class: "plain", id: "dactyl-message-pre", flex: "0", readonly: "true", highlight: "WarningMsg" }],
+                            ["textbox", { class: "plain", id: "dactyl-message", flex: "1", readonly: "true" }]],
 
-                        ["hbox", { id: "dactyl-commandline", hidden: "false", foo: "bar", class: "dactyl-container", highlight: "Normal CmdNormal", collapsed: "true" },
+                        ["hbox", { id: "dactyl-commandline", hidden: "false", class: "dactyl-container", highlight: "Normal CmdNormal", collapsed: "true" },
                             ["label", {   id: "dactyl-commandline-prompt",  class: "dactyl-commandline-prompt  plain", flex: "0", crop: "end", value: "", collapsed: "true" }],
                             ["textbox", { id: "dactyl-commandline-command", class: "dactyl-commandline-command plain", flex: "1", type: "input", timeout: "100",
                                           highlight: "Events" }]]],
@@ -124,10 +126,24 @@ var CommandWidgets = Class("CommandWidgets", {
                     return this.statusbar;
 
                 let statusElem = this.statusbar.message;
-                if (value && !value[2] && statusElem.editor && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
+                // Currently doesn't work as expected with <hbox> parent.
+                if (false && value && !value[2] && statusElem.editor && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
                     return this.commandbar;
                 return this.activeGroup.mode;
             }
+        });
+
+        this.addElement({
+            name: "message-pre",
+            defaultGroup: "WarningMsg",
+            getGroup: function () this.activeGroup.message
+        });
+
+        this.addElement({
+            name: "message-box",
+            defaultGroup: "Normal",
+            getGroup: function () this.activeGroup.message,
+            getValue: function () this.message
         });
 
         this.addElement({
@@ -651,6 +667,7 @@ var CommandLine = Module("commandline", {
         if (!scroll || Date.now() - this._lastEchoTime > 5000)
             this.clearMessage();
         this._lastEchoTime = 0;
+        this.hiddenMessages = 0;
 
         if (!this.commandSession) {
             this.widgets.command = null;
@@ -665,8 +682,10 @@ var CommandLine = Module("commandline", {
     },
 
     clearMessage: function clearMessage() {
-        if (this.widgets.message && this.widgets.message[1] === this._lastClearable)
+        if (this.widgets.message && this.widgets.message[1] === this._lastClearable) {
             this.widgets.message = null;
+            this.hiddenMessages = 0;
+        }
     },
 
     /**
@@ -715,6 +734,16 @@ var CommandLine = Module("commandline", {
         }
     },
 
+    _hiddenMessages: 0,
+    get hiddenMessages() this._hiddenMessages,
+    set hiddenMessages(val) {
+        this._hiddenMessages = val;
+        if (val)
+            this.widgets["message-pre"] = _("commandline.moreMessages", val) + " ";
+        else
+            this.widgets["message-pre"] = null
+    },
+
     _lastEcho: null,
 
     /**
@@ -748,14 +777,18 @@ var CommandLine = Module("commandline", {
 
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
-        if (flags & this.APPEND_TO_MESSAGES) {
+        let self = this;
+        function appendToMessages() {
             let message = isObject(data) && !DOM.isJSONXML(data) ? data : { message: data };
 
             // Make sure the memoized message property is an instance property.
             message.message;
-            this._messageHistory.add(update({ highlight: highlightGroup }, message));
+            self._messageHistory.add(update({ highlight: highlightGroup }, message));
             data = message.message;
         }
+
+        if (flags & this.APPEND_TO_MESSAGES)
+            appendToMessages();
 
         if ((flags & this.ACTIVE_WINDOW) && window != overlay.activeWindow)
             return;
@@ -769,17 +802,16 @@ var CommandLine = Module("commandline", {
         if ((flags & this.FORCE_MULTILINE) || (/\n/.test(data) || !isinstance(data, [_, "String"])) && !(flags & this.FORCE_SINGLELINE))
             action = mow.closure.echo;
 
-        if (single)
+        if (single) {
             this._lastEcho = null;
+            this.hiddenMessages = 0;
+        }
         else {
-            if (this.widgets.message && this.widgets.message[1] == this._lastEcho)
-                mow.echo(["span", { highlight: "Message" }, this._lastEcho],
-                         this.widgets.message[0], true);
-
-            if (action === this._echoLine && !(flags & this.FORCE_MULTILINE)
-                && !(dactyl.fullyInitialized && this.widgets.mowContainer.collapsed)) {
-                highlightGroup += " Message";
-                action = mow.closure.echo;
+            if (this.widgets.message && this.widgets.message[1] == this._lastEcho) {
+                if (!(flags & this.APPEND_TO_MESSAGES))
+                    appendToMessages();
+                this.hiddenMessages++;
+                return;
             }
             this._lastEcho = (action == this._echoLine) && data;
         }
