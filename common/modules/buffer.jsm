@@ -15,6 +15,7 @@ lazyRequire("bookmarkcache", ["bookmarkcache"]);
 lazyRequire("io", ["io"]);
 lazyRequire("finder", ["RangeFind"]);
 lazyRequire("overlay", ["overlay"]);
+lazyRequire("sanitizer", ["sanitizer"]);
 lazyRequire("storage", ["File", "storage"]);
 lazyRequire("template", ["template"]);
 
@@ -615,7 +616,7 @@ var Buffer = Module("Buffer", {
                         util.assert(false, _("save.invalidDestination", e.name));
                     }
 
-                    self.saveURI(uri, file);
+                    self.saveURI({ uri: uri, file: file, context: elem });
                 },
 
                 completer: function (context) completion.savePage(context, elem)
@@ -632,25 +633,33 @@ var Buffer = Module("Buffer", {
      * @param {nsIURI} uri The URI to save
      * @param {nsIFile} file The file into which to write the result.
      */
-    saveURI: function saveURI(uri, file, callback, self) {
+    saveURI: function saveURI(params) {
+        if (params instanceof Ci.nsIURI)
+            // Deprecated?
+            params = { uri: arguments[0], file: arguments[1],
+                       callback: arguments[2], self: arguments[3] };
+
         var persist = services.Persist();
         persist.persistFlags = persist.PERSIST_FLAGS_FROM_CACHE
                              | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
 
         let window = this.topWindow;
-        file = File(file);
+        let privacy = sanitizer.getContext(params.context || this.win);
+        let file = File(params.file);
         if (!file.exists())
             file.create(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
 
         let downloadListener = new window.DownloadListener(window,
-                services.Transfer(uri, File(file).URI, "",
-                                  null, null, null, persist));
+                services.Transfer(params.uri, file.URI, "", null, null, null,
+                                  persist, privacy && privacy.usePrivateBrowsing));
 
+        var { callback, self } = params;
         if (callback)
             persist.progressListener = update(Object.create(downloadListener), {
                 onStateChange: util.wrapCallback(function onStateChange(progress, request, flags, status) {
                     if (callback && (flags & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
-                        util.trapErrors(callback, self, uri, file.file, progress, request, flags, status);
+                        util.trapErrors(callback, self, params.uri, file.file,
+                                        progress, request, flags, status);
 
                     return onStateChange.superapply(this, arguments);
                 })
@@ -658,7 +667,8 @@ var Buffer = Module("Buffer", {
         else
             persist.progressListener = downloadListener;
 
-        persist.saveURI(uri, null, null, null, null, file.path);
+        persist.saveURI(params.uri, null, null, null, null,
+                        file.file, privacy);
     },
 
     /**
@@ -1040,7 +1050,15 @@ var Buffer = Module("Buffer", {
                     return true;
                 };
 
-            let uri = isString(doc) ? util.newURI(doc) : util.newURI(doc.location.href);
+            if (isString(doc)) {
+                var privacyContext = null;
+                var uri = util.newURI(doc);
+            }
+            else {
+                privacyContext = sanitizer.getContext(doc);
+                uri = util.newURI(doc.location.href);
+            }
+
             let ext = uri.fileExtension || "txt";
             if (doc.contentType)
                 ext = services.mime.getPrimaryExtension(doc.contentType, ext);
@@ -1061,7 +1079,8 @@ var Buffer = Module("Buffer", {
                 var persist = services.Persist();
                 persist.persistFlags = persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
                 persist.progressListener = this;
-                persist.saveURI(uri, null, null, null, null, this.file);
+                persist.saveURI(uri, null, null, null, null, this.file,
+                                privacyContext);
             }
             return null;
         },
@@ -1737,7 +1756,7 @@ var Buffer = Module("Buffer", {
                 window.internalSave(doc.location.href, doc, null, contentDisposition,
                                     doc.contentType, false, null, chosenData,
                                     doc.referrer ? window.makeURI(doc.referrer) : null,
-                                    true);
+                                    doc, true);
             },
             {
                 argCount: "?",

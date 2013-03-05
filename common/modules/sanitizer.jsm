@@ -290,12 +290,25 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         }
     },
 
+    getContext: function getContext(thing) {
+        if (!Ci.nsILoadContext)
+            return null;
+
+        if (thing instanceof Ci.nsIDOMNode)
+            thing = thing.ownerDocument;
+        if (thing instanceof Ci.nsIDOMDocument)
+            thing = thing.defaultView;
+        if (thing instanceof Ci.nsIInterfaceRequestor)
+            thing = thing.getInterface(Ci.nsIWebNavigation);
+        return thing.QueryInterface(Ci.nsILoadContext);
+    },
+
     get ranAtShutdown()    config.prefs.get("didSanitizeOnShutdown"),
     set ranAtShutdown(val) config.prefs.set("didSanitizeOnShutdown", Boolean(val)),
     get runAtShutdown()    prefs.get("privacy.sanitize.sanitizeOnShutdown"),
     set runAtShutdown(val) prefs.set("privacy.sanitize.sanitizeOnShutdown", Boolean(val)),
 
-    sanitize: function (items, range)
+    sanitize: function sanitize(items, range)
         this.withSavedValues(["sanitizing"], function () {
             this.sanitizing = true;
             let errors = this.sanitizeItems(items, range, null);
@@ -319,7 +332,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             return errors;
         }),
 
-    sanitizeItems: function (items, range, host, key)
+    sanitizeItems: function sanitizeItems(items, range, host, key)
         this.withSavedValues(["sanitizing"], function () {
             this.sanitizing = true;
             if (items == null)
