@@ -1151,10 +1151,19 @@ var Buffer = Module("Buffer", {
 
         if (services.has("contentPrefs") && !storage.privateMode
                 && prefs.get("browser.zoom.siteSpecific")) {
-            services.contentPrefs[value != 1 ? "setPref" : "removePref"]
-                (this.uri, "browser.content.full-zoom", value);
-            services.contentPrefs[value != 1 ? "setPref" : "removePref"]
-                (this.uri, "dactyl.content.full-zoom", fullZoom);
+            var privacy = sanitizer.getContext(this.win);
+            if (value == 1) {
+                services.contentPrefs.removePref(
+                    this.uri, "browser.content.full-zoom", privacy);
+                services.contentPrefs.removePref(
+                    this.uri, "dactyl.content.full-zoom", privacy);
+            }
+            else {
+                services.contentPrefs.setPref(
+                    this.uri, "browser.content.full-zoom", value, privacy);
+                services.contentPrefsc.setPref(
+                    this.uri, "dactyl.content.full-zoom", fullZoom, privacy);
+            }
         }
 
         statusline.updateZoomLevel();
