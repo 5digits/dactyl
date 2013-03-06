@@ -778,17 +778,17 @@ var CommandLine = Module("commandline", {
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
         let self = this;
-        function appendToMessages() {
+        function appendToMessages(data) {
             let message = isObject(data) && !DOM.isJSONXML(data) ? data : { message: data };
 
             // Make sure the memoized message property is an instance property.
             message.message;
             self._messageHistory.add(update({ highlight: highlightGroup }, message));
-            data = message.message;
+            return message.message;
         }
 
         if (flags & this.APPEND_TO_MESSAGES)
-            appendToMessages();
+            data = appendToMessages(data);
 
         if ((flags & this.ACTIVE_WINDOW) && window != overlay.activeWindow)
             return;
@@ -796,24 +796,49 @@ var CommandLine = Module("commandline", {
         if ((flags & this.DISALLOW_MULTILINE) && !this.widgets.mowContainer.collapsed)
             return;
 
-        let single = flags & (this.FORCE_SINGLELINE | this.DISALLOW_MULTILINE);
+        let forceSingle = flags & (this.FORCE_SINGLELINE | this.DISALLOW_MULTILINE);
         let action = this._echoLine;
 
         if ((flags & this.FORCE_MULTILINE) || (/\n/.test(data) || !isinstance(data, [_, "String"])) && !(flags & this.FORCE_SINGLELINE))
             action = mow.closure.echo;
 
-        if (single) {
+        let single = function () action == self._echoLine;
+
+        if (forceSingle) {
             this._lastEcho = null;
             this.hiddenMessages = 0;
         }
         else {
-            if (this.widgets.message && this.widgets.message[1] == this._lastEcho) {
-                if (!(flags & this.APPEND_TO_MESSAGES))
-                    appendToMessages();
-                this.hiddenMessages++;
-                return;
+            // So complicated...
+            if (single() && !this.widgets.mowContainer.collapsed) {
+                highlightGroup += " Message";
+                action = mow.closure.echo;
             }
-            this._lastEcho = (action == this._echoLine) && data;
+            else if (!single() && this.widgets.mowContainer.collapsed) {
+                if (this._lastEcho && this.widgets.message && this.widgets.message[1] == this._lastEcho.msg) {
+                    if (!(this._lastEcho.flags & this.APPEND_TO_MESSAGES))
+                        appendToMessages(this._lastEcho.data);
+
+                    mow.echo(
+                        ["span", { highlight: "Message" },
+                            ["span", { highlight: "WarningMsg" },
+                                _("commandline.moreMessages", this.hiddenMessages + 1) + " "],
+                            this._lastEcho.msg],
+                        this.widgets.message[0], true);
+
+                    this.hiddenMessages = 0;
+                }
+            }
+            else if (this._lastEcho && this.widgets.message && this.widgets.message[1] == this._lastEcho.msg) {
+                if (!(this._lastEcho.flags & this.APPEND_TO_MESSAGES))
+                    appendToMessages(this._lastEcho.data);
+                if (single() && !(flags & this.APPEND_TO_MESSAGES))
+                    appendToMessages(data);
+
+                flags |= this.APPEND_TO_MESSAGES;
+                this.hiddenMessages++;
+            }
+            this._lastEcho = single() && { flags: flags, msg: data, data: arguments[0] };
         }
 
         this._lastClearable = action === this._echoLine && String(data);
