@@ -20,13 +20,6 @@ let { __lookupGetter__, __lookupSetter__, __defineGetter__, __defineSetter__,
 if (typeof XPCSafeJSObjectWrapper === "undefined")
     this.XPCSafeJSObjectWrapper = XPCNativeWrapper;
 
-if (!XPCNativeWrapper.unwrap)
-    XPCNativeWrapper.unwrap = function unwrap(obj) {
-        if (hasOwnProperty.call(obj, "wrappedJSObject"))
-            return obj.wrappedJSObject;
-        return obj;
-    };
-
 let getGlobalForObject = Cu.getGlobalForObject || function (obj) obj.__parent__;
 
 function require(module, target) JSMLoader.load(module, target);
@@ -208,7 +201,6 @@ function debuggerProperties(obj) {
  * @returns {Generator}
  */
 function prototype(obj)
-    /* Temporary hack: */ typeof obj === "xml" || obj.__proto__ !== obj.__proto__ ? null :
     obj.__proto__ || Object.getPrototypeOf(obj) ||
     XPCNativeWrapper.unwrap(obj).__proto__ ||
     Object.getPrototypeOf(XPCNativeWrapper.unwrap(obj));
