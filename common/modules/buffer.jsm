@@ -1161,7 +1161,7 @@ var Buffer = Module("Buffer", {
             else {
                 services.contentPrefs.setPref(
                     this.uri, "browser.content.full-zoom", value, privacy);
-                services.contentPrefsc.setPref(
+                services.contentPrefs.setPref(
                     this.uri, "dactyl.content.full-zoom", fullZoom, privacy);
             }
         }
