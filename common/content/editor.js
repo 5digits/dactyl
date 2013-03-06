@@ -168,14 +168,14 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             this.setRegister(name, range);
     },
 
-    cut: function cut(range, name) {
+    cut: function cut(range, name, noStrip) {
         if (range)
             this.selectedRange = range;
 
         if (!this.selection.isCollapsed)
             this.setRegister(name, this.selection);
 
-        this.editor.deleteSelection(0);
+        this.editor.deleteSelection(0, this.editor[noStrip ? "eNoStrip" : "eStrip"]);
     },
 
     paste: function paste(name) {
@@ -1035,7 +1035,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         }
 
         addMotionMap(["d", "x"], "Delete text", true,  function (editor) { editor.cut(); });
-        addMotionMap(["c"],      "Change text", true,  function (editor) { editor.cut(); }, modes.INSERT);
+        addMotionMap(["c"],      "Change text", true,  function (editor) { editor.cut(null, null, true); }, modes.INSERT);
         addMotionMap(["y"],      "Yank text",   false, function (editor, range) { editor.copy(range); }, null, true);
 
         addMotionMap(["gu"], "Lowercase text", false,
