@@ -1181,7 +1181,7 @@ var Buffer = Module("Buffer", {
                 if (val != null && uri.equals(self.uri) && val != prefs.get("browser.zoom.full"))
                     [self.contentViewer.textZoom, self.contentViewer.fullZoom] =
                         [self.contentViewer.fullZoom, self.contentViewer.textZoom];
-            });
+            }, sanitizer.getContext(this.win));
     }),
 
     /**
