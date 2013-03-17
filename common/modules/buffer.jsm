@@ -12,6 +12,7 @@ defineModule("buffer", {
 });
 
 lazyRequire("bookmarkcache", ["bookmarkcache"]);
+lazyRequire("contexts", ["Group"]);
 lazyRequire("io", ["io"]);
 lazyRequire("finder", ["RangeFind"]);
 lazyRequire("overlay", ["overlay"]);
@@ -574,6 +575,30 @@ var Buffer = Module("Buffer", {
      *     controller.
      */
     get selectionController() util.selectionController(this.focusedFrame),
+
+    /**
+     * @property {string|null} The canonical short URL for the current
+     *      document.
+     */
+    get shortURL() {
+        let { uri, doc } = this;
+
+        for each (let shortener in Buffer.uriShorteners)
+            try {
+                let shortened = shortener(uri, doc);
+                if (shortened)
+                    return shortened.spec;
+            }
+            catch (e) {
+                util.reportError(e);
+            }
+
+        let link = DOM("link[href]:-moz-any([rev=canonical], [rel=shortlink])", doc);
+        if (link)
+            return link.attr("href");
+
+        return null;
+    },
 
     /**
      * Opens the appropriate context menu for *elem*.
@@ -1176,12 +1201,20 @@ var Buffer = Module("Buffer", {
         let self = this;
         let uri = this.uri;
 
-        if (services.has("contentPrefs") && prefs.get("browser.zoom.siteSpecific"))
-            services.contentPrefs.getPref(uri, "dactyl.content.full-zoom", function (val) {
+        if (services.has("contentPrefs") && prefs.get("browser.zoom.siteSpecific")) {
+            let callback = function (val) {
                 if (val != null && uri.equals(self.uri) && val != prefs.get("browser.zoom.full"))
                     [self.contentViewer.textZoom, self.contentViewer.fullZoom] =
                         [self.contentViewer.fullZoom, self.contentViewer.textZoom];
-            }, sanitizer.getContext(this.win));
+            }
+            // God damn it.
+            if (util.haveGecko("19.0a1"))
+                services.contentPrefs.getPref(uri, "dactyl.content.full-zoom",
+                                              sanitizer.getContext(this.win), callback);
+            else
+                services.contentPrefs.getPref(uri, "dactyl.content.full-zoom",
+                                              callback);
+        }
     }),
 
     /**
@@ -1238,6 +1271,27 @@ var Buffer = Module("Buffer", {
      */
     addPageInfoSection: function addPageInfoSection(option, title, func) {
         this.pageInfo[option] = Buffer.PageInfo(option, title, func);
+    },
+
+    uriShorteners: [],
+
+    /**
+     * Adds a new URI shortener for documents matching the given filter.
+     *
+     * @param {string|function(URI, Document):boolean} filter A site filter
+     *      string or a function which accepts a URI and a document and
+     *      returns true if it can shorten the document's URI.
+     * @param {function(URI, Document):URI} shortener Returns a shortened
+     *      URL for the given URI and document.
+     */
+    addURIShortener: function addURIShortener(filter, shortener) {
+        if (isString(filter))
+            filter = Group.compileFilter(filter);
+
+        this.uriShorteners.push(function uriShortener(uri, doc) {
+            if (filter(uri, doc))
+                return shortener(uri, doc);
+        });
     },
 
     Scrollable: function Scrollable(elem) {
@@ -1885,8 +1939,7 @@ var Buffer = Module("Buffer", {
                     uri.query = uri.query.replace(/(?:^|&)utm_[^&]+/g, "")
                                          .replace(/^&/, "");
 
-                let link = DOM("link[href][rev=canonical], link[href][rel=shortlink]", doc);
-                let url = link.length && options.get("yankshort").getKey(uri) ? link.attr("href") : uri.spec;
+                let url = options.get("yankshort").getKey(uri) && buffer.shortURL || uri.spec;
                 dactyl.clipboardWrite(url, true);
             });
 
@@ -2508,6 +2561,10 @@ Buffer.addPageInfoSection("g", "General Info", function (verbose) {
 
     yield ["Title", doc.title];
     yield ["URL", template.highlightURL(doc.location.href, true)];
+
+    let { shortURL } = this;
+    if (shortURL)
+        yield ["Short URL", template.highlightURL(shortURL, true)];
 
     let ref = "referrer" in doc && doc.referrer;
     if (ref)

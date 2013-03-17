@@ -290,6 +290,13 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         }
     },
 
+    /**
+     * Returns a load context for the given thing, to be used with
+     * interfaces needing one for per-window private browsing support.
+     *
+     * @param {Window|Document|Node} thing The thing for which to return
+     *      a load context.
+     */
     getContext: function getContext(thing) {
         if (!Ci.nsILoadContext)
             return null;
