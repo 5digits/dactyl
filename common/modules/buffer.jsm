@@ -1208,7 +1208,7 @@ var Buffer = Module("Buffer", {
                         [self.contentViewer.fullZoom, self.contentViewer.textZoom];
             }
             // God damn it.
-            if (util.haveGecko("19.0a1"))
+            if (config.haveGecko("19.0a1"))
                 services.contentPrefs.getPref(uri, "dactyl.content.full-zoom",
                                               sanitizer.getContext(this.win), callback);
             else
