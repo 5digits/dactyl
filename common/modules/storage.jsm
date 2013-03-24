@@ -276,10 +276,15 @@ var Storage = Module("Storage", {
     },
 
     removeDeadObservers: function () {
+        function filter(o) {
+            if (!o.callback.get())
+                return false;
+            let ref = o.ref && o.ref.get();
+            return ref && !ref.closed && overlay.getData(ref, "storage-refs", null);
+        }
+
         for (let [key, ary] in Iterator(this.observers)) {
-            this.observers[key] = ary = ary.filter(function (o) o.callback.get()
-                                                             && (!o.ref || o.ref.get()
-                                                                        && overlay.getData(o.ref.get(), "storage-refs", null)));
+            this.observers[key] = ary = ary.filter(filter);
             if (!ary.length)
                 delete this.observers[key];
         }
