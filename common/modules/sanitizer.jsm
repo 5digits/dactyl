@@ -301,7 +301,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         if (!Ci.nsILoadContext)
             return null;
 
-        if (thing instanceof Ci.nsIDOMNode)
+        if (thing instanceof Ci.nsIDOMNode && thing.ownerDocument)
             thing = thing.ownerDocument;
         if (thing instanceof Ci.nsIDOMDocument)
             thing = thing.defaultView;
