@@ -13,6 +13,8 @@ lazyRequire("overlay", ["overlay"]);
 
 Cu.import("resource://gre/modules/DownloadUtils.jsm", this);
 
+var MAX_LOAD_TIME = 10 * 1000;
+
 let prefix = "DOWNLOAD_";
 var states = iter([v, k.slice(prefix.length).toLowerCase()]
                   for ([k, v] in Iterator(Ci.nsIDownloadManager))
@@ -258,9 +260,15 @@ var DownloadList = Class("DownloadList",
         this.index = Array.indexOf(this.nodes.list.childNodes,
                                    this.nodes.head);
 
+        let start = Date.now();
         for (let row in iter(services.downloadManager.DBConnection
-                                     .createStatement("SELECT id FROM moz_downloads")))
+                                     .createStatement("SELECT id FROM moz_downloads"))) {
+            if (Date.now() - start > MAX_LOAD_TIME) {
+                util.dactyl.warn(_("download.givingUpAfter", (Date.now() - start) / 1000));
+                break;
+            }
             this.addDownload(row.id);
+        }
         this.update();
 
         util.addObserver(this);
