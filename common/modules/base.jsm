@@ -1376,7 +1376,8 @@ function iter(obj, iface) {
     }
     else if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
         res = array.iterItems(obj);
-    else if (obj instanceof Ci.nsIDOMNamedNodeMap)
+    else if (Ci.nsIDOMNamedNodeMap && obj instanceof Ci.nsIDOMNamedNodeMap ||
+             Ci.nsIDOMMozNamedNodeMap && obj instanceof Ci.nsIDOMMozNamedNodeMap)
         res = (function () {
             for (let i = 0; i < obj.length; i++)
                 yield [obj.name, obj];
