@@ -854,6 +854,11 @@ var Options = Module("options", {
 
             function opts(opt) {
                 for (let opt in Iterator(this)) {
+                    if (filter && !filter(opt))
+                        continue;
+                    if (!(opt.scope & scope))
+                        continue;
+
                     let option = {
                         __proto__: opt,
                         isDefault: opt.isDefault,
@@ -861,11 +866,6 @@ var Options = Module("options", {
                         pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
                         value:     []
                     };
-
-                    if (filter && !filter(opt))
-                        continue;
-                    if (!(opt.scope & scope))
-                        continue;
 
                     if (opt.type == "boolean") {
                         if (!opt.value)

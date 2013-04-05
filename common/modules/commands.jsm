@@ -109,6 +109,7 @@ update(CommandOption, {
  * @param {function} action The action invoked by this command when executed.
  * @param {Object} extraInfo An optional extra configuration hash. The
  *     following properties are supported.
+ *         always      - see {@link Command#always}
  *         argCount    - see {@link Command#argCount}
  *         bang        - see {@link Command#bang}
  *         completer   - see {@link Command#completer}
@@ -243,28 +244,41 @@ var Command = Class("Command", {
      * @property {function (Args)} The function called to execute this command.
      */
     action: null,
+
+    /**
+     * @property {function (Args)} A function which is called when this
+     * command is encountered, even if we are ignoring commands. Used to
+     * implement control structures.
+     */
+    always: null,
+
     /**
      * @property {string} This command's argument count spec.
      * @see Commands#parseArguments
      */
     argCount: 0,
+
     /**
      * @property {function (CompletionContext, Args)} This command's completer.
      * @see CompletionContext
      */
     completer: null,
+
     /** @property {boolean} Whether this command accepts a here document. */
     hereDoc: false,
+
     /**
      * @property {boolean} Whether this command may be called with a bang,
      *     e.g., :com!
      */
     bang: false,
+
     /**
      * @property {boolean} Whether this command may be called with a count,
      *     e.g., :12bdel
      */
     count: false,
+
     /**
      * @property {function(args)} A function which should return a list
      *     of domains referenced in the given args. Used in determining
@@ -272,6 +286,7 @@ var Command = Class("Command", {
      *     private data.
      */
     domains: function (args) [],
+
     /**
      * @property {boolean} At what index this command's literal arguments
      *     begin. For instance, with a value of 2, all arguments starting with
@@ -280,6 +295,7 @@ var Command = Class("Command", {
      *     key mappings or Ex command lines as arguments.
      */
     literal: null,
+
     /**
      * @property {Array} The options this command takes.
      * @see Commands@parseArguments
@@ -1760,39 +1776,37 @@ var Commands = Module("commands", {
     }
 });
 
-(function () {
+let quote = function quote(q, list, map) {
+    map = map || Commands.quoteMap;
+    let re = RegExp("[" + list + "]", "g");
+    function quote(str) q + String.replace(str, re, function ($0) $0 in map ? map[$0] : ("\\" + $0)) + q;
+    quote.list = list;
+    return quote;
+};
 
-    Commands.quoteMap = {
-        "\n": "\\n",
-        "\t": "\\t",
-    };
-    function quote(q, list, map) {
-        map = map || Commands.quoteMap;
-        let re = RegExp("[" + list + "]", "g");
-        function quote(str) q + String.replace(str, re, function ($0) $0 in map ? map[$0] : ("\\" + $0)) + q;
-        quote.list = list;
-        return quote;
-    };
+Commands.quoteMap = {
+    "\n": "\\n",
+    "\t": "\\t",
+};
 
-    Commands.quoteArg = {
-        '"': quote('"', '\n\t"\\\\'),
-        "'": quote("'", "'", { "'": "''" }),
-        "":  quote("",  "|\\\\\\s'\"")
-    };
-    Commands.complQuote = {
-        '"': ['"', quote("", Commands.quoteArg['"'].list), '"'],
-        "'": ["'", quote("", Commands.quoteArg["'"].list), "'"],
-        "":  ["", Commands.quoteArg[""], ""]
-    };
+Commands.quoteArg = {
+    '"': quote('"', '\n\t"\\\\'),
+    "'": quote("'", "'", { "'": "''" }),
+    "":  quote("",  "|\\\\\\s'\"")
+};
+Commands.complQuote = {
+    '"': ['"', quote("", Commands.quoteArg['"'].list), '"'],
+    "'": ["'", quote("", Commands.quoteArg["'"].list), "'"],
+    "":  ["", Commands.quoteArg[""], ""]
+};
 
-    Commands.parseBool = function (arg) {
-        if (/^(true|1|on)$/i.test(arg))
-            return true;
-        if (/^(false|0|off)$/i.test(arg))
-            return false;
-        return NaN;
-    };
-})();
+Commands.parseBool = function (arg) {
+    if (/^(true|1|on)$/i.test(arg))
+        return true;
+    if (/^(false|0|off)$/i.test(arg))
+        return false;
+    return NaN;
+};
 
 endModule();
 
