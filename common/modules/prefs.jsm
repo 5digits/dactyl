@@ -111,10 +111,11 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             switch (type) {
             case Ci.nsIPrefBranch.PREF_STRING:
                 let value = this.branch.getComplexValue(name, Ci.nsISupportsString).data;
-                // try in case it's a localized string (will throw an exception if not)
-                if (!this.branch.prefIsLocked(name) && !this.branch.prefHasUserValue(name) &&
-                    RegExp("chrome://.+/locale/.+\\.properties").test(value))
-                        value = this.branch.getComplexValue(name, Ci.nsIPrefLocalizedString).data;
+                try {
+                    if (/^[a-z0-9-]+:/i.test(value))
+                    value = this.branch.getComplexValue(name, Ci.nsIPrefLocalizedString).data;
+                }
+                catch (e) {}
                 return value;
             case Ci.nsIPrefBranch.PREF_INT:
                 return this.branch.getIntPref(name);

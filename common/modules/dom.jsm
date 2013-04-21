@@ -1540,6 +1540,12 @@ var DOM = Class("DOM", {
         function tag(args, namespaces) {
             let _namespaces = namespaces;
 
+            // Deal with common error case
+            if (args == null) {
+                util.reportError(Error("Unexpected null when processing XML."));
+                args = ["html:i", {}, "[NULL]"];
+            }
+
             if (isinstance(args, ["String", "Number", "Boolean", _]))
                 return doc.createTextNode(args);
             if (isXML(args))
@@ -1575,7 +1581,7 @@ var DOM = Class("DOM", {
             for (var key in attr) {
                 if (/^xmlns(?:$|:)/.test(key)) {
                     if (_namespaces === namespaces)
-                        namespaces = update({}, namespaces);
+                        namespaces = Object.create(namespaces);
 
                     namespaces[key.substr(6)] = namespaces[attr[key]] || attr[key];
                 }}
