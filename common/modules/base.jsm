@@ -217,10 +217,37 @@ function properties(obj, prototypes, debugger_) {
     }
     catch (e) {}
 
+    function props(obj) {
+        // Grr.
+        try {
+            return Object.getOwnPropertyNames(obj);
+        }
+        catch (e) {
+            if (e.result === Cr.NS_ERROR_FAILURE) {
+                // This is being thrown for PDF.js content windows,
+                // currently.
+                let filter = function filter(prop) {
+                    try {
+                        return k in obj;
+                    }
+                    catch (e) {}
+                    return false;
+                };
+                return array.uniq([k for (k in obj)].concat(
+                    Object.getOwnPropertyNames(
+                              XPCNativeWrapper.unwrap(obj))
+                          .filter(filter)))
+            }
+            else if (!e.stack) {
+                throw Error(e);
+            }
+        }
+    }
+
     for (; obj; obj = prototypes && prototype(obj)) {
         try {
-            if (sandbox.Object.getOwnPropertyNames || !debugger_ || !services.debugger.isOn)
-                var iter = (v for each (v in Object.getOwnPropertyNames(obj)));
+            if (!debugger_ || !services.debugger.isOn)
+                var iter = (v for each (v in props(obj)));
         }
         catch (e) {}
         if (!iter)

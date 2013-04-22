@@ -787,8 +787,26 @@ var Buffer = Module("Buffer", {
             var sel = this.focusedFrame.getSelection();
         }
         catch (e) {}
+
         if (!elem && sel && sel.rangeCount)
             elem = sel.getRangeAt(0).startContainer;
+
+        if (!elem) {
+            let area = -1;
+            for (let e in DOM(Buffer.SCROLLABLE_SEARCH_SELECTOR,
+                              this.focusedFrame.document)) {
+                if (Buffer.isScrollable(e, dir, horizontal)) {
+                    let r = DOM(e).rect;
+                    let a = r.width * r.height;
+                    if (a > area) {
+                        area = a;
+                        elem = e;
+                    }
+                }
+            }
+            if (elem)
+                util.trapErrors("focus", elem);
+        }
         if (elem)
             elem = find(elem);
 
@@ -1255,6 +1273,12 @@ var Buffer = Module("Buffer", {
     scrollTo: deprecated("Buffer.scrollTo", function scrollTo(x, y) this.win.scrollTo(x, y)),
     textZoom: deprecated("buffer.zoomValue/buffer.fullZoom", function textZoom() this.contentViewer.markupDocumentViewer.textZoom * 100)
 }, {
+    /**
+     * The pattern used to search for a scrollable element when we have
+     * no starting point.
+     */
+    SCROLLABLE_SEARCH_SELECTOR: "div",
+
     PageInfo: Struct("PageInfo", "name", "title", "action")
                         .localize("title"),
 
