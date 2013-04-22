@@ -1309,6 +1309,9 @@ var Buffer = Module("Buffer", {
                 get scrollWidth() this.win.scrollMaxX + this.win.innerWidth,
                 get scrollHeight() this.win.scrollMaxY + this.win.innerHeight,
 
+                get scrollLeftMax() this.win.scrollMaxX,
+                get scrollRightMax() this.win.scrollMaxY,
+
                 get scrollLeft() this.win.scrollX,
                 set scrollLeft(val) { this.win.scrollTo(val, this.win.scrollY) },
 
@@ -1406,23 +1409,30 @@ var Buffer = Module("Buffer", {
     },
 
     canScroll: function canScroll(elem, dir, horizontal) {
-        let pos = "scrollTop", size = "clientHeight", max = "scrollHeight", layoutSize = "offsetHeight",
+        let pos = "scrollTop", size = "clientHeight", end = "scrollHeight", layoutSize = "offsetHeight",
             overflow = "overflowX", border1 = "borderTopWidth", border2 = "borderBottomWidth";
         if (horizontal)
-            pos = "scrollLeft", size = "clientWidth", max = "scrollWidth", layoutSize = "offsetWidth",
+            pos = "scrollLeft", size = "clientWidth", end = "scrollWidth", layoutSize = "offsetWidth",
             overflow = "overflowX", border1 = "borderLeftWidth", border2 = "borderRightWidth";
+
+        if (dir < 0)
+            return elem[pos] > 0;
+
+        let max = pos + "Max";
+        if (max in elem && pos > 0)
+            return elem[pos] < elem[max];
 
         let style = DOM(elem).style;
         let borderSize = Math.round(parseFloat(style[border1]) + parseFloat(style[border2]));
         let realSize = elem[size];
 
         // Stupid Gecko eccentricities. May fail for quirks mode documents.
-        if (elem[size] + borderSize == elem[max] || elem[size] == 0) // Stupid, fallible heuristic.
+        if (elem[size] + borderSize >= elem[end] || elem[size] == 0) // Stupid, fallible heuristic.
             return false;
 
         if (style[overflow] == "hidden")
             realSize += borderSize;
-        return dir < 0 && elem[pos] > 0 || dir > 0 && elem[pos] + realSize < elem[max] || !dir && realSize < elem[max];
+        return dir > 0 && elem[pos] + realSize < elem[end] || !dir && realSize < elem[end];
     },
 
     /**
@@ -1529,7 +1539,7 @@ var Buffer = Module("Buffer", {
     /**
      * Scrolls the given element vertically.
      *
-     * @param {Element} elem The element to scroll.
+     * @param {Node} node The node to scroll.
      * @param {string} unit The increment by which to scroll.
      *   Possible values are: "lines", "pages"
      * @param {number} number The possibly fractional number of
