@@ -490,6 +490,10 @@ var HintSession = Class("HintSession", CommandMode, {
 
         let n = 5;
         (function next() {
+            if (Cu.isDeadWrapper && Cu.isDeadWrapper(elem))
+                // Hint document has been unloaded.
+                return;
+
             let hinted = n || this.validHints.some(function (h) h.elem === elem);
             if (!hinted)
                 hints.setClass(elem, null);
