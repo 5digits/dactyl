@@ -119,8 +119,8 @@ var Modes = Module("modes", {
             onKeyPress: function (events) { if (modes.main == modes.QUOTE) modes.pop(); }
         });
         this.addMode("IGNORE", { hidden: true }, {
-            onKeyPress: function (events) {
-                if (events.isCancelKey(DOM.Event.stringify(event)))
+            onKeyPress: function (events_) {
+                if (events.isCancelKey(DOM.Event.stringify(events_[0])))
                     return true;
                 return false;
             },
