@@ -119,7 +119,11 @@ var Modes = Module("modes", {
             onKeyPress: function (events) { if (modes.main == modes.QUOTE) modes.pop(); }
         });
         this.addMode("IGNORE", { hidden: true }, {
-            onKeyPress: function (events) false,
+            onKeyPress: function (events) {
+                if (events.isCancelKey(DOM.Event.stringify(event)))
+                    return true;
+                return false;
+            },
             bases: [],
             passthrough: true
         });
