@@ -1277,7 +1277,7 @@ var Buffer = Module("Buffer", {
      * The pattern used to search for a scrollable element when we have
      * no starting point.
      */
-    SCROLLABLE_SEARCH_SELECTOR: "div",
+    SCROLLABLE_SEARCH_SELECTOR: "html, body, div",
 
     PageInfo: Struct("PageInfo", "name", "title", "action")
                         .localize("title"),

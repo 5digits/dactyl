@@ -228,9 +228,14 @@ function properties(obj, prototypes, debugger_) {
                 // currently.
                 let filter = function filter(prop) {
                     try {
-                        return k in obj;
+                        return prop in obj;
                     }
-                    catch (e) {}
+                    catch (e) {
+                        util.reportError("Filtering properties for " +
+                                         String.quote(obj) + ", " +
+                                         "error checking presence of " +
+                                         String.quote(prop) + ": " + e);
+                    }
                     return false;
                 };
                 return array.uniq([k for (k in obj)].concat(
