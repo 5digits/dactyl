@@ -1877,6 +1877,27 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         userContext.DOM = Class("DOM", DOM, { init: function DOM_(sel, ctxt) DOM(sel, ctxt || buffer.focusedFrame.document) });
         userContext.$ = modules.userContext.DOM;
 
+        // Hack: disable disabling of Personas in private windows.
+        let root = document.documentElement;
+
+        if (PrivateBrowsingUtils && PrivateBrowsingUtils.isWindowPrivate(window)
+                && root._lightweightTheme
+                && root._lightweightTheme._lastScreenWidth == null) {
+
+            let { isWindowPrivate } = PrivateBrowsingUtils;
+            try {
+                PrivateBrowsingUtils.isWindowPrivate = function () false;
+                let { LightweightThemeConsumer } = Cu.import("resource://gre/modules/LightweightThemeConsumer.jsm", {});
+                LightweightThemeConsumer.call(root._lightweightTheme, document);
+            }
+            catch (e) {
+                util.reportError(e);
+            }
+            finally {
+                PrivateBrowsingUtils.isWindowPrivate = isWindowPrivate;
+            }
+        }
+
         dactyl.timeout(function () {
             try {
                 var args = config.prefs.get("commandline-args")

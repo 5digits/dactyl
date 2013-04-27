@@ -8,8 +8,13 @@ try {
 
 var global = this;
 defineModule("services", {
-    exports: ["services"]
+    exports: ["PrivateBrowsingUtils", "services"]
 });
+
+try {
+    var { PrivateBrowsingUtils } = Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+}
+catch (e) {}
 
 /**
  * A lazily-instantiated XPCOM class and service cache.

@@ -167,8 +167,7 @@ var sessionGlobal = Cu.import("resource://gre/modules/Services.jsm", {})
 var Storage = Module("Storage", {
     Local: function Local(dactyl, modules, window) ({
         init: function init() {
-            this.privateMode = window.document.documentElement
-                                     .getAttribute("privatebrowsingmode");
+            this.privateMode = PrivateBrowsingUtils.isWindowPrivate(window);
         }
     }),
 
