@@ -246,19 +246,27 @@ var Storage = Module("Storage", {
         if (params == null || !isObject(params))
             throw Error("Invalid argument type");
 
-        if (!(key in this.keys) && this.privateMode && key in this.globalInstance.keys) {
-            let obj = this.globalInstance.keys[key];
-            this.keys[key] = obj.clone ? obj.clone(this) : obj;
+        if (this.isLocalModule) {
+            this.globalInstance.newObject.apply(this.globalInstance, arguments);
+
+            if (!(key in this.keys) && this.privateMode && key in this.globalInstance.keys) {
+                let obj = this.globalInstance.keys[key];
+                this.keys[key] = this._privatize(obj);
+            }
+
+            return this.keys[key];
         }
 
-        if (!(key in this.keys) || params.reload || this.alwaysReload[key]) {
-            if (key in this && !(params.reload || this.alwaysReload[key]))
-                throw Error("WTF? Hm...");
+        let reload = params.reload || this.alwaysReload[key];
+        if (!(key in this.keys) || reload) {
+            if (key in this && !reload)
+                throw Error("Cannot add storage key with that name.");
+
             let load = function () self._loadData(key, params.store, params.type || myObject);
 
             this.keys[key] = new constructor(key, params.store, load, params);
-            this.keys[key].timer = new Timer(1000, 10000, function () storage.save(key));
-            this.globalInstance.__defineGetter__(key, function () this.keys[key]);
+            this.keys[key].timer = new Timer(1000, 10000, function () self.save(key));
+            this.__defineGetter__(key, function () this.keys[key]);
         }
         return this.keys[key];
     },
@@ -319,11 +327,13 @@ var Storage = Module("Storage", {
 
     fireEvent: function fireEvent(key, event, arg) {
         this.removeDeadObservers();
+
         if (key in this.observers)
             // Safe, since we have our own Array object here.
             for each (let observer in this.observers[key])
                 observer.callback.get()(key, event, arg);
-        if (key in this.keys)
+
+        if (key in this.keys && this.keys[key].timer)
             this[key].timer.tell();
     },
 
@@ -356,11 +366,17 @@ var Storage = Module("Storage", {
                 let { keys } = this;
                 this.keys = {};
                 for (let [k, v] in Iterator(keys))
-                    this.keys[k] = v.clone ? v.clone(this) : v;
+                    this.keys[k] = this._privatize(v);
             }
         }
         return this._privateMode;
-    }
+    },
+
+    _privatize: function privatize(obj) {
+        if (obj.privateData && obj.clone)
+            return obj.clone(this);
+        return obj;
+    },
 }, {
     Replacer: {
         skipXpcom: function skipXpcom(key, val) val instanceof Ci.nsISupports ? null : val
