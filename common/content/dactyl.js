@@ -1884,18 +1884,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 && root._lightweightTheme
                 && root._lightweightTheme._lastScreenWidth == null) {
 
-            let { isWindowPrivate } = PrivateBrowsingUtils;
-            try {
+            this.withSavedValues.call(PrivateBrowsingUtils,
+                                      ["isWindowPrivate"], function () {
                 PrivateBrowsingUtils.isWindowPrivate = function () false;
-                let { LightweightThemeConsumer } = Cu.import("resource://gre/modules/LightweightThemeConsumer.jsm", {});
-                LightweightThemeConsumer.call(root._lightweightTheme, document);
-            }
-            catch (e) {
-                util.reportError(e);
-            }
-            finally {
-                PrivateBrowsingUtils.isWindowPrivate = isWindowPrivate;
-            }
+
+                Cu.import("resource://gre/modules/LightweightThemeConsumer.jsm", {})
+                  .LightweightThemeConsumer.call(root._lightweightTheme, document);
+            });
         }
 
         dactyl.timeout(function () {
