@@ -1175,7 +1175,7 @@ var Buffer = Module("Buffer", {
      *   closed range [Buffer.ZOOM_MIN, Buffer.ZOOM_MAX].
      */
     setZoom: function setZoom(value, fullZoom) {
-        let { dactyl, statusline } = this.modules;
+        let { dactyl, statusline, storage } = this.modules;
         let { ZoomManager } = this;
 
         if (fullZoom === undefined)

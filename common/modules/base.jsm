@@ -735,6 +735,7 @@ function Class() {
         var Constructor = function Constructor() {
             var self = Object.create(Constructor.prototype);
             self.instance = self;
+            self.globalInstance = self;
 
             if ("_metaInit_" in self && self._metaInit_)
                 self._metaInit_.apply(self, arguments);
@@ -747,6 +748,7 @@ function Class() {
             (function constructor(PARAMS) {                      \n\
                 var self = Object.create(Constructor.prototype); \n\
                 self.instance = self;                            \n\
+                self.globalInstance = self;                      \n\
                                                                  \n\
                 if ("_metaInit_" in self && self._metaInit_)     \n\
                     self._metaInit_.apply(self, arguments);      \n\

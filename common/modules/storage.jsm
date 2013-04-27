@@ -16,28 +16,6 @@ lazyRequire("overlay", ["overlay"]);
 var win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 var myObject = JSON.parse("{}").constructor;
 
-function loadData(name, store, type) {
-    try {
-        let file = storage.infoPath.child(name);
-        if (file.exists()) {
-            let data = file.read();
-            let result = JSON.parse(data);
-            if (result instanceof type)
-                return result;
-        }
-    }
-    catch (e) {
-        util.reportError(e);
-    }
-}
-
-function saveData(obj) {
-    if (obj.privateData && storage.privateMode)
-        return;
-    if (obj.store && storage.infoPath)
-        storage.infoPath.child(obj.name).write(obj.serial);
-}
-
 var StoreBase = Class("StoreBase", {
     OPTIONS: ["privateData", "replacer"],
 
@@ -47,6 +25,7 @@ var StoreBase = Class("StoreBase", {
 
     init: function (name, store, load, options) {
         this._load = load;
+        this._options = options;
 
         this.__defineGetter__("store", function () store);
         this.__defineGetter__("name", function () name);
@@ -54,6 +33,13 @@ var StoreBase = Class("StoreBase", {
             if (this.OPTIONS.indexOf(k) >= 0)
                 this[k] = v;
         this.reload();
+    },
+
+    clone: function (storage) {
+        let store = storage.privateMode ? false : this.store;
+        let res = this.constructor(this.name, store, this._load, this._options);
+        res.storage = storage;
+        return res;
     },
 
     changed: function () { this.timer.tell(); },
@@ -69,7 +55,7 @@ var StoreBase = Class("StoreBase", {
         storage.infoPath.child(this.name).remove(false);
     },
 
-    save: function () { saveData(this); },
+    save: function () { (self.storage || storage)._saveData(this); },
 
     __iterator__: function () Iterator(this._object)
 });
@@ -179,6 +165,13 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
 var sessionGlobal = Cu.import("resource://gre/modules/Services.jsm", {})
 
 var Storage = Module("Storage", {
+    Local: function Local(dactyl, modules, window) ({
+        init: function init() {
+            this.privateMode = window.document.documentElement
+                                     .getAttribute("privatebrowsingmode");
+        }
+    }),
+
     alwaysReload: {},
 
     init: function init() {
@@ -201,6 +194,28 @@ var Storage = Module("Storage", {
 
         this.keys = {};
         this.observers = {};
+    },
+
+    _loadData: function loadData(name, store, type) {
+        try {
+            let file = storage.infoPath.child(name);
+            if (file.exists()) {
+                let data = file.read();
+                let result = JSON.parse(data);
+                if (result instanceof type)
+                    return result;
+            }
+        }
+        catch (e) {
+            util.reportError(e);
+        }
+    },
+
+    _saveData: function saveData(obj) {
+        if (obj.privateData && storage.privateMode)
+            return;
+        if (obj.store && storage.infoPath)
+            storage.infoPath.child(obj.name).write(obj.serial);
     },
 
     storeForSession: function storeForSession(key, val) {
@@ -227,17 +242,18 @@ var Storage = Module("Storage", {
     },
 
     newObject: function newObject(key, constructor, params) {
+        let self = this;
         if (params == null || !isObject(params))
             throw Error("Invalid argument type");
 
         if (!(key in this.keys) || params.reload || this.alwaysReload[key]) {
             if (key in this && !(params.reload || this.alwaysReload[key]))
                 throw Error();
-            let load = function () loadData(key, params.store, params.type || myObject);
+            let load = function () self._loadData(key, params.store, params.type || myObject);
 
             this.keys[key] = new constructor(key, params.store, load, params);
             this.keys[key].timer = new Timer(1000, 10000, function () storage.save(key));
-            this.__defineGetter__(key, function () this.keys[key]);
+            this.globalInstance.__defineGetter__(key, function () this.keys[key]);
         }
         return this.keys[key];
     },
@@ -259,17 +275,22 @@ var Storage = Module("Storage", {
         else {
             callbackRef = { get: function () callback };
         }
+
         this.removeDeadObservers();
+
         if (!(key in this.observers))
             this.observers[key] = [];
+
         if (!this.observers[key].some(function (o) o.callback.get() == callback))
             this.observers[key].push({ ref: ref && Cu.getWeakReference(ref), callback: callbackRef });
     },
 
     removeObserver: function (key, callback) {
         this.removeDeadObservers();
+
         if (!(key in this.observers))
             return;
+
         this.observers[key] = this.observers[key].filter(function (elem) elem.callback.get() != callback);
         if (this.observers[key].length == 0)
             delete obsevers[key];
@@ -279,6 +300,7 @@ var Storage = Module("Storage", {
         function filter(o) {
             if (!o.callback.get())
                 return false;
+
             let ref = o.ref && o.ref.get();
             return ref && !ref.closed && overlay.getData(ref, "storage-refs", null);
         }
@@ -307,23 +329,32 @@ var Storage = Module("Storage", {
 
     save: function save(key) {
         if (this[key])
-            saveData(this.keys[key]);
+            this._saveData(this.keys[key]);
     },
 
     saveAll: function storeAll() {
         for each (let obj in this.keys)
-            saveData(obj);
+            this._saveData(obj);
     },
 
     _privateMode: false,
     get privateMode() this._privateMode,
-    set privateMode(val) {
-        if (val && !this._privateMode)
+    set privateMode(enabled) {
+        this._privateMode = Boolean(enabled);
+
+        if (this.isLocalModule) {
             this.saveAll();
-        if (!val && this._privateMode)
-            for (let key in this.keys)
-                this.load(key);
-        return this._privateMode = Boolean(val);
+
+            if (!enabled)
+                delete this.keys;
+            else {
+                let { keys } = this;
+                this.keys = {};
+                for (let [k, v] in Iterator(keys))
+                    this.keys[k] = v.clone ? v.clone(this) : v;
+            }
+        }
+        return this._privateMode;
     }
 }, {
     Replacer: {
