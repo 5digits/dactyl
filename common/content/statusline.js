@@ -160,6 +160,16 @@ var StatusLine = Module("statusline", {
             this.timeout(function () {
                 this.status = message || buffer.uri;
             });
+        },
+        "fullscreen": function onFullscreen(fullscreen) {
+            let go = options.get("guioptions");
+            if (fullscreen) {
+                this.wasVisible = go.has("s");
+                go.op("-", "s");
+            }
+            else if (this.wasVisible) {
+                go.op("+", "s");
+            }
         }
     },
 
