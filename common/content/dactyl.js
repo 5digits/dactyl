@@ -1432,8 +1432,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         win.setAttribute("titlemodifier_normal", value);
                         win.setAttribute("titlemodifier_privatebrowsing", value + suffix);
 
-                        if (services.privateBrowsing.privateBrowsingEnabled) {
+                        if (storage.privateMode) {
                             updateTitle(oldValue + suffix, value + suffix);
+                            win.setAttribute("titlemodifier", value + suffix);
                             return value;
                         }
                     }

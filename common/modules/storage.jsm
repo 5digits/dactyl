@@ -246,9 +246,14 @@ var Storage = Module("Storage", {
         if (params == null || !isObject(params))
             throw Error("Invalid argument type");
 
+        if (!(key in this.keys) && this.privateMode && key in this.globalInstance.keys) {
+            let obj = this.globalInstance.keys[key];
+            this.keys[key] = obj.clone ? obj.clone(this) : obj;
+        }
+
         if (!(key in this.keys) || params.reload || this.alwaysReload[key]) {
             if (key in this && !(params.reload || this.alwaysReload[key]))
-                throw Error();
+                throw Error("WTF? Hm...");
             let load = function () self._loadData(key, params.store, params.type || myObject);
 
             this.keys[key] = new constructor(key, params.store, load, params);
