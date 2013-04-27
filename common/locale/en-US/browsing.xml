@@ -143,6 +143,10 @@
             Like <ex>:tabopen</ex>, but all arguments are opened in
             a single new window.
         </p>
+        <p>
+            When called via <ex>:private</ex>, the new window is a
+            private browsing window.
+        </p>
     </description>
 </item>
 

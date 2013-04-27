@@ -4,6 +4,8 @@
         all Vim related files.
       - Vimball packages are no longer available.
     • Removed <F1> and <A-F1> mappings.
+    • Add :private command.
+    • Better per-window private browsing support.
 
 1.0:
     • Extensive Firefox 4 support, including:

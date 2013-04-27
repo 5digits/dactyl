@@ -164,6 +164,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     NEW_WINDOW: "window",
 
     forceBackground: null,
+    forcePrivate: null,
     forceTarget: null,
 
     get forceOpen() ({ background: this.forceBackground,
@@ -955,7 +956,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     });
 
                 case dactyl.NEW_WINDOW:
-                    let win = window.openDialog(document.documentURI, "_blank", "chrome,all,dialog=no");
+                    let options = ["chrome", "all", "dialog=no"];
+                    if (dactyl.forcePrivate)
+                        options.push("private");
+
+                    let win = window.openDialog(document.documentURI, "_blank", options.join(","));
                     util.waitFor(function () win.document.readyState === "complete");
                     browser = win.dactyl && win.dactyl.modules.config.tabbrowser || win.getBrowser();
                     // FALLTHROUGH
@@ -1558,6 +1563,21 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 argCount: "1",
                 bang: true,
                 literal: 0
+            });
+
+        commands.add(["pr[ivate]", "pr0n", "porn"],
+            "Enable privacy features of a command, when applicable, and do not save the invocation in command history",
+            function (args) {
+                dactyl.withSavedValues(["forcePrivate"], function () {
+                    this.forcePrivate = true;
+                    dactyl.execute(args[0], null, true);
+                });
+            }, {
+                argCount: "1",
+                completer: function (context) completion.ex(context),
+                literal: 0,
+                privateData: "never-save",
+                subCommand: 0
             });
 
         commands.add(["exit", "x"],

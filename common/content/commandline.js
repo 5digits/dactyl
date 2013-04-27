@@ -1002,12 +1002,18 @@ var CommandLine = Module("commandline", {
         save: function save() {
             if (events.feedingKeys)
                 return;
+
             let str = this.input.value;
             if (/^\s*$/.test(str))
                 return;
+
+            let privateData = this.checkPrivate(str);
+            if (privateData == "never-save")
+                return;
+
             this.store = this.store.filter(function (line) (line.value || line) != str);
             dactyl.trapErrors(function () {
-                this.store.push({ value: str, timestamp: Date.now()*1000, privateData: this.checkPrivate(str) });
+                this.store.push({ value: str, timestamp: Date.now()*1000, privateData: privateData });
             }, this);
             this.store = this.store.slice(Math.max(0, this.store.length - options["history"]));
         },

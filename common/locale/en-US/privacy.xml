@@ -109,6 +109,19 @@
     </description>
 </item>
 
+<item>
+    <tags>:private :pr</tags>
+    <tags>:pr0n :porn</tags>
+    <strut/>
+    <spec>:pr<oa>ivate</oa> <a>cmd</a></spec>
+    <description>
+        <p>
+            Execute <a>cmd</a> with privacy features enabled, and
+            do not save the invocation in command history.
+        </p>
+    </description>
+</item>
+
 <h2 tag="cookie-settings">Cookie settings</h2>
 <item>
     <tags>:cookies :ck</tags>

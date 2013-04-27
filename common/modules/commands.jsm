@@ -915,7 +915,8 @@ var Commands = Module("commands", {
     hasPrivateData: function hasPrivateData(command) {
         for (let [cmd, args] in this.subCommands(command))
             if (cmd.privateData)
-                return !callable(cmd.privateData) || cmd.privateData(args);
+                return !callable(cmd.privateData) ? cmd.privateData
+                                                  : cmd.privateData(args);
         return false;
     },
 
