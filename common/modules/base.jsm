@@ -133,7 +133,7 @@ function require_(obj, name, from, targetName) {
 defineModule("base", {
     // sed -n 's/^(const|var|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
-        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "JSMLoader",
+        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Finished", "Module", "JSMLoader",
         "Set", "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
         "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable", "ctypes", "curry",
         "debuggerProperties", "defineModule", "deprecated", "endModule", "forEach", "isArray",
@@ -1109,6 +1109,12 @@ var ErrorBase = Class("ErrorBase", Error, {
     },
     toString: function () String(this.message)
 });
+
+/**
+ * An Error subclass to throw in order to stop sourcing a plugin without
+ * printing a stack trace.
+ */
+var Finished = Class("Finished", ErrorBase);
 
 /**
  * Constructs a new Module class and instantiates an instance into the current

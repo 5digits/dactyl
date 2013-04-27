@@ -1420,7 +1420,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             document.title = document.title.replace(RegExp("(.*)" + util.regexp.escape(old)), "$1" + current);
                     }
 
-                    if (services.has("privateBrowsing")) {
+                    if (win.hasAttribute("titlemodifier_privatebrowsing")) {
                         let oldValue = win.getAttribute("titlemodifier_normal");
                         let suffix = win.getAttribute("titlemodifier_privatebrowsing").substr(oldValue.length);
 

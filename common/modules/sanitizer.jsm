@@ -121,12 +121,16 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             },
             override: true
         });
-        if (services.has("privateBrowsing"))
+        try {
+            var { ForgetAboutSite } = Cu.import("resource://gre/modules/ForgetAboutSite.jsm", {});
+        }
+        catch (e) {}
+        if (ForgetAboutSite)
             this.addItem("host", {
                 description: "All data from the given host",
                 action: function (range, host) {
                     if (host)
-                        services.privateBrowsing.removeDataFromDomain(host);
+                        ForgetAboutSite.removeDataFromDomain(host);
                 }
             });
         this.addItem("sitesettings", {
@@ -595,7 +599,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     },
     options: function initOptions(dactyl, modules) {
         const options = modules.options;
-        if (services.has("privateBrowsing"))
+        if (services.has("privateBrowsing") && "privateBrowsingEnabled" in services.privateBrowsing)
             options.add(["private", "pornmode"],
                 "Set the 'private browsing' option",
                 "boolean", false,

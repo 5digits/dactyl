@@ -151,7 +151,7 @@ var IO = Module("io", {
                         dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
                     }
 
-                    if (/\.js,$/.test(filename))
+                    if (/\.jsm$/.test(filename))
                         sourceJSM();
                     else if (/\.js$/.test(filename)) {
                         try {
@@ -168,6 +168,8 @@ var IO = Module("io", {
                                 sourceJSM();
                             }
                             else {
+                                if (e instanceof Finished)
+                                    return;
                                 if (e.fileName && !(e instanceof FailedAssertion))
                                     try {
                                         e.fileName = util.fixURI(e.fileName);

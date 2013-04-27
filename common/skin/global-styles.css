@@ -1,4 +1,3 @@
-
 Boolean      /* JavaScript booleans */       color: red;
 Function     /* JavaScript functions */      color: navy;
 Null         /* JavaScript null values */    color: blue;
@@ -76,6 +75,14 @@ StatusWarningMsg  /* A warning message in the status line */ \
                   color: red     !important; background: transparent !important;
 Disabled          /* Disabled items */ \
                   color: gray    !important;
+
+!Private;xul|window[privatebrowsingmode]  /* A private browsing window */
+
+Private StatusLine::before  /* From the default theme: */ \
+                            display: -moz-box; \
+                            content: ""; \
+                            background: url("chrome://browser/skin/privatebrowsing-mask.png") center no-repeat; \
+                            width: 30px;
 
 CmdLine;>*;;FontFixed   /* The command line */ \
                         padding: 1px !important;
