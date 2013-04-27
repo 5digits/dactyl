@@ -42,7 +42,7 @@ var StoreBase = Class("StoreBase", {
         return res;
     },
 
-    changed: function () { this.timer.tell(); },
+    changed: function () { this.timer && this.timer.tell(); },
 
     reload: function reload() {
         this._object = this._load() || this._constructor();
