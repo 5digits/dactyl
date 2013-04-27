@@ -68,6 +68,45 @@ var Buffer = Module("Buffer", {
         );
     },
 
+    /**
+     * Gets a content preference for the given buffer.
+     *
+     * @param {string} pref The preference to get.
+     * @param {function(string|number|boolean)} callback The callback to
+     *      call with the preference value. @optional
+     * @returns {string|number|boolean} The value of the preference, if
+     *      callback is not provided.
+     */
+    getPref: function getPref(pref, callback) {
+        // God damn it.
+        if (config.haveGecko("19.0a1"))
+            services.contentPrefs.getPref(this.uri, pref,
+                                          sanitizer.getContext(this.win), callback);
+        else
+            services.contentPrefs.getPref(uri, pref, callback);
+    },
+
+    /**
+     * Sets a content preference for the given buffer.
+     *
+     * @param {string} pref The preference to set.
+     * @param {string} value The value to store.
+     */
+    setPref: function setPref(pref, value) {
+        services.contentPrefs.setPref(
+            this.uri, pref, value, sanitizer.getContext(this.win));
+    },
+
+    /**
+     * Clear a content preference for the given buffer.
+     *
+     * @param {string} pref The preference to clear.
+     */
+    clearPref: function clearPref(pref) {
+        services.contentPrefs.removePref(
+            this.uri, pref, sanitizer.getContext(this.win));
+    },
+
     climbUrlPath: function climbUrlPath(count) {
         let { dactyl } = this.modules;
 
@@ -1192,20 +1231,15 @@ var Buffer = Module("Buffer", {
             return dactyl.echoerr(_("zoom.illegal"));
         }
 
-        if (services.has("contentPrefs") && !storage.privateMode
-                && prefs.get("browser.zoom.siteSpecific")) {
+        if (prefs.get("browser.zoom.siteSpecific")) {
             var privacy = sanitizer.getContext(this.win);
             if (value == 1) {
-                services.contentPrefs.removePref(
-                    this.uri, "browser.content.full-zoom", privacy);
-                services.contentPrefs.removePref(
-                    this.uri, "dactyl.content.full-zoom", privacy);
+                this.clearPref("browser.content.full-zoom");
+                this.clearPref("dactyl.content.full-zoom");
             }
             else {
-                services.contentPrefs.setPref(
-                    this.uri, "browser.content.full-zoom", value, privacy);
-                services.contentPrefs.setPref(
-                    this.uri, "dactyl.content.full-zoom", fullZoom, privacy);
+                this.setPref("browser.content.full-zoom", value);
+                this.setPref("dactyl.content.full-zoom", fullZoom);
             }
         }
 
@@ -1219,19 +1253,12 @@ var Buffer = Module("Buffer", {
         let self = this;
         let uri = this.uri;
 
-        if (services.has("contentPrefs") && prefs.get("browser.zoom.siteSpecific")) {
-            let callback = function (val) {
+        if (prefs.get("browser.zoom.siteSpecific")) {
+            this.getPref("dactyl.content.full-zoom", function (val) {
                 if (val != null && uri.equals(self.uri) && val != prefs.get("browser.zoom.full"))
                     [self.contentViewer.textZoom, self.contentViewer.fullZoom] =
                         [self.contentViewer.fullZoom, self.contentViewer.textZoom];
-            }
-            // God damn it.
-            if (config.haveGecko("19.0a1"))
-                services.contentPrefs.getPref(uri, "dactyl.content.full-zoom",
-                                              sanitizer.getContext(this.win), callback);
-            else
-                services.contentPrefs.getPref(uri, "dactyl.content.full-zoom",
-                                              callback);
+            });
         }
     }),
 
