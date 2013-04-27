@@ -108,6 +108,7 @@ var ConfigBase = Class("ConfigBase", {
         global: ["addons",
                  "base",
                  "io",
+                 ["bookmarkcache", "bookmarkcache"],
                  "buffer",
                  "cache",
                  "commands",

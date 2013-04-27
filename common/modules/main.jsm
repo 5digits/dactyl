@@ -173,7 +173,12 @@ overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
 
         defineModule.time("load", null, function _load() {
             config.modules.global
-                  .forEach(function (name) defineModule.time("load", name, require, null, name, modules.jsmodules));
+                  .forEach(function (name) {
+                      if (!isArray(name))
+                          defineModule.time("load", name, require, null, name, modules.jsmodules);
+                      else
+                          lazyRequire(name[0], name.slice(1), modules.jsmodules);
+                  });
 
             config.modules.window
                   .forEach(function (name) defineModule.time("load", name, modules.load, modules, name));
