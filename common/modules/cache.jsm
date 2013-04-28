@@ -234,11 +234,14 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
 
         if (this.queue.length && !this.inQueue) {
             // removeEntry does not work properly with queues.
+            let removed = 0;
             for each (let [, entry] in this.queue)
                 if (this.getCacheWriter().hasEntry(entry)) {
                     this.getCacheWriter().removeEntry(entry, false);
-                    this.closeWriter();
+                    removed++;
                 }
+            if (removed)
+                this.closeWriter();
 
             this.queue.splice(0).forEach(function ([time, entry]) {
                 if (time && Set.has(this.cache, entry)) {

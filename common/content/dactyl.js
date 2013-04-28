@@ -1884,7 +1884,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 && root._lightweightTheme
                 && root._lightweightTheme._lastScreenWidth == null) {
 
-            this.withSavedValues.call(PrivateBrowsingUtils,
+            dactyl.withSavedValues.call(PrivateBrowsingUtils,
                                       ["isWindowPrivate"], function () {
                 PrivateBrowsingUtils.isWindowPrivate = function () false;
 

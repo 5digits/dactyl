@@ -499,8 +499,15 @@ var DOM = Class("DOM", {
                 if (DOM(elem).isInput
                         || /^(?:hidden|textarea)$/.test(elem.type)
                         || elem.type == "submit" && elem == field
-                        || elem.checked && /^(?:checkbox|radio)$/.test(elem.type))
-                    elems.push(encode(elem.name, elem.value, elem === field));
+                        || elem.checked && /^(?:checkbox|radio)$/.test(elem.type)) {
+
+                    if (elem !== field)
+                        elems.push(encode(elem.name, elem.value));
+                    else if (overlay.getData(elem, "had-focus"))
+                        elems.push(encode(elem.name, elem.value, true));
+                    else
+                        elems.push(encode(elem.name, "", true));
+                }
                 else if (elem instanceof Ci.nsIDOMHTMLSelectElement) {
                     for (let [, opt] in Iterator(elem.options))
                         if (opt.selected)

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -632,7 +632,8 @@ var Buffer = Module("Buffer", {
                 util.reportError(e);
             }
 
-        let link = DOM("link[href]:-moz-any([rev=canonical], [rel=shortlink])", doc);
+        let link = DOM("link[href][rev=canonical], \
+                        link[href][rel=shortlink]", doc);
         if (link)
             return link.attr("href");
 
