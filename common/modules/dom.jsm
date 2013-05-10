@@ -11,6 +11,7 @@ defineModule("dom", {
 
 lazyRequire("highlight", ["highlight"]);
 lazyRequire("messages", ["_"]);
+lazyRequire("overlay", ["overlay"]);
 lazyRequire("prefs", ["prefs"]);
 lazyRequire("template", ["template"]);
 
