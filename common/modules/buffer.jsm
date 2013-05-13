@@ -83,7 +83,7 @@ var Buffer = Module("Buffer", {
             services.contentPrefs.getPref(this.uri, pref,
                                           sanitizer.getContext(this.win), callback);
         else
-            services.contentPrefs.getPref(uri, pref, callback);
+            services.contentPrefs.getPref(this.uri, pref, callback);
     },
 
     /**
