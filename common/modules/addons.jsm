@@ -390,9 +390,9 @@ var Addons = Module("addons", {
                 }
 
                 if (!file.exists())
-                    AddonManager.getInstallForURL(url,   install, "application/x-xpinstall");
+                    AddonManager.getInstallForURL(url,        install, "application/x-xpinstall");
                 else if (file.isReadable() && file.isFile())
-                    AddonManager.getInstallForFile(file, install, "application/x-xpinstall");
+                    AddonManager.getInstallForFile(file.file, install, "application/x-xpinstall");
                 else if (file.isDirectory())
                     dactyl.echoerr(_("addon.cantInstallDir", file.path.quote()));
                 else

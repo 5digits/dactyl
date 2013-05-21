@@ -1471,8 +1471,13 @@ var Buffer = Module("Buffer", {
             return elem[pos] > 0;
 
         let max = pos + "Max";
-        if (max in elem && dir > 0)
-            return elem[pos] < elem[max];
+        if (max in elem) {
+            if (elem[pos] < elem[max])
+                return true;
+            if (dir > 0)
+                return false;
+            return elem[pos] > 0;
+        }
 
         let style = DOM(elem).style;
         let borderSize = Math.round(parseFloat(style[border1]) + parseFloat(style[border2]));
