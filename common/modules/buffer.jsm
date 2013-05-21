@@ -1471,7 +1471,7 @@ var Buffer = Module("Buffer", {
             return elem[pos] > 0;
 
         let max = pos + "Max";
-        if (max in elem && pos > 0)
+        if (max in elem && dir > 0)
             return elem[pos] < elem[max];
 
         let style = DOM(elem).style;
