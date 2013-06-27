@@ -52,8 +52,8 @@ var Services = Module("Services", {
         this.add("favicon",             "@mozilla.org/browser/favicon-service;1",           "nsIFaviconService");
         this.add("file:",               this.PROTOCOL + "file",                             "nsIFileProtocolHandler");
         this.add("focus",               "@mozilla.org/focus-manager;1",                     "nsIFocusManager");
-        this.add("history",             "@mozilla.org/browser/global-history;2",
-                 ["nsIBrowserHistory", "nsIGlobalHistory2", "nsINavHistoryService", "nsPIPlacesDatabase"]);
+        this.add("history",             "@mozilla.org/browser/nav-history-service;1",
+                 ["nsIBrowserHistory", "nsINavHistoryService", "nsPIPlacesDatabase"]);
         this.add("io",                  "@mozilla.org/network/io-service;1",                "nsIIOService");
         this.add("json",                "@mozilla.org/dom/json;1",                          "nsIJSON", "createInstance");
         this.add("listeners",           "@mozilla.org/eventlistenerservice;1",              "nsIEventListenerService");
