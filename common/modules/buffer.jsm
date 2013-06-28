@@ -755,8 +755,8 @@ var Buffer = Module("Buffer", {
      * vertical percentages. See {@link Buffer.scrollToPercent} for
      * parameters.
      */
-    scrollToPercent: function scrollToPercent(horizontal, vertical)
-        Buffer.scrollToPercent(this.findScrollable(0, vertical == null), horizontal, vertical),
+    scrollToPercent: function scrollToPercent(horizontal, vertical, dir)
+        Buffer.scrollToPercent(this.findScrollable(dir || 0, vertical == null), horizontal, vertical),
 
     /**
      * Scrolls the currently active element to the given horizontal and
@@ -2078,7 +2078,8 @@ var Buffer = Module("Buffer", {
 
         mappings.add([modes.NORMAL], ["gg", "<Home>", "<scroll-top>"],
             "Go to the top of the document",
-            function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 0); },
+            function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 0,
+                                                     args.count != null ? 0 : -1); },
             { count: true });
 
         mappings.add([modes.NORMAL], ["G", "<End>", "<scroll-bottom>"],
@@ -2093,7 +2094,7 @@ var Buffer = Module("Buffer", {
                 else if (args.count)
                     buffer.scrollToPosition(null, args.count);
                 else
-                    buffer.scrollToPercent(null, 100);
+                    buffer.scrollToPercent(null, 100, 1);
             },
             { count: true });
 
