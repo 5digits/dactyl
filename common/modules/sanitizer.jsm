@@ -70,7 +70,6 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
 
         util.addObserver(this);
 
-        services.add("contentPrefs", "@mozilla.org/content-pref/service;1", Ci.nsIContentPrefService);
         services.add("cookies",      "@mozilla.org/cookiemanager;1",        [Ci.nsICookieManager, Ci.nsICookieManager2,
                                                                              Ci.nsICookieService]);
         services.add("loginManager", "@mozilla.org/login-manager;1",        Ci.nsILoginManager);

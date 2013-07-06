@@ -126,7 +126,7 @@ var Services = Module("Services", {
             if (!service.interfaces.length)
                 return res.wrappedJSObject || res;
 
-            service.interfaces.forEach(function (iface) res.QueryInterface(Ci[iface]));
+            service.interfaces.forEach(function (iface) res instanceof Ci[iface]);
             if (service.init && args.length) {
                 if (service.callable)
                     res[service.init].apply(res, args);
