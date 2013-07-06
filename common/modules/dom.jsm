@@ -125,7 +125,7 @@ var DOM = Class("DOM", {
             if (val instanceof Ci.nsIDOMNode)
                 return val;
 
-            if (typeof val == "xml" || DOM.isJSONXML(val)) {
+            if (DOM.isJSONXML(val)) {
                 val = dom.constructor(val, dom.document);
                 if (container)
                     container[idx] = val[0];
@@ -139,6 +139,9 @@ var DOM = Class("DOM", {
             }
             return val;
         }
+
+        if (DOM.isJSONXML(val))
+            val = (function () this).bind(val);
 
         if (callable(val))
             return this.each(function (elem, i) {

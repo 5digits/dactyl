@@ -1144,7 +1144,10 @@ var Buffer = Module("Buffer", {
 
             let ext = uri.fileExtension || "txt";
             if (doc.contentType)
-                ext = services.mime.getPrimaryExtension(doc.contentType, ext);
+                try {
+                    ext = services.mime.getPrimaryExtension(doc.contentType, ext);
+                }
+                catch (e) {}
 
             if (!isString(doc))
                 return io.withTempFiles(function (temp) {
