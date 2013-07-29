@@ -639,7 +639,7 @@ var IO = Module("io", {
                 lines.push("\n\" vim: set ft=" + config.name + ":");
 
                 try {
-                    file.write(lines.join("\n"));
+                    file.write(lines.join("\n").concat("\n"));
                     dactyl.echomsg(_("io.writing", file.path.quote()), 2);
                 }
                 catch (e) {
