@@ -845,7 +845,7 @@ var CommandLine = Module("commandline", {
         this._lastEchoTime = (flags & this.FORCE_SINGLELINE) && Date.now();
 
         if (action)
-            action.call(this, data, highlightGroup, single);
+            action.call(this, data, highlightGroup, single());
     },
     _lastEchoTime: 0,
 
