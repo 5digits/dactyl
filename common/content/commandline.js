@@ -802,7 +802,7 @@ var CommandLine = Module("commandline", {
         if ((flags & this.FORCE_MULTILINE) || (/\n/.test(data) || !isinstance(data, [_, "String"])) && !(flags & this.FORCE_SINGLELINE))
             action = mow.closure.echo;
 
-        let single = function () action == self._echoLine;
+        let checkSingleLine = function () action == self._echoLine;
 
         if (forceSingle) {
             this._lastEcho = null;
@@ -810,11 +810,11 @@ var CommandLine = Module("commandline", {
         }
         else {
             // So complicated...
-            if (single() && !this.widgets.mowContainer.collapsed) {
+            if (checkSingleLine() && !this.widgets.mowContainer.collapsed) {
                 highlightGroup += " Message";
                 action = mow.closure.echo;
             }
-            else if (!single() && this.widgets.mowContainer.collapsed) {
+            else if (!checkSingleLine() && this.widgets.mowContainer.collapsed) {
                 if (this._lastEcho && this.widgets.message && this.widgets.message[1] == this._lastEcho.msg) {
                     if (!(this._lastEcho.flags & this.APPEND_TO_MESSAGES))
                         appendToMessages(this._lastEcho.data);
@@ -832,20 +832,20 @@ var CommandLine = Module("commandline", {
             else if (this._lastEcho && this.widgets.message && this.widgets.message[1] == this._lastEcho.msg) {
                 if (!(this._lastEcho.flags & this.APPEND_TO_MESSAGES))
                     appendToMessages(this._lastEcho.data);
-                if (single() && !(flags & this.APPEND_TO_MESSAGES))
+                if (checkSingleLine() && !(flags & this.APPEND_TO_MESSAGES))
                     appendToMessages(data);
 
                 flags |= this.APPEND_TO_MESSAGES;
                 this.hiddenMessages++;
             }
-            this._lastEcho = single() && { flags: flags, msg: data, data: arguments[0] };
+            this._lastEcho = checkSingleLine() && { flags: flags, msg: data, data: arguments[0] };
         }
 
         this._lastClearable = action === this._echoLine && String(data);
         this._lastEchoTime = (flags & this.FORCE_SINGLELINE) && Date.now();
 
         if (action)
-            action.call(this, data, highlightGroup, single());
+            action.call(this, data, highlightGroup, checkSingleLine());
     },
     _lastEchoTime: 0,
 
