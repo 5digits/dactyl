@@ -1352,7 +1352,7 @@ var Hints = Module("hints", {
             {
                 values: {
                     "0": "Follow the first hint as soon as typed text uniquely identifies it. Follow the selected hint on <Return>.",
-                    "1": "Follow the selected hint on <Return>.",
+                    "1": "Follow the selected hint on <Return>."
                 }
             });
 
@@ -1389,4 +1389,4 @@ var Hints = Module("hints", {
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

@@ -51,3 +51,4 @@ function fromXML(node, doc, nodes) {
     }
 }
 
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

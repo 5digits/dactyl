@@ -222,7 +222,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             if (dactyl.forceTarget in openModes)
                 mode = openModes[dactyl.forceTarget];
 
-            CommandExMode().open(mode + "open " + (args || ""))
+            CommandExMode().open(mode + "open " + (args || ""));
         }
 
         function decode(uri) util.losslessDecodeURI(uri)
@@ -282,4 +282,4 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

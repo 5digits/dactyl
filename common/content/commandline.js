@@ -54,7 +54,7 @@ var CommandWidgets = Class("CommandWidgets", {
                     ["vbox", { id: "dactyl-completions-" + s + "commandline-container", class: "dactyl-container", hidden: "false", collapsed: "true" },
                         ["iframe", { class: "dactyl-completions", id: "dactyl-completions-" + s + "commandline", src: "dactyl://content/buffer.xhtml",
                                      contextmenu: "dactyl-contextmenu", flex: "1", hidden: "false", collapsed: "false", highlight: "Events",
-                                     events: "mowEvents" }]]]],
+                                     events: "mowEvents" }]]]]
         });
 
         this.elements = {};
@@ -634,7 +634,7 @@ var CommandLine = Module("commandline", {
 
             node.completionList = ItemList(elem);
             node.completionList.isAboveMow = node.id ==
-                this.widgets.statusbar.commandline.id
+                this.widgets.statusbar.commandline.id;
         }
         return node.completionList;
     },
@@ -741,7 +741,7 @@ var CommandLine = Module("commandline", {
         if (val)
             this.widgets["message-pre"] = _("commandline.moreMessages", val) + " ";
         else
-            this.widgets["message-pre"] = null
+            this.widgets["message-pre"] = null;
     },
 
     _lastEcho: null,
@@ -1013,7 +1013,7 @@ var CommandLine = Module("commandline", {
 
             this.store = this.store.filter(function (line) (line.value || line) != str);
             dactyl.trapErrors(function () {
-                this.store.push({ value: str, timestamp: Date.now()*1000, privateData: privateData });
+                this.store.push({ value: str, timestamp: Date.now() * 1000, privateData: privateData });
             }, this);
             this.store = this.store.slice(Math.max(0, this.store.length - options["history"]));
         },
@@ -1768,7 +1768,7 @@ var CommandLine = Module("commandline", {
             });
 
         let bind = function bind()
-            mappings.add.apply(mappings, [[modes.COMMAND_LINE]].concat(Array.slice(arguments)))
+            mappings.add.apply(mappings, [[modes.COMMAND_LINE]].concat(Array.slice(arguments)));
 
         bind(["<Esc>", "<C-[>"], "Stop waiting for completions or exit Command Line mode",
              function ({ self }) {
@@ -2030,7 +2030,7 @@ var ItemList = Class("ItemList", {
         if (start < 0 || start >= this.itemCount)
             return null;
 
-        group = array.nth(groups, function (g) let (i = start - g.offsets.start) i >= 0 && i < g.itemCount, 0)
+        group = array.nth(groups, function (g) let (i = start - g.offsets.start) i >= 0 && i < g.itemCount, 0);
         return [group.context, start - group.offsets.start];
     },
 
@@ -2342,7 +2342,7 @@ var ItemList = Class("ItemList", {
                 container.scrollTop = scroll;
                 if (scrollY != null)
                     win.scrollTo(0, Math.max(scrollY, 0));
-            }
+            };
         },
 
         /**
@@ -2455,4 +2455,4 @@ var ItemList = Class("ItemList", {
     })
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

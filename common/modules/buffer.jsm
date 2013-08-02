@@ -33,7 +33,7 @@ var Buffer = Module("Buffer", {
 
             let win = services.focus.focusedWindow;
             if (!win || win == window || util.topWindow(win) != window)
-                return window.content
+                return window.content;
             if (win.top == window)
                 return win;
             return win.top;
@@ -219,7 +219,7 @@ var Buffer = Module("Buffer", {
      */
     get zoomLevel() {
         let v = this.contentViewer;
-        return v[v.textZoom == 1 ? "fullZoom" : "textZoom"] * 100
+        return v[v.textZoom == 1 ? "fullZoom" : "textZoom"] * 100;
     },
     set zoomLevel(value) { this.setZoom(value, this.fullZoom); },
 
@@ -907,7 +907,7 @@ var Buffer = Module("Buffer", {
         let distance = reverse ? function (rect) -rect.top : function (rect) rect.top;
         let elems = [[e, distance(e.getBoundingClientRect())] for (e in path.matcher(this.focusedFrame.document))]
                         .filter(function (e) e[1] > FUDGE)
-                        .sort(function (a, b) a[1] - b[1])
+                        .sort(function (a, b) a[1] - b[1]);
 
         if (offScreen && !reverse)
             elems = elems.filter(function (e) e[1] > this, this.topWindow.innerHeight);
@@ -1368,10 +1368,10 @@ var Buffer = Module("Buffer", {
                 get scrollRightMax() this.win.scrollMaxY,
 
                 get scrollLeft() this.win.scrollX,
-                set scrollLeft(val) { this.win.scrollTo(val, this.win.scrollY) },
+                set scrollLeft(val) { this.win.scrollTo(val, this.win.scrollY); },
 
                 get scrollTop() this.win.scrollY,
-                set scrollTop(val) { this.win.scrollTo(this.win.scrollX, val) }
+                set scrollTop(val) { this.win.scrollTo(this.win.scrollX, val); }
             };
         return elem;
     },
@@ -1680,7 +1680,7 @@ var Buffer = Module("Buffer", {
         return {
             x: elem.scrollLeft && elem.scrollLeft / this._exWidth(node),
             y: elem.scrollTop / parseFloat(style.lineHeight)
-        }
+        };
     },
 
     _exWidth: function _exWidth(elem) {
@@ -1747,7 +1747,7 @@ var Buffer = Module("Buffer", {
                 const BRANCH   = "printer_" + PRINTER + ".";
                 const BRANCHES = ["print.", BRANCH, "print." + BRANCH];
                 function set(pref, value) {
-                    BRANCHES.forEach(function (branch) { prefs.set(branch + pref, value) });
+                    BRANCHES.forEach(function (branch) { prefs.set(branch + pref, value); });
                 }
 
                 prefs.withContext(function () {
@@ -2665,7 +2665,7 @@ Buffer.addPageInfoSection("m", "Meta Tags", function (verbose) {
 });
 
 Buffer.addPageInfoSection("s", "Security", function (verbose) {
-    let { statusline } = this.modules
+    let { statusline } = this.modules;
 
     let identity = this.topWindow.gIdentityHandler;
 
@@ -2706,4 +2706,4 @@ Buffer.addPageInfoSection("s", "Security", function (verbose) {
 
 endModule();
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

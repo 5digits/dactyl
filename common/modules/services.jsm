@@ -47,7 +47,7 @@ var Services = Module("Services", {
         this.add("downloadManager",     "@mozilla.org/download-manager;1",                  "nsIDownloadManager");
         this.add("environment",         "@mozilla.org/process/environment;1",               "nsIEnvironment");
         this.add("extensionManager",    "@mozilla.org/extensions/manager;1",                "nsIExtensionManager");
-        this.add("externalApp",         "@mozilla.org/uriloader/external-helper-app-service;1", "nsPIExternalAppLauncher")
+        this.add("externalApp",         "@mozilla.org/uriloader/external-helper-app-service;1", "nsPIExternalAppLauncher");
         this.add("externalProtocol",    "@mozilla.org/uriloader/external-protocol-service;1", "nsIExternalProtocolService");
         this.add("favicon",             "@mozilla.org/browser/favicon-service;1",           "nsIFaviconService");
         this.add("file:",               this.PROTOCOL + "file",                             "nsIFileProtocolHandler");
@@ -99,7 +99,7 @@ var Services = Module("Services", {
         this.addClass("Persist",      "@mozilla.org/embedding/browser/nsWebBrowserPersist;1", "nsIWebBrowserPersist");
         this.addClass("Pipe",         "@mozilla.org/pipe;1",                       "nsIPipe", "init");
         this.addClass("Process",      "@mozilla.org/process/util;1",               "nsIProcess", "init");
-        this.addClass("Pump",         "@mozilla.org/network/input-stream-pump;1",  "nsIInputStreamPump", "init")
+        this.addClass("Pump",         "@mozilla.org/network/input-stream-pump;1",  "nsIInputStreamPump", "init");
         this.addClass("StreamChannel","@mozilla.org/network/input-stream-channel;1",
                       ["nsIInputStreamChannel", "nsIChannel"], "setURI");
         this.addClass("StreamCopier", "@mozilla.org/network/async-stream-copier;1","nsIAsyncStreamCopier", "init");
@@ -214,4 +214,4 @@ endModule();
 
 } catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
-// vim: set fdm=marker sw=4 sts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

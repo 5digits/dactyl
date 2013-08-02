@@ -970,7 +970,7 @@ var Events = Module("events", {
         return DOM(elem).isEditable ||
                isinstance(elem, [Ci.nsIDOMHTMLEmbedElement,
                                  Ci.nsIDOMHTMLObjectElement,
-                                 Ci.nsIDOMHTMLSelectElement])
+                                 Ci.nsIDOMHTMLSelectElement]);
     },
 
     kill: function kill(event) {
@@ -1172,4 +1172,4 @@ var Events = Module("events", {
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

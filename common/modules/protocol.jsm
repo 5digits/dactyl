@@ -44,9 +44,9 @@ function NetError(orig, error) {
 
         originalURI: orig,
 
-        asyncOpen: function () { throw error || Cr.NS_ERROR_FILE_NOT_FOUND },
+        asyncOpen: function () { throw error || Cr.NS_ERROR_FILE_NOT_FOUND; },
 
-        open: function () { throw error || Cr.NS_ERROR_FILE_NOT_FOUND }
+        open: function () { throw error || Cr.NS_ERROR_FILE_NOT_FOUND; }
     }).data.QueryInterface(Ci.nsIChannel);
 }
 function RedirectChannel(to, orig, time, message) {
@@ -72,7 +72,7 @@ function Protocol(scheme, classID, contentBase) {
 
         contentBase: contentBase,
 
-        _xpcom_factory: JSMLoader.Factory(Protocol),
+        _xpcom_factory: JSMLoader.Factory(Protocol)
     };
     return Protocol;
 }
@@ -259,4 +259,4 @@ XMLChannel.prototype = {
 
 endModule();
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

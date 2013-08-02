@@ -943,7 +943,7 @@ var Completion = Module("completion", {
                     template.map(contexts, function m(context)
                         [template.completionRow(context.title, "CompTitle"),
                          template.map(context.items, function m(item) context.createRow(item), null, 100)])]);
-        },
+        }
     }),
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1019,7 +1019,7 @@ var Completion = Module("completion", {
         let words = context.filter.toLowerCase().split(/\s+/g);
         context.hasItems = true;
         context.completions = context.completions.filter(function f({ url, title })
-            words.every(function e(w) (url + " " + title).toLowerCase().indexOf(w) >= 0))
+            words.every(function e(w) (url + " " + title).toLowerCase().indexOf(w) >= 0));
 
         context.format = this.modules.bookmarks.format;
         context.keys.extra = function k_extra(item) {
@@ -1229,4 +1229,4 @@ endModule();
 
 // catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

@@ -91,4 +91,4 @@ else
     var NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
 var EXPORTED_SYMBOLS = ["NSGetFactory", "global"];
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

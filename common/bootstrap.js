@@ -103,7 +103,7 @@ let JSMLoader = {
             return resourceProto.resolveURI(uri);
 
         let chan = Services.io.newChannelFromURI(uri);
-        try { chan.cancel(Cr.NS_BINDING_ABORTED) } catch (e) {}
+        try { chan.cancel(Cr.NS_BINDING_ABORTED); } catch (e) {}
         return chan.name;
     },
 

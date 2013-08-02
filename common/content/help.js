@@ -24,4 +24,4 @@ function checkFragment() {
 document.addEventListener("load", checkFragment, true);
 document.addEventListener("hashChange", checkFragment, true);
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

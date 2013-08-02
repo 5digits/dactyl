@@ -29,7 +29,7 @@ Sheet.liveProperty = function (name) {
         this[i] = val;
         this.enabled = this.enabled;
     });
-}
+};
 Sheet.liveProperty("agent");
 Sheet.liveProperty("css");
 Sheet.liveProperty("sites");
@@ -763,9 +763,9 @@ var Styles = Module("Styles", {
                                                          ]);
                     }),
                     match.postSpace
-                ]
-            })
-        }
+                ];
+            });
+        };
     }
 });
 
@@ -773,4 +773,4 @@ endModule();
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

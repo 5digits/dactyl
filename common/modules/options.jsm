@@ -258,7 +258,7 @@ var Option = Class("Option", {
         return null;
     },
 
-    // Properties {{{2
+    // Properties {{{
 
     /** @property {string} The option's canonical name. */
     name: null,
@@ -400,7 +400,8 @@ var Option = Class("Option", {
     hasChanged: false,
 
     /**
-     * Returns the timestamp when the option's value was last changed.
+     * @property {number} Returns the timestamp when the option's value was
+     *     last changed.
      */
     get lastSet() options.store.get(this.name).time,
     set lastSet(val) { options.store.set(this.name, { value: this.globalValue, time: Date.now() }); },
@@ -411,6 +412,7 @@ var Option = Class("Option", {
      */
     setFrom: null
 
+    //}}}
 }, {
     /**
      * @property {number} Global option scope.
@@ -1566,4 +1568,4 @@ endModule();
 
 } catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

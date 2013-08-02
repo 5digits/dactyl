@@ -322,3 +322,4 @@ var KeyArgProcessor = Class("KeyArgProcessor", KeyProcessor, {
     }
 });
 
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

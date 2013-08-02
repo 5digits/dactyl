@@ -149,7 +149,7 @@ var IO = Module("io", {
                     let sourceJSM = function sourceJSM() {
                         context = contexts.Module(uri);
                         dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
-                    }
+                    };
 
                     if (/\.jsm$/.test(filename))
                         sourceJSM();
@@ -675,13 +675,13 @@ var IO = Module("io", {
                     item.file = file;
                 }
 
-                rtItems.ftdetect.template = // {{{
+                rtItems.ftdetect.template = //{{{
 literal(/*" Vim filetype detection file
 <header>
 
 au BufNewFile,BufRead *<name>rc*,*.<fileext> set filetype=<name>
 */);//}}}
-                rtItems.ftplugin.template = // {{{
+                rtItems.ftplugin.template = //{{{
 literal(/*" Vim filetype plugin file
 <header>
 
@@ -708,7 +708,7 @@ endif
 let &cpo = s:cpo_save
 unlet s:cpo_save
 */);//}}}
-                rtItems.syntax.template = // {{{
+                rtItems.syntax.template = //{{{
 literal(/*" Vim syntax file
 <header>
 
@@ -812,7 +812,7 @@ unlet s:cpo_save
                     return lines.map(function (l) l.join("")).join("\n").replace(/\s+\n/gm, "\n");
                 }//}}}
 
-                let params = { // {{{
+                let params = { //{{{
                     header: ['" Language:    ' + config.appName + ' configuration file',
                              '" Maintainer:  Doug Kearns <dougkearns@gmail.com>',
                              '" Version:     ' + config.version].join("\n"),
@@ -830,7 +830,7 @@ unlet s:cpo_save
                                         array(o.realNames for (o in options) if (o.type == "boolean"))
                                             .flatten().map(String.quote),
                                         ", ") + "]"
-                }; // }}}
+                }; //}}}
 
                 for (let { file, template } in values(rtItems)) {
                     try {
@@ -1165,4 +1165,4 @@ endModule();
 
 } catch(e){ if (isString(e)) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

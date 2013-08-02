@@ -25,7 +25,7 @@ var listener = function listener(action, event)
         this.dactyl[install.error ? "echoerr" : "echomsg"](
             _("addon.error", action, event, (install.name || install.sourceURI.spec) +
                 (install.error ? ": " + addons.errors[install.error] : "")));
-    }
+    };
 
 var AddonListener = Class("AddonListener", {
     init: function init(modules) {
@@ -120,7 +120,7 @@ var actions = {
         },
         get filter() {
             return function (addon) !addon.userDisabled &&
-                !(addon.operationsRequiringRestart & (AddonManager.OP_NEEDS_RESTART_ENABLE | AddonManager.OP_NEEDS_RESTART_DISABLE))
+                !(addon.operationsRequiringRestart & (AddonManager.OP_NEEDS_RESTART_ENABLE | AddonManager.OP_NEEDS_RESTART_DISABLE));
         },
         perm: "disable"
     },
@@ -206,7 +206,7 @@ var Addon = Class("Addon", {
                     ["span", { highlight: pending[0] }, pending[1]],
                     " on ",
                     ["a", { href: "#", "dactyl:command": "dactyl.restart" }, "restart"],
-                    ")"]
+                    ")"];
         return info;
     },
 
@@ -498,4 +498,4 @@ endModule();
 
 } catch(e){ if (isString(e)) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

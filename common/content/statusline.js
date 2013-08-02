@@ -269,7 +269,7 @@ var StatusLine = Module("statusline", {
         });
     },
 
-    updateUrl: deprecated("statusline.status", function updateUrl(url) { this.status = url || buffer.uri }),
+    updateUrl: deprecated("statusline.status", function updateUrl(url) { this.status = url || buffer.uri; }),
 
     /**
      * Set the contents of the status line's input buffer to the given
@@ -393,4 +393,4 @@ var StatusLine = Module("statusline", {
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

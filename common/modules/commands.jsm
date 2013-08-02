@@ -352,7 +352,7 @@ var Command = Class("Command", {
                     { configurable: true, enumerable: true, get: function () opt.default };
 
                 if (prop.get && !prop.set)
-                    prop.set = function (val) { Class.replaceProperty(this, opt.names[0], val) };
+                    prop.set = function (val) { Class.replaceProperty(this, opt.names[0], val); };
                 Object.defineProperty(res, opt.names[0], prop);
             }
         });
@@ -536,7 +536,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         if (this.cached)
             this.modules.initDependencies("commands");
         this.cached = false;
-        return array.iterValues(this._list.sort(function (a, b) a.name > b.name))
+        return array.iterValues(this._list.sort(function (a, b) a.name > b.name));
     },
 
     /** @property {string} The last executed Ex command line. */
@@ -1171,7 +1171,7 @@ var Commands = Module("commands", {
                     if (sub.substr(0, 2) === "<<" && hereDoc)
                         let ([count, arg] = getNextArg(sub)) {
                             sub = arg + sub.substr(count);
-                        }
+                        };
 
                     args.push(sub);
                     args.quote = null;
@@ -1787,7 +1787,7 @@ let quote = function quote(q, list, map) {
 
 Commands.quoteMap = {
     "\n": "\\n",
-    "\t": "\\t",
+    "\t": "\\t"
 };
 
 Commands.quoteArg = {
@@ -1813,4 +1813,4 @@ endModule();
 
 } catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

@@ -131,11 +131,9 @@ var Help = Module("Help", {
             let beta = array(betas.iterate(NEWS))
                         .map(function (m) m[1]).uniq().slice(-1)[0];
 
-
             function rec(text, level, li) {
                 let res = [];
                 let list, space, i = 0;
-
 
                 for (let match in re.iterate(text)) {
                     if (match.comment)
@@ -194,7 +192,6 @@ var Help = Module("Help", {
             //         li.@NS::highlight = "HelpNewsOld";
             //     }
             // }
-
 
             return '<?xml version="1.0"?>\n' +
                    '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
@@ -453,4 +450,4 @@ var Help = Module("Help", {
 
 endModule();
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

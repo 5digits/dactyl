@@ -40,10 +40,10 @@
         </p>
 
         <p>
-            If the <em>-group</em>=<a>group</a> flag is given, add this autocmd
-            to the named <t>group</t>. Any filters for <a>group</a> apply in
-            addition to <oa>filter</oa>. When listing commands this limits the
-            output to the specified group.
+            If the <em>-group</em>=<a>group</a> flag is given, add this
+            autocommand to the named <t>group</t>. Any filters for <a>group</a>
+            apply in addition to <oa>filter</oa>. When listing commands this
+            limits the output to the specified group.
         </p>
 
         <p>Available <oa>events</oa>:</p>

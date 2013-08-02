@@ -496,7 +496,7 @@ var Mappings = Module("mappings", {
                             ["td", {}, modeSign],
                             ["td", {}, name],
                             ["td", {}, map.rhs || map.action.toSource()]])),
-                    ["tr", { style: "height: .5ex;" }]])]
+                    ["tr", { style: "height: .5ex;" }]])];
 
         // E4X-FIXME
         // // TODO: Move this to an ItemList to show this automatically
@@ -572,7 +572,7 @@ var Mappings = Module("mappings", {
                 options: [
                     {
                         names: ["-arg", "-a"],
-                        description: "Accept an argument after the requisite key press",
+                        description: "Accept an argument after the requisite key press"
                     },
                     {
                         names: ["-builtin", "-b"],
@@ -828,8 +828,8 @@ var Mappings = Module("mappings", {
     mappings: function initMappings(dactyl, modules, window) {
         mappings.add([modes.COMMAND],
              ["\\"], "Emits <Leader> pseudo-key",
-             function () { events.feedkeys("<Leader>") });
+             function () { events.feedkeys("<Leader>"); });
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

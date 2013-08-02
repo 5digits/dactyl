@@ -19,3 +19,4 @@ this["import"] = function import_(obj) {
 Components.utils.import("resource://gre/modules/Services.jsm");
 function loadSubScript() Services.scriptloader.loadSubScript.apply(null, arguments);
 
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

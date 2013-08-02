@@ -162,7 +162,7 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
     }
 });
 
-var sessionGlobal = Cu.import("resource://gre/modules/Services.jsm", {})
+var sessionGlobal = Cu.import("resource://gre/modules/Services.jsm", {});
 
 var Storage = Module("Storage", {
     Local: function Local(dactyl, modules, window) ({
@@ -762,7 +762,6 @@ var File = Class("File", {
         }
     },
 
-
     isAbsolutePath: function isAbsolutePath(path) {
         try {
             services.File().initWithPath(path);
@@ -793,7 +792,7 @@ let (file = services.directory.get("ProfD", Ci.nsIFile)) {
         if (!(prop in File.prototype)) {
             let isFunction;
             try {
-                isFunction = callable(file[prop])
+                isFunction = callable(file[prop]);
             }
             catch (e) {}
 
@@ -814,4 +813,4 @@ endModule();
 
 // catch(e){ dump(e + "\n" + (e.stack || Error().stack)); Components.utils.reportError(e) }
 
-// vim: set fdm=marker sw=4 sts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

@@ -20,7 +20,7 @@ var setAttr = function setAttr(elem, ns, name, val) {
         elem.removeAttributeNS(ns, name);
     else
         elem.setAttributeNS(ns, name, val);
-}
+};
 
 var Overlay = Class("Overlay", {
     init: function init(window) {
@@ -41,7 +41,6 @@ var Overlay = Class("Overlay", {
             util.trapErrors(fn, this, window, reason);
     }
 });
-
 
 var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     init: function init() {
@@ -234,7 +233,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                 let iterator = Iterator(obj[key]);
                 if (isArray(obj[key])) {
                     iterator = ([elem[1].id, elem.slice(2), elem[1]]
-                                for each (elem in obj[key]))
+                                for each (elem in obj[key]));
                 }
 
                 for (let [elem, xml, attrs] in iterator) {
@@ -381,7 +380,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                 Object.defineProperty(object, k, desc);
 
                 if (callable(value)) {
-                    var sentinel = "(function DactylOverlay() {}())"
+                    var sentinel = "(function DactylOverlay() {}())";
                     value.toString = function toString() toString.toString.call(this).replace(/\}?$/, sentinel + "; $&");
                     value.toSource = function toSource() toSource.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
                 }
@@ -432,4 +431,4 @@ endModule();
 
 } catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

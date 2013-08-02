@@ -233,7 +233,7 @@ var Marks = Module("marks", {
 
     _scrollTo: function _scrollTo(mark) {
         if (!mark.path)
-            var node = buffer.findScrollable(0, (mark.offset || mark.position).x)
+            var node = buffer.findScrollable(0, (mark.offset || mark.position).x);
         else
             for (node in DOM.XPath(mark.path, buffer.focusedFrame.document))
                 break;
@@ -303,7 +303,6 @@ var Marks = Module("marks", {
                           Math.round(mark.position.y * 100) + "%)",
                     (tab && "tab: " + tabs.index(tab))
             ].filter(util.identity).join(", ");
-
     },
 
     isLocalMark: bind("test", /^[a-z`']$/),
@@ -408,4 +407,4 @@ var Marks = Module("marks", {
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

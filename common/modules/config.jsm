@@ -37,7 +37,7 @@ AboutHandler.prototype = {
         return channel;
     },
 
-    getURIFlags: function (uri) Ci.nsIAboutModule.ALLOW_SCRIPT,
+    getURIFlags: function (uri) Ci.nsIAboutModule.ALLOW_SCRIPT
 };
 var ConfigBase = Class("ConfigBase", {
     /**
@@ -415,7 +415,7 @@ var ConfigBase = Class("ConfigBase", {
         "list.href": Class.Memoize(function () "http://groups.google.com/group/" + config.name),
 
         "hg.latest": Class.Memoize(function () this.code + "source/browse/"), // XXX
-        "irc": "irc://irc.oftc.net/#pentadactyl",
+        "irc": "irc://irc.oftc.net/#pentadactyl"
     }),
 
     dtdExtra: {
@@ -494,7 +494,7 @@ var ConfigBase = Class("ConfigBase", {
          */
         get outputHeight() this.browser.mPanelContainer.boxObject.height,
 
-        tabStrip: Class.Memoize(function () document.getElementById("TabsToolbar") || this.tabbrowser.mTabContainer),
+        tabStrip: Class.Memoize(function () document.getElementById("TabsToolbar") || this.tabbrowser.mTabContainer)
     }),
 
     /**
@@ -620,4 +620,4 @@ endModule();
 
 // catch(e){ if (typeof e === "string") e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
-// vim: set fdm=marker sw=4 sts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

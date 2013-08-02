@@ -237,7 +237,7 @@ var Tabs = Module("tabs", {
             return this._groups;
 
         if (func)
-            func = bind(function (func) { func(this._groups) }, this, func);
+            func = bind(function (func) { func(this._groups); }, this, func);
 
         if (window.TabView && window.TabView._initFrame)
             window.TabView._initFrame(func);
@@ -334,7 +334,6 @@ var Tabs = Module("tabs", {
     list: function list(filter) {
         completion.listCompleter("buffer", filter);
     },
-
 
     /**
      * Return an iterator of tabs matching the given filter. If no
@@ -1312,4 +1311,4 @@ var Tabs = Module("tabs", {
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

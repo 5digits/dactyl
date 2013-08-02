@@ -28,7 +28,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
             "cache": function (uri, path) {
                 let contentType = "text/plain";
                 try {
-                    contentType = services.mime.getTypeFromURI(uri)
+                    contentType = services.mime.getTypeFromURI(uri);
                 }
                 catch (e) {}
 
@@ -268,4 +268,4 @@ endModule();
 
 // catch(e){ if (typeof e === "string") e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
-// vim: set fdm=marker sw=4 sts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

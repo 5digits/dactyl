@@ -100,7 +100,7 @@ var DOM = Class("DOM", {
             href: { get: function (elem) elem.href || elem.getAttribute("href") },
             src:  { get: function (elem) elem.src || elem.getAttribute("src") },
             checked: { get: function (elem) elem.hasAttribute("checked") ? elem.getAttribute("checked") == "true" : elem.checked,
-                       set: function (elem, val) { elem.setAttribute("checked", !!val); elem.checked = val } },
+                       set: function (elem, val) { elem.setAttribute("checked", !!val); elem.checked = val; } },
             collapsed: BooleanAttribute("collapsed"),
             disabled: BooleanAttribute("disabled"),
             hidden: BooleanAttribute("hidden"),
@@ -193,8 +193,8 @@ var DOM = Class("DOM", {
         let res = this.Empty();
 
         this.each(function (elem) {
-            while(true) {
-                elem = fn.call(this, elem)
+            while (true) {
+                elem = fn.call(this, elem);
                 if (elem instanceof Ci.nsIDOMNode)
                     res[res.length++] = elem;
                 else if (elem && "length" in elem)
@@ -272,7 +272,7 @@ var DOM = Class("DOM", {
         each: function each(meth, arg) {
             return self.each(function (elem) {
                 elem.classList[meth](arg);
-            })
+            });
         },
 
         add: function add(cls) this.each("add", cls),
@@ -312,7 +312,7 @@ var DOM = Class("DOM", {
             let { highlight } = this;
             let v = callable(val) ? val.call(thisObj || this, elem, i) : val;
 
-            highlight[(v == null ? highlight.has(hl) : !v) ? "remove" : "add"](hl)
+            highlight[(v == null ? highlight.has(hl) : !v) ? "remove" : "add"](hl);
         }),
     }),
 
@@ -346,7 +346,7 @@ var DOM = Class("DOM", {
             get bottom() this.top + this.height,
             left: r.left + node.clientLeft,
             get right() this.left + this.width
-        }
+        };
     },
 
     scrollPos: function scrollPos(left, top) {
@@ -578,7 +578,7 @@ var DOM = Class("DOM", {
         let res = [];
         this.each(function (elem) {
             try {
-                let hasChildren = elem.firstChild && (!/^\s*$/.test(elem.firstChild) || elem.firstChild.nextSibling)
+                let hasChildren = elem.firstChild && (!/^\s*$/.test(elem.firstChild) || elem.firstChild.nextSibling);
                 if (color)
                     res.push(["span", { highlight: "HelpXML" },
                         ["span", { highlight: "HelpXMLTagStart" },
@@ -593,7 +593,7 @@ var DOM = Class("DOM", {
                         ],
                         !hasChildren ? "" :
                             ["", "...",
-                             ["span", { highlight: "HtmlTagEnd" },"<", namespaced(elem), ">"]]
+                             ["span", { highlight: "HtmlTagEnd" }, "<", namespaced(elem), ">"]]
                     ]);
                 else {
                     let tag = "<" + [namespaced(elem)].concat(
@@ -794,19 +794,19 @@ var DOM = Class("DOM", {
     html: function html(txt, self) {
         return this.getSet(arguments,
                            function (elem) elem.innerHTML,
-                           util.wrapCallback(function (elem, val) { elem.innerHTML = val }));
+                           util.wrapCallback(function (elem, val) { elem.innerHTML = val; }));
     },
 
     text: function text(txt, self) {
         return this.getSet(arguments,
                            function (elem) elem.textContent,
-                           function (elem, val) { elem.textContent = val });
+                           function (elem, val) { elem.textContent = val; });
     },
 
     val: function val(txt) {
         return this.getSet(arguments,
                            function (elem) elem.value,
-                           function (elem, val) { elem.value = val == null ? "" : val });
+                           function (elem, val) { elem.value = val == null ? "" : val; });
     },
 
     listen: function listen(event, listener, capture) {
@@ -905,7 +905,7 @@ var DOM = Class("DOM", {
                     return true;
                 if (rect.top > viewport.bottom)
                     return false;
-                return Math.abs(rect.top) < Math.abs(viewport.bottom - rect.bottom)
+                return Math.abs(rect.top) < Math.abs(viewport.bottom - rect.bottom);
             }
 
             let rect;
@@ -1065,7 +1065,6 @@ var DOM = Class("DOM", {
 
             return this;
         },
-
 
         code_key:       Class.Memoize(function (prop) this.init()[prop]),
         code_nativeKey: Class.Memoize(function (prop) this.init()[prop]),
@@ -1333,7 +1332,6 @@ var DOM = Class("DOM", {
 
             return "<" + modifier + key + ">";
         },
-
 
         defaults: {
             load:   { bubbles: false },
@@ -1616,7 +1614,7 @@ var DOM = Class("DOM", {
                     else
                         elem.setAttributeNS(vals[0] || "", key, val);
                 }
-            args.forEach(function(e) {
+            args.forEach(function (e) {
                 elem.appendChild(tag(e, namespaces));
             });
 
@@ -1630,7 +1628,7 @@ var DOM = Class("DOM", {
         else
             namespaces = fromJSON.namespaces;
 
-        return tag(xml, namespaces)
+        return tag(xml, namespaces);
     }, {
         namespaces: {
             "": "http://www.w3.org/1999/xhtml",
@@ -1666,13 +1664,13 @@ var DOM = Class("DOM", {
         function isFragment(args) !isString(args[0]) || args.length == 0 || args[0] === "";
 
         function hasString(args) {
-            return args.some(function (a) isString(a) || isFragment(a) && hasString(a))
+            return args.some(function (a) isString(a) || isFragment(a) && hasString(a));
         }
 
         function isStrings(args) {
             if (!isArray(args))
                 return util.dump("ARGS: " + {}.toString.call(args) + " " + args), false;
-            return args.every(function (a) isinstance(a, ["String", DOM.DOMString]) || isFragment(a) && isStrings(a))
+            return args.every(function (a) isinstance(a, ["String", DOM.DOMString]) || isFragment(a) && isStrings(a));
         }
 
         function tag(args, namespaces, indent) {
@@ -1727,7 +1725,7 @@ var DOM = Class("DOM", {
                             contents.push(string);
                     });
                     if (contents.length)
-                        res.push(contents.join("\n"), join)
+                        res.push(contents.join("\n"), join);
                 });
                 if (res[res.length - 1] == join)
                     res.pop();
@@ -1788,7 +1786,7 @@ var DOM = Class("DOM", {
                              "</", name, ">");
                 else {
                     let contents = [];
-                    args.forEach(function(e) {
+                    args.forEach(function (e) {
                         let string = tag(e, namespaces, indent + INDENT);
                         if (string)
                             contents.push(string);
@@ -1806,7 +1804,7 @@ var DOM = Class("DOM", {
         else
             namespaces = DOM.fromJSON.namespaces;
 
-        return tag(xml, namespaces, "")
+        return tag(xml, namespaces, "");
     },
 
     parseNamespace: function parseNamespace(name, namespaces) {
@@ -1911,4 +1909,4 @@ endModule();
 
 // catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
-// vim: set sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

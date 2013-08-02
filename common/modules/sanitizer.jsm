@@ -200,7 +200,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                      template.map(util.range(0, Math.ceil(items.length / 2)), function (i)
                                          ["row", {},
                                              template.map(items.slice(i * 2, i * 2 + 2), function (item)
-                                                ["checkbox", { xmlns: XUL, label: item.description, preference: branch + item.name }])])]]],
+                                                ["checkbox", { xmlns: XUL, label: item.description, preference: branch + item.name }])])]]]
                     }
                 }));
             }
@@ -214,7 +214,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                             template.map(ourItems(), function ([item, desc])
                                 ["listitem", { xmlns: "xul", preference: branch + item,
                                                type: "checkbox", label: config.appName + ", " + desc,
-                                               onsyncfrompreference: "return gSanitizePromptDialog.onReadGeneric();" }]),
+                                               onsyncfrompreference: "return gSanitizePromptDialog.onReadGeneric();" }])
                         ]
                     },
                     ready: function ready(win) {
@@ -507,7 +507,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         description: "Timespan for which to sanitize items",
                         completer: function (context) modules.options.get("sanitizetimespan").completer(context),
                         type: modules.CommandOption.STRING,
-                        validator: function (arg) modules.options.get("sanitizetimespan").validator(arg),
+                        validator: function (arg) modules.options.get("sanitizetimespan").validator(arg)
                     }
                 ],
                 privateData: true
@@ -730,4 +730,4 @@ endModule();
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

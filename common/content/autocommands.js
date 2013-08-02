@@ -122,7 +122,7 @@ var AutoCommands = Module("autocommands", {
                                 ["td", {}, item.filter.toJSONXML ? item.filter.toJSONXML(modules) : String(item.filter)],
                                 ["td", {}, String(item.command)]]),
                         ["tr", { style: "height: .5ex;" }]]).toArray(),
-                    ["tr", { style: "height: .5ex;" }],
+                    ["tr", { style: "height: .5ex;" }]
                 ])]);
         commandline.commandOutput(table);
     },
@@ -296,4 +296,4 @@ var AutoCommands = Module("autocommands", {
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

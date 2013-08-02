@@ -606,7 +606,7 @@ var Modes = Module("modes", {
             },
 
             setter: function (vals) {
-                modes.all.forEach(function (m) { delete m.passUnknown });
+                modes.all.forEach(function (m) { delete m.passUnknown; });
 
                 vals = vals.map(function (v) update(new String(v.toLowerCase()), {
                     mode: v.replace(/^!/, "").toUpperCase(),
@@ -634,8 +634,8 @@ var Modes = Module("modes", {
     },
     prefs: function initPrefs() {
         prefs.watch("accessibility.browsewithcaret",
-                    function () { modes.onCaretChange.apply(modes, arguments) });
+                    function () { modes.onCaretChange.apply(modes, arguments); });
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

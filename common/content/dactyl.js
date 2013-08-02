@@ -83,7 +83,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
     },
 
-
     observers: {
         "dactyl-cleanup": function dactyl_cleanup(subject, reason) {
             let modules = dactyl.modules;
@@ -682,7 +681,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             tag = function (map) [
                 let (c = obj.modes[0].char) c ? c + "_" : "",
                 map
-            ]
+            ];
             link = function (map) {
                 let [, mode, name, extra] = /^(?:(.)_)?(?:<([^>]+)>)?(.*)$/.exec(map);
                 let k = ["k", {}, extra];
@@ -710,7 +709,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let description = ["description", {},
             obj.description ? ["p", {}, template.linkifyHelp(obj.description.replace(/\.?$/, "."), true)] : "",
             extraHelp ? extraHelp : "",
-            !(extraHelp || obj.description) ? ["p", {}, /*L*/ "Sorry, no help available."] : ""]
+            !(extraHelp || obj.description) ? ["p", {}, /*L*/ "Sorry, no help available."] : ""];
 
         res.push(
             ["item", {},
@@ -1200,7 +1199,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     dactyl.reportError(e, true);
                 }
             });
-        }
+        };
     },
 
     /**
@@ -1829,7 +1828,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     commandline.commandOutput([
                         ["div", {}, [config.appName, " ", config.version, date, " running on: "].join("")],
                         ["div", {}, [window.navigator.userAgent].join("")]
-                    ])
+                    ]);
                 }
             }, {
                 argCount: "0",
@@ -2003,4 +2002,4 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

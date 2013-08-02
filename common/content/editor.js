@@ -870,7 +870,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         function addBeginInsertModeMap(keys, commands, description) {
             mappings.add([modes.TEXT_EDIT], keys, description || "",
                 function () {
-                    commands.forEach(function (cmd) { editor.executeCommand(cmd, 1) });
+                    commands.forEach(function (cmd) { editor.executeCommand(cmd, 1); });
                     modes.push(modes.INSERT);
                 },
                 { type: "editor" });
@@ -1148,13 +1148,12 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             mappings.add([modes.TEXT_EDIT], names, description,
                          action, update({ type: "editor" }, params));
 
-
         bind(["<C-a>"], "Increment the next number",
-             function ({ count }) { editor.modifyNumber(count || 1) },
+             function ({ count }) { editor.modifyNumber(count || 1); },
              { count: true });
 
         bind(["<C-x>"], "Decrement the next number",
-             function ({ count }) { editor.modifyNumber(-(count || 1)) },
+             function ({ count }) { editor.modifyNumber(-(count || 1)); },
              { count: true });
 
         // text edit mode
@@ -1326,7 +1325,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             { count: true });
 
         let bind = function bind() mappings.add.apply(mappings,
-                                                      [[modes.AUTOCOMPLETE]].concat(Array.slice(arguments)))
+                                                      [[modes.AUTOCOMPLETE]].concat(Array.slice(arguments)));
 
         bind(["<Esc>"], "Return to Insert mode",
              function () Events.PASS_THROUGH);
@@ -1407,4 +1406,4 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

@@ -61,12 +61,12 @@ var History = Module("history", {
     },
 
     get session() {
-        let webNav = window.getWebNavigation()
+        let webNav = window.getWebNavigation();
         let sh = webNav.sessionHistory;
 
         let obj = [];
         obj.__defineGetter__("index", function () sh.index);
-        obj.__defineSetter__("index", function (val) { webNav.gotoIndex(val) });
+        obj.__defineSetter__("index", function (val) { webNav.gotoIndex(val); });
         obj.__iterator__ = function () array.iterItems(this);
 
         for (let item in iter(sh.SHistoryEnumerator, Ci.nsIHistoryEntry))
@@ -371,13 +371,13 @@ var History = Module("history", {
              { count: true });
 
         bind(["[d"], "Go back to the previous domain in the browser history",
-             function ({ count }) { history.search("domain", -Math.max(count, 1)) },
+             function ({ count }) { history.search("domain", -Math.max(count, 1)); },
              { count: true });
 
         bind(["]d"], "Go forward to the next domain in the browser history",
-             function ({ count }) { history.search("domain", Math.max(count, 1)) },
+             function ({ count }) { history.search("domain", Math.max(count, 1)); },
              { count: true });
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et:

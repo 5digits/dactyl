@@ -168,7 +168,6 @@ var Template = Module("Template", {
         return res;
     },
 
-
     bookmarkDescription: function (item, text) [
         !(item.extra && item.extra.length) ? [] :
         ["span", { highlight: "URLExtra" },
@@ -263,7 +262,6 @@ var Template = Module("Template", {
                 yield [res.index + res.pre.length, res.tag.length];
         })(), this[help ? "HelpLink" : "helpLink"]);
     },
-
 
     // Fixes some strange stack rewinds on NS_ERROR_OUT_OF_MEMORY
     // exceptions that we can't catch.
@@ -417,7 +415,6 @@ var Template = Module("Template", {
                                 util.losslessDecodeURI(val.URI.spec)]]])];
     },
 
-
     options: function options(title, opts, verbose) {
         return ["table", {},
                 ["tr", { highlight: "Title", align: "left" },
@@ -505,10 +502,10 @@ var Template = Module("Template", {
                                             _("io.definedAt"), " ",
                                             sourceLink(frame)]]]],
                             item.columns ? self.map(item.columns, function (c) ["td", {}, c]) : [],
-                            ["td", {}, desc(item)]])]]
+                            ["td", {}, desc(item)]])]];
     }
 });
 
 endModule();
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

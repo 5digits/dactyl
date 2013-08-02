@@ -64,7 +64,7 @@ function chromeDocuments() {
                                                                   Ci.nsIDocShell.ENUMERATE_FORWARDS);
             while (docShells.hasMoreElements())
                 try {
-                yield docShells.getNext().QueryInterface(Ci.nsIDocShell).contentViewer.DOMDocument;
+                    yield docShells.getNext().QueryInterface(Ci.nsIDocShell).contentViewer.DOMDocument;
                 }
                 catch (e) {}
         }
@@ -73,4 +73,4 @@ function chromeDocuments() {
 
 var EXPORTED_SYMBOLS = ["cleanup", "init"];
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

@@ -241,7 +241,7 @@ function properties(obj, prototypes, debugger_) {
                 return array.uniq([k for (k in obj)].concat(
                     Object.getOwnPropertyNames(
                               XPCNativeWrapper.unwrap(obj))
-                          .filter(filter)))
+                          .filter(filter)));
             }
             else if (!e.stack) {
                 throw Error(e);
@@ -1080,7 +1080,7 @@ function XPCOMShim(interfaces) {
         getInterfaces: function (count) { count.value = 0; }
     });
     return (interfaces || []).reduce(function (shim, iface) shim.QueryInterface(Ci[iface]),
-                                     ip.data)
+                                     ip.data);
 };
 let stub = Class.Property({
     configurable: true,
@@ -1097,7 +1097,7 @@ var ErrorBase = Class("ErrorBase", Error, {
     init: function EB_init(message, level) {
         level = level || 0;
         let error = Error(message);
-        update(this, error)
+        update(this, error);
         this.stack = error.stack;
         this.message = message;
 
@@ -1172,7 +1172,7 @@ Module.INIT = {
             module.isLocalModule = true;
 
             modules.jsmodules[this.constructor.className] = module;
-            locals.reverse().forEach(function (fn, i) update(objs[i], fn.apply(module, args)))
+            locals.reverse().forEach(function (fn, i) update(objs[i], fn.apply(module, args)));
 
             memoize(module, "closure", Class.makeClosure);
             module.instance = module;
@@ -1769,4 +1769,4 @@ endModule();
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

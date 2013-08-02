@@ -467,7 +467,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                             acc.push(vals);
 
                         if (acc.length == pattern.length)
-                            this.res.push(acc.join(""))
+                            this.res.push(acc.join(""));
                         else
                             for (let val in values(vals))
                                 this.rec(acc.concat(val));
@@ -492,7 +492,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 }
                 res.push(pattern.substr(end));
                 return res.map(function (s) util.dequote(s, dequote));
-            }
+            };
 
             let patterns = [];
             let substrings = split(pattern, /((?:[^\\{]|\\.)*)\{((?:[^\\}]|\\.)*)\}/gy,
@@ -507,7 +507,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 else
                     for (let [, pattern] in Iterator(patterns[acc.length]))
                         rec(acc.concat(pattern));
-            }
+            };
             rec([]);
             return res;
         }
@@ -659,7 +659,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         [hours, minutes]   = div(minutes, 60);
         [days, hours]      = div(hours,   24);
         if (days)
-            return /*L*/days + " days " + hours + " hours"
+            return /*L*/days + " days " + hours + " hours";
         if (hours)
             return /*L*/hours + "h " + minutes + "m";
         if (minutes)
@@ -755,10 +755,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             let async = params.callback || params.onload || params.onerror;
             if (async) {
-                xmlhttp.addEventListener("load",  function handler(event) { util.trapErrors(params.onload  || params.callback, params, xmlhttp, event) }, false);
-                xmlhttp.addEventListener("error", function handler(event) { util.trapErrors(params.onerror || params.callback, params, xmlhttp, event) }, false);
+                xmlhttp.addEventListener("load",  function handler(event) { util.trapErrors(params.onload  || params.callback, params, xmlhttp, event); }, false);
+                xmlhttp.addEventListener("error", function handler(event) { util.trapErrors(params.onerror || params.callback, params, xmlhttp, event); }, false);
             }
-
 
             if (isObject(params.params)) {
                 let data = [encodeURIComponent(k) + "=" + encodeURIComponent(v)
@@ -882,7 +881,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     let (viewer = docShells.getNext().QueryInterface(Ci.nsIDocShell).contentViewer) {
                         if (viewer)
                             yield viewer.DOMDocument;
-                    }
+                    };
             }
         }
     },
@@ -1017,7 +1016,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             let keyIter = object;
             if ("__iterator__" in object && !callable(object.__iterator__))
-                keyIter = keys(object)
+                keyIter = keys(object);
 
             for (let i in keyIter) {
                 let value = Magic("<no value>");
@@ -1097,28 +1096,28 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 if (data.length == 0)
                     res.push("[]");
                 else {
-                    res.push("[\n")
+                    res.push("[\n");
                     for (let [i, val] in Iterator(data)) {
                         if (i)
                             res.push(",\n");
-                        res.push(prefix)
+                        res.push(prefix);
                         rec(val, prefix, seen);
                     }
                     res.push("\n", level, "]");
                 }
             }
             else if (isObject(data)) {
-                res.push("{\n")
+                res.push("{\n");
 
                 let i = 0;
                 for (let [key, val] in Iterator(data)) {
                     if (i++)
                         res.push(",\n");
-                    res.push(prefix, JSON.stringify(key), ": ")
+                    res.push(prefix, JSON.stringify(key), ": ");
                     rec(val, prefix, seen);
                 }
                 if (i > 0)
-                    res.push("\n", level, "}")
+                    res.push("\n", level, "}");
                 else
                     res[res.length - 1] = "{}";
             }
@@ -1721,7 +1720,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     Array: array
 });
 
-
 /**
  * Math utility methods.
  * @singleton
@@ -1743,4 +1741,4 @@ endModule();
 
 } catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
-// vim: set fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:
