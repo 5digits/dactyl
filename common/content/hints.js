@@ -337,9 +337,11 @@ var HintSession = Class("HintSession", CommandMode, {
 
                 if (elem.hasAttributeNS(NS, "hint"))
                     [hint.text, hint.showText] = [elem.getAttributeNS(NS, "hint"), true];
-                else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
+                else if (isinstance(elem, [Ci.nsIDOMHTMLInputElement,
+                                           Ci.nsIDOMHTMLSelectElement,
+                                           Ci.nsIDOMHTMLTextAreaElement]))
                     [hint.text, hint.showText] = hints.getInputHint(elem, doc);
-                else if (elem.firstElementChild instanceof HTMLImageElement && /^\s*$/.test(elem.textContent))
+                else if (elem.firstElementChild instanceof Ci.nsIDOMHTMLImageElement && /^\s*$/.test(elem.textContent))
                     [hint.text, hint.showText] = [elem.firstElementChild.alt || elem.firstElementChild.title, true];
                 else
                     hint.text = elem.textContent.toLowerCase();
@@ -349,7 +351,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 let leftPos = Math.max((rect.left + offsetX), offsetX);
                 let topPos  = Math.max((rect.top + offsetY), offsetY);
 
-                if (elem instanceof HTMLAreaElement)
+                if (elem instanceof Ci.nsIDOMHTMLAreaElement)
                     [leftPos, topPos] = this.getAreaOffset(elem, leftPos, topPos);
 
                 hint.span.setAttribute("style", ["display: none; left:", leftPos, "px; top:", topPos, "px"].join(""));
@@ -596,7 +598,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 if (!hint.valid)
                     continue inner;
 
-                if (hint.text == "" && hint.elem.firstChild && hint.elem.firstChild instanceof HTMLImageElement) {
+                if (hint.text == "" && hint.elem.firstChild && hint.elem.firstChild instanceof Ci.nsIDOMHTMLImageElement) {
                     if (!hint.imgSpan) {
                         let rect = hint.elem.firstChild.getBoundingClientRect();
                         if (!rect)
@@ -614,7 +616,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
                 let str = this.getHintString(hintnum);
                 let text = [];
-                if (hint.elem instanceof HTMLInputElement)
+                if (hint.elem instanceof Ci.nsIDOMHTMLInputElement)
                     if (hint.elem.type === "radio")
                         text.push(UTF8(hint.elem.checked ? "⊙" : "○"));
                     else if (hint.elem.type === "checkbox")
@@ -781,7 +783,8 @@ var Hints = Module("hints", {
         this.addMode("i", "Show image",                           function (elem) dactyl.open(elem.src));
         this.addMode("I", "Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB));
 
-        function isScrollable(elem) isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]) ||
+        function isScrollable(elem) isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
+                                                      Ci.nsIDOMHTMLIFrameElement]) ||
             Buffer.isScrollable(elem, 0, true) || Buffer.isScrollable(elem, 0, false);
     },
 
@@ -850,7 +853,7 @@ var Hints = Module("hints", {
         else {
             for (let [, option] in Iterator(options["hintinputs"])) {
                 if (option == "value") {
-                    if (elem instanceof HTMLSelectElement) {
+                    if (elem instanceof Ci.nsIDOMHTMLSelectElement) {
                         if (elem.selectedIndex >= 0)
                             return [elem.item(elem.selectedIndex).text.toLowerCase(), false];
                     }

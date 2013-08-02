@@ -118,7 +118,7 @@ var Bookmarks = Module("bookmarks", {
      * @param {Element} elem A form element for which to add a keyword.
      */
     addSearchKeyword: function addSearchKeyword(elem) {
-        if (elem instanceof HTMLFormElement || elem.form)
+        if (elem instanceof Ci.nsIDOMHTMLFormElement || elem.form)
             var { url, postData, charset } = DOM(elem).formData;
         else
             var [url, postData, charset] = [elem.href || elem.src, null, elem.ownerDocument.characterSet];

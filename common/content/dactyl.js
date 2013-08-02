@@ -600,7 +600,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     if (win.frameElement)
                         win.frameElement.blur();
                     // Grr.
-                    if (content.document.activeElement instanceof HTMLIFrameElement)
+                    if (content.document.activeElement instanceof Ci.nsIDOMHTMLIFrameElement)
                         content.document.activeElement.blur();
                 });
             }

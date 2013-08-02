@@ -66,7 +66,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
     events: {
         DOMContentLoaded: function onDOMContentLoaded(event) {
             let doc = event.originalTarget;
-            if (doc instanceof HTMLDocument)
+            if (doc instanceof Ci.nsIDOMHTMLDocument)
                 this._triggerLoadAutocmd("DOMLoad", doc);
         },
 
@@ -78,7 +78,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             if (doc instanceof Document)
                 dactyl.initDocument(doc);
 
-            if (doc instanceof HTMLDocument) {
+            if (doc instanceof Ci.nsIDOMHTMLDocument) {
                 if (doc.defaultView.frameElement) {
                     // document is part of a frameset
 

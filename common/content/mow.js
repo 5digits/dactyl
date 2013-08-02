@@ -157,7 +157,7 @@ var MOW = Module("mow", {
                 dactyl.open(event.target.href, where);
             };
 
-            if (event.target instanceof HTMLAnchorElement)
+            if (event.target instanceof Ci.nsIDOMHTMLAnchorElement)
                 switch (DOM.Event.stringify(event)) {
                 case "<LeftMouse>":
                     openLink(dactyl.CURRENT_TAB);
@@ -192,7 +192,7 @@ var MOW = Module("mow", {
         popupshowing: function onPopupShowing(event) {
             let menu = commandline.widgets.contextMenu;
             let enabled = {
-                link: window.document.popupNode instanceof HTMLAnchorElement,
+                link: window.document.popupNode instanceof Ci.nsIDOMHTMLAnchorElement,
                 path: window.document.popupNode.hasAttribute("path"),
                 selection: !window.document.commandDispatcher.focusedWindow.getSelection().isCollapsed
             };

@@ -611,7 +611,10 @@ var Events = Module("events", {
             if (!(services.focus.getLastFocusMethod(win) & 0x3000)
                 && events.isContentNode(elem)
                 && !buffer.focusAllowed(elem)
-                && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
+                && isinstance(elem, [Ci.nsIDOMHTMLInputElement,
+                                     Ci.nsIDOMHTMLSelectElement,
+                                     Ci.nsIDOMHTMLTextAreaElement,
+                                     Ci.nsIDOMWindow])) {
 
                 if (elem.frameElement)
                     dactyl.focusContent(true);
@@ -673,7 +676,7 @@ var Events = Module("events", {
 
                 // Hack to deal with <BS> and so forth not dispatching input
                 // events
-                if (key && event.originalTarget instanceof HTMLInputElement && !modes.main.passthrough) {
+                if (key && event.originalTarget instanceof Ci.nsIDOMHTMLInputElement && !modes.main.passthrough) {
                     let elem = event.originalTarget;
                     elem.dactylKeyPress = elem.value;
                     util.timeout(function () {
@@ -844,7 +847,7 @@ var Events = Module("events", {
     // access to the real focus target
     // Huh? --djk
     onFocusChange: util.wrapCallback(function onFocusChange(event) {
-        function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
+        function hasHTMLDocument(win) win && win.document && win.document instanceof Ci.nsIDOMHTMLDocument
         if (dactyl.ignoreFocus)
             return;
 
@@ -861,7 +864,7 @@ var Events = Module("events", {
             if (elem && elem.readOnly)
                 return;
 
-            if (isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
+            if (isinstance(elem, [Ci.nsIDOMHTMLEmbedElement, Ci.nsIDOMHTMLEmbedElement])) {
                 if (!modes.main.passthrough && modes.main != modes.EMBED)
                     modes.push(modes.EMBED);
                 return;
@@ -965,8 +968,9 @@ var Events = Module("events", {
 
     isInputElement: function isInputElement(elem) {
         return DOM(elem).isEditable ||
-               isinstance(elem, [HTMLEmbedElement, HTMLObjectElement,
-                                 HTMLSelectElement])
+               isinstance(elem, [Ci.nsIDOMHTMLEmbedElement,
+                                 Ci.nsIDOMHTMLObjectElement,
+                                 Ci.nsIDOMHTMLSelectElement])
     },
 
     kill: function kill(event) {
