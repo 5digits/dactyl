@@ -221,7 +221,8 @@ var Config = Module("config", ConfigBase, {
         completion.sidebar = function sidebar(context) {
             let menu = document.getElementById("viewSidebarMenu");
             context.title = ["Sidebar Panel"];
-            context.completions = Array.map(menu.childNodes, function (n) [n.getAttribute("label"), ""]);
+            context.completions = Array.filter(menu.childNodes, function (n) n.hasAttribute("label"))
+                                       .map(function (n) [n.getAttribute("label"), ""]);
         };
     },
     events: function initEvents(dactyl, modules, window) {
