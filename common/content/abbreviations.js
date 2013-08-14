@@ -347,7 +347,7 @@ var Abbreviations = Module("abbreviations", {
                             arguments: [abbr.lhs],
                             literalArg: abbr.rhs,
                             options: {
-                                "-javascript": abbr.rhs ? null : undefined
+                                "-javascript": callable(abbr.rhs) ? null : undefined
                             }
                         }
                         for ([, abbr] in Iterator(abbreviations.user.merged))

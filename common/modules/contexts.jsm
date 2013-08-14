@@ -546,7 +546,7 @@ var Contexts = Module("contexts", {
             if (callable(params))
                 action = dactyl.userEval("(function action() { with (action.makeParams(this, arguments)) {" + args.literalArg + "} })");
             else
-                action = dactyl.userFunc.apply(dactyl, params.concat(args.literalArg).array);
+                action = dactyl.userFunc.apply(dactyl, params.concat(args.literalArg));
             process = function (param) isObject(param) && param.valueOf ? param.valueOf() : param;
             action.params = params;
             action.makeParams = makeParams;
