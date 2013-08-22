@@ -123,8 +123,7 @@ var Map = Class("Map", {
                                   contexts.context,
                                   args);
 
-        let self = this;
-        function repeat() self.action(args)
+        let repeat = () => this.action(args);
         if (this.names[0] != ".") // FIXME: Kludge.
             mappings.repeat = repeat;
 

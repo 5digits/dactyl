@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -456,26 +456,24 @@ var Template = Module("Template", {
     },
 
     tabular: function tabular(headings, style, iter) {
-        let self = this;
         // TODO: This might be mind-bogglingly slow. We'll see.
         return ["table", {},
             ["tr", { highlight: "Title", align: "left" },
                 this.map(headings, function (h)
                     ["th", {}, h])],
-            this.map(iter, function (row)
+            this.map(iter, (row) =>
                 ["tr", {},
-                    self.map(Iterator(row), function ([i, d])
+                    this.map(Iterator(row), function ([i, d])
                         ["td", { style: style[i] || "" }, d])])];
     },
 
     usage: function usage(iter, format) {
-        let self = this;
 
         format = format || {};
-        let desc = format.description || function (item) self.linkifyHelp(item.description);
-        let help = format.help || function (item) item.name;
-        function sourceLink(frame) {
-            let source = self.sourceLink(frame);
+        let desc = format.description || (item => this.linkifyHelp(item.description));
+        let help = format.help || (item => item.name);
+        let sourceLink = (frame) => {
+            let source = this.sourceLink(frame);
             source[1]["dactyl:hint"] = source[2];
             return source;
         }
@@ -483,25 +481,25 @@ var Template = Module("Template", {
             format.headings ?
                 ["thead", { highlight: "UsageHead" },
                     ["tr", { highlight: "Title", align: "left" },
-                        this.map(format.headings, function (h) ["th", {}, h])]] :
+                        this.map(format.headings, (h) => ["th", {}, h])]] :
                 [],
             format.columns ?
                 ["colgroup", {},
-                    this.map(format.columns, function (c) ["col", { style: c }])] :
+                    this.map(format.columns, (c) => ["col", { style: c }])] :
                 [],
             ["tbody", { highlight: "UsageBody" },
-                this.map(iter, function (item)
+                this.map(iter, (item) =>
                     // Urgh.
                     let (name = item.name || item.names[0], frame = item.definedAt)
                         ["tr", { highlight: "UsageItem" },
                             ["td", { style: "padding-right: 2em;" },
                                 ["span", { highlight: "Usage Link" },
                                     !frame ? name :
-                                        [self.helpLink(help(item), name, "Title"),
+                                        [this.helpLink(help(item), name, "Title"),
                                          ["span", { highlight: "LinkInfo" },
                                             _("io.definedAt"), " ",
                                             sourceLink(frame)]]]],
-                            item.columns ? self.map(item.columns, function (c) ["td", {}, c]) : [],
+                            item.columns ? this.map(item.columns, (c) => ["td", {}, c]) : [],
                             ["td", {}, desc(item)]])]];
     }
 });

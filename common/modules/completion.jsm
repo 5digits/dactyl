@@ -135,10 +135,10 @@ var CompletionContext = Class("CompletionContext", {
              *     {@link #filters} array.
              */
             this.filterFunc = function filterFunc(items) {
-                    let self = this;
-                    return this.filters.
-                        reduce(function r(res, filter) res.filter(function f(item) filter.call(self, item)),
-                                items);
+                return this.filters
+                           .reduce((res, filter)
+                                        => res.filter((item) => filter.call(this, item)),
+                                   items);
             };
             /**
              * @property {Array} An array of predicates on which to filter the
@@ -674,7 +674,6 @@ var CompletionContext = Class("CompletionContext", {
     },
 
     getRows: function getRows(start, end, doc) {
-        let self = this;
         let items = this.items;
         let cache = this.cache.rows;
         let step = start > end ? -1 : 1;
@@ -733,12 +732,10 @@ var CompletionContext = Class("CompletionContext", {
     },
 
     split: function split(name, obj, fn) {
-        const self = this;
-
         let context = this.fork(name);
-        function alias(prop) {
-            context.__defineGetter__(prop, function get_() self[prop]);
-            context.__defineSetter__(prop, function set_(val) self[prop] = val);
+        let alias = (prop) => {
+            context.__defineGetter__(prop, () => this[prop]);
+            context.__defineSetter__(prop, (val) => this[prop] = val);
         }
         alias("_cache");
         alias("_completions");
@@ -821,7 +818,6 @@ var CompletionContext = Class("CompletionContext", {
      * context.
      */
     reset: function reset() {
-        let self = this;
         if (this.parent)
             throw Error();
 
@@ -842,7 +838,7 @@ var CompletionContext = Class("CompletionContext", {
             this.value = this._value;
             this._caret = this.value.length;
         }
-        //for (let key in (k for ([k, v] in Iterator(self.contexts)) if (v.offset > this.caret)))
+        //for (let key in (k for ([k, v] in Iterator(this.contexts)) if (v.offset > this.caret)))
         //    delete this.contexts[key];
         for each (let context in this.contexts) {
             context.hasItems = false;

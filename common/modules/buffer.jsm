@@ -995,8 +995,6 @@ var Buffer = Module("Buffer", {
     showPageInfo: function showPageInfo(verbose, sections) {
         let { commandline, dactyl, options } = this.modules;
 
-        let self = this;
-
         // Ctrl-g single line output
         if (!verbose) {
             let file = this.win.location.pathname.split("/").pop() || _("buffer.noName");
@@ -1004,7 +1002,7 @@ var Buffer = Module("Buffer", {
 
             let info = template.map(
                 (sections || options["pageinfo"])
-                    .map(function (opt) Buffer.pageInfo[opt].action.call(self)),
+                    .map((opt) => Buffer.pageInfo[opt].action.call(this)),
                 function (res) res && iter(res).join(", ") || undefined,
                 ", ").join("");
 
@@ -1016,9 +1014,9 @@ var Buffer = Module("Buffer", {
             return;
         }
 
-        let list = template.map(sections || options["pageinfo"], function (option) {
+        let list = template.map(sections || options["pageinfo"], (option) => {
             let { action, title } = Buffer.pageInfo[option];
-            return template.table(title, action.call(self, true));
+            return template.table(title, action.call(this, true));
         }, ["br"]);
 
         commandline.commandOutput(list);
@@ -1254,14 +1252,13 @@ var Buffer = Module("Buffer", {
      * Updates the zoom level of this buffer from a content preference.
      */
     updateZoom: util.wrapCallback(function updateZoom() {
-        let self = this;
         let uri = this.uri;
 
         if (prefs.get("browser.zoom.siteSpecific")) {
-            this.getPref("dactyl.content.full-zoom", function (val) {
-                if (val != null && uri.equals(self.uri) && val != prefs.get("browser.zoom.full"))
-                    [self.contentViewer.textZoom, self.contentViewer.fullZoom] =
-                        [self.contentViewer.fullZoom, self.contentViewer.textZoom];
+            this.getPref("dactyl.content.full-zoom", (val) => {
+                if (val != null && uri.equals(this.uri) && val != prefs.get("browser.zoom.full"))
+                    [this.contentViewer.textZoom, this.contentViewer.fullZoom] =
+                        [this.contentViewer.fullZoom, this.contentViewer.textZoom];
             });
         }
     }),

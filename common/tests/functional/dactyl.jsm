@@ -40,7 +40,6 @@ function assertMessage(funcName, want, got, message) {
  * @param {MozMillController} controller The browser's MozMill controller.
  */
 function Controller(controller) {
-    var self = this;
     this.controller = controller;
 
     /**
@@ -51,13 +50,13 @@ function Controller(controller) {
 
     this.errorCount = 0;
 
-    this._countBeep = function countBeep() {
-        self.beepCount++;
+    this._countBeep = () => {
+        this.beepCount++;
     }
     this.errors = [];
-    this._countError = function countError(message, highlight) {
+    this._countError = (message, highlight) => {
         if (/\b(Error|Warning)Msg\b/.test(highlight))
-            self.errors.push(String(message));
+            this.errors.push(String(message));
     }
     this.modules.dactyl.registerObserver("beep", this._countBeep);
     this.modules.dactyl.registerObserver("echoLine", this._countError);
@@ -251,8 +250,7 @@ Controller.prototype = {
      * @param {string} message The message to display upon assertion failure. @optional
      */
     wrapAssertNoErrors: function (func, message) {
-        let self = this;
-        return function wrapped() self.assertNoErrors(func, this, arguments, message);
+        return () => this.assertNoErrors(func, this, arguments, message);
     },
 
     /**

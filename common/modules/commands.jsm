@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -583,8 +583,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
                 this.remove(name);
         }
 
-        let self = this;
-        let closure = function () self._map[name];
+        let closure = () => this._map[name];
 
         memoize(this._map, name, function () commands.Command(specs, description, action, extra));
         if (!extra.hidden)

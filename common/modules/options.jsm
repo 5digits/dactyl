@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2011 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -908,8 +908,6 @@ var Options = Module("options", {
          * @optional
          */
         add: function add(names, description, type, defaultValue, extraInfo) {
-            const self = this;
-
             if (!util.isDactyl(Components.stack.caller))
                 deprecated.warn(add, "options.add", "group.options.add");
 
@@ -927,7 +925,7 @@ var Options = Module("options", {
                 this.remove(name);
             }
 
-            let closure = function () self._optionMap[name];
+            let closure = () => this._optionMap[name];
 
             memoize(this._optionMap, name, function () Option.types[type](modules, names, description, defaultValue, extraInfo));
             for (let alias in values(names.slice(1)))

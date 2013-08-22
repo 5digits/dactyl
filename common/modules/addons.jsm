@@ -211,9 +211,8 @@ var Addon = Class("Addon", {
     },
 
     update: function callee() {
-        let self = this;
-        function update(key, xml) {
-            let node = self.nodes[key];
+        let update = (key, xml) => {
+            let node = this.nodes[key];
             while (node.firstChild)
                 node.removeChild(node.firstChild);
 

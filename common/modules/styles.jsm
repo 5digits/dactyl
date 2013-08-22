@@ -203,7 +203,6 @@ var Hive = Class("Hive", {
      * @param {number} index
      */
     remove: function remove(name, filter, css, index) {
-        let self = this;
         if (arguments.length == 1) {
             var matches = [name];
             name = null;
@@ -211,7 +210,7 @@ var Hive = Class("Hive", {
 
         if (filter && filter.indexOf(",") > -1)
             return filter.split(",").reduce(
-                function (n, f) n + self.removeSheet(name, f, index), 0);
+                (n, f) => n + this.removeSheet(name, f, index), 0);
 
         if (filter == undefined)
             filter = "";

@@ -250,18 +250,17 @@ var KeyProcessor = Class("KeyProcessor", {
     },
 
     execute: function execute(map, args)
-        let (self = this)
-            function execute() {
-                if (self.preExecute)
-                    self.preExecute.apply(self, args);
+        () => {
+            if (this.preExecute)
+                this.preExecute.apply(this, args);
 
-                args.self = self.main.params.mappingSelf || self.main.mappingSelf || map;
-                let res = map.execute.call(map, args);
+            args.self = this.main.params.mappingSelf || this.main.mappingSelf || map;
+            let res = map.execute.call(map, args);
 
-                if (self.postExecute)
-                    self.postExecute.apply(self, args);
-                return res;
-            },
+            if (this.postExecute)
+                this.postExecute.apply(this, args);
+            return res;
+        },
 
     onKeyPress: function onKeyPress(event) {
         if (event.skipmap)

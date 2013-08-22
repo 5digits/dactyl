@@ -147,7 +147,6 @@ var Messages = Module("messages", {
                 obj[_prop] = this.default;
                 return {
                     get: function get() {
-                        let self = this;
                         let value = this[_prop];
 
                         function getter(key, default_) function getter() messages.get([name, key].join("."), default_);

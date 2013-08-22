@@ -167,11 +167,11 @@ var CommandWidgets = Class("CommandWidgets", {
 
         function get(prefix, map, id) (obj.getElement || util.identity)(map[id] || document.getElementById(prefix + id));
 
-        this.active.__defineGetter__(obj.name, function () self.activeGroup[obj.name][obj.name]);
-        this.activeGroup.__defineGetter__(obj.name, function () self.getGroup(obj.name));
+        this.active.__defineGetter__(obj.name, () => this.activeGroup[obj.name][obj.name]);
+        this.activeGroup.__defineGetter__(obj.name, () => this.getGroup(obj.name));
 
-        memoize(this.statusbar, obj.name, function () get("dactyl-statusline-field-", statusline.widgets, (obj.id || obj.name)));
-        memoize(this.commandbar, obj.name, function () get("dactyl-", {}, (obj.id || obj.name)));
+        memoize(this.statusbar, obj.name, () => get("dactyl-statusline-field-", statusline.widgets, (obj.id || obj.name)));
+        memoize(this.commandbar, obj.name, () => get("dactyl-", {}, (obj.id || obj.name)));
 
         if (!(obj.noValue || obj.getValue)) {
             Object.defineProperty(this, obj.name, Modes.boundProperty({
@@ -504,8 +504,6 @@ var CommandPromptMode = Class("CommandPromptMode", CommandMode, {
  */
 var CommandLine = Module("commandline", {
     init: function init() {
-        const self = this;
-
         this._callbacks = {};
 
         memoize(this, "_store", function () storage.newMap("command-history", { store: true, privateData: true }));
@@ -777,13 +775,12 @@ var CommandLine = Module("commandline", {
 
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
-        let self = this;
-        function appendToMessages(data) {
+        let appendToMessages = (data) => {
             let message = isObject(data) && !DOM.isJSONXML(data) ? data : { message: data };
 
             // Make sure the memoized message property is an instance property.
             message.message;
-            self._messageHistory.add(update({ highlight: highlightGroup }, message));
+            this._messageHistory.add(update({ highlight: highlightGroup }, message));
             return message.message;
         }
 
@@ -802,7 +799,7 @@ var CommandLine = Module("commandline", {
         if ((flags & this.FORCE_MULTILINE) || (/\n/.test(data) || !isinstance(data, [_, "String"])) && !(flags & this.FORCE_SINGLELINE))
             action = mow.closure.echo;
 
-        let checkSingleLine = function () action == self._echoLine;
+        let checkSingleLine = () => action == this._echoLine;
 
         if (forceSingle) {
             this._lastEcho = null;

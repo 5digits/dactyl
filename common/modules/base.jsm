@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -953,14 +953,13 @@ Class.prototype = {
      * @returns {nsITimer} The timer which backs this timeout.
      */
     timeout: function timeout(callback, timeout) {
-        const self = this;
-        function timeout_notify(timer) {
-            if (self.stale ||
+        let timeout_notify = (timer) => {
+            if (this.stale ||
                     util.rehashing && !isinstance(Cu.getGlobalForObject(callback), ["BackstagePass"]))
                 return;
-            self.timeouts.splice(self.timeouts.indexOf(timer), 1);
-            util.trapErrors(callback, self);
-        }
+            this.timeouts.splice(this.timeouts.indexOf(timer), 1);
+            util.trapErrors(callback, this);
+        };
         let timer = services.Timer(timeout_notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);
         this.timeouts.push(timer);
         return timer;
@@ -973,12 +972,11 @@ Class.prototype = {
      * localized properties.
      */
     update: function update() {
-        let self = this;
         // XXX: Duplication.
 
         for (let i = 0; i < arguments.length; i++) {
             let src = arguments[i];
-            Object.getOwnPropertyNames(src || {}).forEach(function (k) {
+            Object.getOwnPropertyNames(src || {}).forEach((k) => {
                 let desc = Object.getOwnPropertyDescriptor(src, k);
                 if (desc.value instanceof Class.Property)
                     desc = desc.value.init(k, this) || desc.value;
@@ -986,12 +984,16 @@ Class.prototype = {
                 if (typeof desc.value === "function") {
                     let func = desc.value.wrapped || desc.value;
                     if (!func.superapply) {
-                        func.__defineGetter__("super", function () Object.getPrototypeOf(self)[k]);
-                        func.superapply = function superapply(self, args)
-                            let (meth = Object.getPrototypeOf(self)[k])
-                                meth && meth.apply(self, args);
-                        func.supercall = function supercall(self)
-                            func.superapply(self, Array.slice(arguments, 1));
+                        func.__defineGetter__("super", () => Object.getPrototypeOf(this)[k]);
+
+                        func.superapply = function superapply(self, args) {
+                            let meth = Object.getPrototypeOf(self)[k];
+                            return meth && meth.apply(self, args);
+                        };
+
+                        func.supercall = function supercall(self) {
+                            return func.superapply(self, Array.slice(arguments, 1));
+                        }
                     }
                 }
 

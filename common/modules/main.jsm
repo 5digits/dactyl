@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -321,25 +321,24 @@ overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
     },
 
     scanModules: function scanModules() {
-        let self = this;
         let { Module, modules } = this.modules;
 
-        defineModule.modules.forEach(function defModule(mod) {
+        defineModule.modules.forEach((mod) => {
             let names = Set(Object.keys(mod.INIT));
             if ("init" in mod.INIT)
                 Set.add(names, "init");
 
-            keys(names).forEach(function (name) { self.deferInit(name, mod.INIT, mod); });
+            keys(names).forEach((name) => { this.deferInit(name, mod.INIT, mod); });
         });
 
-        Module.list.forEach(function frobModule(mod) {
+        Module.list.forEach((mod) => {
             if (!mod.frobbed) {
-                modules.__defineGetter__(mod.className, function () {
+                modules.__defineGetter__(mod.className, () => {
                     delete modules[mod.className];
-                    return self.loadModule(mod.className, null, Components.stack.caller);
+                    return this.loadModule(mod.className, null, Components.stack.caller);
                 });
                 Object.keys(mod.prototype.INIT)
-                      .forEach(function (name) { self.deferInit(name, mod.prototype.INIT, mod); });
+                      .forEach((name) => { this.deferInit(name, mod.prototype.INIT, mod); });
             }
             mod.frobbed = true;
         });

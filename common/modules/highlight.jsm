@@ -218,11 +218,12 @@ var Highlights = Module("Highlight", {
      * @param {string} class
      */
     selector: function selector(class_)
-        let (self = this)
-           class_.replace(/(^|[>\s])([A-Z][\w-]+)\b/g,
-            function (m, n1, hl) n1 +
-                (self.highlight[hl] && self.highlight[hl].class != class_
-                    ? self.highlight[hl].selector : "[dactyl|highlight~=" + hl + "]")),
+        class_.replace(/(^|[>\s])([A-Z][\w-]+)\b/g,
+            (m, n1, hl) => {
+                if (this.highlight[hl] && this.highlight[hl].class != class_)
+                    return n1 + this.highlight[hl].selector;
+                return n1 + "[dactyl|highlight~=" + hl + "]";
+            }),
 
     groupRegexp: util.regexp(literal(/*
         ^

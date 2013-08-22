@@ -19,8 +19,6 @@ var Const = function Const(val) Class.Property({ enumerable: true, value: val })
 
 var Group = Class("Group", {
     init: function init(name, description, filter, persist) {
-        const self = this;
-
         this.name = name;
         this.description = description;
         this.filter = filter || this.constructor.defaultFilter;
@@ -171,13 +169,12 @@ var Contexts = Module("contexts", {
         Hives: Class("Hives", Class.Property, {
             init: function init(name, constructor) {
                 const { contexts } = modules;
-                const self = this;
 
                 if (this.Hive)
                     return {
                         enumerable: true,
 
-                        get: function () array(contexts.groups[self.name])
+                        get: () => array(contexts.groups[this.name])
                     };
 
                 this.Hive = constructor;

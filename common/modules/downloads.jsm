@@ -23,21 +23,20 @@ var states = iter([v, k.slice(prefix.length).toLowerCase()]
 
 var Download = Class("Download", {
     init: function init(id, list) {
-        let self = this;
         this.download = services.downloadManager.getDownload(id);
         this.list = list;
 
         this.nodes = {
-            commandTarget: self
+            commandTarget: this
         };
         DOM.fromJSON(
             ["tr", { highlight: "Download", key: "row" },
                 ["td", { highlight: "DownloadTitle" },
                     ["span", { highlight: "Link" },
-                        ["a", { key: "launch", href: self.target.spec, path: self.targetFile.path },
-                            self.displayName],
+                        ["a", { key: "launch", href: this.target.spec, path: this.targetFile.path },
+                            this.displayName],
                         ["span", { highlight: "LinkInfo" },
-                            self.targetFile.path]]],
+                            this.targetFile.path]]],
                 ["td", { highlight: "DownloadState", key: "state" }],
                 ["td", { highlight: "DownloadButtons Buttons" },
                     ["a", { highlight: "Button", href: "javascript:0", key: "pause" }, _("download.action.Pause")],
@@ -54,19 +53,19 @@ var Download = Class("Download", {
                 ["td", { highlight: "DownloadSpeed", key: "speed" }],
                 ["td", { highlight: "DownloadTime", key: "time" }],
                 ["td", {},
-                    ["a", { highlight: "DownloadSource", key: "source", href: self.source.spec },
-                        self.source.spec]]],
+                    ["a", { highlight: "DownloadSource", key: "source", href: this.source.spec },
+                        this.source.spec]]],
             this.list.document, this.nodes);
 
-        this.nodes.launch.addEventListener("click", function (event) {
+        this.nodes.launch.addEventListener("click", (event) => {
             if (event.button == 0) {
                 event.preventDefault();
-                self.command("launch");
+                this.command("launch");
             }
         }, false);
 
-        self.updateStatus();
-        return self;
+        this.updateStatus();
+        return this;
     },
 
     get status() states[this.state],
@@ -102,7 +101,6 @@ var Download = Class("Download", {
             this.updateStatus();
         },
         launch: function launch() {
-            let self = this;
             // Behavior mimics that of the builtin Download Manager.
             function action() {
                 try {
@@ -119,13 +117,13 @@ var Download = Class("Download", {
             let file = io.File(this.targetFile);
             if (file.isExecutable() && prefs.get("browser.download.manager.alertOnEXEOpen", true))
                 this.list.modules.commandline.input(_("download.prompt.launchExecutable") + " ",
-                    function (resp) {
+                    (resp) => {
                         if (/^a(lways)$/i.test(resp)) {
                             prefs.set("browser.download.manager.alertOnEXEOpen", false);
                             resp = "yes";
                         }
                         if (/^y(es)?$/i.test(resp))
-                            action.call(self);
+                            action.call(this);
                     });
             else
                 action.call(this);

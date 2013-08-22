@@ -241,7 +241,6 @@ var Storage = Module("Storage", {
     },
 
     newObject: function newObject(key, constructor, params) {
-        let self = this;
         if (params == null || !isObject(params))
             throw Error("Invalid argument type");
 
@@ -261,10 +260,10 @@ var Storage = Module("Storage", {
             if (key in this && !reload)
                 throw Error("Cannot add storage key with that name.");
 
-            let load = function () self._loadData(key, params.store, params.type || myObject);
+            let load = () => this._loadData(key, params.store, params.type || myObject);
 
             this.keys[key] = new constructor(key, params.store, load, params);
-            this.keys[key].timer = new Timer(1000, 10000, function () self.save(key));
+            this.keys[key].timer = new Timer(1000, 10000, () => this.save(key));
             this.__defineGetter__(key, function () this.keys[key]);
         }
         return this.keys[key];

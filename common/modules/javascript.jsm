@@ -765,13 +765,12 @@ var JavaScript = Module("javascript", {
             init: function init(context) {
                 init.supercall(this);
 
-                let self = this;
                 let sandbox = true || isinstance(context, ["Sandbox"]);
 
                 this.context = modules.newContext(context, !sandbox, "Dactyl REPL Context");
                 this.js = modules.JavaScript();
                 this.js.replContext = this.context;
-                this.js.newContext = function newContext() modules.newContext(self.context, !sandbox, "Dactyl REPL Temp Context");
+                this.js.newContext = () => modules.newContext(this.context, !sandbox, "Dactyl REPL Temp Context");
 
                 this.js.globals = [
                    [this.context, /*L*/"REPL Variables"],

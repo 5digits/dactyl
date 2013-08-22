@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -139,7 +139,7 @@ var Services = Module("Services", {
             if (service.quiet === false)
                 throw e.stack ? e : Error(e);
 
-            if (typeof util !== "undefined")
+            if (typeof util !== "undefined" && util != null)
                 util.reportError(e);
             else
                 dump("dactyl: Service creation failed for '" + service.class + "': " + e + "\n" + (e.stack || Error(e).stack));
@@ -176,13 +176,12 @@ var Services = Module("Services", {
      *     class.
      */
     addClass: function addClass(name, class_, ifaces, init, quiet) {
-        const self = this;
         this.services[name] = { class: class_, interfaces: Array.concat(ifaces || []), method: "createInstance", init: init, quiet: quiet };
         if (init)
             memoize(this.services[name], "callable",
                     function () callable(XPCOMShim(this.interfaces)[this.init]));
 
-        this[name] = function Create() self._create(name, arguments);
+        this[name] = (function Create() this._create(name, arguments)).bind(this);
         update.apply(null, [this[name]].concat([Ci[i] for each (i in Array.concat(ifaces))]));
         return this[name];
     },
