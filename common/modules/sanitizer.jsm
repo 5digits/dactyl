@@ -598,19 +598,6 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     },
     options: function initOptions(dactyl, modules) {
         const options = modules.options;
-        if (services.has("privateBrowsing") && "privateBrowsingEnabled" in services.privateBrowsing)
-            options.add(["private", "pornmode"],
-                "Set the 'private browsing' option",
-                "boolean", false,
-                {
-                    initialValue: true,
-                    getter: function () services.privateBrowsing.privateBrowsingEnabled,
-                    setter: function (value) {
-                        if (services.privateBrowsing.privateBrowsingEnabled != value)
-                            services.privateBrowsing.privateBrowsingEnabled = value;
-                    },
-                    persist: false
-                });
 
         options.add(["sanitizeitems", "si"],
             "The default list of private items to sanitize",

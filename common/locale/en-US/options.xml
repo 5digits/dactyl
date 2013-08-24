@@ -1331,23 +1331,6 @@
 </item>
 
 <item>
-    <tags>'noprivate' 'private'</tags>
-    <spec>'private'</spec>
-    <type>&option.private.type;</type>
-    <default>&option.private.default;</default>
-    <description>
-        <p>
-            Set the <str>private browsing</str> option. In private browsing mode
-            history, cache files, cookies, form data, passwords, download list
-            entries, local and URL <t>marks</t>, <t>command-line</t> history
-            and macros are available only for the duration of the private
-            browsing session and deleted when returning to normal browsing
-            mode. See also <t>privacy</t>.
-        </p>
-    </description>
-</item>
-
-<item>
     <tags>$&dactyl.idName;_RUNTIME</tags>
     <tags>'rtp' 'runtimepath'</tags>
     <spec>'runtimepath' 'rtp'</spec>
