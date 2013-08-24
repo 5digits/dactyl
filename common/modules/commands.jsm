@@ -1764,9 +1764,9 @@ var Commands = Module("commands", {
 
         mappings.add([modes.COMMAND],
             ["@:"], "Repeat the last Ex command",
-            function (args) {
+            function ({ count }) {
                 if (commands.repeat) {
-                    for (let i in util.interruptibleRange(0, Math.max(args.count, 1), 100))
+                    for (let i in util.interruptibleRange(0, Math.max(count, 1), 100))
                         dactyl.execute(commands.repeat);
                 }
                 else

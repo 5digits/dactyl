@@ -1158,15 +1158,15 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
 
         // text edit mode
         bind(["u"], "Undo changes",
-             function (args) {
-                 editor.editor.undo(Math.max(args.count, 1));
+             function ({ count }) {
+                 editor.editor.undo(Math.max(count, 1));
                  editor.deselect();
              },
              { count: true, noTransaction: true });
 
         bind(["<C-r>"], "Redo undone changes",
-             function (args) {
-                 editor.editor.redo(Math.max(args.count, 1));
+             function ({ count }) {
+                 editor.editor.redo(Math.max(count, 1));
                  editor.deselect();
              },
              { count: true, noTransaction: true });

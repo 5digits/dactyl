@@ -518,47 +518,47 @@ var Mail = Module("mail", {
 
         mappings.add(myModes, ["j", "<Right>"],
             "Select next message",
-            function (args) { mail.selectMessage(function (msg) true, false, false, false, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) true, false, false, false, count); },
             { count: true });
 
         mappings.add(myModes, ["gj"],
             "Select next message, including closed threads",
-            function (args) { mail.selectMessage(function (msg) true, false, true, false, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) true, false, true, false, count); },
             { count: true });
 
         mappings.add(myModes, ["J", "<Tab>"],
             "Select next unread message",
-            function (args) { mail.selectMessage(function (msg) !msg.isRead, true, true, false, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) !msg.isRead, true, true, false, count); },
             { count: true });
 
         mappings.add(myModes, ["k", "<Left>"],
             "Select previous message",
-            function (args) { mail.selectMessage(function (msg) true, false, false, true, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) true, false, false, true, count); },
             { count: true });
 
         mappings.add(myModes, ["gk"],
             "Select previous message",
-            function (args) { mail.selectMessage(function (msg) true, false, true, true, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) true, false, true, true, count); },
             { count: true });
 
         mappings.add(myModes, ["K"],
             "Select previous unread message",
-            function (args) { mail.selectMessage(function (msg) !msg.isRead, true, true, true, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) !msg.isRead, true, true, true, count); },
             { count: true });
 
         mappings.add(myModes, ["*"],
             "Select next message from the same sender",
-            function (args) {
+            function ({ count }) {
                 let author = gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor.toLowerCase();
-                mail.selectMessage(function (msg) msg.mime2DecodedAuthor.toLowerCase().indexOf(author) == 0, true, true, false, args.count);
+                mail.selectMessage(function (msg) msg.mime2DecodedAuthor.toLowerCase().indexOf(author) == 0, true, true, false, count);
             },
             { count: true });
 
         mappings.add(myModes, ["#"],
             "Select previous message from the same sender",
-            function (args) {
+            function ({ count }) {
                 let author = gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor.toLowerCase();
-                mail.selectMessage(function (msg) msg.mime2DecodedAuthor.toLowerCase().indexOf(author) == 0, true, true, true, args.count);
+                mail.selectMessage(function (msg) msg.mime2DecodedAuthor.toLowerCase().indexOf(author) == 0, true, true, true, count);
             },
             { count: true });
 
@@ -593,22 +593,22 @@ var Mail = Module("mail", {
         // SCROLLING
         mappings.add(myModes, ["<Down>"],
             "Scroll message down",
-            function (args) { buffer.scrollLines(Math.max(args.count, 1)); },
+            function ({ count }) { buffer.scrollLines(Math.max(count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["<Up>"],
             "Scroll message up",
-            function (args) { buffer.scrollLines(-Math.max(args.count, 1)); },
+            function ({ count }) { buffer.scrollLines(-Math.max(count, 1)); },
             { count: true });
 
         mappings.add([modes.MESSAGE], ["<Left>"],
             "Select previous message",
-            function (args) { mail.selectMessage(function (msg) true, false, false, true, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) true, false, false, true, count); },
             { count: true });
 
         mappings.add([modes.MESSAGE], ["<Right>"],
             "Select next message",
-            function (args) { mail.selectMessage(function (msg) true, false, false, false, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) true, false, false, false, count); },
             { count: true });
 
         // UNDO/REDO
@@ -657,29 +657,29 @@ var Mail = Module("mail", {
 
         mappings.add(myModes, ["]s"],
             "Select next starred message",
-            function (args) { mail.selectMessage(function (msg) msg.isFlagged, true, true, false, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) msg.isFlagged, true, true, false, count); },
             { count: true });
 
         mappings.add(myModes, ["[s"],
             "Select previous starred message",
-            function (args) { mail.selectMessage(function (msg) msg.isFlagged, true, true, true, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) msg.isFlagged, true, true, true, count); },
             { count: true });
 
         mappings.add(myModes, ["]a"],
             "Select next message with an attachment",
-            function (args) { mail.selectMessage(function (msg) gDBView.db.HasAttachments(msg.messageKey), true, true, false, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) gDBView.db.HasAttachments(msg.messageKey), true, true, false, count); },
             { count: true });
 
         mappings.add(myModes, ["[a"],
             "Select previous message with an attachment",
-            function (args) { mail.selectMessage(function (msg) gDBView.db.HasAttachments(msg.messageKey), true, true, true, args.count); },
+            function ({ count }) { mail.selectMessage(function (msg) gDBView.db.HasAttachments(msg.messageKey), true, true, true, count); },
             { count: true });
 
         // FOLDER SWITCHING
         mappings.add(myModes, ["gi"],
             "Go to inbox",
-            function (args) {
-                let folder = mail.getFolders("Inbox", false, true)[(args.count > 0) ? (args.count - 1) : 0];
+            function ({ count }) {
+                let folder = mail.getFolders("Inbox", false, true)[(count > 0) ? (count - 1) : 0];
                 if (folder)
                     SelectFolder(folder.URI);
                 else
@@ -689,8 +689,8 @@ var Mail = Module("mail", {
 
         mappings.add(myModes, ["<C-n>"],
             "Select next folder",
-            function (args) {
-                let newPos = mail._getCurrentFolderIndex() + Math.max(1, args.count);
+            function ({ count }) {
+                let newPos = mail._getCurrentFolderIndex() + Math.max(1, count);
                 if (newPos >= gFolderTreeView.rowCount) {
                     newPos = newPos % gFolderTreeView.rowCount;
                     commandline.echo(_("finder.atBottom"), commandline.HL_WARNINGMSG, commandline.APPEND_TO_MESSAGES);
@@ -701,15 +701,15 @@ var Mail = Module("mail", {
 
         mappings.add(myModes, ["<C-N>"],
             "Go to next mailbox with unread messages",
-            function (args) {
-                mail._selectUnreadFolder(false, args.count);
+            function ({ count }) {
+                mail._selectUnreadFolder(false, count);
             },
             { count: true });
 
         mappings.add(myModes, ["<C-p>"],
             "Select previous folder",
-            function (args) {
-                let newPos = mail._getCurrentFolderIndex() - Math.max(1, args.count);
+            function ({ count }) {
+                let newPos = mail._getCurrentFolderIndex() - Math.max(1, count);
                 if (newPos < 0) {
                     newPos = (newPos % gFolderTreeView.rowCount) + gFolderTreeView.rowCount;
                     commandline.echo(_("finder.atTop"), commandline.HL_WARNINGMSG, commandline.APPEND_TO_MESSAGES);
@@ -720,8 +720,8 @@ var Mail = Module("mail", {
 
         mappings.add(myModes, ["<C-P>"],
             "Go to previous mailbox with unread messages",
-            function (args) {
-                mail._selectUnreadFolder(true, args.count);
+            function ({ count }) {
+                mail._selectUnreadFolder(true, count);
             },
             { count: true });
 
@@ -769,7 +769,7 @@ var Mail = Module("mail", {
         // tagging messages
         mappings.add(myModes, ["l"],
             "Label message",
-            function (arg) {
+            function ({ arg }) {
                 if (!GetSelectedMessages())
                     return void dactyl.beep();
 

@@ -715,7 +715,7 @@ const Player = Module("player", {
 
         mappings.add([modes.PLAYER],
             ["z"], "Previous track",
-            function (args) { ex.playerprev({ "#": args.count }); },
+            function ({ count }) { ex.playerprev({ "#": count }); },
             { count: true });
 
         mappings.add([modes.PLAYER],
@@ -724,7 +724,7 @@ const Player = Module("player", {
 
         mappings.add([modes.PLAYER],
             ["b"], "Next track",
-            function (args) { ex.playernext({ "#": args.count }); },
+            function ({ count }) { ex.playernext({ "#": count }); },
             { count: true });
 
         mappings.add([modes.PLAYER],
@@ -753,22 +753,22 @@ const Player = Module("player", {
 
         mappings.add([modes.PLAYER],
             ["h", "<Left>"], "Seek -10s",
-            function (args) { player.seekBackward(Math.max(1, args.count) * 10000); },
+            function ({ count} ) { player.seekBackward(Math.max(1, count) * 10000); },
             { count: true });
 
         mappings.add([modes.PLAYER],
             ["l", "<Right>"], "Seek +10s",
-            function (args) { player.seekForward(Math.max(1, args.count) * 10000); },
+            function ({ count} ) { player.seekForward(Math.max(1, count) * 10000); },
             { count: true });
 
         mappings.add([modes.PLAYER],
             ["H", "<S-Left>"], "Seek -1m",
-            function (args) { player.seekBackward(Math.max(1, args.count) * 60000); },
+            function ({ count }) { player.seekBackward(Math.max(1, count) * 60000); },
             { count: true });
 
         mappings.add([modes.PLAYER],
             ["L", "<S-Right>"], "Seek +1m",
-            function (args) { player.seekForward(Math.max(1, args.count) * 60000); },
+            function ({ count }) { player.seekForward(Math.max(1, count) * 60000); },
             { count: true });
 
         mappings.add([modes.PLAYER],
