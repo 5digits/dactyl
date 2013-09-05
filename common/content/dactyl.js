@@ -1403,10 +1403,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         groups.every(function (g) !g.validator || g.validator(val))
             });
 
-        options.add(["helpfile", "hf"],
-            "Name of the main help file",
-            "string", "intro");
-
         options.add(["loadplugins", "lpl"],
             "A regexp list that defines which plugins are loaded at startup and via :loadplugins",
             "regexplist", "'\\.(js|" + config.fileExtension + ")$'");

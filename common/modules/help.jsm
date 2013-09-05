@@ -445,6 +445,13 @@ var Help = Module("Help", {
     javascript: function initJavascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter([modules.help.exportHelp],
             [function (context, args) overlay.activeModules.completion.file(context)]);
+    },
+    options: function initOptions(dactyl, modules, window) {
+        const { options } = modules;
+
+        options.add(["helpfile", "hf"],
+            "Name of the main help file",
+            "string", "intro");
     }
 });
 
