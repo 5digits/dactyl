@@ -28,8 +28,7 @@
     When in private browsing mode, no data other than Bookmarks and QuickMarks
     are written to disk. Further, upon exiting private mode, all newly
     accumulated data, including <t>command-line</t> history, local and URL
-    marks, and macros, are purged from memory. For more information, see
-    <o>private</o>.
+    marks, and macros, are purged from memory.
 </p>
 
 <h2 tag="sanitizing clearing-data">Clearing private data</h2>
