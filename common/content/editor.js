@@ -470,7 +470,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         }
 
         try {
-            var tmpfile = io.createTempFile();
+            var tmpfile = io.createTempFile("txt", "." + buffer.uri.host);
             if (!tmpfile)
                 throw Error(_("io.cantCreateTempFile"));
 

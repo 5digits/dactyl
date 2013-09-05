@@ -307,23 +307,20 @@ var IO = Module("io", {
     },
 
     /**
-     * Creates a temporary file.
+     * Returns a temporary file.
      *
+     * @param {string} ext The filename extension.
+     *     @default "txt"
+     * @param {string} label A metadata string appended to the filename. Useful
+     *     for identifying the file, beyond its extension, to external
+     *     applications.
+     *     @default ""
      * @returns {File}
      */
-    createTempFile: function createTempFile(name, type) {
-        if (name instanceof Ci.nsIFile) {
-            var file = name.clone();
-            if (!type || type == "file")
-                file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
-            else
-                file.createUnique(Ci.nsIFile.DIRECTORY_TYPE, octal(777));
-        }
-        else {
-            file = services.directory.get("TmpD", Ci.nsIFile);
-            file.append(this.config.tempFile + (name ? "." + name : ""));
-            file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
-        }
+    createTempFile: function createTempFile(ext = "txt", label = "") {
+        let file = services.directory.get("TmpD", Ci.nsIFile);
+        file.append(config.name + label + "." + ext);
+        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
 
         services.externalApp.deleteTemporaryFileOnExit(file);
 
@@ -543,9 +540,9 @@ var IO = Module("io", {
      * @returns {boolean} false if temp files couldn't be created,
      *     otherwise, the return value of *func*.
      */
-    withTempFiles: function withTempFiles(func, self, checked, ext) {
+    withTempFiles: function withTempFiles(func, self, checked, ext, label) {
         let args = array(util.range(0, func.length))
-                    .map(bind("createTempFile", this, ext)).array;
+                    .map(bind("createTempFile", this, ext, label)).array;
         try {
             if (!args.every(util.identity))
                 return false;

@@ -569,12 +569,6 @@ var ConfigBase = Class("ConfigBase", {
     sidebars: {},
 
     /**
-     * @property {string} The leaf name of any temp files created by
-     *     {@link io.createTempFile}.
-     */
-    get tempFile() this.name + ".txt",
-
-    /**
      * @constant
      * @property {string} The default highlighting rules.
      * See {@link Highlights#loadCSS} for details.

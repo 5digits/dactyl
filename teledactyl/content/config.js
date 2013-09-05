@@ -116,10 +116,7 @@ var Config = Module("config", ConfigBase, {
                     modes.main = modes.MESSAGE;
             }
         }
-    },
-
-    // to allow Vim to :set ft=mail automatically
-    tempFile: "teledactyl.eml"
+    }
 }, {
 }, {
     commands: function initCommands(dactyl, modules, window) {

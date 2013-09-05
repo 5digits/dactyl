@@ -79,16 +79,6 @@ var Config = Module("config", ConfigBase, {
                 else
                     dactyl.beep();
             }
-        },
-
-        get tempFile() {
-            let prefix = this.name;
-            try {
-                prefix += "-" + window.content.document.location.hostname;
-            }
-            catch (e) {}
-
-            return prefix + ".txt";
         }
     })
 
