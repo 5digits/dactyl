@@ -246,7 +246,7 @@ var AutoCommands = Module("autocommands", {
                         return void dactyl.echomsg(_("autocmd.noMatching"));
 
                     let [event, url] = args;
-                    let defaultURL = url || buffer.uri.spec;
+                    let uri = util.createURI(url) || buffer.uri;
                     let validEvents = Object.keys(config.autocommands);
 
                     // TODO: add command validators
@@ -254,7 +254,7 @@ var AutoCommands = Module("autocommands", {
                                   _("autocmd.cantExecuteAll"));
                     dactyl.assert(validEvents.indexOf(event) >= 0,
                                   _("autocmd.noGroup", args));
-                    dactyl.assert(autocommands.get(event).some(function (c) c.patterns.some(function (re) re.test(defaultURL) ^ !re.result)),
+                    dactyl.assert(autocommands.get(event).some(function (c) c.filter(uri)),
                                   _("autocmd.noMatching"));
 
                     if (this.name == "doautoall" && dactyl.has("tabs")) {
@@ -263,13 +263,13 @@ var AutoCommands = Module("autocommands", {
                         for (let i = 0; i < tabs.count; i++) {
                             tabs.select(i);
                             // if no url arg is specified use the current buffer's URL
-                            autocommands.trigger(event, { url: url || buffer.uri.spec });
+                            autocommands.trigger(event, { url: uri.spec });
                         }
 
                         tabs.select(current);
                     }
                     else
-                        autocommands.trigger(event, { url: defaultURL });
+                        autocommands.trigger(event, { url: uri.spec });
                 }, {
                     argCount: "*", // FIXME: kludged for proper error message should be "1".
                     completer: function (context) completion.autocmdEvent(context),
