@@ -68,8 +68,8 @@ Object.defineProperty(defineModule.loadLog, "push", {
     }
 });
 defineModule.prefix = "";
-defineModule.dump = function dump_() {
-    let msg = Array.map(arguments, function (msg) {
+defineModule.dump = function dump_(...args) {
+    let msg = args.map(function (msg) {
         if (loaded.util && typeof msg == "object")
             msg = util.objectToString(msg);
         return msg;
@@ -78,13 +78,13 @@ defineModule.dump = function dump_() {
                .replace(/^./gm, JSMLoader.name + ": $&"));
 }
 defineModule.modules = [];
-defineModule.time = function time(major, minor, func, self) {
+defineModule.time = function time(major, minor, func, self, ...args) {
     let time = Date.now();
     if (typeof func !== "function")
         func = self[func];
 
     try {
-        var res = func.apply(self, Array.slice(arguments, 4));
+        var res = func.apply(self, args);
     }
     catch (e) {
         loaded.util && util.reportError(e);
@@ -441,17 +441,17 @@ function curry(fn, length, self, acc) {
         return fn;
 
     // Close over function with 'this'
-    function close(self, fn) function () fn.apply(self, Array.slice(arguments));
+    function close(self, fn) function () fn.apply(self, arguments);
 
     if (acc == null)
         acc = [];
 
-    return function curried() {
-        let args = acc.concat(Array.slice(arguments));
-
+    return function curried(...args) {
         // The curried result should preserve 'this'
-        if (arguments.length == 0)
+        if (args.length == 0)
             return close(self || this, curried);
+
+        let args = acc.concat(args);
 
         if (args.length >= length)
             return fn.apply(self || this, args);
@@ -461,15 +461,14 @@ function curry(fn, length, self, acc) {
 }
 
 if (curry.bind)
-    var bind = function bind(meth, self) let (func = callable(meth) ? meth : self[meth])
-        func.bind.apply(func, Array.slice(arguments, 1));
+    var bind = function bind(meth, self, ...args) let (func = callable(meth) ? meth : self[meth])
+        func.bind.apply(func, [self].concat(args));
 else
-    var bind = function bind(func, self) {
+    var bind = function bind(func, self, ...args) {
         if (!callable(func))
             func = self[func];
 
-        let args = Array.slice(arguments, bind.length);
-        return function bound() func.apply(self, args.concat(Array.slice(arguments)));
+        return function bound(...args2) func.apply(self, args.concat(args2));
     };
 
 /**
@@ -574,8 +573,8 @@ function isString(val) objproto.toString.call(val) == "[object String]";
  */
 function callable(val) typeof val === "function" && !(val instanceof Ci.nsIDOMElement);
 
-function call(fn) {
-    fn.apply(arguments[1], Array.slice(arguments, 2));
+function call(fn, self, ...args) {
+    fn.apply(self, args);
     return fn;
 }
 
@@ -660,8 +659,8 @@ function update(target) {
                         func.superapply = function superapply(self, args)
                             let (meth = Object.getPrototypeOf(target)[k])
                                 meth && meth.apply(self, args);
-                        func.supercall = function supercall(self)
-                            func.superapply(self, Array.slice(arguments, 1));
+                        func.supercall = function supercall(self, ...args)
+                            func.superapply(self, args);
                     }
                 }
                 Object.defineProperty(target, k, desc);
@@ -687,8 +686,8 @@ function update_(target) {
                         func.superapply = function super_apply(self, args)
                             let (meth = Object.getPrototypeOf(target)[k])
                                 meth && meth.apply(self, args);
-                        func.supercall = function super_call(self)
-                            func.superapply(self, Array.slice(arguments, 1));
+                        func.supercall = function super_call(self, ...args)
+                            func.superapply(self, args);
                     }
                 }
                 Object.defineProperty(target, k, desc);
@@ -722,9 +721,8 @@ function update_(target) {
  *
  * @returns {function} The constructor for the resulting class.
  */
-function Class() {
+function Class(...args) {
 
-    var args = Array.slice(arguments);
     if (isString(args[0]))
         var name = args.shift();
     var superclass = Class;
@@ -991,8 +989,8 @@ Class.prototype = {
                             return meth && meth.apply(self, args);
                         };
 
-                        func.supercall = function supercall(self) {
-                            return func.superapply(self, Array.slice(arguments, 1));
+                        func.supercall = function supercall(self, ...args) {
+                            return func.superapply(self, args);
                         }
                     }
                 }
@@ -1129,22 +1127,22 @@ var Finished = Class("Finished", ErrorBase);
  * @param {Object} classProperties Properties to be applied to the class constructor.
  * @returns {Class}
  */
-function Module(name, prototype) {
+function Module(name, prototype, ...args) {
     try {
-        let init = callable(prototype) ? 4 : 3;
-        let proto = arguments[callable(prototype) ? 2 : 1];
+        let init = callable(prototype) ? 2 : 1;
+        let proto = callable(prototype) ? args[0] : prototype;
 
         proto._metaInit_ = function () {
             delete module.prototype._metaInit_;
             currentModule[name.toLowerCase()] = this;
         };
 
-        const module = Class.apply(Class, Array.slice(arguments, 0, init));
+        const module = Class.apply(Class, [name, prototype, ...args.slice(0, init)]);
         let instance = module();
         module.className = name.toLowerCase();
 
         instance.INIT = update(Object.create(Module.INIT),
-                               arguments[init] || {});
+                               args[init] || {});
 
         currentModule[module.className] = instance;
         defineModule.modules.push(instance);
@@ -1201,13 +1199,9 @@ Module.INIT = {
  *
  * @returns {function} The constructor for the new Struct.
  */
-function Struct() {
-    if (!/^[A-Z]/.test(arguments[0]))
-        var args = Array.slice(arguments, 0);
-    else {
-        var className = arguments[0];
-        args = Array.slice(arguments, 1);
-    }
+function Struct(...args) {
+    if (/^[A-Z]/.test(args[0]))
+        var className = args.shift();
 
     const Struct = Class(className || "Struct", StructBase, {
         length: args.length,
@@ -1601,9 +1595,9 @@ var array = Class("array", Array, {
             },
             array: ary,
             toString: function () this.array.toString(),
-            concat: function () this.__noSuchMethod__("concat", Array.slice(arguments)),
-            filter: function () this.__noSuchMethod__("filter", Array.slice(arguments)),
-            map: function () this.__noSuchMethod__("map", Array.slice(arguments))
+            concat: function (...args) this.__noSuchMethod__("concat", args),
+            filter: function (...args) this.__noSuchMethod__("filter", args),
+            map: function (...args) this.__noSuchMethod__("map", args)
         };
     }
 }, {
@@ -1736,8 +1730,8 @@ var array = Class("array", Array, {
 /* Make Minefield not explode, because Minefield exploding is not fun. */
 let iterProto = Iter.prototype;
 Object.keys(iter).forEach(function (k) {
-    iterProto[k] = function () {
-        let res = iter[k].apply(iter, [this].concat(Array.slice(arguments)));
+    iterProto[k] = function (...args) {
+        let res = iter[k].apply(iter, [this].concat(args));
         if (isinstance(res, ["Iterator", "Generator"]))
             return Iter(res);
         return res;
@@ -1746,8 +1740,8 @@ Object.keys(iter).forEach(function (k) {
 
 Object.keys(array).forEach(function (k) {
     if (!(k in iterProto))
-        iterProto[k] = function () {
-            let res = array[k].apply(array, [this.toArray()].concat(Array.slice(arguments)));
+        iterProto[k] = function (...args) {
+            let res = array[k].apply(array, [this.toArray()].concat(args));
             if (isinstance(res, ["Iterator", "Generator"]))
                 return Iter(res);
             if (isArray(res))

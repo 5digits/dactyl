@@ -235,8 +235,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             });
     },
 
-    triggerObserver: function triggerObserver(type) {
-        return this.applyTriggerObserver(type, Array.slice(arguments, 1));
+    triggerObserver: function triggerObserver(type, ...args) {
+        return this.applyTriggerObserver(type, args);
     },
 
     addUsageCommand: function (params) {
@@ -523,10 +523,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Acts like the Function builtin, but the code executes in the
      * userContext global.
      */
-    userFunc: function userFunc() {
+    userFunc: function userFunc(...args) {
         return this.userEval(
-            "(function userFunction(" + Array.slice(arguments, 0, -1).join(", ") + ")" +
-            " { " + arguments[arguments.length - 1] + " })");
+            "(function userFunction(" + args.slice(0, -1).join(", ") + ")" +
+            " { " + args.pop() + " })");
     },
 
     /**
@@ -1116,11 +1116,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {function} func The function to call
      * @param {object} self The 'this' object for the function.
      */
-    trapErrors: function trapErrors(func, self) {
+    trapErrors: function trapErrors(func, self, ...args) {
         try {
             if (isString(func))
                 func = self[func];
-            return func.apply(self || this, Array.slice(arguments, 2));
+            return func.apply(self || this, args);
         }
         catch (e) {
             try {

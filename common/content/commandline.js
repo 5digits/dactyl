@@ -488,9 +488,9 @@ var CommandPromptMode = Class("CommandPromptMode", CommandMode, {
         init.supercall(this);
     },
 
-    complete: function CPM_complete(context) {
+    complete: function CPM_complete(context, ...args) {
         if (this.completer)
-            context.forkapply("prompt", 0, this, "completer", Array.slice(arguments, 1));
+            context.forkapply("prompt", 0, this, "completer", args);
     },
 
     get mode() modes.PROMPT
@@ -955,7 +955,7 @@ var CommandLine = Module("commandline", {
 
     updateOutputHeight: deprecated("mow.resize", function updateOutputHeight(open, extra) mow.resize(open, extra)),
 
-    withOutputToString: function withOutputToString(fn, self) {
+    withOutputToString: function withOutputToString(fn, self, ...args) {
         dactyl.registerObserver("echoLine", observe, true);
         dactyl.registerObserver("echoMultiline", observe, true);
 
@@ -965,7 +965,7 @@ var CommandLine = Module("commandline", {
         }
 
         this.savingOutput = true;
-        dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
+        dactyl.trapErrors.apply(dactyl, [fn, self].concat(args));
         this.savingOutput = false;
         return output.map(function (elem) elem instanceof Node ? DOM.stringify(elem) : elem)
                      .join("\n");
@@ -1764,8 +1764,7 @@ var CommandLine = Module("commandline", {
                 return Events.PASS;
             });
 
-        let bind = function bind()
-            mappings.add.apply(mappings, [[modes.COMMAND_LINE]].concat(Array.slice(arguments)));
+        let bind = function bind(...args) mappings.add.apply(mappings, [[modes.COMMAND_LINE]].concat(args));
 
         bind(["<Esc>", "<C-[>"], "Stop waiting for completions or exit Command Line mode",
              function ({ self }) {

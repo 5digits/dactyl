@@ -705,8 +705,8 @@ var CompletionContext = Class("CompletionContext", {
      *      for the new context. If a string is provided, it is
      *      interpreted as a method to access on *self*.
      */
-    fork: function fork(name, offset, self, completer) {
-        return this.forkapply(name, offset, self, completer, Array.slice(arguments, fork.length));
+    fork: function fork(name, offset, self, completer, ...args) {
+        return this.forkapply(name, offset, self, completer, args);
     },
 
     forkapply: function forkapply(name, offset, self, completer, args) {
@@ -731,7 +731,7 @@ var CompletionContext = Class("CompletionContext", {
         return context;
     },
 
-    split: function split(name, obj, fn) {
+    split: function split(name, obj, fn, ...args) {
         let context = this.fork(name);
         let alias = (prop) => {
             context.__defineGetter__(prop, () => this[prop]);
@@ -746,7 +746,7 @@ var CompletionContext = Class("CompletionContext", {
         context.hasItems = true;
         this.hasItems = false;
         if (fn)
-            return fn.apply(obj || this, [context].concat(Array.slice(arguments, split.length)));
+            return fn.apply(obj || this, [context].concat(args));
         return context;
     },
 
@@ -903,10 +903,10 @@ var Completion = Module("completion", {
         get options() modules.options,
 
         // FIXME
-        _runCompleter: function _runCompleter(name, filter, maxItems) {
+        _runCompleter: function _runCompleter(name, filter, maxItems, ...args) {
             let context = modules.CompletionContext(filter);
             context.maxItems = maxItems;
-            let res = context.fork.apply(context, ["run", 0, this, name].concat(Array.slice(arguments, 3)));
+            let res = context.fork.apply(context, ["run", 0, this, name].concat(args));
             if (res) {
                 if (Components.stack.caller.name === "runCompleter") // FIXME
                     return { items: res.map(function m(i) ({ item: i })) };
@@ -917,14 +917,14 @@ var Completion = Module("completion", {
         },
 
         runCompleter: function runCompleter(name, filter, maxItems) {
-            return this._runCompleter.apply(this, Array.slice(arguments))
+            return this._runCompleter.apply(this, arguments)
                        .items.map(function m(i) i.item);
         },
 
-        listCompleter: function listCompleter(name, filter, maxItems) {
+        listCompleter: function listCompleter(name, filter, maxItems, ...args) {
             let context = modules.CompletionContext(filter || "");
             context.maxItems = maxItems;
-            context.fork.apply(context, ["list", 0, this, name].concat(Array.slice(arguments, 3)));
+            context.fork.apply(context, ["list", 0, this, name].concat(args));
             context = context.contexts["/list"];
             context.wait(null, true);
 
@@ -987,9 +987,9 @@ var Completion = Module("completion", {
         }, this);
     },
 
-    addUrlCompleter: function addUrlCompleter(opt) {
-        let completer = Completion.UrlCompleter.apply(null, Array.slice(arguments));
-        completer.args = Array.slice(arguments, completer.length);
+    addUrlCompleter: function addUrlCompleter(opt, ...args) {
+        let completer = Completion.UrlCompleter.apply(null, [opt, ...args]);
+        completer.args = args;
         this.urlCompleters[opt] = completer;
     },
 

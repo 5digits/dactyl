@@ -855,8 +855,7 @@ var JavaScript = Module("javascript", {
     mappings: function initMappings(dactyl, modules, window) {
         const { mappings, modes } = modules;
 
-        function bind() mappings.add.apply(mappings,
-                                           [[modes.REPL]].concat(Array.slice(arguments)))
+        function bind(...args) mappings.add.apply(mappings, [[modes.REPL]].concat(args))
 
         bind(["<Return>"], "Accept the current input",
              function ({ self }) { self.accept(); });

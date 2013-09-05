@@ -1571,7 +1571,7 @@ var Commands = Module("commands", {
                                     return dactyl.userEval(completer);
                                 });
                                 if (callable(result))
-                                    return result.apply(this, Array.slice(arguments));
+                                    return result.apply(this, arguments);
                                 else
                                     return context.completions = result;
                             };

@@ -985,9 +985,9 @@ function _runCommands(cmdName, testName, commands) {
     });
 }
 
-function runTest(message, test) {
+function runTest(message, test, ...args) {
     if (test)
-        var res = test.apply(null, Array.slice(arguments, runTest.length));
+        var res = test.apply(null, args);
     if (res !== undefined)
         jumlib.assert(res, message);
 }

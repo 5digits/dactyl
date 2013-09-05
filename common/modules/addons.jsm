@@ -15,8 +15,7 @@ defineModule("addons", {
 this.lazyRequire("completion", ["completion"]);
 lazyRequire("template", ["template"]);
 
-var callResult = function callResult(method) {
-    let args = Array.slice(arguments, 1);
+var callResult = function callResult(method, ...args) {
     return function (result) { result[method].apply(result, args); };
 }
 

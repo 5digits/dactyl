@@ -65,7 +65,7 @@ var Group = Class("Group", {
     get builtin() this.modules.contexts.builtinGroups.indexOf(this) >= 0,
 
 }, {
-    compileFilter: function (patterns, default_) {
+    compileFilter: function (patterns, default_ = false) {
         if (arguments.length < 2)
             default_ = false;
 

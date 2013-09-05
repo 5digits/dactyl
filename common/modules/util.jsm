@@ -1622,11 +1622,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {function} func The function to call
      * @param {object} self The 'this' object for the function.
      */
-    trapErrors: function trapErrors(func, self) {
+    trapErrors: function trapErrors(func, self, ...args) {
         try {
             if (!callable(func))
                 func = self[func];
-            return func.apply(self || this, Array.slice(arguments, 2));
+            return func.apply(self || this, args);
         }
         catch (e) {
             this.reportError(e);
@@ -1708,9 +1708,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {object} self The 'this' object of the method.
      * @param ... Arguments to pass to *meth*.
      */
-    withProperErrors: function withProperErrors(meth, self) {
+    withProperErrors: function withProperErrors(meth, self, ...args) {
         try {
-            return (callable(meth) ? meth : self[meth]).apply(self, Array.slice(arguments, withProperErrors.length));
+            return (callable(meth) ? meth : self[meth]).apply(self, args);
         }
         catch (e) {
             throw e.stack ? e : Error(e);

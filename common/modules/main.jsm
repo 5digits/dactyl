@@ -65,14 +65,13 @@ var Modules = function Modules(window) {
      *
      * @returns {function} The constructor for the resulting module.
      */
-    function Module(name) {
-        let args = Array.slice(arguments);
+    function Module(name, ...args) {
 
         var base = ModuleBase;
-        if (callable(args[1]))
-            base = args.splice(1, 1)[0];
+        if (callable(args[0]))
+            base = args.shift();
 
-        let [, prototype, classProperties, moduleInit] = args;
+        let [prototype, classProperties, moduleInit] = args;
         prototype._metaInit_ = function () {
             delete module.prototype._metaInit_;
             Class.replaceProperty(modules, module.className, this);

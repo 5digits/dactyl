@@ -389,10 +389,10 @@ Controller.prototype = {
      * @param {...} Extra arguments are passed to the completion
      *     function directly.
      */
-    testCompleter: wrapAssertNoErrors(function testCompleter(self, func, string, message) {
+    testCompleter: wrapAssertNoErrors(function testCompleter(self, func, string, message, ...args) {
         var context = this.modules.CompletionContext(string || "");
         context.tabPressed = true;
-        context.forkapply("completions", 0, self, func, Array.slice(arguments, testCompleter.length));
+        context.forkapply("completions", 0, self, func, args);
 
         utils.assert("dactyl.runCompletions", context.wait(5000),
                      message || "Completion failed: " + self + "." + func);

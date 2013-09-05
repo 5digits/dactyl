@@ -98,7 +98,7 @@ var Messages = Module("messages", {
         file = io.File(file);
 
         function properties(base, iter_, prop) iter(function _properties() {
-            function key() [base, obj.identifier || obj.name].concat(Array.slice(arguments)).join(".").replace(/[\\:=]/g, "\\$&");
+            function key(...args) [base, obj.identifier || obj.name].concat(args).join(".").replace(/[\\:=]/g, "\\$&");
 
             prop = prop || "description";
             for (var obj in iter_) {

@@ -37,9 +37,9 @@ function reportError(e) {
     Cc["@mozilla.org/consoleservice;1"].getService(Ci.nsIConsoleService)
                                        .logStringMessage(stack);
 }
-function debug() {
+function debug(...args) {
     if (DEBUG)
-        dump(name + ": " + Array.join(arguments, ", ") + "\n");
+        dump(name + ": " + args.join(", ") + "\n");
 }
 
 function httpGet(uri) {
