@@ -987,10 +987,10 @@ var Completion = Module("completion", {
         }, this);
     },
 
-    addUrlCompleter: function addUrlCompleter(opt, ...args) {
-        let completer = Completion.UrlCompleter.apply(null, [opt, ...args]);
+    addUrlCompleter: function addUrlCompleter(name, description, completer, ...args) {
+        let completer = Completion.UrlCompleter(name, description, completer);
         completer.args = args;
-        this.urlCompleters[opt] = completer;
+        this.urlCompleters[name] = completer;
     },
 
     autocomplete: curry(function autocomplete(provider, context) {
