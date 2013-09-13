@@ -20,7 +20,7 @@ by Kris Maglione, Doug Kearns, et al.
 &dactyl.appName; is open source and freely distributable
 
 type :q&lt;<span class="key">Enter</span>>                 to exit         <!---->
-type :help&lt;<span class="key">Enter</span>>                                        for on-line help
+type :help&lt;<span class="key">Enter</span>>              for on-line help
 type :help faq&lt;<span class="key">Enter</span>>          for the FAQ page
 type :help versions&lt;<span class="key">Enter</span>>     for version info
       </div>
