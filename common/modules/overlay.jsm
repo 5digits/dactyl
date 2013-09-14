@@ -27,8 +27,8 @@ var Overlay = Class("Overlay", {
         this.window = window;
     },
 
-    cleanups: Class.Memoize(function () []),
-    objects: Class.Memoize(function () ({})),
+    cleanups: Class.Memoize(() => []),
+    objects: Class.Memoize(() => ({})),
 
     get doc() this.window.document,
 
@@ -52,7 +52,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         this.onWindowVisible = [];
     },
 
-    id: Class.Memoize(function () config.addon.id),
+    id: Class.Memoize(() => config.addon.id),
 
     /**
      * Adds an event listener for this session and removes it on
@@ -148,7 +148,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         "content-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); },
         "xul-window-visible": function () {
             if (this.onWindowVisible)
-                this.onWindowVisible.forEach(function (f) f.call(this), this);
+                this.onWindowVisible.forEach(function (f) { f.call(this); }, this);
             this.onWindowVisible = null;
         }
     },
@@ -281,10 +281,10 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
             }
         }
 
-        insert("before", function (elem, dom) elem.parentNode.insertBefore(dom, elem));
-        insert("after", function (elem, dom) elem.parentNode.insertBefore(dom, elem.nextSibling));
-        insert("append", function (elem, dom) elem.appendChild(dom));
-        insert("prepend", function (elem, dom) elem.insertBefore(dom, elem.firstChild));
+        insert("before", (elem, dom) => elem.parentNode.insertBefore(dom, elem));
+        insert("after", (elem, dom) => elem.parentNode.insertBefore(dom, elem.nextSibling));
+        insert("append", (elem, dom) => elem.appendChild(dom));
+        insert("prepend", (elem, dom) => elem.insertBefore(dom, elem.firstChild));
         if (obj.ready)
             util.trapErrors("ready", obj, window);
 
@@ -412,19 +412,19 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
     get activeModules() this.activeWindow && this.activeWindow.dactyl.modules,
 
-    get modules() this.windows.map(function (w) w.dactyl.modules),
+    get modules() this.windows.map(w => w.dactyl.modules),
 
     /**
      * The most recently active dactyl window.
      */
     get activeWindow() this.windows[0],
 
-    set activeWindow(win) this.windows = [win].concat(this.windows.filter(function (w) w != win)),
+    set activeWindow(win) this.windows = [win].concat(this.windows.filter(w => w != win)),
 
     /**
      * A list of extant dactyl windows.
      */
-    windows: Class.Memoize(function () [])
+    windows: Class.Memoize(() => [])
 });
 
 endModule();

@@ -281,7 +281,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
         let doc = win.document;
 
-        memoize(doc, "dactylLabels", function ()
+        memoize(doc, "dactylLabels", () =>
             iter([l.getAttribute("for"), l]
                  for (l in array.iterValues(doc.querySelectorAll("label[for]"))))
              .toObject());
@@ -300,7 +300,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 return false;
 
             if (!rect.width || !rect.height)
-                if (!Array.some(elem.childNodes, function (elem) elem instanceof Element && DOM(elem).style.float != "none" && isVisible(elem)))
+                if (!Array.some(elem.childNodes, elem => elem instanceof Element && DOM(elem).style.float != "none" && isVisible(elem)))
                     if (elem.textContent || !elem.name)
                         return false;
 
@@ -473,7 +473,7 @@ var HintSession = Class("HintSession", CommandMode, {
         if (!followFirst) {
             let firstHref = this.validHints[0].elem.getAttribute("href") || null;
             if (firstHref) {
-                if (this.validHints.some(function (h) h.elem.getAttribute("href") != firstHref))
+                if (this.validHints.some(h => h.elem.getAttribute("href") != firstHref))
                     return;
             }
             else if (this.validHints.length > 1)
@@ -496,7 +496,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 // Hint document has been unloaded.
                 return;
 
-            let hinted = n || this.validHints.some(function (h) h.elem === elem);
+            let hinted = n || this.validHints.some(h => h.elem === elem);
             if (!hinted)
                 hints.setClass(elem, null);
             else if (n)
@@ -756,32 +756,32 @@ var Hints = Module("hints", {
 
         this.modes = {};
         this.addMode(";", "Focus hint",                           buffer.closure.focusElement);
-        this.addMode("?", "Show information for hint",            function (elem) buffer.showElementInfo(elem));
+        this.addMode("?", "Show information for hint",            elem => buffer.showElementInfo(elem));
         // TODO: allow for ! override to overwrite existing paths -- where? --djk
-        this.addMode("s", "Save hint",                            function (elem) buffer.saveLink(elem, false));
-        this.addMode("f", "Focus frame",                          function (elem) dactyl.focus(elem.ownerDocument.defaultView));
+        this.addMode("s", "Save hint",                            elem => buffer.saveLink(elem, false));
+        this.addMode("f", "Focus frame",                          elem => dactyl.focus(elem.ownerDocument.defaultView));
         this.addMode("F", "Focus frame or pseudo-frame",          buffer.closure.focusElement, isScrollable);
-        this.addMode("o", "Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB));
-        this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
-        this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
-        this.addMode("w", "Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW));
-        this.addMode("O", "Generate an ‘:open URL’ prompt",       function (elem, loc) CommandExMode().open("open " + loc));
-        this.addMode("T", "Generate a ‘:tabopen URL’ prompt",     function (elem, loc) CommandExMode().open("tabopen " + loc));
-        this.addMode("W", "Generate a ‘:winopen URL’ prompt",     function (elem, loc) CommandExMode().open("winopen " + loc));
-        this.addMode("a", "Add a bookmark",                       function (elem) bookmarks.addSearchKeyword(elem));
-        this.addMode("S", "Add a search keyword",                 function (elem) bookmarks.addSearchKeyword(elem));
-        this.addMode("v", "View hint source",                     function (elem, loc) buffer.viewSource(loc, false));
-        this.addMode("V", "View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true));
-        this.addMode("y", "Yank hint location",                   function (elem, loc) editor.setRegister(null, loc, true));
-        this.addMode("Y", "Yank hint description",                function (elem) editor.setRegister(null, elem.textContent || "", true));
+        this.addMode("o", "Follow hint",                          elem => buffer.followLink(elem, dactyl.CURRENT_TAB));
+        this.addMode("t", "Follow hint in a new tab",             elem => buffer.followLink(elem, dactyl.NEW_TAB));
+        this.addMode("b", "Follow hint in a background tab",      elem => buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
+        this.addMode("w", "Follow hint in a new window",          elem => buffer.followLink(elem, dactyl.NEW_WINDOW));
+        this.addMode("O", "Generate an ‘:open URL’ prompt",       (elem, loc) => CommandExMode().open("open " + loc));
+        this.addMode("T", "Generate a ‘:tabopen URL’ prompt",     (elem, loc) => CommandExMode().open("tabopen " + loc));
+        this.addMode("W", "Generate a ‘:winopen URL’ prompt",     (elem, loc) => CommandExMode().open("winopen " + loc));
+        this.addMode("a", "Add a bookmark",                       elem => bookmarks.addSearchKeyword(elem));
+        this.addMode("S", "Add a search keyword",                 elem => bookmarks.addSearchKeyword(elem));
+        this.addMode("v", "View hint source",                     (elem, loc) => buffer.viewSource(loc, false));
+        this.addMode("V", "View hint source in external editor",  (elem, loc) => buffer.viewSource(loc, true));
+        this.addMode("y", "Yank hint location",                   (elem, loc) => editor.setRegister(null, loc, true));
+        this.addMode("Y", "Yank hint description",                elem => editor.setRegister(null, elem.textContent || "", true));
         this.addMode("A", "Yank hint anchor url",                 function (elem) {
             let uri = elem.ownerDocument.documentURIObject.clone();
             uri.ref = elem.id || elem.name;
             dactyl.clipboardWrite(uri.spec, true);
         });
-        this.addMode("c", "Open context menu",                    function (elem) DOM(elem).contextmenu());
-        this.addMode("i", "Show image",                           function (elem) dactyl.open(elem.src));
-        this.addMode("I", "Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB));
+        this.addMode("c", "Open context menu",                    elem => DOM(elem).contextmenu());
+        this.addMode("i", "Show image",                           elem => dactyl.open(elem.src));
+        this.addMode("I", "Show image in a new tab",              elem => dactyl.open(elem.src, dactyl.NEW_TAB));
 
         function isScrollable(elem) isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
                                                       Ci.nsIDOMHTMLIFrameElement]) ||
@@ -812,7 +812,7 @@ var Hints = Module("hints", {
             let update = eht.isDefault;
 
             let value = eht.parse(Option.quote(util.regexp.escape(mode)) + ":" + tags.map(Option.quote))[0];
-            eht.defaultValue = eht.defaultValue.filter(function (re) toString(re) != toString(value))
+            eht.defaultValue = eht.defaultValue.filter(re => toString(re) != toString(value))
                                   .concat(value);
 
             if (update)
@@ -915,7 +915,7 @@ var Hints = Module("hints", {
             let tokens = tokenize(/\s+/, hintString);
             return function (linkText) {
                 linkText = linkText.toLowerCase();
-                return tokens.every(function (token) indexOf(linkText, token) >= 0);
+                return tokens.every(token => indexOf(linkText, token) >= 0);
             };
         } //}}}
 
@@ -1063,7 +1063,7 @@ var Hints = Module("hints", {
         commandline.input(["Normal", mode], null, {
             autocomplete: false,
             completer: function (context) {
-                context.compare = function () 0;
+                context.compare = () => 0;
                 context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints.modes))];
             },
             onCancel: mappings.closure.popCommand,
@@ -1073,7 +1073,7 @@ var Hints = Module("hints", {
                 mappings.popCommand();
             },
             onChange: function (arg) {
-                if (Object.keys(hints.modes).some(function (m) m != arg && m.indexOf(arg) == 0))
+                if (Object.keys(hints.modes).some(m => m != arg && m.indexOf(arg) == 0))
                     return;
 
                 this.accepted = true;
@@ -1111,7 +1111,7 @@ var Hints = Module("hints", {
     isVisible: function isVisible(elem, offScreen) {
         let rect = elem.getBoundingClientRect();
         if (!rect.width || !rect.height)
-            if (!Array.some(elem.childNodes, function (elem) elem instanceof Element && DOM(elem).style.float != "none" && isVisible(elem)))
+            if (!Array.some(elem.childNodes, elem => elem instanceof Element && DOM(elem).style.float != "none" && isVisible(elem)))
                 return false;
 
         let win = elem.ownerDocument.defaultView;
@@ -1300,7 +1300,7 @@ var Hints = Module("hints", {
             {
                 keepQuotes: true,
                 getKey: function (val, default_)
-                    let (res = array.nth(this.value, function (re) let (match = re.exec(val)) match && match[0] == val, 0))
+                    let (res = array.nth(this.value, re => let (match = re.exec(val)) match && match[0] == val, 0))
                         res ? res.matcher : default_,
                 parse: function parse(val) {
                     let vals = parse.supercall(this, val);
@@ -1308,7 +1308,7 @@ var Hints = Module("hints", {
                         value.matcher = DOM.compileMatcher(Option.splitList(value.result));
                     return vals;
                 },
-                testValues: function testValues(vals, validator) vals.every(function (re) Option.splitList(re).every(validator)),
+                testValues: function testValues(vals, validator) vals.every(re => Option.splitList(re).every(validator)),
                 validator: DOM.validateMatcher
             });
 
@@ -1368,7 +1368,7 @@ var Hints = Module("hints", {
                     "transliterated": UTF8("When true, special latin characters are translated to their ASCII equivalents (e.g., é ⇒ e)")
                 },
                 validator: function (values) Option.validateCompleter.call(this, values) &&
-                    1 === values.reduce(function (acc, v) acc + (["contains", "custom", "firstletters", "wordstartswith"].indexOf(v) >= 0), 0)
+                    1 === values.reduce((acc, v) => acc + (["contains", "custom", "firstletters", "wordstartswith"].indexOf(v) >= 0), 0)
             });
 
         options.add(["wordseparators", "wsp"],

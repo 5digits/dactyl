@@ -27,7 +27,7 @@ var HelpBuilder = Class("HelpBuilder", {
 
             // Scrape the list of help files from all.xml
             this.tags["all"] = this.tags["all.xml"] = "all";
-            let files = this.findHelpFile("all").map(function (doc)
+            let files = this.findHelpFile("all").map(doc =>
                     [f.value for (f in DOM.XPath("//dactyl:include/@href", doc))]);
 
             // Scrape the tags from the rest of the help files.
@@ -90,8 +90,8 @@ var Help = Module("Help", {
             }
 
         update(services["dactyl:"].providers, {
-            "help": Loop(function (uri, path) help.files[path]),
-            "help-overlay": Loop(function (uri, path) help.overlays[path]),
+            "help": Loop((uri, path) => help.files[path]),
+            "help-overlay": Loop((uri, path) => help.overlays[path]),
             "help-tag": Loop(function (uri, path) {
                 let tag = decodeURIComponent(path);
                 if (tag in help.files)
@@ -129,7 +129,7 @@ var Help = Module("Help", {
             let betas = util.regexp(/\[((?:b|rc)\d)\]/, "gx");
 
             let beta = array(betas.iterate(NEWS))
-                        .map(function (m) m[1]).uniq().slice(-1)[0];
+                        .map(m => m[1]).uniq().slice(-1)[0];
 
             function rec(text, level, li) {
                 let res = [];
@@ -151,10 +151,10 @@ var Help = Module("Help", {
                     else if (match.par) {
                         let [, par, tags] = /([^]*?)\s*((?:\[[^\]]+\])*)\n*$/.exec(match.par);
                         let t = tags;
-                        tags = array(betas.iterate(tags)).map(function (m) m[1]);
+                        tags = array(betas.iterate(tags)).map(m => m[1]);
 
-                        let group = !tags.length                       ? "" :
-                                    !tags.some(function (t) t == beta) ? "HelpNewsOld" : "HelpNewsNew";
+                        let group = !tags.length               ? "" :
+                                    !tags.some(t => t == beta) ? "HelpNewsOld" : "HelpNewsNew";
                         if (i === 0 && li) {
                             li[1]["dactyl:highlight"] = group;
                             group = "";
@@ -367,7 +367,7 @@ var Help = Module("Help", {
             for (let [file, ] in Iterator(help.files)) {
                 let url = "dactyl://help/" + file;
                 dactyl.open(url);
-                util.waitFor(function () content.location.href == url && buffer.loaded
+                util.waitFor(() => content.location.href == url && buffer.loaded
                                 && content.document.documentElement instanceof Ci.nsIDOMHTMLHtmlElement,
                              15000);
                 events.waitForPageLoad();
@@ -381,9 +381,9 @@ var Help = Module("Help", {
             }
 
             let data = [h for (h in highlight) if (Set.has(styles, h.class) || /^Help/.test(h.class))]
-                .map(function (h) h.selector
-                                   .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
-                                   .replace(/html\|/g, "") + "\t" + "{" + h.cssText + "}")
+                .map(h => h.selector
+                           .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
+                           .replace(/html\|/g, "") + "\t" + "{" + h.cssText + "}")
                 .join("\n");
             addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
 
@@ -444,7 +444,7 @@ var Help = Module("Help", {
     },
     javascript: function initJavascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter([modules.help.exportHelp],
-            [function (context, args) overlay.activeModules.completion.file(context)]);
+            [(context, args) => overlay.activeModules.completion.file(context)]);
     },
     options: function initOptions(dactyl, modules, window) {
         const { options } = modules;

@@ -64,7 +64,7 @@ var Abbreviation = Class("Abbreviation", {
      * @param {Mode} mode The mode to test.
      * @returns {boolean} The result of the comparison.
      */
-    inMode: function (mode) this.modes.some(function (_mode) _mode == mode),
+    inMode: function (mode) this.modes.some(m => m == mode),
 
     /**
      * Returns true if this abbreviation is defined in any of *modes*.
@@ -72,7 +72,7 @@ var Abbreviation = Class("Abbreviation", {
      * @param {[Modes]} modes The modes to test.
      * @returns {boolean} The result of the comparison.
      */
-    inModes: function (modes) modes.some(function (mode) this.inMode(mode), this),
+    inModes: function (modes) modes.some(mode => this.inMode(mode)),
 
     /**
      * Remove *mode* from the list of supported modes for this abbreviation.
@@ -80,7 +80,7 @@ var Abbreviation = Class("Abbreviation", {
      * @param {Mode} mode The mode to remove.
      */
     removeMode: function (mode) {
-        this.modes = this.modes.filter(function (m) m != mode).sort();
+        this.modes = this.modes.filter(m => m != mode).sort();
     },
 
     /**
@@ -90,7 +90,7 @@ var Abbreviation = Class("Abbreviation", {
     get modeChar() Abbreviation.modeChar(this.modes)
 }, {
     modeChar: function (_modes) {
-        let result = array.uniq(_modes.map(function (m) m.char)).join("");
+        let result = array.uniq(_modes.map(m => m.char)).join("");
         if (result == "ci")
             result = "!";
         return result;
@@ -142,7 +142,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
         // Wth? --Kris;
         let map = values(this._store).map(Iterator).map(iter.toArray)
                                      .flatten().toObject();
-        return Object.keys(map).sort().map(function (k) map[k]);
+        return Object.keys(map).sort().map(k => map[k]);
     },
 
     /**
@@ -244,7 +244,7 @@ var Abbreviations = Module("abbreviations", {
     match: function (mode, text) {
         let match = this._match.exec(text);
         if (match)
-            return this.hives.map(function (h) h.get(mode, match[2] || match[4] || match[6])).nth(util.identity, 0);
+            return this.hives.map(h => h.get(mode, match[2] || match[4] || match[6])).nth(util.identity, 0);
         return null;
     },
 
@@ -257,10 +257,10 @@ var Abbreviations = Module("abbreviations", {
      * @optional
      */
     list: function (modes, lhs, hives) {
-        let hives = hives || contexts.allGroups.abbrevs.filter(function (h) !h.empty);
+        let hives = hives || contexts.allGroups.abbrevs.filter(h => !h.empty);
 
         function abbrevs(hive)
-            hive.merged.filter(function (abbr) (abbr.inModes(modes) && abbr.lhs.indexOf(lhs) == 0));
+            hive.merged.filter(ab => (ab.inModes(modes) && ab.lhs.indexOf(lhs) == 0));
 
         let list = ["table", {},
                 ["tr", { highlight: "Title" },
@@ -269,9 +269,9 @@ var Abbreviations = Module("abbreviations", {
                     ["td", { style: "padding-right: 1em;" }, _("title.Abbrev")],
                     ["td", { style: "padding-right: 1em;" }, _("title.Replacement")]],
                 ["col", { style: "min-width: 6em; padding-right: 1em;" }],
-                hives.map(function (hive) let (i = 0) [
+                hives.map(hive => let (i = 0) [
                     ["tr", { style: "height: .5ex;" }],
-                    abbrevs(hive).map(function (abbrev)
+                    abbrevs(hive).map(abbrev =>
                         ["tr", {},
                             ["td", { highlight: "Title" }, !i++ ? String(hive.name) : ""],
                             ["td", {}, abbrev.modeChar],
@@ -298,7 +298,7 @@ var Abbreviations = Module("abbreviations", {
     completion: function initCompletion() {
         completion.abbreviation = function abbreviation(context, modes, group) {
             group = group || abbreviations.user;
-            let fn = modes ? function (abbr) abbr.inModes(modes) : util.identity;
+            let fn = modes ? ab => ab.inModes(modes) : util.identity;
             context.keys = { text: "lhs" , description: "rhs" };
             context.completions = group.merged.filter(fn);
         };

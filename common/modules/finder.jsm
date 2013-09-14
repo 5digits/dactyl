@@ -104,7 +104,7 @@ var RangeFinder = Module("rangefinder", {
             return "";
         }
 
-        this.options["findflags"].forEach(function (f) replacer(f, f));
+        this.options["findflags"].forEach(function (f) { replacer(f, f); });
 
         let pattern = str.replace(/\\(.|$)/g, replacer);
 
@@ -430,7 +430,7 @@ var RangeFind = Class("RangeFind", {
     findRange: function findRange(range) {
         let doc = range.startContainer.ownerDocument;
         let win = doc.defaultView;
-        let ranges = this.ranges.filter(function (r)
+        let ranges = this.ranges.filter(r =>
             r.window === win && RangeFind.sameDocument(r.range, range) && RangeFind.contains(r.range, range));
 
         if (this.backward)
@@ -516,7 +516,7 @@ var RangeFind = Class("RangeFind", {
     },
 
     iter: function iter(word) {
-        let saved = ["lastRange", "lastString", "range", "regexp"].map(function (s) [s, this[s]], this);
+        let saved = ["lastRange", "lastString", "range", "regexp"].map(s => [s, this[s]]);
         let res;
         try {
             let regexp = this.regexp && word != util.regexp.escape(word);
@@ -542,7 +542,7 @@ var RangeFind = Class("RangeFind", {
             }
         }
         finally {
-            saved.forEach(function ([k, v]) this[k] = v, this);
+            saved.forEach(function ([k, v]) { this[k] = v; }, this);
         }
     },
 
@@ -611,7 +611,7 @@ var RangeFind = Class("RangeFind", {
         this.range = this.findRange(this.startRange) || this.ranges[0];
         util.assert(this.range, "Null range", false);
         this.ranges.first = this.range;
-        this.ranges.forEach(function (range) range.save());
+        this.ranges.forEach(function (range) { range.save(); });
         this.forward = null;
         this.found = false;
     },
@@ -837,7 +837,7 @@ var RangeFind = Class("RangeFind", {
         }
         return true;
     },
-    selectNodePath: ["a", "xhtml:a", "*[@onclick]"].map(function (p) "ancestor-or-self::" + p).join(" | "),
+    selectNodePath: ["a", "xhtml:a", "*[@onclick]"].map(p => "ancestor-or-self::" + p).join(" | "),
     union: function union(a, b) {
         let start = a.compareBoundaryPoints(a.START_TO_START, b) < 0 ? a : b;
         let end   = a.compareBoundaryPoints(a.END_TO_END, b) > 0 ? a : b;

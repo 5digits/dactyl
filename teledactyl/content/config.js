@@ -11,7 +11,7 @@ var Config = Module("config", ConfigBase, {
             init.superapply(this, arguments);
 
             if (!("content" in modules))
-                modules.__defineGetter__("content", function () window.content);
+                modules.__defineGetter__("content", () => window.content);
 
             util.overlayWindow(window, { append: <><hbox id="statusTextBox" flex=""/></> });
         },

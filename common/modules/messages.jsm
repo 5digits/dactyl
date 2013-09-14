@@ -119,11 +119,11 @@ var Messages = Module("messages", {
         }()).toArray();
 
         file.write(
-            array(commands.allHives.map(function (h) properties("command", h)))
-                          .concat(modes.all.map(function (m)
+            array(commands.allHives.map(h => properties("command", h)))
+                          .concat(modes.all.map(m =>
                               properties("map", values(mappings.builtin.getStack(m)
-                                                               .filter(function (map) map.modes[0] == m)))))
-                          .concat(properties("mode", values(modes.all.filter(function (m) !m.hidden))))
+                                                               .filter(map => map.modes[0] == m)))))
+                          .concat(properties("mode", values(modes.all.filter(m => !m.hidden))))
                           .concat(properties("option", options))
                           .concat(properties("hintmode", values(hints.modes), "prompt"))
                           .concat(properties("pageinfo", values(Buffer.pageInfo), "title"))
@@ -168,7 +168,7 @@ var Messages = Module("messages", {
                                 });
                             else
                                 iter(value).forEach(function ([k, v]) {
-                                    memoize(value, k, function () messages.get([name, k].join("."), v));
+                                    memoize(value, k, () => messages.get([name, k].join("."), v));
                                 });
                         }
 
@@ -187,7 +187,7 @@ var Messages = Module("messages", {
         let { JavaScript } = modules;
 
         JavaScript.setCompleter([this._, this.get, this.format], [
-            function (context) messages.iterate()
+            context => messages.iterate()
         ]);
 
         JavaScript.setCompleter([this.export],

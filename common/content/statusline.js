@@ -245,7 +245,7 @@ var StatusLine = Module("statusline", {
                 url = _("buffer.noName");
         }
         else {
-            url = url.replace(RegExp("^dactyl://help/(\\S+)#(.*)"), function (m, n1, n2) n1 + " " + decodeURIComponent(n2) + " " + _("buffer.help"))
+            url = url.replace(RegExp("^dactyl://help/(\\S+)#(.*)"), (m, n1, n2) => n1 + " " + decodeURIComponent(n2) + " " + _("buffer.help"))
                      .replace(RegExp("^dactyl://help/(\\S+)"), "$1 " + _("buffer.help"));
         }
 

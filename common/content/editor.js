@@ -381,7 +381,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             textBox = null;
 
         let line, column;
-        let keepFocus = modes.stack.some(function (m) isinstance(m.main, modes.COMMAND_LINE));
+        let keepFocus = modes.stack.some(m => isinstance(m.main, modes.COMMAND_LINE));
 
         if (!forceEditing && textBox && textBox.type == "password") {
             commandline.input(_("editor.prompt.editPassword") + " ",
@@ -400,7 +400,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             var editor_ = window.GetCurrentEditor ? GetCurrentEditor()
                                                   : Editor.getEditor(document.commandDispatcher.focusedWindow);
             dactyl.assert(editor_);
-            text = Array.map(editor_.rootElement.childNodes, function (e) DOM.stringify(e, true)).join("");
+            text = Array.map(editor_.rootElement.childNodes, e => DOM.stringify(e, true)).join("");
 
             if (!editor_.selection.rangeCount)
                 var sel = "";
@@ -1131,7 +1131,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
              "<*-Home>", "<*-End>", "<*-PageUp>", "<*-PageDown>",
              "<M-c>", "<M-v>", "<*-Tab>"],
             "Handled by " + config.host,
-            function () Events.PASS_THROUGH);
+            () => Events.PASS_THROUGH);
 
         mappings.add([modes.INSERT],
             ["<Space>", "<Return>"], "Expand Insert mode abbreviation",
@@ -1327,19 +1327,19 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         let bind = function bind(...args) mappings.add.apply(mappings, [[modes.AUTOCOMPLETE]].concat(args));
 
         bind(["<Esc>"], "Return to Insert mode",
-             function () Events.PASS_THROUGH);
+             () => Events.PASS_THROUGH);
 
         bind(["<C-[>"], "Return to Insert mode",
              function () { events.feedkeys("<Esc>", { skipmap: true }); });
 
         bind(["<Up>"], "Select the previous autocomplete result",
-             function () Events.PASS_THROUGH);
+             () => Events.PASS_THROUGH);
 
         bind(["<C-p>"], "Select the previous autocomplete result",
              function () { events.feedkeys("<Up>", { skipmap: true }); });
 
         bind(["<Down>"], "Select the next autocomplete result",
-             function () Events.PASS_THROUGH);
+             () => Events.PASS_THROUGH);
 
         bind(["<C-n>"], "Select the next autocomplete result",
              function () { events.feedkeys("<Down>", { skipmap: true }); });
@@ -1350,8 +1350,8 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             "string", 'gvim -f +<line> +"sil! call cursor(0, <column>)" <file>', {
                 format: function (obj, value) {
                     let args = commands.parseArgs(value || this.value, { argCount: "*", allowUnknownOptions: true })
-                                       .map(util.compileMacro).filter(function (fmt) fmt.valid(obj))
-                                       .map(function (fmt) fmt(obj));
+                                       .map(util.compileMacro).filter(fmt => fmt.valid(obj))
+                                       .map(fmt => fmt(obj));
                     if (obj["file"] && !this.has("file"))
                         args.push(obj["file"]);
                     return args;
@@ -1359,7 +1359,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 has: function (key) Set.has(util.compileMacro(this.value).seen, key),
                 validator: function (value) {
                     this.format({}, value);
-                    return Object.keys(util.compileMacro(value).seen).every(function (k) ["column", "file", "line"].indexOf(k) >= 0);
+                    return Object.keys(util.compileMacro(value).seen).every(k => ["column", "file", "line"].indexOf(k) >= 0);
                 }
             });
 

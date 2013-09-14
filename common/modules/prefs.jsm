@@ -428,7 +428,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
     javascript: function init_javascript(dactyl, modules) {
         modules.JavaScript.setCompleter([this.get, this.safeSet, this.set, this.reset, this.toggle],
-                [function (context) (context.anchored=false, this.getNames().map(function (pref) [pref, ""]))]);
+                [function (context) (context.anchored=false, this.getNames().map(pref => [pref, ""]))]);
     }
 });
 

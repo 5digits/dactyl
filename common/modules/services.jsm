@@ -126,7 +126,7 @@ var Services = Module("Services", {
             if (!service.interfaces.length)
                 return res.wrappedJSObject || res;
 
-            service.interfaces.forEach(function (iface) res instanceof Ci[iface]);
+            service.interfaces.forEach(iface => res instanceof Ci[iface]);
             if (service.init && args.length) {
                 if (service.callable)
                     res[service.init].apply(res, args);
@@ -162,7 +162,7 @@ var Services = Module("Services", {
         this.services[name] = { method: meth, class: class_, interfaces: Array.concat(ifaces || []) };
         if (name in this && ifaces && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
             throw TypeError();
-        memoize(this, name, function () self._create(name));
+        memoize(this, name, () => self._create(name));
     },
 
     /**
@@ -206,7 +206,7 @@ var Services = Module("Services", {
      * @param {string} name The service's cache key.
      */
     has: function has(name) Set.has(this.services, name) && this.services[name].class in Cc &&
-        this.services[name].interfaces.every(function (iface) iface in Ci)
+        this.services[name].interfaces.every(iface => iface in Ci)
 });
 
 endModule();

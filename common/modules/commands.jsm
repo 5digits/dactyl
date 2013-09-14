@@ -46,9 +46,9 @@ lazyRequire("template", ["template"]);
  */
 
 var CommandOption = Struct("names", "type", "validator", "completer", "multiple", "description", "default");
-CommandOption.defaultValue("description", function () "");
-CommandOption.defaultValue("type", function () CommandOption.NOARG);
-CommandOption.defaultValue("multiple", function () false);
+CommandOption.defaultValue("description", () => "");
+CommandOption.defaultValue("type", () => CommandOption.NOARG);
+CommandOption.defaultValue("multiple", () => false);
 
 var ArgType = Struct("description", "parse");
 update(CommandOption, {
@@ -64,7 +64,7 @@ update(CommandOption, {
      * @property {object} The option doesn't accept an argument.
      * @final
      */
-    NOARG: ArgType("no arg",  function (arg) !arg || null),
+    NOARG: ArgType("no arg",  arg => !arg || null),
     /**
      * @property {object} The option accepts a boolean argument.
      * @final
@@ -74,12 +74,12 @@ update(CommandOption, {
      * @property {object} The option accepts a string argument.
      * @final
      */
-    STRING: ArgType("string", function (val) val),
+    STRING: ArgType("string", val => val),
     /**
      * @property {object} The option accepts a stringmap argument.
      * @final
      */
-    STRINGMAP: ArgType("stringmap", function (val, quoted) Option.parse.stringmap(quoted)),
+    STRINGMAP: ArgType("stringmap", (val, quoted) => Option.parse.stringmap(quoted)),
     /**
      * @property {object} The option accepts an integer argument.
      * @final
@@ -221,12 +221,12 @@ var Command = Class("Command", {
     parsedSpecs: Class.Memoize(function () Command.parseSpecs(this.specs)),
 
     /** @property {[string]} All of this command's short names, e.g., "com" */
-    shortNames: Class.Memoize(function () array.compact(this.parsedSpecs.map(function (n) n[1]))),
+    shortNames: Class.Memoize(function () array.compact(this.parsedSpecs.map(n => n[1]))),
 
     /**
      * @property {[string]} All of this command's long names, e.g., "command"
      */
-    longNames: Class.Memoize(function () this.parsedSpecs.map(function (n) n[0])),
+    longNames: Class.Memoize(function () this.parsedSpecs.map(n => n[0])),
 
     /** @property {string} The command's canonical name. */
     name: Class.Memoize(function () this.longNames[0]),
@@ -309,7 +309,7 @@ var Command = Class("Command", {
     _options: [],
 
     optionMap: Class.Memoize(function () array(this.options)
-                .map(function (opt) opt.names.map(function (name) [name, opt]))
+                .map(opt => opt.names.map(name => [name, opt]))
                 .flatten().toObject()),
 
     newArgs: function newArgs(base) {
@@ -409,7 +409,7 @@ var Command = Class("Command", {
     }
 }, {
     hasName: function hasName(specs, name)
-        specs.some(function ([long, short])
+        specs.some(([long, short]) =>
             name.indexOf(short) == 0 && long.indexOf(name) == 0),
 
     // TODO: do we really need more than longNames as a convenience anyway?
@@ -536,7 +536,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         if (this.cached)
             this.modules.initDependencies("commands");
         this.cached = false;
-        return array.iterValues(this._list.sort(function (a, b) a.name > b.name));
+        return array.iterValues(this._list.sort((a, b) => a.name > b.name));
     },
 
     /** @property {string} The last executed Ex command line. */
@@ -570,10 +570,10 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         let name = names[0];
 
         if (this.name != "builtin") {
-            util.assert(!names.some(function (name) name in commands.builtin._map),
+            util.assert(!names.some(name => name in commands.builtin._map),
                         _("command.cantReplace", name));
 
-            util.assert(replace || names.every(function (name) !(name in this._map), this),
+            util.assert(replace || names.every(name => !(name in this._map)),
                         _("command.wontReplace", name));
         }
 
@@ -585,7 +585,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
 
         let closure = () => this._map[name];
 
-        memoize(this._map, name, function () commands.Command(specs, description, action, extra));
+        memoize(this._map, name, () => commands.Command(specs, description, action, extra));
         if (!extra.hidden)
             memoize(this._list, this._list.length, closure);
         for (let alias in values(names.slice(1)))
@@ -623,11 +623,11 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
      */
     get: function get(name, full) {
         let cmd = this._map[name]
-               || !full && array.nth(this._list, function (cmd) cmd.hasName(name), 0)
+               || !full && array.nth(this._list, cmd => cmd.hasName(name), 0)
                || null;
 
         if (!cmd && full) {
-            let name = array.nth(this.specs, function (spec) Command.hasName(spec, name), 0);
+            let name = array.nth(this.specs, spec => Command.hasName(spec, name), 0);
             return name && this.get(name);
         }
 
@@ -648,7 +648,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         util.assert(this.group.modifiable, _("command.cantDelete"));
 
         let cmd = this.get(name);
-        this._list = this._list.filter(function (c) c !== cmd);
+        this._list = this._list.filter(c => c !== cmd);
         for (let name in values(cmd.names))
             delete this._map[name];
     }
@@ -684,7 +684,7 @@ var Commands = Module("commands", {
 
         get allHives() contexts.allGroups.commands,
 
-        get userHives() this.allHives.filter(function (h) h !== this.builtin, this),
+        get userHives() this.allHives.filter(h => h !== this.builtin),
 
         /**
          * Executes an Ex command script.
@@ -764,9 +764,9 @@ var Commands = Module("commands", {
                 return "";
             }
             // TODO: allow matching of aliases?
-            function cmds(hive) hive._list.filter(function (cmd) cmd.name.indexOf(filter || "") == 0)
+            function cmds(hive) hive._list.filter(cmd => cmd.name.indexOf(filter || "") == 0)
 
-            let hives = (hives || this.userHives).map(function (h) [h, cmds(h)]).filter(function ([h, c]) c.length);
+            let hives = (hives || this.userHives).map(h => [h, cmds(h)]).filter(([h, c]) => c.length);
 
             let list = ["table", {},
                 ["tr", { highlight: "Title" },
@@ -778,9 +778,9 @@ var Commands = Module("commands", {
                     ["td", { style: "padding-right: 1ex;" }, _("title.Complete")],
                     ["td", { style: "padding-right: 1ex;" }, _("title.Definition")]],
                 ["col", { style: "min-width: 6em; padding-right: 1em;" }],
-                hives.map(function ([hive, cmds]) let (i = 0) [
+                hives.map(([hive, cmds]) => let (i = 0) [
                     ["tr", { style: "height: .5ex;" }],
-                    cmds.map(function (cmd)
+                    cmds.map(cmd =>
                         ["tr", {},
                             ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
                             ["td", {}, cmd.bang ? "!" : " "],
@@ -815,7 +815,7 @@ var Commands = Module("commands", {
 
     /** @property {Iterator(Command)} @private */
     iterator: function iterator() iter.apply(null, this.hives.array)
-                              .sort(function (a, b) a.serialGroup - b.serialGroup || a.name > b.name)
+                              .sort((a, b) => a.serialGroup - b.serialGroup || a.name > b.name)
                               .iterValues(),
 
     /** @property {string} The last executed Ex command line. */
@@ -846,7 +846,7 @@ var Commands = Module("commands", {
 
         let defaults = {};
         if (args.ignoreDefaults)
-            defaults = array(this.options).map(function (opt) [opt.names[0], opt.default])
+            defaults = array(this.options).map(opt => [opt.names[0], opt.default])
                                           .toObject();
 
         for (let [opt, val] in Iterator(args.options || {})) {
@@ -881,7 +881,7 @@ var Commands = Module("commands", {
      *     any of the command's names.
      * @returns {Command}
      */
-    get: function get(name, full) iter(this.hives).map(function ([i, hive]) hive.get(name, full))
+    get: function get(name, full) iter(this.hives).map(([i, hive]) => hive.get(name, full))
                                                   .nth(util.identity, 0),
 
     /**
@@ -895,7 +895,7 @@ var Commands = Module("commands", {
     hasDomain: function hasDomain(command, host) {
         try {
             for (let [cmd, args] in this.subCommands(command))
-                if (Array.concat(cmd.domains(args)).some(function (domain) util.isSubdomain(domain, host)))
+                if (Array.concat(cmd.domains(args)).some(domain => util.isSubdomain(domain, host)))
                     return true;
         }
         catch (e) {
@@ -1016,7 +1016,7 @@ var Commands = Module("commands", {
             let matchOpts = function matchOpts(arg) {
                 // Push possible option matches into completions
                 if (complete && !onlyArgumentsRemaining)
-                    completeOpts = options.filter(function (opt) opt.multiple || !Set.has(args, opt.names[0]));
+                    completeOpts = options.filter(opt => opt.multiple || !Set.has(args, opt.names[0]));
             };
             let resetCompletions = function resetCompletions() {
                 completeOpts = null;
@@ -1208,7 +1208,7 @@ var Commands = Module("commands", {
                     context.filter = args.completeFilter;
 
                     if (isArray(arg))
-                        context.filters.push(function (item) arg.indexOf(item.text) === -1);
+                        context.filters.push(item => arg.indexOf(item.text) === -1);
 
                     if (typeof opt.completer == "function")
                         var compl = opt.completer(context, args);
@@ -1394,7 +1394,7 @@ var Commands = Module("commands", {
         let quote = null;
         let len = str.length;
 
-        function fixEscapes(str) str.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4}|(.))/g, function (m, n1) n1 || m);
+        function fixEscapes(str) str.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4}|(.))/g, (m, n1) => n1 || m);
 
         // Fix me.
         if (isString(sep))
@@ -1436,9 +1436,9 @@ var Commands = Module("commands", {
             context.title = ["Command"];
             context.keys = { text: "longNames", description: "description" };
             if (group)
-                context.generate = function () group._list;
+                context.generate = () => group._list;
             else
-                context.generate = function () modules.commands.hives.map(function (h) h._list).flatten();
+                context.generate = () => modules.commands.hives.map(h => h._list).flatten();
         };
 
         // provides completions for ex commands, including their arguments
@@ -1577,7 +1577,7 @@ var Commands = Module("commands", {
                             };
                         }
                         else
-                            completerFunc = function (context) modules.completion.closure[config.completers[completer]](context);
+                            completerFunc = context => modules.completion.closure[config.completers[completer]](context);
                     }
 
                     let added = args["-group"].add(cmd.split(","),
@@ -1662,8 +1662,8 @@ var Commands = Module("commands", {
                 literal: 1,
 
                 serialize: function () array(commands.userHives)
-                    .filter(function (h) h.persist)
-                    .map(function (hive) [
+                    .filter(h => h.persist)
+                    .map(hive => [
                         {
                             command: this.name,
                             bang: true,
@@ -1681,7 +1681,7 @@ var Commands = Module("commands", {
                             ignoreDefaults: true
                         }
                         for (cmd in hive) if (cmd.persist)
-                    ], this)
+                    ])
                     .flatten().array
             });
 
@@ -1725,7 +1725,7 @@ var Commands = Module("commands", {
                 ]
             })),
             iterateIndex: function (args) let (tags = help.tags)
-                this.iterate(args).filter(function (cmd) cmd.hive === commands.builtin || Set.has(tags, cmd.helpTag)),
+                this.iterate(args).filter(cmd => cmd.hive === commands.builtin || Set.has(tags, cmd.helpTag)),
             format: {
                 headings: ["Command", "Group", "Description"],
                 description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),
@@ -1779,7 +1779,7 @@ var Commands = Module("commands", {
 let quote = function quote(q, list, map) {
     map = map || Commands.quoteMap;
     let re = RegExp("[" + list + "]", "g");
-    function quote(str) q + String.replace(str, re, function ($0) $0 in map ? map[$0] : ("\\" + $0)) + q;
+    function quote(str) q + String.replace(str, re, $0 => $0 in map ? map[$0] : ("\\" + $0)) + q;
     quote.list = list;
     return quote;
 };

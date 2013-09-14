@@ -37,7 +37,7 @@ var Tabs = Module("tabs", {
 
         this.tabBinding = styles.system.add("tab-binding", "chrome://browser/content/browser.xul", literal(/*
                 xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab) !important; }
-            */).replace(/tab-./g, function (m) config.OS.isMacOSX ? "tab-mac" : m),
+            */).replace(/tab-./g, m => config.OS.isMacOSX ? "tab-mac" : m),
             false, true);
 
         this.timeout(function () {
@@ -57,7 +57,7 @@ var Tabs = Module("tabs", {
         }
     },
 
-    _alternates: Class.Memoize(function () [config.tabbrowser.mCurrentTab, null]),
+    _alternates: Class.Memoize(() => [config.tabbrowser.mCurrentTab, null]),
 
     cleanup: function cleanup() {
         for (let [i, tab] in Iterator(this.allTabs)) {
@@ -139,7 +139,7 @@ var Tabs = Module("tabs", {
      */
     get options() this.localStore.options,
 
-    get visibleTabs() config.tabbrowser.visibleTabs || this.allTabs.filter(function (tab) !tab.hidden),
+    get visibleTabs() config.tabbrowser.visibleTabs || this.allTabs.filter(tab => !tab.hidden),
 
     /**
      * Returns the local state store for the tab at the specified *tabIndex*.
@@ -552,7 +552,7 @@ var Tabs = Module("tabs", {
         if (matches)
             return tabs.select(matches, false);
 
-        matches = completion.runCompleter("buffer", buffer).map(function (obj) obj.tab);
+        matches = completion.runCompleter("buffer", buffer).map(obj => obj.tab);
 
         if (matches.length == 0)
             dactyl.echoerr(_("buffer.noMatching", buffer));
@@ -650,7 +650,7 @@ var Tabs = Module("tabs", {
                 count: true,
                 completer: function (context, args) {
                     if (!args.bang)
-                        context.filters.push(function ({ item }) !item.tab.pinned);
+                        context.filters.push(({ item }) => !item.tab.pinned);
                     completion.buffer(context);
                 }
             });
@@ -665,7 +665,7 @@ var Tabs = Module("tabs", {
                 argCount: "?",
                 count: true,
                 completer: function (context, args) {
-                    context.filters.push(function ({ item }) item.tab.pinned);
+                    context.filters.push(({ item }) => item.tab.pinned);
                     completion.buffer(context);
                 }
             });
@@ -730,7 +730,7 @@ var Tabs = Module("tabs", {
 
         commands.add(["tabl[ast]", "bl[ast]"],
             "Switch to the last tab",
-            function () tabs.select("$", false),
+            function () { tabs.select("$", false); },
             { argCount: "0" });
 
         // TODO: "Zero count" if 0 specified as arg
@@ -893,10 +893,10 @@ var Tabs = Module("tabs", {
             commands.add(["taba[ttach]"],
                 "Attach the current tab to another window",
                 function (args) {
-                    dactyl.assert(args.length <= 2 && !args.some(function (i) !/^\d+(?:$|:)/.test(i)),
+                    dactyl.assert(args.length <= 2 && !args.some(i => !/^\d+(?:$|:)/.test(i)),
                                   _("error.trailingCharacters"));
 
-                    let [winIndex, tabIndex] = args.map(function (arg) parseInt(arg));
+                    let [winIndex, tabIndex] = args.map(arg => parseInt(arg));
                     if (args["-group"]) {
                         util.assert(args.length == 1);
                         window.TabView.moveTabTo(tabs.getTab(), winIndex);
@@ -940,7 +940,7 @@ var Tabs = Module("tabs", {
                             if (args["-group"])
                                 completion.tabGroup(context);
                             else {
-                                context.filters.push(function ({ item }) item != window);
+                                context.filters.push(({ item }) => item != window);
                                 completion.window(context);
                             }
                             break;
@@ -1061,7 +1061,7 @@ var Tabs = Module("tabs", {
             for (let [id, vals] in Iterator(tabGroups))
                 context.fork(id, 0, this, function (context, [name, browsers]) {
                     context.title = [name || "Buffers"];
-                    context.generate = function ()
+                    context.generate = () =>
                         Array.map(browsers, function ([i, browser]) {
                             let indicator = " ";
                             if (i == tabs.index())
@@ -1089,7 +1089,7 @@ var Tabs = Module("tabs", {
             context.keys = {
                 text: "id",
                 description: function (group) group.getTitle() ||
-                    group.getChildren().map(function (t) t.tab.label).join(", ")
+                    group.getChildren().map(t => t.tab.label).join(", ")
             };
             context.generate = function () {
                 context.incomplete = true;

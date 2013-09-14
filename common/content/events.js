@@ -140,7 +140,7 @@ var Events = Module("events", {
                         this.active.push(elem);
                 }
 
-                this.active = this.active.filter(function (e) e.popupBoxObject && e.popupBoxObject.popupState != "closed");
+                this.active = this.active.filter(e => e.popupBoxObject && e.popupBoxObject.popupState != "closed");
 
                 if (!this.active.length && !this.activeMenubar)
                     modes.remove(modes.MENU, true);
@@ -466,12 +466,12 @@ var Events = Module("events", {
 
         let access = iter({ 1: "shiftKey", 2: "ctrlKey", 4: "altKey", 8: "metaKey" })
                         .filter(function ([k, v]) this & k, prefs.get("ui.key.chromeAccess"))
-                        .map(function ([k, v]) [v, true])
+                        .map(([k, v]) => [v, true])
                         .toObject();
 
     outer:
         for (let [, key] in iter(elements))
-            if (filters.some(function ([k, v]) key.getAttribute(k) == v)) {
+            if (filters.some(([k, v]) => key.getAttribute(k) == v)) {
                 let keys = { ctrlKey: false, altKey: false, shiftKey: false, metaKey: false };
                 let needed = { ctrlKey: event.ctrlKey, altKey: event.altKey, shiftKey: event.shiftKey, metaKey: event.metaKey };
 
@@ -482,7 +482,7 @@ var Events = Module("events", {
                         case "accel":  keys[accel] = true; break;
                         default:       keys[modifier + "Key"] = true; break;
                         case "any":
-                            if (!iter.some(keys, function ([k, v]) v && needed[k]))
+                            if (!iter.some(keys, ([k, v]) => v && needed[k]))
                                 continue outer;
                             for (let [k, v] in iter(keys)) {
                                 if (v)
@@ -492,7 +492,7 @@ var Events = Module("events", {
                             break;
                     }
 
-                if (iter(needed).every(function ([k, v]) v == keys[k]))
+                if (iter(needed).every(([k, v]) => v == keys[k]))
                     return key;
             }
 
@@ -797,8 +797,8 @@ var Events = Module("events", {
                         && let (key = DOM.Event.stringify(event))
                             !(modes.main.count && /^\d$/.test(key) ||
                               modes.main.allBases.some(
-                                function (mode) mappings.hives.some(
-                                    function (hive) hive.get(mode, key) || hive.getCandidates(mode, key))));
+                                mode => mappings.hives.some(
+                                    hive => hive.get(mode, key) || hive.getCandidates(mode, key))));
 
             events.dbg("ON " + event.type.toUpperCase() + " " + DOM.Event.stringify(event) +
                        " passing: " + this.passing + " " +
@@ -870,7 +870,7 @@ var Events = Module("events", {
                 return;
             }
 
-            let haveInput = modes.stack.some(function (m) m.main.input);
+            let haveInput = modes.stack.some(m => m.main.input);
 
             if (DOM(elem || win).isEditable) {
                 if (!haveInput)
@@ -1104,7 +1104,7 @@ var Events = Module("events", {
         const Hive = Class("Hive", {
             init: function init(values, map) {
                 this.name = "passkeys:" + map;
-                this.stack = MapHive.Stack(values.map(function (v) Map(v[map + "Keys"])));
+                this.stack = MapHive.Stack(values.map(v => Map(v[map + "Keys"])));
                 function Map(keys) ({
                     execute: function () Events.PASS_THROUGH,
                     keys: keys

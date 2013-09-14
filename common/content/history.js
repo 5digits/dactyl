@@ -65,7 +65,7 @@ var History = Module("history", {
         let sh = webNav.sessionHistory;
 
         let obj = [];
-        obj.__defineGetter__("index", function () sh.index);
+        obj.__defineGetter__("index", () => sh.index);
         obj.__defineSetter__("index", function (val) { webNav.gotoIndex(val); });
         obj.__iterator__ = function () array.iterItems(this);
 
@@ -111,7 +111,7 @@ var History = Module("history", {
      */
     search: function search(item, steps) {
         var ctxt;
-        var filter = function (item) true;
+        var filter = item => true;
         if (item == "domain")
             var filter = function (item) {
                 let res = item.URI.hostPort != ctxt;
@@ -165,7 +165,7 @@ var History = Module("history", {
         let items = completion.runCompleter("history", filter, maxItems, maxItems, sort);
 
         if (items.length)
-            return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
+            return dactyl.open(items.map(i => i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0)
             dactyl.echoerr(_("history.noMatching", filter.quote()));
@@ -284,7 +284,7 @@ var History = Module("history", {
                                 "title",
                                 "uri",
                                 "visitcount"
-                            ].map(function (order) [
+                            ].map(order => [
                                   ["+" + order.replace(" ", ""), /*L*/"Sort by " + order + " ascending"],
                                   ["-" + order.replace(" ", ""), /*L*/"Sort by " + order + " descending"]
                             ]));
@@ -324,12 +324,12 @@ var History = Module("history", {
     completion: function initCompletion() {
         completion.domain = function (context) {
             context.anchored = false;
-            context.compare = function (a, b) String.localeCompare(a.key, b.key);
+            context.compare = (a, b) => String.localeCompare(a.key, b.key);
             context.keys = { text: util.identity, description: util.identity,
                 key: function (host) host.split(".").reverse().join(".") };
 
             // FIXME: Schema-specific
-            context.generate = function () [
+            context.generate = () => [
                 Array.slice(row.rev_host).reverse().join("").slice(1)
                 for (row in iter(services.history.DBConnection
                                          .createStatement("SELECT DISTINCT rev_host FROM moz_places WHERE rev_host IS NOT NULL;")))

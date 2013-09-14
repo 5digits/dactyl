@@ -108,7 +108,7 @@ var DOM = Class("DOM", {
         }]
     ]),
 
-    matcher: function matcher(sel) function (elem) elem.mozMatchesSelector && elem.mozMatchesSelector(sel),
+    matcher: function matcher(sel) elem => elem.mozMatchesSelector && elem.mozMatchesSelector(sel),
 
     each: function each(fn, self) {
         let obj = self || this.Empty();
@@ -158,11 +158,11 @@ var DOM = Class("DOM", {
     },
 
     find: function find(val) {
-        return this.map(function (elem) elem.querySelectorAll(val));
+        return this.map(elem => elem.querySelectorAll(val));
     },
 
     findAnon: function findAnon(attr, val) {
-        return this.map(function (elem) elem.ownerDocument.getAnonymousElementByAttribute(elem, attr, val));
+        return this.map(elem => elem.ownerDocument.getAnonymousElementByAttribute(elem, attr, val));
     },
 
     filter: function filter(val, self) {
@@ -234,7 +234,7 @@ var DOM = Class("DOM", {
         return false;
     },
 
-    get parent() this.map(function (elem) elem.parentNode, this),
+    get parent() this.map(elem => elem.parentNode, this),
 
     get offsetParent() this.map(function (elem) {
         do {
@@ -245,23 +245,23 @@ var DOM = Class("DOM", {
         while (parent);
     }, this),
 
-    get ancestors() this.all(function (elem) elem.parentNode),
+    get ancestors() this.all(elem => elem.parentNode),
 
-    get children() this.map(function (elem) Array.filter(elem.childNodes,
-                                                         function (e) e instanceof Ci.nsIDOMElement),
+    get children() this.map(elem => Array.filter(elem.childNodes,
+                                                 e => e instanceof Ci.nsIDOMElement),
                             this),
 
-    get contents() this.map(function (elem) elem.childNodes, this),
+    get contents() this.map(elem => elem.childNodes, this),
 
-    get siblings() this.map(function (elem) Array.filter(elem.parentNode.childNodes,
-                                                         function (e) e != elem && e instanceof Ci.nsIDOMElement),
+    get siblings() this.map(elem => Array.filter(elem.parentNode.childNodes,
+                                                 e => e != elem && e instanceof Ci.nsIDOMElement),
                             this),
 
-    get siblingsBefore() this.all(function (elem) elem.previousElementSibling),
-    get siblingsAfter() this.all(function (elem) elem.nextElementSibling),
+    get siblingsBefore() this.all(elem => elem.previousElementSibling),
+    get siblingsAfter() this.all(elem => elem.nextElementSibling),
 
-    get allSiblingsBefore() this.all(function (elem) elem.previousSibling),
-    get allSiblingsAfter() this.all(function (elem) elem.nextSibling),
+    get allSiblingsBefore() this.all(elem => elem.previousSibling),
+    get allSiblingsAfter() this.all(elem => elem.nextSibling),
 
     get class() let (self = this) ({
         toString: function () self[0].className,
@@ -305,7 +305,7 @@ var DOM = Class("DOM", {
         }),
 
         remove: function remove(hl) self.each(function () {
-            this.highlight.list = this.highlight.list.filter(function (h) h != hl);
+            this.highlight.list = this.highlight.list.filter(h => h != hl);
         }),
 
         toggle: function toggle(hl, val, thisObj) self.each(function (elem, i) {
@@ -584,7 +584,7 @@ var DOM = Class("DOM", {
                         ["span", { highlight: "HelpXMLTagStart" },
                             "<", namespaced(elem), " ",
                             template.map(array.iterValues(elem.attributes),
-                                function (attr) [
+                                attr => [
                                     ["span", { highlight: "HelpXMLAttribute" }, namespaced(attr)],
                                     ["span", { highlight: "HelpXMLString" }, attr.value]
                                 ],
@@ -660,9 +660,9 @@ var DOM = Class("DOM", {
 
         return this[0].style[css.property(key)];
     }, {
-        name: function (property) property.replace(/[A-Z]/g, function (m0) "-" + m0.toLowerCase()),
+        name: function (property) property.replace(/[A-Z]/g, m0 => "-" + m0.toLowerCase()),
 
-        property: function (name) name.replace(/-(.)/g, function (m0, m1) m1.toUpperCase())
+        property: function (name) name.replace(/-(.)/g, (m0, m1) => m1.toUpperCase())
     }),
 
     append: function append(val) {
@@ -738,7 +738,7 @@ var DOM = Class("DOM", {
     },
 
     clone: function clone(deep)
-        this.map(function (elem) elem.cloneNode(deep)),
+        this.map(elem => elem.cloneNode(deep)),
 
     toggle: function toggle(val, self) {
         if (callable(val))
@@ -749,7 +749,7 @@ var DOM = Class("DOM", {
         if (arguments.length)
             return this[val ? "show" : "hide"]();
 
-        let hidden = this.map(function (elem) elem.style.display == "none");
+        let hidden = this.map(elem => elem.style.display == "none");
         return this.each(function (elem, i) {
             this[hidden[i] ? "show" : "hide"]();
         });
@@ -784,7 +784,7 @@ var DOM = Class("DOM", {
 
         let [fn, self] = args;
         if (!callable(fn))
-            fn = function () args[0];
+            fn = () => args[0];
 
         return this.each(function (elem, i) {
             set.call(this, elem, fn.call(self || this, elem, i));
@@ -793,19 +793,19 @@ var DOM = Class("DOM", {
 
     html: function html(txt, self) {
         return this.getSet(arguments,
-                           function (elem) elem.innerHTML,
+                           elem => elem.innerHTML,
                            util.wrapCallback(function (elem, val) { elem.innerHTML = val; }));
     },
 
     text: function text(txt, self) {
         return this.getSet(arguments,
-                           function (elem) elem.textContent,
+                           elem => elem.textContent,
                            function (elem, val) { elem.textContent = val; });
     },
 
     val: function val(txt) {
         return this.getSet(arguments,
-                           function (elem) elem.value,
+                           elem => elem.value,
                            function (elem, val) { elem.value = val == null ? "" : val; });
     },
 
@@ -985,7 +985,7 @@ var DOM = Class("DOM", {
             update(params, this.constructor.defaults[type],
                    iter.toObject([k, opts[k]] for (k in opts) if (k in params)));
 
-            evt["init" + t + "Event"].apply(evt, args.map(function (k) params[k]));
+            evt["init" + t + "Event"].apply(evt, args.map(k => params[k]));
             return evt;
         }
     }, {
@@ -1040,7 +1040,7 @@ var DOM = Class("DOM", {
                 this.code_nativeKey[v] = k.substr(4);
 
                 k = k.substr(7).toLowerCase();
-                let names = [k.replace(/(^|_)(.)/g, function (m, n1, n2) n2.toUpperCase())
+                let names = [k.replace(/(^|_)(.)/g, (m, n1, n2) => n2.toUpperCase())
                               .replace(/^NUMPAD/, "k")];
 
                 if (names[0].length == 1)
@@ -1127,7 +1127,7 @@ var DOM = Class("DOM", {
          */
         parse: function parse(input, unknownOk) {
             if (isArray(input))
-                return array.flatten(input.map(function (k) this.parse(k, unknownOk), this));
+                return array.flatten(input.map(k => this.parse(k, unknownOk)));
 
             if (arguments.length === 1)
                 unknownOk = true;
@@ -1214,7 +1214,7 @@ var DOM = Class("DOM", {
          */
         stringify: function stringify(event) {
             if (isArray(event))
-                return event.map(function (e) this.stringify(e), this).join("");
+                return event.map(e => this.stringify(e)).join("");
 
             if (event.dactylString)
                 return event.dactylString;
@@ -1338,7 +1338,7 @@ var DOM = Class("DOM", {
             submit: { cancelable: true }
         },
 
-        types: Class.Memoize(function () iter(
+        types: Class.Memoize(() => iter(
             {
                 Mouse: "click mousedown mouseout mouseover mouseup dblclick " +
                        "hover " +
@@ -1349,7 +1349,7 @@ var DOM = Class("DOM", {
                        "load unload pageshow pagehide DOMContentLoaded " +
                        "resize scroll"
             }
-        ).map(function ([k, v]) v.split(" ").map(function (v) [v, k]))
+        ).map(([k, v]) => v.split(" ").map(v => [v, k]))
          .flatten()
          .toObject()),
 
@@ -1393,12 +1393,12 @@ var DOM = Class("DOM", {
                 })
     }),
 
-    createContents: Class.Memoize(function () services.has("dactyl") && services.dactyl.createContents
-        || function (elem) {}),
+    createContents: Class.Memoize(() => services.has("dactyl") && services.dactyl.createContents
+        || (elem => {})),
 
-    isScrollable: Class.Memoize(function () services.has("dactyl") && services.dactyl.getScrollable
-        ? function (elem, dir) services.dactyl.getScrollable(elem) & (dir ? services.dactyl["DIRECTION_" + dir.toUpperCase()] : ~0)
-        : function (elem, dir) true),
+    isScrollable: Class.Memoize(() => services.has("dactyl") && services.dactyl.getScrollable
+        ? (elem, dir) => services.dactyl.getScrollable(elem) & (dir ? services.dactyl["DIRECTION_" + dir.toUpperCase()] : ~0)
+        : (elem, dir) => true),
 
     isJSONXML: function isJSONXML(val) isArray(val) && isinstance(val[0], ["String", "Array", "XML", DOM.DOMString])
                                     || isObject(val) && "toDOM" in val,
@@ -1524,7 +1524,7 @@ var DOM = Class("DOM", {
     escapeHTML: function escapeHTML(str, simple) {
         let map = { "'": "&apos;", '"': "&quot;", "%": "&#x25;", "&": "&amp;", "<": "&lt;", ">": "&gt;" };
         let regexp = simple ? /[<>]/g : /['"&<>]/g;
-        return str.replace(regexp, function (m) map[m]);
+        return str.replace(regexp, m => map[m]);
     },
 
     /**
@@ -1664,13 +1664,13 @@ var DOM = Class("DOM", {
         function isFragment(args) !isString(args[0]) || args.length == 0 || args[0] === "";
 
         function hasString(args) {
-            return args.some(function (a) isString(a) || isFragment(a) && hasString(a));
+            return args.some(a => isString(a) || isFragment(a) && hasString(a));
         }
 
         function isStrings(args) {
             if (!isArray(args))
                 return util.dump("ARGS: " + {}.toString.call(args) + " " + args), false;
-            return args.every(function (a) isinstance(a, ["String", DOM.DOMString]) || isFragment(a) && isStrings(a));
+            return args.every(a => isinstance(a, ["String", DOM.DOMString]) || isFragment(a) && isStrings(a));
         }
 
         function tag(args, namespaces, indent) {
@@ -1782,7 +1782,7 @@ var DOM = Class("DOM", {
                 res.push(">");
 
                 if (isStrings(args))
-                    res.push(args.map(function (e) tag(e, namespaces, "")).join(""),
+                    res.push(args.map(e => tag(e, namespaces, "")).join(""),
                              "</", name, ">");
                 else {
                     let contents = [];
@@ -1840,7 +1840,7 @@ var DOM = Class("DOM", {
                 let resolver = XPath.resolver;
                 if (namespaces) {
                     namespaces = update({}, DOM.namespaces, namespaces);
-                    resolver = function (prefix) namespaces[prefix] || null;
+                    resolver = prefix => namespaces[prefix] || null;
                 }
 
                 let result = doc.evaluate(expression, elem,
@@ -1878,8 +1878,8 @@ var DOM = Class("DOM", {
      */
     makeXPath: function makeXPath(nodes) {
         return array(nodes).map(util.debrace).flatten()
-                           .map(function (node) /^[a-z]+:/.test(node) ? node : [node, "xhtml:" + node]).flatten()
-                           .map(function (node) "//" + node).join(" | ");
+                           .map(node => /^[a-z]+:/.test(node) ? node : [node, "xhtml:" + node]).flatten()
+                           .map(node => "//" + node).join(" | ");
     },
 
     namespaces: {
@@ -1891,11 +1891,11 @@ var DOM = Class("DOM", {
     },
 
     namespaceNames: Class.Memoize(function ()
-        iter(this.namespaces).map(function ([k, v]) [v, k]).toObject()),
+        iter(this.namespaces).map(([k, v]) => [v, k]).toObject()),
 });
 
 Object.keys(DOM.Event.types).forEach(function (event) {
-    let name = event.replace(/-(.)/g, function (m, m1) m1.toUpperCase());
+    let name = event.replace(/-(.)/g, (m, m1) => m1.toUpperCase());
     if (!Set.has(DOM.prototype, name))
         DOM.prototype[name] =
             function _event(arg, extra) {

@@ -199,7 +199,7 @@ var CommandWidgets = Class("CommandWidgets", {
                             highlight.highlightNode(elem,
                                 (val[0] != null ? val[0] : obj.defaultGroup)
                                     .split(/\s/).filter(util.identity)
-                                    .map(function (g) g + " " + nodeSet.group + g)
+                                    .map(g => g + " " + nodeSet.group + g)
                                     .join(" "));
                             elem.value = val[1];
                             if (obj.onChange)
@@ -217,7 +217,7 @@ var CommandWidgets = Class("CommandWidgets", {
                 let elem = nodeSet[obj.name];
                 if (elem)
                     highlight.highlightNode(elem, obj.defaultGroup.split(/\s/)
-                                                     .map(function (g) g + " " + nodeSet.group + g).join(" "));
+                                                     .map(g => g + " " + nodeSet.group + g).join(" "));
             });
         }
     },
@@ -253,7 +253,7 @@ var CommandWidgets = Class("CommandWidgets", {
         // choose which element to select.
         function check(node) {
             if (DOM(node).style.display === "-moz-stack") {
-                let nodes = Array.filter(node.children, function (n) !n.collapsed && n.boxObject.height);
+                let nodes = Array.filter(node.children, n => !n.collapsed && n.boxObject.height);
                 nodes.forEach(function (node, i) { node.style.opacity = (i == nodes.length - 1) ? "" : "0" });
             }
             Array.forEach(node.children, check);
@@ -313,9 +313,9 @@ var CommandWidgets = Class("CommandWidgets", {
         highlight.highlightNode(elem.contentDocument.body, "MOW");
     }), true),
 
-    multilineInput: Class.Memoize(function () document.getElementById("dactyl-multiline-input")),
+    multilineInput: Class.Memoize(() => document.getElementById("dactyl-multiline-input")),
 
-    mowContainer: Class.Memoize(function () document.getElementById("dactyl-multiline-output-container"))
+    mowContainer: Class.Memoize(() => document.getElementById("dactyl-multiline-output-container"))
 }, {
     getEditor: function getEditor(elem) {
         elem.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
@@ -612,7 +612,7 @@ var CommandLine = Module("commandline", {
         }, this);
     },
 
-    widgets: Class.Memoize(function () CommandWidgets()),
+    widgets: Class.Memoize(() => CommandWidgets()),
 
     runSilently: function runSilently(func, self) {
         this.withSavedValues(["silent"], function () {
@@ -871,7 +871,7 @@ var CommandLine = Module("commandline", {
     readHeredoc: function readHeredoc(end) {
         let args;
         commandline.inputMultiline(end, function (res) { args = res; });
-        util.waitFor(function () args !== undefined);
+        util.waitFor(() => args !== undefined);
         return args;
     },
 
@@ -916,7 +916,7 @@ var CommandLine = Module("commandline", {
 
     events: update(
         iter(CommandMode.prototype.events).map(
-            function ([event, handler]) [
+            ([event, handler]) => [
                 event, function (event) {
                     if (this.commandMode)
                         handler.call(this.commandSession, event);
@@ -967,7 +967,7 @@ var CommandLine = Module("commandline", {
         this.savingOutput = true;
         dactyl.trapErrors.apply(dactyl, [fn, self].concat(args));
         this.savingOutput = false;
-        return output.map(function (elem) elem instanceof Node ? DOM.stringify(elem) : elem)
+        return output.map(elem => elem instanceof Node ? DOM.stringify(elem) : elem)
                      .join("\n");
     }
 }, {
@@ -1008,7 +1008,7 @@ var CommandLine = Module("commandline", {
             if (privateData == "never-save")
                 return;
 
-            this.store = this.store.filter(function (line) (line.value || line) != str);
+            this.store = this.store.filter(line => (line.value || line) != str);
             dactyl.trapErrors(function () {
                 this.store.push({ value: str, timestamp: Date.now() * 1000, privateData: privateData });
             }, this);
@@ -1162,7 +1162,7 @@ var CommandLine = Module("commandline", {
         },
 
         get activeContexts() this.context.contextList
-                                 .filter(function (c) c.items.length || c.incomplete),
+                                 .filter(c => c.items.length || c.incomplete),
 
         /**
          * Returns the current completion string relative to the
@@ -1693,7 +1693,7 @@ var CommandLine = Module("commandline", {
                 }
                 else if (commandline._messageHistory.length > 1) {
                     commandline.commandOutput(
-                        template.map(commandline._messageHistory.messages, function (message)
+                        template.map(commandline._messageHistory.messages, message =>
                            ["div", { highlight: message.highlight + " Message" },
                                message.message]));
                 }
@@ -1708,7 +1708,7 @@ var CommandLine = Module("commandline", {
         commands.add(["sil[ent]"],
             "Run a command silently",
             function (args) {
-                commandline.runSilently(function () commands.execute(args[0] || "", null, true));
+                commandline.runSilently(() => commands.execute(args[0] || "", null, true));
             }, {
                 completer: function (context) completion.ex(context),
                 literal: 0,
@@ -1759,7 +1759,7 @@ var CommandLine = Module("commandline", {
                     text = text.substring(1, index);
                     modes.pop();
 
-                    return function () self.callback.call(commandline, text);
+                    return () => self.callback.call(commandline, text);
                 }
                 return Events.PASS;
             });
@@ -1893,10 +1893,10 @@ var CommandLine = Module("commandline", {
                 let store = commandline._store;
                 for (let [k, v] in store) {
                     if (k == "command")
-                        store.set(k, v.filter(function (item)
+                        store.set(k, v.filter(item =>
                             !(timespan.contains(item.timestamp) && (!host || commands.hasDomain(item.value, host)))));
                     else if (!host)
-                        store.set(k, v.filter(function (item) !timespan.contains(item.timestamp)));
+                        store.set(k, v.filter(item => !timespan.contains(item.timestamp)));
                 }
             }
         });
@@ -1904,20 +1904,20 @@ var CommandLine = Module("commandline", {
         sanitizer.addItem("history", {
             action: function (timespan, host) {
                 commandline._store.set("command",
-                    commandline._store.get("command", []).filter(function (item)
+                    commandline._store.get("command", []).filter(item =>
                         !(timespan.contains(item.timestamp) && (host ? commands.hasDomain(item.value, host)
                                                                      : item.privateData))));
 
-                commandline._messageHistory.filter(function (item) !timespan.contains(item.timestamp * 1000) ||
+                commandline._messageHistory.filter(item => !timespan.contains(item.timestamp * 1000) ||
                     !item.domains && !item.privateData ||
-                    host && (!item.domains || !item.domains.some(function (d) util.isSubdomain(d, host))));
+                    host && (!item.domains || !item.domains.some(d => util.isSubdomain(d, host))));
             }
         });
         sanitizer.addItem("messages", {
             description: "Saved :messages",
             action: function (timespan, host) {
-                commandline._messageHistory.filter(function (item) !timespan.contains(item.timestamp * 1000) ||
-                    host && (!item.domains || !item.domains.some(function (d) util.isSubdomain(d, host))));
+                commandline._messageHistory.filter(item => !timespan.contains(item.timestamp * 1000) ||
+                    host && (!item.domains || !item.domains.some(d => util.isSubdomain(d, host))));
             }
         });
     }
@@ -1965,18 +1965,18 @@ var ItemList = Class("ItemList", {
                 ["div", { key: "completions" }]],
 
             ["div", { highlight: "Completions" },
-                template.map(util.range(0, options["maxitems"] * 2), function (i)
+                template.map(util.range(0, options["maxitems"] * 2), i =>
                     ["div", { highlight: "CompItem NonText" },
                         "~"])]],
 
     get itemCount() this.context.contextList
-                        .reduce(function (acc, ctxt) acc + ctxt.items.length, 0),
+                        .reduce((acc, ctxt) => acc + ctxt.items.length, 0),
 
     get visible() !this.container.collapsed,
     set visible(val) this.container.collapsed = !val,
 
     get activeGroups() this.context.contextList
-                           .filter(function (c) c.items.length || c.message || c.incomplete)
+                           .filter(c => c.items.length || c.message || c.incomplete)
                            .map(this.getGroup, this),
 
     get selected() let (g = this.selectedGroup) g && g.selectedIdx != null
@@ -2026,7 +2026,7 @@ var ItemList = Class("ItemList", {
         if (start < 0 || start >= this.itemCount)
             return null;
 
-        group = array.nth(groups, function (g) let (i = start - g.offsets.start) i >= 0 && i < g.itemCount, 0);
+        group = array.nth(groups, g => let (i = start - g.offsets.start) i >= 0 && i < g.itemCount, 0);
         return [group.context, start - group.offsets.start];
     },
 
@@ -2144,8 +2144,8 @@ var ItemList = Class("ItemList", {
         // We need to collect all of the rescrolling functions in
         // one go, as the height calculation that they need to do
         // would force a reflow after each DOM modification.
-        this.activeGroups.filter(function (g) !g.collapsed)
-            .map(function (g) g.rescrollFunc)
+        this.activeGroups.filter(g => !g.collapsed)
+            .map(g => g.rescrollFunc)
             .forEach(call);
 
         if (!this.selected)

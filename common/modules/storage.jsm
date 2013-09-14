@@ -27,8 +27,8 @@ var StoreBase = Class("StoreBase", {
         this._load = load;
         this._options = options;
 
-        this.__defineGetter__("store", function () store);
-        this.__defineGetter__("name", function () name);
+        this.__defineGetter__("store", () => store);
+        this.__defineGetter__("name", () => name);
         for (let [k, v] in Iterator(options))
             if (this.OPTIONS.indexOf(k) >= 0)
                 this[k] = v;
@@ -224,7 +224,7 @@ var Storage = Module("Storage", {
             delete this.dactylSession[key];
     },
 
-    infoPath: Class.Memoize(function ()
+    infoPath: Class.Memoize(() =>
         File(IO.runtimePath.replace(/,.*/, ""))
             .child("info").child(config.profileName)),
 
@@ -292,7 +292,7 @@ var Storage = Module("Storage", {
         if (!(key in this.observers))
             this.observers[key] = [];
 
-        if (!this.observers[key].some(function (o) o.callback.get() == callback))
+        if (!this.observers[key].some(o => o.callback.get() == callback))
             this.observers[key].push({ ref: ref && Cu.getWeakReference(ref), callback: callbackRef });
     },
 
@@ -302,7 +302,7 @@ var Storage = Module("Storage", {
         if (!(key in this.observers))
             return;
 
-        this.observers[key] = this.observers[key].filter(function (elem) elem.callback.get() != callback);
+        this.observers[key] = this.observers[key].filter(elem => elem.callback.get() != callback);
         if (this.observers[key].length == 0)
             delete obsevers[key];
     },
@@ -427,7 +427,7 @@ var File = Class("File", {
         return this;
     },
 
-    charset: Class.Memoize(function () File.defaultEncoding),
+    charset: Class.Memoize(() => File.defaultEncoding),
 
     /**
      * @property {nsIFileURL} Returns the nsIFileURL object for this file.
@@ -495,7 +495,7 @@ var File = Class("File", {
 
         let array = [e for (e in this.iterDirectory())];
         if (sort)
-            array.sort(function (a, b) b.isDirectory() - a.isDirectory() || String.localeCompare(a.path, b.path));
+            array.sort((a, b) => b.isDirectory() - a.isDirectory() || String.localeCompare(a.path, b.path));
         return array;
     },
 
@@ -695,7 +695,7 @@ var File = Class("File", {
         function expand(path) path.replace(
             !win32 ? /\$(\w+)\b|\${(\w+)}/g
                    : /\$(\w+)\b|\${(\w+)}|%(\w+)%/g,
-            function (m, n1, n2, n3) getenv(n1 || n2 || n3) || m
+            (m, n1, n2, n3) => getenv(n1 || n2 || n3) || m
         );
         path = expand(path);
 

@@ -281,7 +281,7 @@ var DownloadList = Class("DownloadList",
                 return;
 
             this.downloads[id] = download;
-            let index = values(this.downloads).sort(function (a, b) a.compare(b))
+            let index = values(this.downloads).sort((a, b) => a.compare(b))
                                               .indexOf(download);
 
             this.nodes.list.insertBefore(download.nodes.row,
@@ -301,7 +301,7 @@ var DownloadList = Class("DownloadList",
     },
 
     allowedCommands: Class.Memoize(function () let (self = this) ({
-        get clear() values(self.downloads).some(function (dl) dl.allowedCommands.remove)
+        get clear() values(self.downloads).some(dl => dl.allowedCommands.remove)
     })),
 
     commands: {
@@ -311,7 +311,7 @@ var DownloadList = Class("DownloadList",
     },
 
     sort: function sort() {
-        let list = values(this.downloads).sort(function (a, b) a.compare(b));
+        let list = values(this.downloads).sort((a, b) => a.compare(b));
 
         for (let [i, download] in iter(list))
             if (this.nodes.list.childNodes[i + 1] != download.nodes.row)
@@ -319,7 +319,7 @@ var DownloadList = Class("DownloadList",
                                              this.nodes.list.childNodes[i + 1]);
     },
 
-    shouldSort: function shouldSort() Array.some(arguments, function (val) this.sortOrder.some(function (v) v.substr(1) == val), this),
+    shouldSort: function shouldSort() Array.some(arguments, val => this.sortOrder.some(v => v.substr(1) == val)),
 
     update: function update() {
         for (let node in values(this.nodes))
@@ -336,11 +336,11 @@ var DownloadList = Class("DownloadList",
 
     updateProgress: function updateProgress() {
         let downloads = values(this.downloads).toArray();
-        let active    = downloads.filter(function (d) d.alive);
+        let active    = downloads.filter(d => d.alive);
 
         let self = Object.create(this);
         for (let prop in values(["amountTransferred", "size", "speed", "timeRemaining"]))
-            this[prop] = active.reduce(function (acc, dl) dl[prop] + acc, 0);
+            this[prop] = active.reduce((acc, dl) => dl[prop] + acc, 0);
 
         Download.prototype.updateProgress.call(self);
 
@@ -489,21 +489,21 @@ var Downloads = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
                 },
 
                 completer: function (context, extra) {
-                    let seen = Set.has(Set(extra.values.map(function (val) val.substr(1))));
+                    let seen = Set.has(Set(extra.values.map(val => val.substr(1))));
 
-                    context.completions = iter(this.values).filter(function ([k, v]) !seen(k))
-                                                           .map(function ([k, v]) [["+" + k, [v, " (", _("sort.ascending"), ")"].join("")],
-                                                                                   ["-" + k, [v, " (", _("sort.descending"), ")"].join("")]])
+                    context.completions = iter(this.values).filter(([k, v]) => !seen(k))
+                                                           .map(([k, v]) => [["+" + k, [v, " (", _("sort.ascending"), ")"].join("")],
+                                                                             ["-" + k, [v, " (", _("sort.descending"), ")"].join("")]])
                                                            .flatten().array;
                 },
 
-                has: function () Array.some(arguments, function (val) this.value.some(function (v) v.substr(1) == val)),
+                has: function () Array.some(arguments, function (val) this.value.some(v => v.substr(1) == val)),
 
                 validator: function (value) {
                     let seen = {};
-                    return value.every(function (val) /^[+-]/.test(val) && Set.has(this.values, val.substr(1))
-                                                                        && !Set.add(seen, val.substr(1)),
-                                       this) && value.length;
+                    return value.every(val => /^[+-]/.test(val) && Set.has(this.values, val.substr(1))
+                                                                && !Set.add(seen, val.substr(1))
+                                      ) && value.length;
                 }
             });
     }

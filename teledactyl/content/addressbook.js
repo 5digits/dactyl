@@ -73,7 +73,7 @@ var Addressbook = Module("addressbook", {
             // Now we have to create a new message
             let args = {};
             args.to = addresses.map(
-                function (address) "\"" + address[0].replace(/"/g, "") + " <" + address[1] + ">\""
+                address => "\"" + address[0].replace(/"/g, "") + " <" + address[1] + ">\""
             ).join(", ");
 
             mail.composeNewMail(args);

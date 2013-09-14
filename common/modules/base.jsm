@@ -20,13 +20,13 @@ let { __lookupGetter__, __lookupSetter__, __defineGetter__, __defineSetter__,
 if (typeof XPCSafeJSObjectWrapper === "undefined")
     this.XPCSafeJSObjectWrapper = XPCNativeWrapper;
 
-let getGlobalForObject = Cu.getGlobalForObject || function (obj) obj.__parent__;
+let getGlobalForObject = Cu.getGlobalForObject || (obj => obj.__parent__);
 
 function require(module, target) JSMLoader.load(module, target);
 
 function lazyRequire(module, names, target) {
     for each (let name in names)
-        memoize(target || this, name, function (name) require(module)[name]);
+        memoize(target || this, name, name => require(module)[name]);
 }
 
 let jsmodules = { lazyRequire: lazyRequire };
@@ -167,7 +167,7 @@ function literal(/* comment */) {
     // Later...
     return cache.get(key, function () {
         let source = cache.get("literal:" + file,
-                               function () util.httpGet(file).responseText);
+                               () => util.httpGet(file).responseText);
 
         let match = RegExp("(?:.*\\n){" + (caller.lineNumber - 1) + "}" +
                            ".*literal\\(/\\*([^]*?)\\*/\\)").exec(source);
@@ -271,7 +271,7 @@ function iterOwnProperties(obj) {
 
 function deprecated(alternative, fn) {
     if (isObject(fn))
-        return Class.Property(iter(fn).map(function ([k, v]) [k, callable(v) ? deprecated(alternative, v) : v])
+        return Class.Property(iter(fn).map(([k, v]) => [k, callable(v) ? deprecated(alternative, v) : v])
                                       .toObject());
 
     let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
@@ -441,7 +441,7 @@ function curry(fn, length, self, acc) {
         return fn;
 
     // Close over function with 'this'
-    function close(self, fn) function () fn.apply(self, arguments);
+    function close(self, fn) () => fn.apply(self, arguments);
 
     if (acc == null)
         acc = [];
@@ -858,7 +858,7 @@ Class.Memoize = function Memoize(getter, wait)
                     Object.defineProperty(obj, key,  {
                         configurable: true, enumerable: false,
                         get: function get() {
-                            util.waitFor(function () done);
+                            util.waitFor(() => done);
                             return this[key];
                         }
                     });
@@ -924,19 +924,19 @@ Class.prototype = {
     set instance(val) Class.replaceProperty(this, "instance", val),
 
     withSavedValues: function withSavedValues(names, callback, self) {
-        let vals = names.map(function (name) this[name], this);
+        let vals = names.map(name => this[name]);
         try {
             return callback.call(self || this);
         }
         finally {
-            names.forEach(function (name, i) this[name] = vals[i], this);
+            names.forEach((name, i) => this[name] = vals[i]);
         }
     },
 
     toString: function C_toString() {
         if (this.toStringParams)
-            var params = "(" + this.toStringParams.map(function (m) isArray(m)  ? "[" + m + "]" :
-                                                                    isString(m) ? m.quote() : String(m))
+            var params = "(" + this.toStringParams.map(m => isArray(m)  ? "[" + m + "]" :
+                                                            isString(m) ? m.quote() : String(m))
                                    .join(", ") + ")";
         return "[instance " + this.constructor.className + (params || "") + "]";
     },
@@ -1079,7 +1079,7 @@ function XPCOMShim(interfaces) {
         getHelperForLanguage: function () null,
         getInterfaces: function (count) { count.value = 0; }
     });
-    return (interfaces || []).reduce(function (shim, iface) shim.QueryInterface(Ci[iface]),
+    return (interfaces || []).reduce((shim, iface) => shim.QueryInterface(Ci[iface]),
                                      ip.data);
 };
 let stub = Class.Property({
@@ -1172,7 +1172,7 @@ Module.INIT = {
             module.isLocalModule = true;
 
             modules.jsmodules[this.constructor.className] = module;
-            locals.reverse().forEach(function (fn, i) update(objs[i], fn.apply(module, args)));
+            locals.reverse().forEach((fn, i) => update(objs[i], fn.apply(module, args)));
 
             memoize(module, "closure", Class.makeClosure);
             module.instance = module;
@@ -1205,7 +1205,7 @@ function Struct(...args) {
 
     const Struct = Class(className || "Struct", StructBase, {
         length: args.length,
-        members: array.toObject(args.map(function (v, k) [v, k]))
+        members: array.toObject(args.map((v, k) => [v, k]))
     });
     args.forEach(function (name, i) {
         Struct.prototype.__defineGetter__(name, function () this[i]);
@@ -1384,7 +1384,7 @@ function octal(decimal) parseInt(decimal, 8);
  */
 function iter(obj, iface) {
     if (arguments.length == 2 && iface instanceof Ci.nsIJSIID)
-        return iter(obj).map(function (item) item.QueryInterface(iface));
+        return iter(obj).map(item => item.QueryInterface(iface));
 
     let args = arguments;
     let res = Iterator(obj);
@@ -1521,7 +1521,7 @@ update(iter, {
      */
     nth: function nth(iter, pred, n, self) {
         if (typeof pred === "number")
-            [pred, n] = [function () true, pred]; // Hack.
+            [pred, n] = [() => true, pred]; // Hack.
 
         for (let elem in iter)
             if (pred.call(self, elem) && n-- === 0)
@@ -1629,7 +1629,7 @@ var array = Class("array", Array, {
      * @param {Array} ary
      * @returns {Array}
      */
-    compact: function compact(ary) ary.filter(function (item) item != null),
+    compact: function compact(ary) ary.filter(item => item != null),
 
     /**
      * Returns true if each element of ary1 is equal to the
@@ -1640,7 +1640,7 @@ var array = Class("array", Array, {
      * @returns {boolean}
      */
     equals: function (ary1, ary2)
-        ary1.length === ary2.length && Array.every(ary1, function (e, i) e === ary2[i]),
+        ary1.length === ary2.length && Array.every(ary1, (e, i) => e === ary2[i]),
 
     /**
      * Flattens an array, such that all elements of the array are

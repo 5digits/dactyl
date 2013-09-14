@@ -51,7 +51,7 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
      */
     get: function (event, filter) {
         filter = filter && String(Group.compileFilter(filter));
-        return this._store.filter(function (autoCmd) autoCmd.match(event, filter));
+        return this._store.filter(cmd => cmd.match(event, filter));
     },
 
     /**
@@ -62,7 +62,7 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
      */
     remove: function (event, filter) {
         filter = filter && String(Group.compileFilter(filter));
-        this._store = this._store.filter(function (autoCmd) !autoCmd.match(event, filter));
+        this._store = this._store.filter(cmd => !cmd.match(event, filter));
     },
 });
 
@@ -73,7 +73,7 @@ var AutoCommands = Module("autocommands", {
     init: function () {
     },
 
-    get activeHives() contexts.allGroups.autocmd.filter(function (h) h._store.length),
+    get activeHives() contexts.allGroups.autocmd.filter(h => h._store.length),
 
     add: deprecated("group.autocmd.add", { get: function add() autocommands.user.closure.add }),
     get: deprecated("group.autocmd.get", { get: function get() autocommands.user.closure.get }),
@@ -107,15 +107,15 @@ var AutoCommands = Module("autocommands", {
             ["table", {},
                 ["tr", { highlight: "Title" },
                     ["td", { colspan: "3" }, "----- Auto Commands -----"]],
-                hives.map(function (hive) [
+                hives.map(hive => [
                     ["tr", {},
                         ["td", { colspan: "3" },
                             ["span", { highlight: "Title" }, hive.name],
                             " ", hive.filter.toJSONXML(modules)]],
                     ["tr", { style: "height: .5ex;" }],
-                    iter(cmds(hive)).map(function ([event, items]) [
+                    iter(cmds(hive)).map(([event, items]) => [
                         ["tr", { style: "height: .5ex;" }],
-                        items.map(function (item, i)
+                        items.map((item, i) =>
                             ["tr", {},
                                 ["td", { highlight: "Title", style: "padding-left: 1em; padding-right: 1em;" },
                                     i == 0 ? event : ""],
@@ -186,14 +186,14 @@ var AutoCommands = Module("autocommands", {
                     validEvents.push("*");
 
                     events = Option.parse.stringlist(event);
-                    dactyl.assert(events.every(function (event) validEvents.indexOf(event.toLowerCase()) >= 0),
+                    dactyl.assert(events.every(e => validEvents.indexOf(e.toLowerCase()) >= 0),
                                   _("autocmd.noGroup", event));
                 }
 
                 if (args.length > 2) { // add new command, possibly removing all others with the same event/pattern
                     if (args.bang)
                         args["-group"].remove(event, filter);
-                    cmd = contexts.bindMacro(args, "-ex", function (params) params);
+                    cmd = contexts.bindMacro(args, "-ex", params => params);
                     args["-group"].add(events, filter, cmd);
                 }
                 else {
@@ -254,7 +254,7 @@ var AutoCommands = Module("autocommands", {
                                   _("autocmd.cantExecuteAll"));
                     dactyl.assert(validEvents.indexOf(event) >= 0,
                                   _("autocmd.noGroup", args));
-                    dactyl.assert(autocommands.get(event).some(function (c) c.filter(uri)),
+                    dactyl.assert(autocommands.get(event).some(c => c.filter(uri)),
                                   _("autocmd.noMatching"));
 
                     if (this.name == "doautoall" && dactyl.has("tabs")) {
@@ -283,7 +283,7 @@ var AutoCommands = Module("autocommands", {
         };
     },
     javascript: function initJavascript() {
-        JavaScript.setCompleter(AutoCmdHive.prototype.get, [function () Iterator(config.autocommands)]);
+        JavaScript.setCompleter(AutoCmdHive.prototype.get, [() => Iterator(config.autocommands)]);
     },
     options: function initOptions() {
         options.add(["eventignore", "ei"],

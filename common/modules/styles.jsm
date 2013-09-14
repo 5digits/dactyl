@@ -63,7 +63,7 @@ update(Sheet.prototype, {
     match: function (uri) {
         if (isString(uri))
             uri = util.newURI(uri);
-        return this.sites.some(function (site) Styles.matchFilter(site, uri));
+        return this.sites.some(site => Styles.matchFilter(site, uri));
     },
 
     get fullCSS() {
@@ -74,7 +74,7 @@ update(Sheet.prototype, {
         if (filter[0] == "*")
             return preamble + css;
 
-        let selectors = filter.map(function (part)
+        let selectors = filter.map(part =>
                                     !/^(?:[a-z-]+[:*]|[a-z-.]+$)/i.test(part) ? "regexp(" + Styles.quote(".*(?:" + part + ").*") + ")" :
                                        (/[*]$/.test(part)   ? "url-prefix" :
                                         /[\/:]/.test(part)  ? "url"
@@ -102,10 +102,10 @@ var Hive = Class("Hive", {
         this.dropRef(null);
     },
     dropRef: function (obj) {
-        this.refs = this.refs.filter(function (ref) ref.get() && ref.get() !== obj);
+        this.refs = this.refs.filter(ref => ref.get() && ref.get() !== obj);
         if (!this.refs.length) {
             this.cleanup();
-            styles.hives = styles.hives.filter(function (h) h !== this, this);
+            styles.hives = styles.hives.filter(h => h !== this);
         }
     },
 
@@ -116,7 +116,7 @@ var Hive = Class("Hive", {
 
     __iterator__: function () Iterator(this.sheets),
 
-    get sites() array(this.sheets).map(function (s) s.sites).flatten().uniq().array,
+    get sites() array(this.sheets).map(s => s.sites).flatten().uniq().array,
 
     /**
      * Add a new style sheet.
@@ -182,14 +182,14 @@ var Hive = Class("Hive", {
         // Grossly inefficient.
         let matches = [k for ([k, v] in Iterator(this.sheets))];
         if (index)
-            matches = String(index).split(",").filter(function (i) i in this.sheets, this);
+            matches = String(index).split(",").filter(i => i in this.sheets);
         if (name)
-            matches = matches.filter(function (i) this.sheets[i].name == name, this);
+            matches = matches.filter(i => this.sheets[i].name == name);
         if (css)
-            matches = matches.filter(function (i) this.sheets[i].css == css, this);
+            matches = matches.filter(i => this.sheets[i].css == css);
         if (filter)
-            matches = matches.filter(function (i) this.sheets[i].sites.indexOf(filter) >= 0, this);
-        return matches.map(function (i) this.sheets[i], this);
+            matches = matches.filter(i => this.sheets[i].sites.indexOf(filter) >= 0);
+        return matches.map(i => this.sheets[i]);
     },
 
     /**
@@ -222,7 +222,7 @@ var Hive = Class("Hive", {
 
         for (let [, sheet] in Iterator(matches.reverse())) {
             if (filter) {
-                let sites = sheet.sites.filter(function (f) f != filter);
+                let sites = sheet.sites.filter(f => f != filter);
                 if (sites.length) {
                     sheet.sites = sites;
                     continue;
@@ -233,7 +233,7 @@ var Hive = Class("Hive", {
                 delete this.names[sheet.name];
             delete styles.allSheets[sheet.id];
         }
-        this.sheets = this.sheets.filter(function (s) matches.indexOf(s) == -1);
+        this.sheets = this.sheets.filter(s => matches.indexOf(s) == -1);
         return matches.length;
     },
 });
@@ -273,7 +273,7 @@ var Styles = Module("Styles", {
     },
 
     addHive: function addHive(name, ref, persist) {
-        let hive = array.nth(this.hives, function (h) h.name === name, 0);
+        let hive = array.nth(this.hives, h => h.name === name, 0);
         if (!hive) {
             hive = Hive(name, persist);
             this.hives.push(hive);
@@ -304,13 +304,13 @@ var Styles = Module("Styles", {
     list: function list(content, sites, name, hives) {
         const { commandline, dactyl } = this.modules;
 
-        hives = hives || styles.hives.filter(function (h) h.modifiable && h.sheets.length);
+        hives = hives || styles.hives.filter(h => h.modifiable && h.sheets.length);
 
         function sheets(group)
             group.sheets.slice()
-                 .filter(function (sheet) (!name || sheet.name === name) &&
-                                          (!sites || sites.every(function (s) sheet.sites.indexOf(s) >= 0)))
-                 .sort(function (a, b) a.name && b.name ? String.localeCompare(a.name, b.name)
+                 .filter(sheet => (!name || sheet.name === name) &&
+                                  (!sites || sites.every(s => sheet.sites.indexOf(s) >= 0)))
+                 .sort((a, b) => a.name && b.name ? String.localeCompare(a.name, b.name)
                                                         : !!b.name - !!a.name || a.id - b.id);
 
         let uris = util.visibleURIs(content);
@@ -326,9 +326,9 @@ var Styles = Module("Styles", {
                 ["col", { style: "min-width: 1em; text-align: center; color: red; font-weight: bold;" }],
                 ["col", { style: "padding: 0 1em 0 1ex; vertical-align: top;" }],
                 ["col", { style: "padding: 0 1em 0 0; vertical-align: top;" }],
-                template.map(hives, function (hive) let (i = 0) [
+                template.map(hives, hive => let (i = 0) [
                     ["tr", { style: "height: .5ex;" }],
-                    template.map(sheets(hive), function (sheet)
+                    template.map(sheets(hive), sheet =>
                         ["tr", {},
                             ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
                             ["td", {}, sheet.enabled ? "" : UTF8("×")],
@@ -369,7 +369,7 @@ var Styles = Module("Styles", {
                 props[prop.name] = prop.value;
 
         let val = Object.keys(props)[sort ? "sort" : "slice"]()
-                        .map(function (prop) prop + ": " + props[prop] + ";")
+                        .map(prop => prop + ": " + props[prop] + ";")
                         .join(" ");
 
         if (/^\s*(\/\*.*?\*\/)/.exec(src))
@@ -393,13 +393,13 @@ var Styles = Module("Styles", {
 
         let uris = util.visibleURIs(content);
 
-        context.generate = function () values(group.sites);
+        context.generate = () => values(group.sites);
 
         context.keys.text = util.identity;
         context.keys.description = function (site) this.sheets.length + /*L*/" sheet" + (this.sheets.length == 1 ? "" : "s") + ": " +
-            array.compact(this.sheets.map(function (s) s.name)).join(", ");
-        context.keys.sheets = function (site) group.sheets.filter(function (s) s.sites.indexOf(site) >= 0);
-        context.keys.active = function (site) uris.some(Styles.matchFilter(site));
+            array.compact(this.sheets.map(s => s.name)).join(", ");
+        context.keys.sheets = site => group.sheets.filter(s => s.sites.indexOf(site) >= 0);
+        context.keys.active = site => uris.some(Styles.matchFilter(site));
 
         Styles.splitContext(context, "Sites");
     },
@@ -445,7 +445,7 @@ var Styles = Module("Styles", {
             let [name, active] = item;
             context.split(name, null, function (context) {
                 context.title[0] = /*L*/name + " " + (title || "Sheets");
-                context.filters.push(function (item) !!item.active == active);
+                context.filters.push(item => !!item.active == active);
             });
         }
     },
@@ -548,11 +548,11 @@ var Styles = Module("Styles", {
         function sheets(context, args, filter) {
             let uris = util.visibleURIs(window.content);
             context.compare = modules.CompletionContext.Sort.number;
-            context.generate = function () args["-group"].sheets;
-            context.keys.active = function (sheet) uris.some(sheet.closure.match);
-            context.keys.description = function (sheet) [sheet.formatSites(uris), ": ", sheet.css.replace("\n", "\\n")];
+            context.generate = () => args["-group"].sheets;
+            context.keys.active = sheet => uris.some(sheet.closure.match);
+            context.keys.description = sheet => [sheet.formatSites(uris), ": ", sheet.css.replace("\n", "\\n")];
             if (filter)
-                context.filters.push(function ({ item }) filter(item));
+                context.filters.push(({ item }) => filter(item));
             Styles.splitContext(context);
         }
 
@@ -561,8 +561,8 @@ var Styles = Module("Styles", {
             description: "The name of this stylesheet",
             type: modules.CommandOption.STRING,
             completer: function (context, args) {
-                context.keys.text = function (sheet) sheet.name;
-                context.filters.unshift(function ({ item }) item.name);
+                context.keys.text = sheet => sheet.name;
+                context.filters.unshift(({ item }) => item.name);
                 sheets(context, args, filter);
             }
         });
@@ -619,11 +619,11 @@ var Styles = Module("Styles", {
                 ],
                 serialize: function ()
                     array(styles.hives)
-                        .filter(function (hive) hive.persist)
-                        .map(function (hive)
-                             hive.sheets.filter(function (style) style.persist)
-                                 .sort(function (a, b) String.localeCompare(a.name || "", b.name || ""))
-                                 .map(function (style) ({
+                        .filter(hive => hive.persist)
+                        .map(hive =>
+                             hive.sheets.filter(style => style.persist)
+                                 .sort((a, b) => String.localeCompare(a.name || "", b.name || ""))
+                                 .map(style => ({
                                     command: "style",
                                     arguments: [style.sites.join(",")],
                                     literalArg: style.css,
@@ -673,7 +673,7 @@ var Styles = Module("Styles", {
 
                         Styles.completeSite(context, window.content, args["-group"]);
                         if (cmd.filter)
-                            context.filters.push(function ({ sheets }) sheets.some(cmd.filter));
+                            context.filters.push(({ sheets }) => sheets.some(cmd.filter));
                     },
                     literal: 1,
                     options: [
@@ -682,7 +682,7 @@ var Styles = Module("Styles", {
                             names: ["-index", "-i"],
                             type: modules.CommandOption.INT,
                             completer: function (context, args) {
-                                context.keys.text = function (sheet) args["-group"].sheets.indexOf(sheet);
+                                context.keys.text = sheet => args["-group"].sheets.indexOf(sheet);
                                 sheets(context, args, cmd.filter);
                             }
                         },
@@ -728,10 +728,10 @@ var Styles = Module("Styles", {
         };
     },
     javascript: function initJavascript(dactyl, modules, window) {
-        modules.JavaScript.setCompleter(["get", "add", "remove", "find"].map(function (m) Hive.prototype[m]),
+        modules.JavaScript.setCompleter(["get", "add", "remove", "find"].map(m => Hive.prototype[m]),
             [ // Prototype: (name, filter, css, index)
                 function (context, obj, args) this.names,
-                function (context, obj, args) Styles.completeSite(context, window.content),
+                (context, obj, args) => Styles.completeSite(context, window.content),
                 null,
                 function (context, obj, args) this.sheets
             ]);
@@ -756,7 +756,7 @@ var Styles = Module("Styles", {
                         if (match.string)
                             return ["span", { highlight: "String" }, match.string];
                         return template._highlightRegexp(match.wholeMatch, /^(\d+)(em|ex|px|in|cm|mm|pt|pc)?/g,
-                                                         function (m, n, u) [
+                                                         (m, n, u) => [
                                                              ["span", { highlight: "Number" }, n],
                                                              ["span", { highlight: "Object" }, u || ""]
                                                          ]);

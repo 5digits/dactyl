@@ -237,7 +237,7 @@ var Modes = Module("modes", {
         if (this._modeMap[mode.mode] == mode)
             delete this._modeMap[mode.mode];
 
-        this._mainModes = this._mainModes.filter(function (m) m != mode);
+        this._mainModes = this._mainModes.filter(m => m != mode);
     },
 
     dumpStack: function dumpStack() {
@@ -254,11 +254,11 @@ var Modes = Module("modes", {
 
     getCharModes: function getCharModes(chr) (this.modeChars[chr] || []).slice(),
 
-    have: function have(mode) this._modeStack.some(function (m) isinstance(m.main, mode)),
+    have: function have(mode) this._modeStack.some(m => isinstance(m.main, mode)),
 
     matchModes: function matchModes(obj)
-        this._modes.filter(function (mode) Object.keys(obj)
-                                                 .every(function (k) obj[k] == (mode[k] || false))),
+        this._modes.filter(mode => Object.keys(obj)
+                                         .every(k => obj[k] == (mode[k] || false))),
 
     // show the current mode string in the command line
     show: function show() {
@@ -274,7 +274,7 @@ var Modes = Module("modes", {
     remove: function remove(mode, covert) {
         if (covert && this.topOfStack.main != mode) {
             util.assert(mode != this.NORMAL);
-            for (let m; m = array.nth(this.modeStack, function (m) m.main == mode, 0);)
+            for (let m; m = array.nth(this.modeStack, m => m.main == mode, 0);)
                 this._modeStack.splice(this._modeStack.indexOf(m));
         }
         else if (this.stack.some(function (m) m.main == mode)) {
@@ -361,7 +361,7 @@ var Modes = Module("modes", {
                               push ? { push: push } : stack || {},
                               prev);
 
-        delayed.forEach(function ([fn, self]) dactyl.trapErrors(fn, self));
+        delayed.forEach(([fn, self]) => dactyl.trapErrors(fn, self));
 
         dactyl.triggerObserver("modes.change", [oldMain, oldExtended], [this._main, this._extended], stack);
         this.show();
@@ -465,11 +465,11 @@ var Modes = Module("modes", {
 
         hidden: false,
 
-        input: Class.Memoize(function input() this.insert || this.bases.length && this.bases.some(function (b) b.input)),
+        input: Class.Memoize(function input() this.insert || this.bases.length && this.bases.some(b => b.input)),
 
-        insert: Class.Memoize(function insert() this.bases.length && this.bases.some(function (b) b.insert)),
+        insert: Class.Memoize(function insert() this.bases.length && this.bases.some(b => b.insert)),
 
-        ownsFocus: Class.Memoize(function ownsFocus() this.bases.length && this.bases.some(function (b) b.ownsFocus)),
+        ownsFocus: Class.Memoize(function ownsFocus() this.bases.length && this.bases.some(b => b.ownsFocus)),
 
         passEvent: function passEvent(event) this.input && event.charCode && !(event.ctrlKey || event.altKey || event.metaKey),
 
@@ -491,8 +491,8 @@ var Modes = Module("modes", {
         update(StackElement.prototype, {
             get toStringParams() !loaded.modes ? this.main.name : [
                 this.main.name,
-                ["(", modes.all.filter(function (m) this.extended & m, this)
-                           .map(function (m) m.name).join("|"),
+                ["(", modes.all.filter(m => this.extended & m)
+                           .map(m => m.name).join("|"),
                  ")"].join("")
             ]
         });
@@ -525,7 +525,7 @@ var Modes = Module("modes", {
 }, {
     cache: function initCache() {
         function makeTree() {
-            let list = modes.all.filter(function (m) m.name !== m.description);
+            let list = modes.all.filter(m => m.name !== m.description);
 
             let tree = {};
 
@@ -558,7 +558,7 @@ var Modes = Module("modes", {
             return rec(roots);
         }
 
-        cache.register("modes.dtd", function ()
+        cache.register("modes.dtd", () =>
             util.makeDTD(iter({ "modes.tree": makeTree() },
                               config.dtd)));
     },
@@ -599,7 +599,7 @@ var Modes = Module("modes", {
 
             getKey: function getKey(val, default_) {
                 if (isArray(val))
-                    return (array.nth(this.value, function (v) val.some(function (m) m.name === v.mode), 0)
+                    return (array.nth(this.value, v => val.some(m => m.name === v.mode), 0)
                                 || { result: default_ }).result;
 
                 return Set.has(this.valueMap, val) ? this.valueMap[val] : default_;
@@ -613,11 +613,11 @@ var Modes = Module("modes", {
                     result: v[0] !== "!"
                 }));
 
-                this.valueMap = values(vals).map(function (v) [v.mode, v.result]).toObject();
+                this.valueMap = values(vals).map(v => [v.mode, v.result]).toObject();
                 return vals;
             },
 
-            validator: function validator(vals) vals.map(function (v) v.replace(/^!/, "")).every(Set.has(this.values)),
+            validator: function validator(vals) vals.map(v => v.replace(/^!/, "")).every(Set.has(this.values)),
 
             get values() array.toObject([[m.name.toLowerCase(), m.description] for (m in values(modes._modes)) if (!m.hidden)])
         };

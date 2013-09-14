@@ -211,7 +211,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     unregisterObserver: function unregisterObserver(type, callback) {
         if (type in this._observers)
-            this._observers[type] = this._observers[type].filter(function (c) c.get() != callback);
+            this._observers[type] = this._observers[type].filter(c => c.get() != callback);
     },
 
     applyTriggerObserver: function triggerObserver(type, args) {
@@ -245,12 +245,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let name = commands.add(params.name, params.description,
             function (args) {
                 let results = array(params.iterate(args))
-                    .sort(function (a, b) String.localeCompare(a.name, b.name));
+                    .sort((a, b) => String.localeCompare(a.name, b.name));
 
-                let filters = args.map(function (arg) let (re = util.regexp.escape(arg))
+                let filters = args.map(arg => let (re = util.regexp.escape(arg))
                                         util.regexp("\\b" + re + "\\b|(?:^|[()\\s])" + re + "(?:$|[()\\s])", "i"));
                 if (filters.length)
-                    results = results.filter(function (item) filters.every(function (re) keys(item).some(re.closure.test)));
+                    results = results.filter(item => filters.every(re => keys(item).some(re.closure.test)));
 
                 commandline.commandOutput(
                     template.usage(results, params.format));
@@ -276,7 +276,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (params.index)
             this.indices[params.index] = function () {
                 let results = array((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
-                        .array.sort(function (a, b) String.localeCompare(a.name, b.name));
+                        .array.sort((a, b) => String.localeCompare(a.name, b.name));
 
                 let haveTag = Set.has(help.tags);
                 for (let obj in values(results)) {
@@ -667,22 +667,22 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let args = null;
 
         if (obj instanceof Command) {
-            link = function (cmd) ["ex", {}, cmd];
+            link = cmd => ["ex", {}, cmd];
             args = obj.parseArgs("", CompletionContext(str || ""));
-            tag  = function (cmd) DOM.DOMString(":" + cmd);
-            spec = function (cmd) [
+            tag  = cmd => DOM.DOMString(":" + cmd);
+            spec = cmd => [
                 obj.count ? ["oa", {}, "count"] : [],
                 cmd,
                 obj.bang ? ["oa", {}, "!"] : []
             ];
         }
         else if (obj instanceof Map) {
-            spec = function (map) obj.count ? [["oa", {}, "count"], map] : DOM.DOMString(map);
-            tag = function (map) [
+            spec = map => obj.count ? [["oa", {}, "count"], map] : DOM.DOMString(map);
+            tag = map => [
                 let (c = obj.modes[0].char) c ? c + "_" : "",
                 map
             ];
-            link = function (map) {
+            link = map => {
                 let [, mode, name, extra] = /^(?:(.)_)?(?:<([^>]+)>)?(.*)$/.exec(map);
                 let k = ["k", {}, extra];
                 if (name)
@@ -693,9 +693,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             };
         }
         else if (obj instanceof Option) {
-            spec = function () template.map(obj.names, tag, " ");
-            tag = function (name) DOM.DOMString("'" + name + "'");
-            link = function (opt, name) ["o", {}, name];
+            spec = () => template.map(obj.names, tag, " ");
+            tag = name => DOM.DOMString("'" + name + "'");
+            link = (opt, name) => ["o", {}, name];
             args = { value: "", values: [] };
         }
 
@@ -736,16 +736,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         if (obj.completer && false)
             add(completion._runCompleter(obj.closure.completer, "", null, args).items
-                          .map(function (i) [i.text, i.description]));
+                          .map(i => [i.text, i.description]));
 
-        if (obj.options && obj.options.some(function (o) o.description) && false)
-            add(obj.options.filter(function (o) o.description)
-                   .map(function (o) [
+        if (obj.options && obj.options.some(o => o.description) && false)
+            add(obj.options.filter(o => o.description)
+                   .map(o => [
                         o.names[0],
                         [o.description,
                          o.names.length == 1 ? "" :
                              ["", " (short name: ",
-                                 template.map(o.names.slice(1), function (n) ["em", {}, n], ", "),
+                                 template.map(o.names.slice(1), n => ["em", {}, n], ", "),
                               ")"]]
                     ]));
 
@@ -960,7 +960,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         options.push("private");
 
                     let win = window.openDialog(document.documentURI, "_blank", options.join(","));
-                    util.waitFor(function () win.document.readyState === "complete");
+                    util.waitFor(() => win.document.readyState === "complete");
                     browser = win.dactyl && win.dactyl.modules.config.tabbrowser || win.getBrowser();
                     // FALLTHROUGH
                 case dactyl.CURRENT_TAB:
@@ -1037,7 +1037,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }, this);
     },
     stringToURLArray: deprecated("dactyl.parseURLs", "parseURLs"),
-    urlish: Class.Memoize(function () util.regexp(literal(/*
+    urlish: Class.Memoize(() => util.regexp(literal(/*
             ^ (
                 <domain>+ (:\d+)? (/ .*) |
                 <domain>+ (:\d+) |
@@ -1187,11 +1187,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     wrapCallback: function wrapCallback(callback, self) {
         self = self || this;
         let save = ["forceOpen"];
-        let saved = save.map(function (p) dactyl[p]);
+        let saved = save.map(p => dactyl[p]);
         return function wrappedCallback() {
             let args = arguments;
             return dactyl.withSavedValues(save, function () {
-                saved.forEach(function (p, i) dactyl[save[i]] = p);
+                saved.forEach((p, i) => dactyl[save[i]] = p);
                 try {
                     return callback.apply(self, args);
                 }
@@ -1220,15 +1220,15 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 try {
                     let info = contexts.getDocs(context);
                     if (DOM.isJSONXML(info)) {
-                        let langs = info.slice(2).filter(function (e) isArray(e) && isObject(e[1]) && e[1].lang);
+                        let langs = info.slice(2).filter(e => isArray(e) && isObject(e[1]) && e[1].lang);
                         if (langs) {
                             let lang = config.bestLocale(l[1].lang for each (l in langs));
 
                             info = info.slice(0, 2).concat(
-                                info.slice(2).filter(function (e) !isArray(e) || !isObject(e[1])
-                                                               || e[1].lang == lang));
+                                info.slice(2).filter(e => !isArray(e) || !isObject(e[1])
+                                                          || e[1].lang == lang));
 
-                            for each (let elem in info.slice(2).filter(function (e) isArray(e) && e[0] == "info" && isObject(e[1])))
+                            for each (let elem in info.slice(2).filter(e => isArray(e) && e[0] == "info" && isObject(e[1])))
                                 for (let attr in values(["name", "summary", "href"]))
                                     if (attr in elem[1])
                                         info[attr] = elem[1][attr];
@@ -1256,7 +1256,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         cache.register("help/index.xml", function () {
             return '<?xml version="1.0"?>\n' +
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
-                       template.map(dactyl.indices, function ([name, iter])
+                       template.map(dactyl.indices, ([name, iter]) =>
                            ["dl", { insertafter: name + "-index" },
                                template.map(iter(), util.identity)],
                            "\n\n")]);
@@ -1266,7 +1266,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return '<?xml version="1.0"?>\n' +
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
                        ["dl", { insertafter: "dialog-list" },
-                           template.map(config.dialogs, function ([name, val])
+                           template.map(config.dialogs, ([name, val]) =>
                                (!val[2] || val[2]())
                                    ? [["dt", {}, name],
                                       ["dd", {}, val[0]]]
@@ -1279,9 +1279,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
                        ["dl", { insertafter: "sanitize-items" },
                            template.map(options.get("sanitizeitems").values
-                                                .sort(function (a, b) String.localeCompare(a.name,
-                                                                                           b.name)),
-                               function ({ name, description })
+                                                .sort((a, b) => String.localeCompare(a.name,
+                                                                                     b.name)),
+                               ({ name, description }) =>
                                [["dt", {}, name],
                                 ["dd", {}, template.linkifyHelp(description, true)]],
                                "\n")]]);
@@ -1325,7 +1325,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 }, config.guioptions),
                 setter: function (opts) {
                     for (let [opt, [, ids]] in Iterator(this.opts)) {
-                        ids.map(function (id) document.getElementById(id))
+                        ids.map(id => document.getElementById(id))
                            .forEach(function (elem) {
                             if (elem)
                                 dactyl.setNodeVisible(elem, opts.indexOf(opt) >= 0);
@@ -1341,10 +1341,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 },
                 setter: function (opts) {
                     let dir = ["horizontal", "vertical"].filter(
-                        function (dir) !Array.some(opts,
-                            function (o) this.opts[o] && this.opts[o][1] == dir, this),
-                        this);
-                    let class_ = dir.map(function (dir) "html|html > xul|scrollbar[orient=" + dir + "]");
+                        dir => !Array.some(opts,
+                            o => this.opts[o] && this.opts[o][1] == dir)
+                        );
+                    let class_ = dir.map(dir => "html|html > xul|scrollbar[orient=" + dir + "]");
 
                     styles.system.add("scrollbar", "*",
                                       class_.length ? class_.join(", ") + " { visibility: collapse !important; }" : "",
@@ -1369,7 +1369,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                       classes.length ? classes.join(",") + "{ display: none; }" : "");
 
                     if (!dactyl.has("Gecko2")) {
-                        tabs.tabBinding.enabled = Array.some(opts, function (k) k in this.opts, this);
+                        tabs.tabBinding.enabled = Array.some(opts, k => k in this.opts);
                         tabs.updateTabCount();
                     }
                     if (config.tabbrowser.tabContainer._positionPinnedTabs)
@@ -1380,7 +1380,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     Option.validIf(!/[nN]/.test(opts), "Tab numbering not available in this " + config.host + " version")
                  */
             }
-        ].filter(function (group) !group.feature || dactyl.has(group.feature));
+        ].filter(group => !group.feature || dactyl.has(group.feature));
 
         options.add(["guioptions", "go"],
             "Show or hide certain GUI elements like the menu or toolbar",
@@ -1391,7 +1391,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     "rb" + [k for ([k, v] in iter(groups[1].opts))
                             if (!Dactyl.toolbarHidden(document.getElementById(v[1][0])))].join(""),
 
-                values: array(groups).map(function (g) [[k, v[0]] for ([k, v] in Iterator(g.opts))]).flatten(),
+                values: array(groups).map(g => [[k, v[0]] for ([k, v] in Iterator(g.opts))]).flatten(),
 
                 setter: function (value) {
                     for (let group in values(groups))
@@ -1400,7 +1400,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     return value;
                 },
                 validator: function (val) Option.validateCompleter.call(this, val) &&
-                        groups.every(function (g) !g.validator || g.validator(val))
+                        groups.every(g => !g.validator || g.validator(val))
             });
 
         options.add(["loadplugins", "lpl"],
@@ -1504,7 +1504,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let arg = args[0] || "";
                 let items = dactyl.getMenuItems(arg);
 
-                dactyl.assert(items.some(function (i) i.dactylPath == arg),
+                dactyl.assert(items.some(i => i.dactylPath == arg),
                               _("emenu.notFound", arg));
 
                 for (let [, item] in Iterator(items)) {
@@ -1684,13 +1684,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             };
 
             toolbarCommand(["toolbars[how]", "tbs[how]"], "Show the named toolbar",
-                function (toolbar) dactyl.setNodeVisible(toolbar, true),
-                function ({ item }) Dactyl.toolbarHidden(item));
+                toolbar => dactyl.setNodeVisible(toolbar, true),
+                ({ item }) => Dactyl.toolbarHidden(item));
             toolbarCommand(["toolbarh[ide]", "tbh[ide]"], "Hide the named toolbar",
-                function (toolbar) dactyl.setNodeVisible(toolbar, false),
-                function ({ item }) !Dactyl.toolbarHidden(item));
+                toolbar => dactyl.setNodeVisible(toolbar, false),
+                ({ item }) => !Dactyl.toolbarHidden(item));
             toolbarCommand(["toolbart[oggle]", "tbt[oggle]"], "Toggle the named toolbar",
-                function (toolbar) dactyl.setNodeVisible(toolbar, Dactyl.toolbarHidden(toolbar)));
+                toolbar => dactyl.setNodeVisible(toolbar, Dactyl.toolbarHidden(toolbar)));
         }
 
         commands.add(["time"],
@@ -1701,7 +1701,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 args = args[0] || "";
 
                 if (args[0] == ":")
-                    var func = function () commands.execute(args, null, false);
+                    var func = () => commands.execute(args, null, false);
                 else
                     func = dactyl.userFunc(args);
 
@@ -1836,7 +1836,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     completion: function initCompletion() {
         completion.dialog = function dialog(context) {
             context.title = ["Dialog"];
-            context.filters.push(function ({ item }) !item[2] || item[2]());
+            context.filters.push(({ item }) => !item[2] || item[2]());
             context.completions = [[k, v[0], v[2]] for ([k, v] in Iterator(config.dialogs))];
         };
 
@@ -1848,7 +1848,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 description: function (item) item.getAttribute("label"),
                 highlight: function (item) item.disabled ? "Disabled" : ""
             };
-            context.generate = function () dactyl.menuItems;
+            context.generate = () => dactyl.menuItems;
         };
 
         var toolbox = document.getElementById("navigator-toolbox");
@@ -1880,9 +1880,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 && root._lightweightTheme._lastScreenWidth == null) {
 
             dactyl.withSavedValues.call(PrivateBrowsingUtils,
-                                      ["isWindowPrivate"], function () {
-                PrivateBrowsingUtils.isWindowPrivate = function () false;
-
+                                        ["isWindowPrivate"], function () {
+                PrivateBrowsingUtils.isWindowPrivate = () => false;
                 Cu.import("resource://gre/modules/LightweightThemeConsumer.jsm", {})
                   .LightweightThemeConsumer.call(root._lightweightTheme, document);
             });

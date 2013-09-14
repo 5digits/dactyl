@@ -57,10 +57,10 @@ var ConfigBase = Class("ConfigBase", {
                      "resource://dactyl-content/")));
 
         this.timeout(function () {
-            cache.register("config.dtd", function () util.makeDTD(config.dtd));
+            cache.register("config.dtd", () => util.makeDTD(config.dtd));
         });
 
-        services["dactyl:"].pages["dtd"] = function () [null, cache.get("config.dtd")];
+        services["dactyl:"].pages["dtd"] = () => [null, cache.get("config.dtd")];
 
         update(services["dactyl:"].providers, {
             "locale": function (uri, path) LocaleChannel("dactyl-locale", config.locale, path, uri),
@@ -77,7 +77,7 @@ var ConfigBase = Class("ConfigBase", {
         "resource://dactyl-local/config.json"
     ],
 
-    configs: Class.Memoize(function () this.configFiles.map(function (url) JSON.parse(File.readURL(url)))),
+    configs: Class.Memoize(function () this.configFiles.map(url => JSON.parse(File.readURL(url)))),
 
     loadConfig: function loadConfig(documentURL) {
 
@@ -152,8 +152,8 @@ var ConfigBase = Class("ConfigBase", {
     loadStyles: function loadStyles(force) {
         highlight.styleableChrome = this.styleableChrome;
 
-        highlight.loadCSS(this.CSS.replace(/__MSG_(.*?)__/g, function (m0, m1) _(m1)));
-        highlight.loadCSS(this.helpCSS.replace(/__MSG_(.*?)__/g, function (m0, m1) _(m1)));
+        highlight.loadCSS(this.CSS.replace(/__MSG_(.*?)__/g, (m0, m1) => _(m1)));
+        highlight.loadCSS(this.helpCSS.replace(/__MSG_(.*?)__/g, (m0, m1) => _(m1)));
 
         if (!this.haveGecko("2b"))
             highlight.loadCSS(literal(/*
@@ -169,14 +169,14 @@ var ConfigBase = Class("ConfigBase", {
         let hl = highlight.set("Find", "");
         hl.onChange = function () {
             function hex(val) ("#" + util.regexp.iterate(/\d+/g, val)
-                                         .map(function (num) ("0" + Number(num).toString(16)).slice(-2))
+                                         .map(num => ("0" + Number(num).toString(16)).slice(-2))
                                          .join("")
                               ).slice(0, 7);
 
             let elem = services.appShell.hiddenDOMWindow.document.createElement("div");
             elem.style.cssText = this.cssText;
 
-            let keys = iter(Styles.propertyIter(this.cssText)).map(function (p) p.name).toArray();
+            let keys = iter(Styles.propertyIter(this.cssText)).map(p => p.name).toArray();
             let bg = keys.some(bind("test", /^background/));
             let fg = keys.indexOf("color") >= 0;
 
@@ -198,7 +198,7 @@ var ConfigBase = Class("ConfigBase", {
     /**
      * The current application locale.
      */
-    appLocale: Class.Memoize(function () services.chromeRegistry.getSelectedLocale("global")),
+    appLocale: Class.Memoize(() => services.chromeRegistry.getSelectedLocale("global")),
 
     /**
      * The current dactyl locale.
@@ -411,8 +411,8 @@ var ConfigBase = Class("ConfigBase", {
         get plugins() "http://5digits.org/" + this.name + "/plugins",
         get faq() this.home + this.name + "/faq",
 
-        "list.mailto": Class.Memoize(function () config.name + "@googlegroups.com"),
-        "list.href": Class.Memoize(function () "http://groups.google.com/group/" + config.name),
+        "list.mailto": Class.Memoize(() => config.name + "@googlegroups.com"),
+        "list.href": Class.Memoize(() => "http://groups.google.com/group/" + config.name),
 
         "hg.latest": Class.Memoize(function () this.code + "source/browse/"), // XXX
         "irc": "irc://irc.oftc.net/#pentadactyl"
@@ -478,8 +478,8 @@ var ConfigBase = Class("ConfigBase", {
             get commandContainer() document.documentElement.id
         }),
 
-        browser: Class.Memoize(function () window.gBrowser),
-        tabbrowser: Class.Memoize(function () window.gBrowser),
+        browser: Class.Memoize(() => window.gBrowser),
+        tabbrowser: Class.Memoize(() => window.gBrowser),
 
         get browserModes() [modules.modes.NORMAL],
 
@@ -573,9 +573,9 @@ var ConfigBase = Class("ConfigBase", {
      * @property {string} The default highlighting rules.
      * See {@link Highlights#loadCSS} for details.
      */
-    CSS: Class.Memoize(function () File.readURL("resource://dactyl-skin/global-styles.css")),
+    CSS: Class.Memoize(() => File.readURL("resource://dactyl-skin/global-styles.css")),
 
-    helpCSS: Class.Memoize(function () File.readURL("resource://dactyl-skin/help-styles.css"))
+    helpCSS: Class.Memoize(() => File.readURL("resource://dactyl-skin/help-styles.css"))
 }, {
 });
 JSMLoader.loadSubScript("resource://dactyl-local-content/config.js", this);
@@ -594,7 +594,7 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
                      width:      {width}px;
                      height:     {height}px;
                 }
-            */).replace(/\{(.*?)\}/g, function (m, m1) img[m1]));
+            */).replace(/\{(.*?)\}/g, (m, m1) => img[m1]));
             img = null;
         });
     },

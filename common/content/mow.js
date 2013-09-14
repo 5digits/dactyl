@@ -199,7 +199,7 @@ var MOW = Module("mow", {
 
             for (let node in array.iterValues(menu.children)) {
                 let group = node.getAttributeNS(NS, "group");
-                node.hidden = group && !group.split(/\s+/).every(function (g) enabled[g]);
+                node.hidden = group && !group.split(/\s+/).every(g => enabled[g]);
             }
         }
     },
@@ -346,36 +346,36 @@ var MOW = Module("mow", {
 
         bind(["j", "<C-e>", "<Down>"], "Scroll down one line",
              function ({ count }) { mow.scrollVertical("lines", 1 * (count || 1)); },
-             function () mow.canScroll(1), BEEP);
+             () => mow.canScroll(1), BEEP);
 
         bind(["k", "<C-y>", "<Up>"], "Scroll up one line",
              function ({ count }) { mow.scrollVertical("lines", -1 * (count || 1)); },
-             function () mow.canScroll(-1), BEEP);
+             () => mow.canScroll(-1), BEEP);
 
         bind(["<C-j>", "<C-m>", "<Return>"], "Scroll down one line, exit on last line",
              function ({ count }) { mow.scrollVertical("lines", 1 * (count || 1)); },
-             function () mow.canScroll(1), DROP);
+             () => mow.canScroll(1), DROP);
 
         // half page down
         bind(["<C-d>"], "Scroll down half a page",
              function ({ count }) { mow.scrollVertical("pages", .5 * (count || 1)); },
-             function () mow.canScroll(1), BEEP);
+             () => mow.canScroll(1), BEEP);
 
         bind(["<C-f>", "<PageDown>"], "Scroll down one page",
              function ({ count }) { mow.scrollVertical("pages", 1 * (count || 1)); },
-             function () mow.canScroll(1), BEEP);
+             () => mow.canScroll(1), BEEP);
 
         bind(["<Space>"], "Scroll down one page",
              function ({ count }) { mow.scrollVertical("pages", 1 * (count || 1)); },
-             function () mow.canScroll(1), DROP);
+             () => mow.canScroll(1), DROP);
 
         bind(["<C-u>"], "Scroll up half a page",
              function ({ count }) { mow.scrollVertical("pages", -.5 * (count || 1)); },
-             function () mow.canScroll(-1), BEEP);
+             () => mow.canScroll(-1), BEEP);
 
         bind(["<C-b>", "<PageUp>"], "Scroll up half a page",
              function ({ count }) { mow.scrollVertical("pages", -1 * (count || 1)); },
-             function () mow.canScroll(-1), BEEP);
+             () => mow.canScroll(-1), BEEP);
 
         bind(["gg"], "Scroll to the beginning of output",
              function () { mow.scrollToPercent(null, 0); });
@@ -390,7 +390,7 @@ var MOW = Module("mow", {
         // close the window
         bind(["q"], "Close the output window",
              function () {},
-             function () false, DROP);
+             () => false, DROP);
     },
     options: function initOptions() {
         options.add(["more"],

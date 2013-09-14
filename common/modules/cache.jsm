@@ -219,7 +219,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
     _has: function _has(name) Set.has(this.providers, name) || set.has(this.cache, name),
 
     has: function has(name) [this.globalProviders, this.cache, this.localProviders]
-            .some(function (obj) Set.has(obj, name)),
+            .some(obj => Set.has(obj, name)),
 
     register: function register(name, callback, self) {
         if (this.isLocal)

@@ -60,10 +60,10 @@ var CompletionContext = Class("CompletionContext", {
              */
             self.parent = parent;
 
-            ["filters", "keys", "process", "title", "quote"].forEach(function fe(key)
-                self[key] = parent[key] && util.cloneObject(parent[key]));
-            ["anchored", "compare", "editor", "_filter", "filterFunc", "forceAnchored", "top"].forEach(function (key)
-                self[key] = parent[key]);
+            ["filters", "keys", "process", "title", "quote"]
+                .forEach(key => self[key] = parent[key] && util.cloneObject(parent[key]));
+            ["anchored", "compare", "editor", "_filter", "filterFunc", "forceAnchored", "top"]
+                .forEach(key => self[key] = parent[key]);
 
             self.__defineGetter__("value", function get_value() this.top.value);
 
@@ -171,9 +171,9 @@ var CompletionContext = Class("CompletionContext", {
              */
             this.top = this;
             this.__defineGetter__("incomplete", function get_incomplete() this._incomplete
-                || this.contextList.some(function (c) c.parent && c.incomplete));
+                || this.contextList.some(c => c.parent && c.incomplete));
             this.__defineGetter__("waitingForTab", function get_waitingForTab() this._waitingForTab
-                || this.contextList.some(function (c) c.parent && c.waitingForTab));
+                || this.contextList.some(c => c.parent && c.waitingForTab));
             this.__defineSetter__("incomplete", function get_incomplete(val) { this._incomplete = val; });
             this.__defineSetter__("waitingForTab", function get_waitingForTab(val) { this._waitingForTab = val; });
             this.reset();
@@ -214,7 +214,7 @@ var CompletionContext = Class("CompletionContext", {
         return this;
     },
 
-    __title: Class.Memoize(function __title() this._title.map(function (s)
+    __title: Class.Memoize(function __title() this._title.map(s =>
                 typeof s == "string" ? messages.get("completion.title." + s, s)
                                      : s)),
 

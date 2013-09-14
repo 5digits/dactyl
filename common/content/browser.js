@@ -194,7 +194,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             {
                 completer: function (context) completion.url(context),
                 domains: function (args) array.compact(dactyl.parseURLs(args[0] || "").map(
-                    function (url) util.getHost(url))),
+                    url => util.getHost(url))),
                 literal: 0,
                 privateData: true
             });

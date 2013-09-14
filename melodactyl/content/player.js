@@ -343,7 +343,7 @@ const Player = Module("player", {
             onEnumerationEnd: function () { },
             onEnumeratedItem: function (list, item) {
                 // FIXME: why are there null items and duplicates?
-                if (!playlists.some(function (list) list.name == item.name) && item.name != null)
+                if (!playlists.some(list => list.name == item.name) && item.name != null)
                     playlists.push(item);
                 return Ci.sbIMediaListEnumerationListener.CONTINUE;
             }
@@ -372,7 +372,7 @@ const Player = Module("player", {
     getMediaPages: function getMediaPages() {
         let list = SBGetBrowser().currentMediaPage.mediaListView.mediaList;
         let pages = services.mediaPageManager.getAvailablePages(list);
-        return ArrayConverter.JSArray(pages).map(function (page) page.QueryInterface(Ci.sbIMediaPageInfo));
+        return ArrayConverter.JSArray(pages).map(page => page.QueryInterface(Ci.sbIMediaPageInfo));
     },
 
     /**

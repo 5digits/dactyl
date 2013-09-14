@@ -75,7 +75,7 @@ var Option = Class("Option", {
     get helpTag() "'" + this.name + "'",
 
     initValue: function initValue() {
-        util.trapErrors(function () this.value = this.value, this);
+        util.trapErrors(() => this.value = this.value, this);
     },
 
     get isDefault() this.stringValue === this.stringDefaultValue,
@@ -203,7 +203,7 @@ var Option = Class("Option", {
      *
      * @returns {boolean}
      */
-    has: function has() Array.some(arguments, function (val) this.value.indexOf(val) >= 0, this),
+    has: function has() Array.some(arguments, val => this.value.indexOf(val) >= 0),
 
     /**
      * Returns whether this option is identified by *name*.
@@ -318,7 +318,7 @@ var Option = Class("Option", {
      *     references to a given domain from the given values.
      */
     filterDomain: function filterDomain(host, values)
-        Array.filter(values, function (val) !this.domains([val]).some(function (val) util.isSubdomain(val, host)), this),
+        Array.filter(values, val => !this.domains([val]).some(val => util.isSubdomain(val, host))),
 
     /**
      * @property {value} The option's default value. This value will be used
@@ -344,8 +344,8 @@ var Option = Class("Option", {
         if (isArray(defaultValue))
             defaultValue = defaultValue.map(Option.quote).join(",");
         else if (isObject(defaultValue))
-            defaultValue = iter(defaultValue).map(function (val) val.map(function (v) Option.quote(v, /:/))
-                                                                    .join(":"))
+            defaultValue = iter(defaultValue).map(val => val.map(v => Option.quote(v, /:/))
+                                                            .join(":"))
                                              .join(",");
 
         if (isArray(defaultValue))
@@ -491,7 +491,7 @@ var Option = Class("Option", {
     },
 
     domains: {
-        sitelist: function (vals) array.compact(vals.map(function (site) util.getHost(site.filter))),
+        sitelist: function (vals) array.compact(vals.map(site => util.getHost(site.filter))),
         get sitemap() this.sitelist
     },
 
@@ -520,7 +520,7 @@ var Option = Class("Option", {
 
         regexplist: function regexplist(value) (value === "") ? [] :
             Option.splitList(value, true)
-                  .map(function (re) Option.parseRegexp(re, undefined, this.regexpFlags), this),
+                  .map(re => Option.parseRegexp(re, undefined, this.regexpFlags)),
 
         sitelist: function sitelist(value) {
             if (value === "")
@@ -558,7 +558,7 @@ var Option = Class("Option", {
     },
 
     testValues: {
-        regexpmap:  function regexpmap(vals, validator) vals.every(function (re) validator(re.result)),
+        regexpmap:  function regexpmap(vals, validator) vals.every(re => validator(re.result)),
         get sitemap() this.regexpmap,
         stringlist: function stringlist(vals, validator) vals.every(validator, this),
         stringmap:  function stringmap(vals, validator) values(vals).every(validator, this)
@@ -587,7 +587,7 @@ var Option = Class("Option", {
         return res;
     },
 
-    quote: function quote(str, re) isArray(str) ? str.map(function (s) quote(s, re)).join(",") :
+    quote: function quote(str, re) isArray(str) ? str.map(s => quote(s, re)).join(",") :
         Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) || re && re.test && re.test(str)
             ? (/[\b\f\n\r\t]/.test(str) ? '"' : "'")
             : ""](str, re),
@@ -671,7 +671,7 @@ var Option = Class("Option", {
 
             function uniq(ary) {
                 let seen = {};
-                return ary.filter(function (elem) !Set.add(seen, elem));
+                return ary.filter(elem => !Set.add(seen, elem));
             }
 
             switch (operator) {
@@ -716,7 +716,7 @@ var Option = Class("Option", {
         function completions(extra) {
             let context = CompletionContext("");
             return context.fork("", 0, this, this.completer, extra) ||
-                   context.allItems.items.map(function (item) [item.text]);
+                   context.allItems.items.map(item => [item.text]);
         };
 
         if (isObject(vals) && !isArray(vals)) {
@@ -731,10 +731,10 @@ var Option = Class("Option", {
             acceptable = completions.call(this);
 
         if (isArray(acceptable))
-            acceptable = Set(acceptable.map(function ([k]) k));
+            acceptable = Set(acceptable.map(([k]) => k));
 
         if (this.type === "regexpmap" || this.type === "sitemap")
-            return Array.concat(vals).every(function (re) Set.has(acceptable, re.result));
+            return Array.concat(vals).every(re => Set.has(acceptable, re.result));
 
         return Array.concat(vals).every(Set.has(acceptable));
     },
@@ -821,7 +821,7 @@ var Options = Module("options", {
                     opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
             }, window);
 
-            modules.cache.register("options.dtd", function ()
+            modules.cache.register("options.dtd", () =>
                 util.makeDTD(
                     iter(([["option", o.name, "default"].join("."),
                            o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
@@ -877,7 +877,7 @@ var Options = Module("options", {
                     else if (isArray(opt.value) && opt.type != "charlist")
                         option.value = ["", "=",
                                         template.map(opt.value,
-                                                     function (v) template.highlight(String(v)),
+                                                     v => template.highlight(String(v)),
                                                      ["", ",",
                                                       ["span", { style: "width: 0; display: inline-block" }, " "]])];
                     else
@@ -927,7 +927,7 @@ var Options = Module("options", {
 
             let closure = () => this._optionMap[name];
 
-            memoize(this._optionMap, name, function () Option.types[type](modules, names, description, defaultValue, extraInfo));
+            memoize(this._optionMap, name, () => Option.types[type](modules, names, description, defaultValue, extraInfo));
             for (let alias in values(names.slice(1)))
                 memoize(this._optionMap, alias, closure);
 
@@ -948,7 +948,7 @@ var Options = Module("options", {
 
     /** @property {Iterator(Option)} @private */
     __iterator__: function __iterator__()
-        values(this._options.sort(function (a, b) String.localeCompare(a.name, b.name))),
+        values(this._options.sort((a, b) => String.localeCompare(a.name, b.name))),
 
     allPrefs: deprecated("prefs.getNames", function allPrefs() prefs.getNames.apply(prefs, arguments)),
     getPref: deprecated("prefs.get", function getPref() prefs.get.apply(prefs, arguments)),
@@ -963,7 +963,7 @@ var Options = Module("options", {
     setPref: deprecated("prefs.set", function setPref() prefs.set.apply(prefs, arguments)),
     withContext: deprecated("prefs.withContext", function withContext() prefs.withContext.apply(prefs, arguments)),
 
-    cleanupPrefs: Class.Memoize(function () config.prefs.Branch("cleanup.option.")),
+    cleanupPrefs: Class.Memoize(() => config.prefs.Branch("cleanup.option.")),
 
     cleanup: function cleanup(reason) {
         if (~["disable", "uninstall"].indexOf(reason))
@@ -1059,7 +1059,7 @@ var Options = Module("options", {
      */
     remove: function remove(name) {
         let opt = this.get(name);
-        this._options = this._options.filter(function (o) o != opt);
+        this._options = this._options.filter(o => o != opt);
         for (let name in values(opt.names))
             delete this._optionMap[name];
     },
@@ -1095,12 +1095,12 @@ var Options = Module("options", {
 
             let list = [];
             function flushList() {
-                let names = Set(list.map(function (opt) opt.option ? opt.option.name : ""));
+                let names = Set(list.map(opt => opt.option ? opt.option.name : ""));
                 if (list.length)
-                    if (list.some(function (opt) opt.all))
-                        options.list(function (opt) !(list[0].onlyNonDefault && opt.isDefault), list[0].scope);
+                    if (list.some(opt => opt.all))
+                        options.list(opt => !(list[0].onlyNonDefault && opt.isDefault), list[0].scope);
                     else
-                        options.list(function (opt) Set.has(names, opt.name), list[0].scope);
+                        options.list(opt => Set.has(names, opt.name), list[0].scope);
                 list = [];
             }
 
@@ -1212,11 +1212,11 @@ var Options = Module("options", {
                     context.advance(filter.length);
                     filter = filter.substr(0, filter.length - 1);
 
-                    context.pushProcessor(0, function (item, text, next) next(item, text.substr(0, 100)));
+                    context.pushProcessor(0, (item, text, next) => next(item, text.substr(0, 100)));
                     context.completions = [
                             [prefs.get(filter), _("option.currentValue")],
                             [prefs.defaults.get(filter), _("option.defaultValue")]
-                    ].filter(function (k) k[0] != null);
+                    ].filter(k => k[0] != null);
                     return null;
                 }
 
@@ -1229,7 +1229,7 @@ var Options = Module("options", {
             context.highlight();
             if (context.filter.indexOf("=") == -1) {
                 if (false && prefix)
-                    context.filters.push(function ({ item }) item.type == "boolean" || prefix == "inv" && isArray(item.values));
+                    context.filters.push(({ item }) => item.type == "boolean" || prefix == "inv" && isArray(item.values));
                 return completion.option(context, opt.scope, opt.name == "inv" ? opt.name : prefix);
             }
 
@@ -1256,11 +1256,11 @@ var Options = Module("options", {
             if (!opt.value && !opt.operator && !opt.invert) {
                 context.fork("default", 0, this, function (context) {
                     context.title = ["Extra Completions"];
-                    context.pushProcessor(0, function (item, text, next) next(item, text.substr(0, 100)));
+                    context.pushProcessor(0, (item, text, next) => next(item, text.substr(0, 100)));
                     context.completions = [
                             [option.stringValue, _("option.currentValue")],
                             [option.stringDefaultValue, _("option.defaultValue")]
-                    ].filter(function (f) f[0] !== "");
+                    ].filter(f => f[0] !== "");
                     context.quote = ["", util.identity, ""];
                 });
             }
@@ -1275,10 +1275,10 @@ var Options = Module("options", {
                 context.anchored = optcontext.anchored;
                 context.maxItems = optcontext.maxItems;
 
-                context.filters.push(function (i) !Set.has(have, i.text));
+                context.filters.push(i => !Set.has(have, i.text));
                 modules.completion.optionValue(context, opt.name, opt.operator, null,
                                        function (context) {
-                                           context.generate = function () option.value.map(function (o) [o, ""]);
+                                           context.generate = () => option.value.map(o => [o, ""]);
                                        });
                 context.title = ["Current values"];
             }
@@ -1426,11 +1426,11 @@ var Options = Module("options", {
             context.anchored = false;
             context.completions = modules.options;
             if (prefix == "inv")
-                context.keys.text = function (opt)
-                    opt.type == "boolean" || isArray(opt.value) ? opt.names.map(function (n) "inv" + n)
+                context.keys.text = opt =>
+                    opt.type == "boolean" || isArray(opt.value) ? opt.names.map(n => "inv" + n)
                                                                 : opt.names;
             if (scope)
-                context.filters.push(function ({ item }) item.scope & scope);
+                context.filters.push(({ item }) => item.scope & scope);
         };
 
         completion.optionValue = function (context, name, op, curValue, completer) {
@@ -1484,7 +1484,7 @@ var Options = Module("options", {
 
             function val(obj) {
                 if (isArray(opt.defaultValue)) {
-                    let val = array.nth(obj, function (re) re.key == extra.key, 0);
+                    let val = array.nth(obj, re => re.key == extra.key, 0);
                     return val && val.result;
                 }
                 if (Set.has(opt.defaultValue, extra.key))
@@ -1496,7 +1496,7 @@ var Options = Module("options", {
                     context.completions = [
                             [val(opt.value), _("option.currentValue")],
                             [val(opt.defaultValue), _("option.defaultValue")]
-                    ].filter(function (f) f[0] !== "" && f[0] != null);
+                    ].filter(f => f[0] !== "" && f[0] != null);
                 });
                 context = context.fork("stuff", 0);
             }
@@ -1506,17 +1506,17 @@ var Options = Module("options", {
             // Not Vim compatible, but is a significant enough improvement
             // that it's worth breaking compatibility.
             if (isArray(newValues)) {
-                context.filters.push(function (i) newValues.indexOf(i.text) == -1);
+                context.filters.push(i => newValues.indexOf(i.text) == -1);
                 if (op == "+")
-                    context.filters.push(function (i) curValues.indexOf(i.text) == -1);
+                    context.filters.push(i => curValues.indexOf(i.text) == -1);
                 if (op == "-")
-                    context.filters.push(function (i) curValues.indexOf(i.text) > -1);
+                    context.filters.push(i => curValues.indexOf(i.text) > -1);
 
                 memoize(extra, "values", function () {
                     if (op == "+")
                         return curValues.concat(newValues);
                     if (op == "-")
-                        return curValues.filter(function (v) newValues.indexOf(val) == -1);
+                        return curValues.filter(v => newValues.indexOf(val) == -1);
                     return newValues;
                 });
             }
@@ -1528,7 +1528,7 @@ var Options = Module("options", {
     },
     javascript: function initJavascript(dactyl, modules, window) {
         const { options, JavaScript } = modules;
-        JavaScript.setCompleter(Options.prototype.get, [function () ([o.name, o.description] for (o in options))]);
+        JavaScript.setCompleter(Options.prototype.get, [() => ([o.name, o.description] for (o in options))]);
     },
     sanitizer: function initSanitizer(dactyl, modules, window) {
         const { sanitizer } = modules;

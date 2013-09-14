@@ -172,7 +172,7 @@ var Template = Module("Template", {
         !(item.extra && item.extra.length) ? [] :
         ["span", { highlight: "URLExtra" },
             " (",
-            template.map(item.extra, function (e)
+            template.map(item.extra, e =>
                 ["", e[0], ": ",
                  ["span", { highlight: e[2] }, e[1]]],
                 "\u00a0"),
@@ -278,8 +278,8 @@ var Template = Module("Template", {
         }
     },
 
-    _sandbox: Class.Memoize(function () Cu.Sandbox(Cu.getGlobalForObject(global),
-                                                   { wantXrays: false })),
+    _sandbox: Class.Memoize(() => Cu.Sandbox(Cu.getGlobalForObject(global),
+                                             { wantXrays: false })),
 
     // if "processStrings" is true, any passed strings will be surrounded by " and
     // any line breaks are displayed as \n
@@ -403,7 +403,7 @@ var Template = Module("Template", {
                     ["th", {}, _("title.VPos")],
                     ["th", {}, _("title.Title")],
                     ["th", {}, _("title.URI")]],
-                this.map(Iterator(elems), function ([idx, val])
+                this.map(Iterator(elems), ([idx, val]) =>
                     ["tr", {},
                         ["td", { class: "indicator" }, idx == index ? ">" : ""],
                         ["td", {}, Math.abs(idx - index)],
@@ -419,7 +419,7 @@ var Template = Module("Template", {
         return ["table", {},
                 ["tr", { highlight: "Title", align: "left" },
                     ["th", {}, "--- " + title + " ---"]],
-                this.map(opts, function (opt)
+                this.map(opts, opt =>
                     ["tr", {},
                         ["td", {},
                             ["div", { highlight: "Message" },
@@ -446,7 +446,7 @@ var Template = Module("Template", {
         let table = ["table", {},
             ["tr", { highlight: "Title", align: "left" },
                 ["th", { colspan: "2" }, title]],
-            this.map(data, function (datum)
+            this.map(data, datum =>
                 ["tr", {},
                     ["td", { style: "font-weight: bold; min-width: 150px; padding-left: " + (indent || "2ex") }, datum[0]],
                     ["td", {}, datum[1]]])];
@@ -463,7 +463,7 @@ var Template = Module("Template", {
                     ["th", {}, h])],
             this.map(iter, (row) =>
                 ["tr", {},
-                    this.map(Iterator(row), function ([i, d])
+                    this.map(Iterator(row), ([i, d]) =>
                         ["td", { style: style[i] || "" }, d])])];
     },
 

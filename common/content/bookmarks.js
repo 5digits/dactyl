@@ -349,8 +349,8 @@ var Bookmarks = Module("bookmarks", {
             else
                 encodedParam = bookmarkcache.keywords[keyword.toLowerCase()].encodeURIComponent(param);
 
-            url = url.replace(/%s/g, function () encodedParam)
-                     .replace(/%S/g, function () param);
+            url = url.replace(/%s/g, () => encodedParam)
+                     .replace(/%S/g, () => param);
             if (/%s/i.test(data))
                 postData = window.getPostDataStream(data, param, encodedParam, "application/x-www-form-urlencoded");
         }
@@ -388,7 +388,7 @@ var Bookmarks = Module("bookmarks", {
         let items = completion.runCompleter("bookmark", filter, maxItems, tags, extra);
 
         if (items.length)
-            return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
+            return dactyl.open(items.map(i => i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0 && tags.length > 0)
             dactyl.echoerr(_("bookmark.noMatching", tags.map(String.quote), filter.quote()));
@@ -408,7 +408,7 @@ var Bookmarks = Module("bookmarks", {
             names: ["-tags", "-T"],
             description: "A comma-separated list of tags",
             completer: function tags(context, args) {
-                context.generate = function () array(b.tags for (b in bookmarkcache) if (b.tags)).flatten().uniq().array;
+                context.generate = () => array(b.tags for (b in bookmarkcache) if (b.tags)).flatten().uniq().array;
                 context.keys = { text: util.identity, description: util.identity };
             },
             type: CommandOption.LIST
@@ -547,7 +547,7 @@ var Bookmarks = Module("bookmarks", {
                         let context = CompletionContext(args.join(" "));
                         context.fork("bookmark", 0, completion, "bookmark",
                                      args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
-                        deletedCount = bookmarks.remove(context.allItems.items.map(function (item) item.item.id));
+                        deletedCount = bookmarks.remove(context.allItems.items.map(item => item.item.id));
                     }
 
                     dactyl.echomsg({ message: _("bookmark.deleted", deletedCount) });
@@ -574,7 +574,7 @@ var Bookmarks = Module("bookmarks", {
                 let options = {};
 
                 let url = buffer.uri.spec;
-                let bmarks = bookmarks.get(url).filter(function (bmark) bmark.url == url);
+                let bmarks = bookmarks.get(url).filter(bmark => bmark.url == url);
 
                 if (bmarks.length == 1) {
                     let bmark = bmarks[0];
@@ -630,7 +630,7 @@ var Bookmarks = Module("bookmarks", {
                 if (v != null)
                     context.filters.push(function (item) item.item[k] != null && this.matchString(v, item.item[k]));
             });
-            context.generate = function () values(bookmarkcache.bookmarks);
+            context.generate = () => values(bookmarkcache.bookmarks);
             completion.urls(context, tags);
         };
 
@@ -680,7 +680,7 @@ var Bookmarks = Module("bookmarks", {
              context.keys = { text: "keyword", description: "title", icon: "icon" };
              context.completions = values(bookmarks.searchEngines);
              if (suggest)
-                 context.filters.push(function ({ item }) item.supportsResponseType("application/x-suggestions+json"));
+                 context.filters.push(({ item }) => item.supportsResponseType("application/x-suggestions+json"));
 
         };
 
@@ -712,13 +712,13 @@ var Bookmarks = Module("bookmarks", {
                     return;
 
                 let words = ctxt.filter.toLowerCase().split(/\s+/g);
-                ctxt.completions = ctxt.completions.filter(function (i) words.every(function (w) i.toLowerCase().indexOf(w) >= 0));
+                ctxt.completions = ctxt.completions.filter(i => words.every(w => i.toLowerCase().indexOf(w) >= 0));
 
                 ctxt.hasItems = ctxt.completions.length;
                 ctxt.incomplete = true;
                 ctxt.cache.request = bookmarks.getSuggestions(name, ctxt.filter, function (compl) {
                     ctxt.incomplete = false;
-                    ctxt.completions = array.uniq(ctxt.completions.filter(function (c) compl.indexOf(c) >= 0)
+                    ctxt.completions = array.uniq(ctxt.completions.filter(c => compl.indexOf(c) >= 0)
                                                       .concat(compl), true);
                 });
             });

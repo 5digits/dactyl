@@ -149,9 +149,9 @@ var Modules = function Modules(window) {
 
         get ownPropertyValues() array.compact(
                 Object.getOwnPropertyNames(this)
-                      .map(function (name) Object.getOwnPropertyDescriptor(this, name).value, this)),
+                      .map(name => Object.getOwnPropertyDescriptor(this, name).value)),
 
-        get moduleList() this.ownPropertyValues.filter(function (mod) mod instanceof this.ModuleBase || mod.isLocalModule, this)
+        get moduleList() this.ownPropertyValues.filter(mod => mod instanceof this.ModuleBase || mod.isLocalModule)
     });
 
     modules.plugins = create(modules);
@@ -179,7 +179,7 @@ overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
                   });
 
             config.modules.window
-                  .forEach(function (name) defineModule.time("load", name, modules.load, modules, name));
+                  .forEach(name => defineModule.time("load", name, modules.load, modules, name));
         }, this);
     },
 
@@ -224,7 +224,7 @@ overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
     },
 
     cleanup: function cleanup(window) {
-        overlay.windows = overlay.windows.filter(function (w) w != window);
+        overlay.windows = overlay.windows.filter(w => w != window);
     },
 
     unload: function unload(window) {

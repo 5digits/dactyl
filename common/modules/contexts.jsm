@@ -70,7 +70,7 @@ var Group = Class("Group", {
             default_ = false;
 
         function siteFilter(uri)
-            let (match = array.nth(siteFilter.filters, function (f) f(uri), 0))
+            let (match = array.nth(siteFilter.filters, f => f(uri), 0))
                 match ? match.result : default_;
 
         return update(siteFilter, {
@@ -140,8 +140,8 @@ var Contexts = Module("contexts", {
                 completer: function (context) modules.completion.group(context)
             });
 
-            memoize(modules, "userContext",  function () contexts.Context(modules.io.getRCFile("~", true), contexts.user, [modules, true]));
-            memoize(modules, "_userContext", function () contexts.Context(modules.io.getRCFile("~", true), contexts.user, [modules.userContext]));
+            memoize(modules, "userContext",  () => contexts.Context(modules.io.getRCFile("~", true), contexts.user, [modules, true]));
+            memoize(modules, "_userContext", () => contexts.Context(modules.io.getRCFile("~", true), contexts.user, [modules.userContext]));
         },
 
         cleanup: function () {
@@ -187,8 +187,8 @@ var Contexts = Module("contexts", {
                 });
 
                 memoize(contexts.hives, name,
-                        function () Object.create(Object.create(contexts.hiveProto,
-                                                                { _hive: { value: name } })));
+                        () => Object.create(Object.create(contexts.hiveProto,
+                                                          { _hive: { value: name } })));
 
                 memoize(contexts.groupsProto, name,
                         function () [group[name] for (group in values(this.groups)) if (Set.has(group, name))]);
@@ -202,10 +202,10 @@ var Contexts = Module("contexts", {
         const { contexts, io, newContext, plugins, userContext } = this.modules;
 
         let isPlugin = array.nth(io.getRuntimeDirectories("plugins"),
-                                 function (dir) dir.contains(file, true),
+                                 dir => dir.contains(file, true),
                                  0);
         let isRuntime = array.nth(io.getRuntimeDirectories(""),
-                                  function (dir) dir.contains(file, true),
+                                  dir => dir.contains(file, true),
                                   0);
 
         let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-")
@@ -305,7 +305,7 @@ var Contexts = Module("contexts", {
             var file = File(uri.file);
 
         let isPlugin = array.nth(io.getRuntimeDirectories("plugins"),
-                                 function (dir) dir.contains(file, true),
+                                 dir => dir.contains(file, true),
                                  0);
 
         let name = isPlugin && file && file.getRelativeDescriptor(isPlugin)
@@ -413,7 +413,7 @@ var Contexts = Module("contexts", {
 
     initializedGroups: function (hive)
         let (need = hive ? [hive] : Object.keys(this.hives))
-            this.groupList.filter(function (group) need.some(Set.has(group))),
+            this.groupList.filter(group => need.some(Set.has(group))),
 
     addGroup: function addGroup(name, description, filter, persist, replace) {
         let group = this.getGroup(name);
@@ -515,7 +515,7 @@ var Contexts = Module("contexts", {
                               for ([i, name] in Iterator(params)));
 
         let rhs = args.literalArg;
-        let type = ["-builtin", "-ex", "-javascript", "-keys"].reduce(function (a, b) args[b] ? b : a, default_);
+        let type = ["-builtin", "-ex", "-javascript", "-keys"].reduce((a, b) => args[b] ? b : a, default_);
 
         switch (type) {
         case "-builtin":
@@ -544,7 +544,7 @@ var Contexts = Module("contexts", {
                 action = dactyl.userEval("(function action() { with (action.makeParams(this, arguments)) {" + args.literalArg + "} })");
             else
                 action = dactyl.userFunc.apply(dactyl, params.concat(args.literalArg));
-            process = function (param) isObject(param) && param.valueOf ? param.valueOf() : param;
+            process = param => isObject(param) && param.valueOf ? param.valueOf() : param;
             action.params = params;
             action.makeParams = makeParams;
             break;
@@ -707,7 +707,7 @@ var Contexts = Module("contexts", {
                 util.assert(args.bang ^ !!args[0], _("error.argumentOrBang"));
 
                 if (args.bang)
-                    contexts.groupList = contexts.groupList.filter(function (g) g.builtin);
+                    contexts.groupList = contexts.groupList.filter(g => g.builtin);
                 else {
                     util.assert(contexts.getGroup(args[0]), _("group.noSuch", args[0]));
                     contexts.removeGroup(args[0]);
@@ -719,7 +719,7 @@ var Contexts = Module("contexts", {
                 completer: function (context, args) {
                     if (args.bang)
                         return;
-                    context.filters.push(function ({ item }) !item.builtin);
+                    context.filters.push(({ item }) => !item.builtin);
                     modules.completion.group(context);
                 }
             });
@@ -805,7 +805,7 @@ var Contexts = Module("contexts", {
             iter({ Active: true, Inactive: false }).forEach(function ([name, active]) {
                 context.split(name, null, function (context) {
                     context.title[0] = name + " Groups";
-                    context.filters.push(function ({ item }) !!item.filter(modules.buffer.uri) == active);
+                    context.filters.push(({ item }) => !!item.filter(modules.buffer.uri) == active);
                 });
             });
         };

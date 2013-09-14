@@ -57,22 +57,22 @@ Highlight.defaultValue("sites", function ()
 Highlight.defaultValue("style", function ()
     styles.system.add("highlight:" + this.class, this.sites, this.css, this.agent, true));
 
-Highlight.defaultValue("defaultExtends", function () []);
-Highlight.defaultValue("defaultValue", function () "");
+Highlight.defaultValue("defaultExtends", () => []);
+Highlight.defaultValue("defaultValue", () => "");
 Highlight.defaultValue("extends", function () this.defaultExtends);
 Highlight.defaultValue("value", function () this.defaultValue);
 
 update(Highlight.prototype, {
     get base() this.baseClass != this.class && highlight.highlight[this.baseClass] || null,
 
-    get bases() array.compact(this.extends.map(function (name) highlight.get(name))),
+    get bases() array.compact(this.extends.map(name => highlight.get(name))),
 
     get inheritedCSS() {
         if (this.gettingCSS)
             return "";
         try {
             this.gettingCSS = true;
-            return this.bases.map(function (b) b.cssText.replace(/;?\s*$/, "; ")).join("");
+            return this.bases.map(b => b.cssText.replace(/;?\s*$/, "; ")).join("");
         }
         finally {
             this.gettingCSS = false;
@@ -100,7 +100,7 @@ var Highlights = Module("Highlight", {
 
     keys: function keys() Object.keys(this.highlight).sort(),
 
-    __iterator__: function () values(this.highlight).sort(function (a, b) String.localeCompare(a.class, b.class))
+    __iterator__: function () values(this.highlight).sort((a, b) => String.localeCompare(a.class, b.class))
                                                     .iterValues(),
 
     _create: function _create(agent, args) {
@@ -282,8 +282,8 @@ var Highlights = Module("Highlight", {
      */
     loadCSS: function loadCSS(css, eager) {
         String.replace(css, /\\\n/g, "")
-              .replace(this.groupRegexp, function (m, m1, m2) m1 + " " + m2.replace(/\n\s*/g, " "))
-              .split("\n").filter(function (s) /\S/.test(s) && !/^\s*\/\//.test(s))
+              .replace(this.groupRegexp, (m, m1, m2) => m1 + " " + m2.replace(/\n\s*/g, " "))
+              .split("\n").filter(s => /\S/.test(s) && !/^\s*\/\//.test(s))
               .forEach(function (highlight) {
 
             let bang = eager || /^\s*!/.test(highlight);
@@ -352,7 +352,7 @@ var Highlights = Module("Highlight", {
                              "text-align: center"],
                             ([h.class,
                               ["span", { style: "text-align: center; line-height: 1em;" + h.value + style }, "XXX"],
-                              template.map(h.extends, function (s) template.highlight(s), ","),
+                              template.map(h.extends, s => template.highlight(s), ","),
                               template.highlightRegexp(h.value, /\b[-\w]+(?=:)|\/\*.*?\*\//g,
                                                        function (match) ["span", { highlight: match[0] == "/" ? "Comment" : "Key" }, match])
                              ]
@@ -395,7 +395,7 @@ var Highlights = Module("Highlight", {
                         completer: function (context, args) {
                             let group = args[0] && highlight.get(args[0]);
                             if (group)
-                                context.fork("extra", 0, this, function (context) [
+                                context.fork("extra", 0, this, context => [
                                      [String(group.extends), _("option.currentValue")],
                                      [String(group.defaultExtends) || "", _("option.defaultValue")]
                                 ]);
@@ -428,8 +428,8 @@ var Highlights = Module("Highlight", {
             context.completions =
                 array.flatten(
                         io.getRuntimeDirectories("colors").map(
-                            function (dir) dir.readDirectory().filter(
-                                function (file) extRe.test(file.leafName))))
+                            dir => dir.readDirectory().filter(
+                                file => extRe.test(file.leafName))))
                      .concat([
                         { leafName: "default", parent: { path: /*L*/"Revert to builtin colorscheme" } }
                      ]);
@@ -442,10 +442,10 @@ var Highlights = Module("Highlight", {
         };
     },
     javascript: function initJavascript(dactyl, modules, window) {
-        modules.JavaScript.setCompleter(["get", "set"].map(function (m) highlight[m]),
-            [ function (context, obj, args) Iterator(highlight.highlight) ]);
-        modules.JavaScript.setCompleter(["highlightNode"].map(function (m) highlight[m]),
-            [ null, function (context, obj, args) Iterator(highlight.highlight) ]);
+        modules.JavaScript.setCompleter(["get", "set"].map(m => highlight[m]),
+            [ (context, obj, args) => Iterator(highlight.highlight) ]);
+        modules.JavaScript.setCompleter(["highlightNode"].map(m => highlight[m]),
+            [ null, (context, obj, args) => Iterator(highlight.highlight) ]);
     }
 });
 

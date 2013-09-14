@@ -27,7 +27,7 @@ update(Bookmark.prototype, {
     get extra() [
         ["keyword", this.keyword,         "Keyword"],
         ["tags",    this.tags.join(", "), "Tag"]
-    ].filter(function (item) item[1]),
+    ].filter(item => item[1]),
 
     get uri() newURI(this.url),
     set uri(uri) {
@@ -90,7 +90,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     keywords: Class.Memoize(function () array.toObject([[b.keyword, b] for (b in this) if (b.keyword)])),
 
     rootFolders: ["toolbarFolder", "bookmarksMenuFolder", "unfiledBookmarksFolder"]
-        .map(function (s) services.bookmarks[s]),
+        .map(s => services.bookmarks[s]),
 
     _deleteBookmark: function deleteBookmark(id) {
         let result = this.bookmarks[id] || null;

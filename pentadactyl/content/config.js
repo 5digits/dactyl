@@ -21,7 +21,7 @@ var Config = Module("config", ConfigBase, {
                 function () { window.openDialog("chrome://browser/content/bookmarks/bookmarksPanel.xul", "Bookmarks", "dialog,centerscreen,width=600,height=600"); }],
             checkupdates: ["Check for updates",
                 function () { window.checkForUpdates(); },
-                function () "checkForUpdates" in window],
+                () => "checkForUpdates" in window],
             cookies: ["List your cookies",
                 function () { window.toOpenWindowByType("Browser:Cookies", "chrome://browser/content/preferences/cookies.xul", "chrome,dialog=no,resizable"); }],
             console: ["JavaScript console",
@@ -30,7 +30,7 @@ var Config = Module("config", ConfigBase, {
                 function () { window.BrowserCustomizeToolbar(); }],
             dominspector: ["DOM Inspector",
                 function () { window.inspectDOMDocument(window.content.document); },
-                function () "inspectDOMDocument" in window],
+                () => "inspectDOMDocument" in window],
             downloads: ["Manage Downloads",
                 function () { window.BrowserDownloadsUI(); }],
             history: ["List your history",
@@ -63,7 +63,7 @@ var Config = Module("config", ConfigBase, {
                 function () { modules.buffer.viewSelectionSource(); }],
             venkman: ["The JavaScript debugger",
                 function () { dactyl.assert("start_venkman" in window, "Venkman is not installed"); window.start_venkman() },
-                function () "start_venkman" in window]
+                () => "start_venkman" in window]
         },
 
         removeTab: function removeTab(tab) {
@@ -211,8 +211,8 @@ var Config = Module("config", ConfigBase, {
         completion.sidebar = function sidebar(context) {
             let menu = document.getElementById("viewSidebarMenu");
             context.title = ["Sidebar Panel"];
-            context.completions = Array.filter(menu.childNodes, function (n) n.hasAttribute("label"))
-                                       .map(function (n) [n.getAttribute("label"), ""]);
+            context.completions = Array.filter(menu.childNodes, n => n.hasAttribute("label"))
+                                       .map(n => [n.getAttribute("label"), ""]);
         };
     },
     events: function initEvents(dactyl, modules, window) {
@@ -226,7 +226,7 @@ var Config = Module("config", ConfigBase, {
         mappings.add([modes.NORMAL],
                      ["<Return>", "<Up>", "<Down>"],
                      "Handled by " + config.host,
-                     function () Events.PASS_THROUGH);
+                     () => Events.PASS_THROUGH);
     },
     options: function initOptions(dactyl, modules, window) {
         modules.options.add(["online"],

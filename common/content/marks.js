@@ -30,7 +30,7 @@ var Marks = Module("marks", {
      */
     get all() iter(this._localMarks.get(this.localURI) || {},
                    this._urlMarks
-                  ).sort(function (a, b) String.localeCompare(a[0], b[0])),
+                  ).sort((a, b) => String.localeCompare(a[0], b[0])),
 
     get localURI() buffer.focusedFrame.document.documentURI.replace(/#.*/, ""),
 
@@ -137,7 +137,7 @@ var Marks = Module("marks", {
         let store = buffer.localStore;
         return {
             index: store.jumpsIndex,
-            locations: store.jumps.map(function (j) j.mark)
+            locations: store.jumps.map(j => j.mark)
         };
     },
 
@@ -260,7 +260,7 @@ var Marks = Module("marks", {
 
         if (filter.length > 0) {
             let pattern = util.charListToRegexp(filter, "a-zA-Z");
-            marks = marks.filter(function ([k, ]) pattern.test(k));
+            marks = marks.filter(([k, ]) => pattern.test(k));
             dactyl.assert(marks.length > 0, _("mark.noMatching", filter.quote()));
         }
 
@@ -376,9 +376,9 @@ var Marks = Module("marks", {
             function percent(i) Math.round(i * 100);
 
             context.title = ["Mark", "HPos VPos File"];
-            context.keys.description = function ([, m]) (m.offset ? Math.round(m.offset.x) + " " + Math.round(m.offset.y)
-                                                                  : percent(m.position.x) + "% " + percent(m.position.y) + "%"
-                                                        ) + " " + m.location;
+            context.keys.description = ([, m]) => (m.offset ? Math.round(m.offset.x) + " " + Math.round(m.offset.y)
+                                                            : percent(m.position.x) + "% " + percent(m.position.y) + "%"
+                                                  ) + " " + m.location;
             context.completions = marks.all;
         };
     },

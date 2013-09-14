@@ -50,7 +50,7 @@ var Map = Class("Map", {
     /** @property {[string]} All of this mapping's names (key sequences). */
     names: Class.Memoize(function () this._keys.map(function (k) DOM.Event.canonicalKeys(k))),
 
-    get toStringParams() [this.modes.map(function (m) m.name), this.names.map(String.quote)],
+    get toStringParams() [this.modes.map(m => m.name), this.names.map(String.quote)],
 
     get identifier() [this.modes[0].name, this.hive.prefix + this.names[0]].join("."),
 
@@ -171,9 +171,9 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      */
     iterate: function (modes) {
         let stacks = Array.concat(modes).map(this.closure.getStack);
-        return values(stacks.shift().sort(function (m1, m2) String.localeCompare(m1.name, m2.name))
-            .filter(function (map) map.rhs &&
-                stacks.every(function (stack) stack.some(function (m) m.rhs && m.rhs === map.rhs && m.name === map.name))));
+        return values(stacks.shift().sort((m1, m2) => String.localeCompare(m1.name, m2.name))
+            .filter(map => map.rhs &&
+                stacks.every(stack => stack.some(m => m.rhs && m.rhs === map.rhs && m.name === map.name))));
     },
 
     /**
@@ -263,7 +263,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
                 map.names.splice(j, 1);
                 if (map.names.length == 0) // FIX ME.
                     for (let [mode, stack] in Iterator(this.stacks))
-                        this.stacks[mode] = MapHive.Stack(stack.filter(function (m) m != map));
+                        this.stacks[mode] = MapHive.Stack(stack.filter(m => m != map));
                 return;
             }
         }
@@ -352,15 +352,15 @@ var Mappings = Module("mappings", {
 
     get allHives() contexts.allGroups.mappings,
 
-    get userHives() this.allHives.filter(function (h) h !== this.builtin, this),
+    get userHives() this.allHives.filter(h => h !== this.builtin),
 
     expandLeader: deprecated("your brain", function expandLeader(keyString) keyString),
 
     prefixes: Class.Memoize(function () {
-        let list = Array.map("CASM", function (s) s + "-");
+        let list = Array.map("CASM", s => s + "-");
 
-        return iter(util.range(0, 1 << list.length)).map(function (mask)
-            list.filter(function (p, i) mask & (1 << i)).join("")).toArray().concat("*-");
+        return iter(util.range(0, 1 << list.length)).map(mask =>
+            list.filter((p, i) => mask & (1 << i)).join("")).toArray().concat("*-");
     }),
 
     expand: function expand(keys) {
@@ -371,7 +371,7 @@ var Mappings = Module("mappings", {
                 if (/^<\*-/.test(key))
                     return ["<", this.prefixes, key.slice(3)];
                 return key;
-            }, this).flatten().array).map(function (k) DOM.Event.canonicalKeys(k));
+            }, this).flatten().array).map(k => DOM.Event.canonicalKeys(k));
 
         if (keys != arguments[0])
             return [arguments[0]].concat(keys);
@@ -442,7 +442,7 @@ var Mappings = Module("mappings", {
      * @param {string} cmd The map name to match.
      * @returns {Map}
      */
-    get: function get(mode, cmd) this.hives.map(function (h) h.get(mode, cmd)).compact()[0] || null,
+    get: function get(mode, cmd) this.hives.map(h => h.get(mode, cmd)).compact()[0] || null,
 
     /**
      * Returns a count of maps with names starting with but not equal to
@@ -453,8 +453,8 @@ var Mappings = Module("mappings", {
      * @returns {[Map]}
      */
     getCandidates: function (mode, prefix)
-        this.hives.map(function (h) h.getCandidates(mode, prefix))
-                  .reduce(function (a, b) a + b, 0),
+        this.hives.map(h => h.getCandidates(mode, prefix))
+                  .reduce((a, b) => a + b, 0),
 
     /**
      * Lists all user-defined mappings matching *filter* for the specified
@@ -465,17 +465,17 @@ var Mappings = Module("mappings", {
      * @param {[MapHive]} hives The map hives to list. @optional
      */
     list: function (modes, filter, hives) {
-        let modeSign = modes.map(function (m) m.char || "").join("")
-                     + modes.map(function (m) !m.char ? " " + m.name : "").join("");
+        let modeSign = modes.map(m => m.char || "").join("")
+                     + modes.map(m => !m.char ? " " + m.name : "").join("");
         modeSign = modeSign.replace(/^ /, "");
 
-        hives = (hives || mappings.userHives).map(function (h) [h, maps(h)])
-                                             .filter(function ([h, m]) m.length);
+        hives = (hives || mappings.userHives).map(h => [h, maps(h)])
+                                             .filter(([h, m]) => m.length);
 
         function maps(hive) {
             let maps = iter.toArray(hive.iterate(modes));
             if (filter)
-                maps = maps.filter(function (m) m.names[0] === filter);
+                maps = maps.filter(m => m.names[0] === filter);
             return maps;
         }
 
@@ -486,10 +486,10 @@ var Mappings = Module("mappings", {
                     ["td", { style: "padding-right: 1em;" }, _("title.Command")],
                     ["td", { style: "padding-right: 1em;" }, _("title.Action")]],
                 ["col", { style: "min-width: 6em; padding-right: 1em;" }],
-                hives.map(function ([hive, maps]) let (i = 0) [
+                hives.map(([hive, maps]) => let (i = 0) [
                     ["tr", { style: "height: .5ex;" }],
-                    maps.map(function (map)
-                        map.names.map(function (name)
+                    maps.map(map =>
+                        map.names.map(name =>
                         ["tr", {},
                             ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
                             ["td", {}, modeSign],
@@ -526,7 +526,7 @@ var Mappings = Module("mappings", {
 
                 if (args[1] && !/^<nop>$/i.test(args[1])
                     && !args["-count"] && !args["-ex"] && !args["-javascript"]
-                    && mapmodes.every(function (m) m.count))
+                    && mapmodes.every(m => m.count))
                     args[1] = "<count>" + args[1];
 
                 let [lhs, rhs] = args;
@@ -541,7 +541,7 @@ var Mappings = Module("mappings", {
 
                     args["-group"].add(mapmodes, [lhs],
                         args["-description"],
-                        contexts.bindMacro(args, "-keys", function (params) params),
+                        contexts.bindMacro(args, "-keys", params => params),
                         {
                             arg: args["-arg"],
                             count: args["-count"] || !(args["-ex"] || args["-javascript"]),
@@ -614,8 +614,8 @@ var Mappings = Module("mappings", {
                 serialize: function () {
                     return this.name != "map" ? [] :
                         array(mappings.userHives)
-                            .filter(function (h) h.persist)
-                            .map(function (hive) [
+                            .filter(h => h.persist)
+                            .map(hive => [
                                 {
                                     command: "map",
                                     options: {
@@ -711,9 +711,9 @@ var Mappings = Module("mappings", {
         }
         function uniqueModes(modes) {
             let chars = [k for ([k, v] in Iterator(modules.modes.modeChars))
-                         if (v.every(function (mode) modes.indexOf(mode) >= 0))];
-            return array.uniq(modes.filter(function (m) chars.indexOf(m.char) < 0)
-                                   .map(function (m) m.name.toLowerCase())
+                         if (v.every(mode => modes.indexOf(mode) >= 0))];
+            return array.uniq(modes.filter(m => chars.indexOf(m.char) < 0)
+                                   .map(m => m.name.toLowerCase())
                                    .concat(chars));
         }
 
@@ -773,7 +773,7 @@ var Mappings = Module("mappings", {
                             : [],
                         template.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))
                 ],
-                help: function (map) let (char = array.compact(map.modes.map(function (m) m.char))[0])
+                help: function (map) let (char = array.compact(map.modes.map(m => m.char))[0])
                     char === "n" ? map.name : char ? char + "_" + map.name : "",
                 headings: ["Command", "Mode", "Group", "Description"]
             }

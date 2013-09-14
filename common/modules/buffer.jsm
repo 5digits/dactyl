@@ -61,10 +61,10 @@ var Buffer = Module("Buffer", {
      */
     get alternateStyleSheets() {
         let stylesheets = array.flatten(
-            this.allFrames().map(function (w) Array.slice(w.document.styleSheets)));
+            this.allFrames().map(w => Array.slice(w.document.styleSheets)));
 
         return stylesheets.filter(
-            function (stylesheet) /^(screen|all|)$/i.test(stylesheet.media.mediaText) && !/^\s*$/.test(stylesheet.title)
+            s => /^(screen|all|)$/i.test(s.media.mediaText) && !/^\s*$/.test(s.title)
         );
     },
 
@@ -142,8 +142,8 @@ var Buffer = Module("Buffer", {
      */
     get loaded() Math.min.apply(null,
         this.allFrames()
-            .map(function (frame) ["loading", "interactive", "complete"]
-                                      .indexOf(frame.document.readyState))),
+            .map(frame => ["loading", "interactive", "complete"]
+                              .indexOf(frame.document.readyState))),
 
     /**
      * @property {Object} The local state store for the currently selected
@@ -275,8 +275,8 @@ var Buffer = Module("Buffer", {
         })(win || this.win);
 
         if (focusedFirst)
-            return frames.filter(function (f) f === this.focusedFrame, this).concat(
-                   frames.filter(function (f) f !== this.focusedFrame, this));
+            return frames.filter(f => f === this.focusedFrame).concat(
+                   frames.filter(f => f !== this.focusedFrame));
         return frames;
     },
 
@@ -435,7 +435,7 @@ var Buffer = Module("Buffer", {
                 yield elem;
 
             function a(regexp, elem) regexp.test(elem.textContent) === regexp.result ||
-                            Array.some(elem.childNodes, function (child) regexp.test(child.alt) === regexp.result);
+                            Array.some(elem.childNodes, child => regexp.test(child.alt) === regexp.result);
             function b(regexp, elem) regexp.test(elem.title) === regexp.result;
 
             let res = Array.filter(frame.document.querySelectorAll(selector), Hints.isVisible);
@@ -541,7 +541,7 @@ var Buffer = Module("Buffer", {
         function getRanges(rect) {
             let nodes = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
                            .nodesFromRect(rect.x, rect.y, 0, rect.width, rect.height, 0, false, false);
-            return Array.filter(nodes, function (n) n instanceof Ci.nsIDOMText)
+            return Array.filter(nodes, n => n instanceof Ci.nsIDOMText)
                         .map(RangeFind.nodeContents);
         }
 
@@ -565,11 +565,11 @@ var Buffer = Module("Buffer", {
             rect = { x: w / 3, y: 0, width: w / 3, height: win.innerHeight };
         }
 
-        var reduce = function (a, b) DOM(a).rect.top < DOM(b).rect.top ? a : b;
+        var reduce = (a, b) => DOM(a).rect.top < DOM(b).rect.top ? a : b;
         var dir = "forward";
         var y = 0;
         if (reverse) {
-            reduce = function (a, b) DOM(b).rect.bottom > DOM(a).rect.bottom ? b : a;
+            reduce = (a, b) => DOM(b).rect.bottom > DOM(a).rect.bottom ? b : a;
             dir = "backward";
             y = win.innerHeight - 1;
         }
@@ -904,10 +904,10 @@ var Buffer = Module("Buffer", {
         let path = options["jumptags"][arg];
         util.assert(path, _("error.invalidArgument", arg));
 
-        let distance = reverse ? function (rect) -rect.top : function (rect) rect.top;
+        let distance = reverse ? rect => -rect.top : rect => rect.top;
         let elems = [[e, distance(e.getBoundingClientRect())] for (e in path.matcher(this.focusedFrame.document))]
-                        .filter(function (e) e[1] > FUDGE)
-                        .sort(function (a, b) a[1] - b[1]);
+                        .filter(e => e[1] > FUDGE)
+                        .sort((a, b) => a[1] - b[1]);
 
         if (offScreen && !reverse)
             elems = elems.filter(function (e) e[1] > this, this.topWindow.innerHeight);
@@ -941,8 +941,8 @@ var Buffer = Module("Buffer", {
             return;
 
         // remove all hidden frames
-        frames = frames.filter(function (frame) !(frame.document.body instanceof Ci.nsIDOMHTMLFrameSetElement))
-                       .filter(function (frame) !frame.frameElement ||
+        frames = frames.filter(frame => !(frame.document.body instanceof Ci.nsIDOMHTMLFrameSetElement))
+                       .filter(frame => !frame.frameElement ||
             let (rect = frame.frameElement.getBoundingClientRect())
                 rect.width && rect.height);
 
@@ -1003,7 +1003,7 @@ var Buffer = Module("Buffer", {
             let info = template.map(
                 (sections || options["pageinfo"])
                     .map((opt) => Buffer.pageInfo[opt].action.call(this)),
-                function (res) res && iter(res).join(", ") || undefined,
+                res => res && iter(res).join(", ") || undefined,
                 ", ").join("");
 
             if (bookmarkcache.isBookmarked(this.URL))
@@ -1443,9 +1443,9 @@ var Buffer = Module("Buffer", {
         names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")),
                     _("buffer.save.filename")]);
 
-        return names.filter(function ([leaf, title]) leaf)
-                    .map(function ([leaf, title]) [leaf.replace(config.OS.illegalCharacters, encodeURIComponent)
-                                                       .replace(re, ext), title]);
+        return names.filter(([leaf, title]) => leaf)
+                    .map(([leaf, title]) => [leaf.replace(config.OS.illegalCharacters, encodeURIComponent)
+                                                 .replace(re, ext), title]);
     },
 
     findScrollableWindow: deprecated("buffer.findScrollableWindow", function findScrollableWindow()
@@ -1801,7 +1801,7 @@ var Buffer = Module("Buffer", {
             function (args) {
                 let arg = args[0] || "";
 
-                let titles = buffer.alternateStyleSheets.map(function (stylesheet) stylesheet.title);
+                let titles = buffer.alternateStyleSheets.map(sheet => sheet.title);
 
                 dactyl.assert(!arg || titles.indexOf(arg) >= 0,
                               _("error.invalidArgument", arg));
@@ -2206,7 +2206,7 @@ var Buffer = Module("Buffer", {
 
                     let frames = buffer.allFrames(null, true);
 
-                    let elements = array.flatten(frames.map(function (win) [m for (m in DOM.XPath(xpath, win.document))]))
+                    let elements = array.flatten(frames.map(win => [m for (m in DOM.XPath(xpath, win.document))]))
                                         .filter(function (elem) {
                         if (isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
                                               Ci.nsIDOMHTMLIFrameElement]))
@@ -2388,7 +2388,7 @@ var Buffer = Module("Buffer", {
                     return vals;
                 },
                 validator: function (value) DOM.validateMatcher.call(this, value)
-                    && Object.keys(value).every(function (v) v.length == 1)
+                    && Object.keys(value).every(v => v.length == 1)
             });
 
         options.add(["linenumbers", "ln"],
@@ -2413,7 +2413,7 @@ var Buffer = Module("Buffer", {
                                 var res = dactyl.userEval("(" + Option.dequote(filter.result.substr(5)) + ")")(doc, line);
                             else
                                 res = iter.nth(filter.matcher(doc),
-                                               function (elem) (elem.nodeValue || elem.textContent).trim() == line && DOM(elem).display != "none",
+                                               elem => (elem.nodeValue || elem.textContent).trim() == line && DOM(elem).display != "none",
                                                0)
                                    || iter.nth(filter.matcher(doc), util.identity, line - 1);
                             if (res)
@@ -2656,9 +2656,9 @@ Buffer.addPageInfoSection("m", "Meta Tags", function (verbose) {
     // get meta tag data, sort and put into pageMeta[]
     let metaNodes = this.focusedFrame.document.getElementsByTagName("meta");
 
-    return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv),
-                                                 template.highlightURL(node.content)])
-                .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
+    return Array.map(metaNodes, node => [(node.name || node.httpEquiv),
+                                         template.highlightURL(node.content)])
+                .sort((a, b) => util.compareIgnoreCase(a[0], b[0]));
 });
 
 Buffer.addPageInfoSection("s", "Security", function (verbose) {

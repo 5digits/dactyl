@@ -15,7 +15,7 @@ function module(uri) Cu.import(uri, {});
 
 const DEBUG = true;
 
-__defineGetter__("BOOTSTRAP", function () "resource://" + moduleName + "/bootstrap.jsm");
+__defineGetter__("BOOTSTRAP", () => "resource://" + moduleName + "/bootstrap.jsm");
 
 var { AddonManager } = module("resource://gre/modules/AddonManager.jsm");
 var { XPCOMUtils }   = module("resource://gre/modules/XPCOMUtils.jsm");
@@ -125,7 +125,7 @@ let JSMLoader = {
     _load: function _load(name, target) {
         let urls = [name];
         if (name.indexOf(":") === -1)
-            urls = this.config["module-paths"].map(function (path) path + name + ".jsm");
+            urls = this.config["module-paths"].map(path => path + name + ".jsm");
 
         for each (let url in urls)
             try {

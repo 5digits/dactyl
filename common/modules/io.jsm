@@ -74,8 +74,8 @@ var IO = Module("io", {
          */
         getRuntimeDirectories: function getRuntimeDirectories(name) {
             return modules.options.get("runtimepath").files
-                .map(function (dir) dir.child(name))
-                .filter(function (dir) dir.exists() && dir.isDirectory() && dir.isReadable());
+                .map(dir => dir.child(name))
+                .filter(dir => dir.exists() && dir.isDirectory() && dir.isReadable());
         },
 
         // FIXME: multiple paths?
@@ -502,7 +502,7 @@ var IO = Module("io", {
 
             function async(status) {
                 let output = stdout.read();
-                [stdin, stdout, cmd].forEach(function (f) f.exists() && f.remove(false));
+                [stdin, stdout, cmd].forEach(f => f.exists() && f.remove(false));
                 callback(result(status, output));
             }
 
@@ -550,7 +550,7 @@ var IO = Module("io", {
         }
         finally {
             if (!checked || res !== true)
-                args.forEach(function (f) f.remove(false));
+                args.forEach(f => f.remove(false));
         }
         return res;
     }
@@ -806,7 +806,7 @@ unlet s:cpo_save
                         lines.last.push(item, sep);
                     }
                     lines.last.pop();
-                    return lines.map(function (l) l.join("")).join("\n").replace(/\s+\n/gm, "\n");
+                    return lines.map(l => l.join("")).join("\n").replace(/\s+\n/gm, "\n");
                 }//}}}
 
                 let params = { //{{{
@@ -904,7 +904,7 @@ unlet s:cpo_save
                         _("command.run.noPrevious"));
 
                     arg = arg.replace(/(\\)*!/g,
-                        function (m) /^\\(\\\\)*!$/.test(m) ? m.replace("\\!", "!") : m.replace("!", io._lastRunCommand)
+                        m => /^\\(\\\\)*!$/.test(m) ? m.replace("\\!", "!") : m.replace("!", io._lastRunCommand)
                     );
                 }
 
@@ -942,21 +942,21 @@ unlet s:cpo_save
                     }
                 }
             };
-            context.generate = function () iter(services.charset.getDecoderList());
+            context.generate = () => iter(services.charset.getDecoderList());
         };
 
         completion.directory = function directory(context, full) {
             this.file(context, full);
-            context.filters.push(function (item) item.isdir);
+            context.filters.push(item => item.isdir);
         };
 
         completion.environment = function environment(context) {
             context.title = ["Environment Variable", "Value"];
-            context.generate = function ()
+            context.generate = () =>
                 io.system(config.OS.isWindows ? "set" : "env")
                   .output.split("\n")
-                  .filter(function (line) line.indexOf("=") > 0)
-                  .map(function (line) line.match(/([^=]+)=(.*)/).slice(1));
+                  .filter(line => line.indexOf("=") > 0)
+                  .map(line => line.match(/([^=]+)=(.*)/).slice(1));
         };
 
         completion.file = function file(context, full, dir) {
@@ -983,10 +983,10 @@ unlet s:cpo_save
                 icon: function (f) this.isdir ? "resource://gre/res/html/folder.png"
                                               : "moz-icon://" + f.leafName
             };
-            context.compare = function (a, b) b.isdir - a.isdir || String.localeCompare(a.text, b.text);
+            context.compare = (a, b) => b.isdir - a.isdir || String.localeCompare(a.text, b.text);
 
             if (modules.options["wildignore"])
-                context.filters.push(function (item) !modules.options.get("wildignore").getKey(item.path));
+                context.filters.push(item => !modules.options.get("wildignore").getKey(item.path));
 
             // context.background = true;
             context.key = dir;
@@ -1054,7 +1054,7 @@ unlet s:cpo_save
                 if (!match.path) {
                     context.key = match.proto;
                     context.advance(match.proto.length);
-                    context.generate = function () config.chromePackages.map(function (p) [p, match.proto + p + "/"]);
+                    context.generate = () => config.chromePackages.map(p => [p, match.proto + p + "/"]);
                 }
                 else if (match.scheme === "chrome") {
                     context.key = match.prefix;
@@ -1121,8 +1121,8 @@ unlet s:cpo_save
             "List of directories searched when executing :cd",
             "stringlist", ["."].concat(services.environment.get("CDPATH").split(/[:;]/).filter(util.identity)).join(","),
             {
-                get files() this.value.map(function (path) File(path, modules.io.cwd))
-                                .filter(function (dir) dir.exists()),
+                get files() this.value.map(path => File(path, modules.io.cwd))
+                                .filter(dir => dir.exists()),
                 setter: function (value) File.expandPathList(value)
             });
 
@@ -1130,8 +1130,8 @@ unlet s:cpo_save
             "List of directories searched for runtime files",
             "stringlist", IO.runtimePath,
             {
-                get files() this.value.map(function (path) File(path, modules.io.cwd))
-                                .filter(function (dir) dir.exists())
+                get files() this.value.map(path => File(path, modules.io.cwd))
+                                .filter(dir => dir.exists())
             });
 
         options.add(["shell", "sh"],

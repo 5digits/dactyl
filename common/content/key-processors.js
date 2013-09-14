@@ -20,11 +20,11 @@ var ProcessorStack = Class("ProcessorStack", {
         this.modes = array([mode.params.keyModes, main, mode.main.allBases.slice(1)]).flatten().compact();
 
         if (builtin)
-            hives = hives.filter(function (h) h.name === "builtin");
+            hives = hives.filter(h => h.name === "builtin");
 
-        this.processors = this.modes.map(function (m) hives.map(function (h) KeyProcessor(m, h)))
+        this.processors = this.modes.map(m => hives.map(h => KeyProcessor(m, h)))
                                     .flatten().array;
-        this.ownsBuffer = !this.processors.some(function (p) p.main.ownsBuffer);
+        this.ownsBuffer = !this.processors.some(p => p.main.ownsBuffer);
 
         for (let [i, input] in Iterator(this.processors)) {
             let params = input.main.params;
@@ -134,17 +134,17 @@ var ProcessorStack = Class("ProcessorStack", {
             events.passing = true;
 
         if (result === Events.PASS_THROUGH && this.keyEvents.length)
-            events.dbg("PASS_THROUGH:\n\t" + this.keyEvents.map(function (e) [e.type, DOM.Event.stringify(e)]).join("\n\t"));
+            events.dbg("PASS_THROUGH:\n\t" + this.keyEvents.map(e => [e.type, DOM.Event.stringify(e)]).join("\n\t"));
 
         if (result === Events.PASS_THROUGH)
             events.feedevents(null, this.keyEvents, { skipmap: true, isMacro: true, isReplay: true });
         else {
-            let list = this.events.filter(function (e) e.getPreventDefault() && !e.dactylDefaultPrevented);
+            let list = this.events.filter(e => e.getPreventDefault() && !e.dactylDefaultPrevented);
 
             if (result === Events.PASS)
-                events.dbg("PASS THROUGH: " + list.slice(0, length).filter(function (e) e.type === "keypress").map(DOM.Event.closure.stringify));
+                events.dbg("PASS THROUGH: " + list.slice(0, length).filter(e => e.type === "keypress").map(DOM.Event.closure.stringify));
             if (list.length > length)
-                events.dbg("REFEED: " + list.slice(length).filter(function (e) e.type === "keypress").map(DOM.Event.closure.stringify));
+                events.dbg("REFEED: " + list.slice(length).filter(e => e.type === "keypress").map(DOM.Event.closure.stringify));
 
             if (result === Events.PASS)
                 events.feedevents(null, list.slice(0, length), { skipmap: true, isMacro: true, isReplay: true });
