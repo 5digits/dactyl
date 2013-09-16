@@ -227,6 +227,10 @@ var Abbreviations = Module("abbreviations", {
         */), "x", params);
     },
 
+    get allHives() contexts.allGroups.abbrevs,
+
+    get userHives() this.allHives.filter(h => h !== this.builtin),
+
     get: deprecated("group.abbrevs.get", { get: function get() this.user.closure.get }),
     set: deprecated("group.abbrevs.set", { get: function set() this.user.closure.set }),
     remove: deprecated("group.abbrevs.remove", { get: function remove() this.user.closure.remove }),
@@ -257,7 +261,7 @@ var Abbreviations = Module("abbreviations", {
      * @optional
      */
     list: function (modes, lhs, hives) {
-        let hives = hives || contexts.allGroups.abbrevs.filter(h => !h.empty);
+        let hives = (hives || this.userHives).filter(h => !h.empty);
 
         function abbrevs(hive)
             hive.merged.filter(ab => (ab.inModes(modes) && ab.lhs.indexOf(lhs) == 0));
@@ -341,18 +345,22 @@ var Abbreviations = Module("abbreviations", {
                             description: "Expand this abbreviation by evaluating its right-hand-side as JavaScript"
                         }
                     ],
-                    serialize: function () [
-                        {
-                            command: this.name,
-                            arguments: [abbr.lhs],
-                            literalArg: abbr.rhs,
-                            options: {
-                                "-javascript": callable(abbr.rhs) ? null : undefined
+                    serialize: function () array(abbreviations.userHives)
+                        .filter(h => h.persist)
+                        .map(hive => [
+                            {
+                                command: this.name,
+                                arguments: [abbr.lhs],
+                                literalArg: abbr.rhs,
+                                options: {
+                                    "-group": hive.name == "user" ? undefined : hive.name,
+                                    "-javascript": callable(abbr.rhs) ? null : undefined
+                                }
                             }
-                        }
-                        for ([, abbr] in Iterator(abbreviations.user.merged))
-                        if (abbr.modesEqual(modes))
-                    ]
+                            for ([, abbr] in Iterator(hive.merged))
+                            if (abbr.modesEqual(modes))
+                        ]).
+                        flatten().array
                 });
 
             commands.add([ch + "una[bbreviate]"],
