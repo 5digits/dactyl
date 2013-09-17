@@ -532,9 +532,9 @@
         </p>
 
         <p>
-            The order is important, such that <se opt="complete"><str delim="">bsf</str></se> will
-            list bookmarks followed by matching quick searches and then
-            matching files.
+            The order is important, such that <se opt="complete">
+            <str delim="">bookmark,search,file</str></se> will list bookmarks
+            followed by matching quick searches and then matching files.
         </p>
 
         <note>
