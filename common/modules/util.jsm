@@ -747,7 +747,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     httpGet: function httpGet(url, callback, self) {
         let params = callback;
         if (!isObject(params))
-            params = { callback: params && (() => callback.apply(self, arguments)) };
+            params = { callback: params && ((...args) => callback.apply(self, args)) };
 
         try {
             let xmlhttp = services.Xmlhttp();

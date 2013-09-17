@@ -441,7 +441,7 @@ function curry(fn, length, self, acc) {
         return fn;
 
     // Close over function with 'this'
-    function close(self, fn) () => fn.apply(self, arguments);
+    function close(self, fn) (...args) => fn.apply(self, args);
 
     if (acc == null)
         acc = [];
