@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2013 Kris Maglione <maglione.k@gmail.com>
 // Copyright (c) 2009-2010 by Doug Kearns <dougkearns@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
@@ -64,7 +64,7 @@ var updateAddons = Class("UpgradeListener", AddonListener, {
         install.install();
     },
     onUpdateFinished: function (addon, error) {
-        this.remaining = this.remaining.filter(a => a.type != addon.type || a.id != addon.id);
+        this.remaining = this.remaining.filter(a => (a.type != addon.type || a.id != addon.id));
         if (!this.remaining.length)
             this.dactyl.echomsg(
                 this.upgrade.length
@@ -118,8 +118,10 @@ var actions = {
             });
         },
         get filter() {
-            return addon => !addon.userDisabled &&
-                !(addon.operationsRequiringRestart & (AddonManager.OP_NEEDS_RESTART_ENABLE | AddonManager.OP_NEEDS_RESTART_DISABLE));
+            return addon => (
+                !addon.userDisabled &&
+                !(addon.operationsRequiringRestart & (AddonManager.OP_NEEDS_RESTART_ENABLE
+                                                     | AddonManager.OP_NEEDS_RESTART_DISABLE)));
         },
         perm: "disable"
     },
@@ -420,7 +422,7 @@ var Addons = Module("addons", {
 
                     AddonManager.getAddonsByTypes(args["-types"], dactyl.wrapCallback(function (list) {
                         if (!args.bang || command.bang) {
-                            list = list.filter(addon => addon.id == name || addon.name == name);
+                            list = list.filter(addon => (addon.id == name || addon.name == name));
                             dactyl.assert(list.length, _("error.invalidArgument", name));
                             dactyl.assert(list.some(ok), _("error.invalidOperation"));
                             list = list.filter(ok);
@@ -429,7 +431,7 @@ var Addons = Module("addons", {
                         if (command.actions)
                             command.actions(list, this.modules);
                         else
-                            list.forEach(addon => command.action.call(this.modules, addon, args.bang));
+                            list.forEach(addon => { command.action.call(this.modules, addon, args.bang) });
                     }));
                 }, {
                     argCount: "?", // FIXME: should be "1"
@@ -475,7 +477,7 @@ var Addons = Module("addons", {
             context.title = ["Add-on"];
             context.anchored = false;
             context.keys = {
-                text: function (addon) [addon.name, addon.id],
+                text: addon => [addon.name, addon.id],
                 description: "description",
                 icon: "iconURL"
             };

@@ -929,14 +929,14 @@ Class.prototype = {
             return callback.call(self || this);
         }
         finally {
-            names.forEach((name, i) => this[name] = vals[i]);
+            names.forEach((name, i) => { this[name] = vals[i]; });
         }
     },
 
     toString: function C_toString() {
         if (this.toStringParams)
-            var params = "(" + this.toStringParams.map(m => isArray(m)  ? "[" + m + "]" :
-                                                            isString(m) ? m.quote() : String(m))
+            var params = "(" + this.toStringParams.map(m => (isArray(m)  ? "[" + m + "]" :
+                                                             isString(m) ? m.quote() : String(m)))
                                    .join(", ") + ")";
         return "[instance " + this.constructor.className + (params || "") + "]";
     },
@@ -1172,7 +1172,7 @@ Module.INIT = {
             module.isLocalModule = true;
 
             modules.jsmodules[this.constructor.className] = module;
-            locals.reverse().forEach((fn, i) => update(objs[i], fn.apply(module, args)));
+            locals.reverse().forEach((fn, i) => { update(objs[i], fn.apply(module, args)); });
 
             memoize(module, "closure", Class.makeClosure);
             module.instance = module;

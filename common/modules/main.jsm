@@ -151,7 +151,7 @@ var Modules = function Modules(window) {
                 Object.getOwnPropertyNames(this)
                       .map(name => Object.getOwnPropertyDescriptor(this, name).value)),
 
-        get moduleList() this.ownPropertyValues.filter(mod => mod instanceof this.ModuleBase || mod.isLocalModule)
+        get moduleList() this.ownPropertyValues.filter(mod => (mod instanceof this.ModuleBase || mod.isLocalModule))
     });
 
     modules.plugins = create(modules);
@@ -161,7 +161,8 @@ var Modules = function Modules(window) {
 
 config.loadStyles();
 
-overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
+overlay.overlayWindow(Object.keys(config.overlays),
+                      function _overlay(window) ({
     ready: function onInit(document) {
         const modules = Modules(window);
         modules.moduleManager = this;
@@ -179,7 +180,7 @@ overlay.overlayWindow(Object.keys(config.overlays), function _overlay(window) ({
                   });
 
             config.modules.window
-                  .forEach(name => defineModule.time("load", name, modules.load, modules, name));
+                  .forEach(name => { defineModule.time("load", name, modules.load, modules, name); });
         }, this);
     },
 

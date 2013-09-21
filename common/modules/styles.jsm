@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -36,7 +36,7 @@ Sheet.liveProperty("sites");
 update(Sheet.prototype, {
     formatSites: function (uris)
           template.map(this.sites,
-                       function (filter) ["span", { highlight: uris.some(Styles.matchFilter(filter)) ? "Filter" : "" }, filter],
+                       filter => ["span", { highlight: uris.some(Styles.matchFilter(filter)) ? "Filter" : "" }, filter],
                        ","),
 
     remove: function () { this.hive.remove(this); },
@@ -102,7 +102,8 @@ var Hive = Class("Hive", {
         this.dropRef(null);
     },
     dropRef: function (obj) {
-        this.refs = this.refs.filter(ref => ref.get() && ref.get() !== obj);
+        this.refs = this.refs.filter(ref => (ref.get() && ref.get() !== obj));
+
         if (!this.refs.length) {
             this.cleanup();
             styles.hives = styles.hives.filter(h => h !== this);
@@ -116,7 +117,9 @@ var Hive = Class("Hive", {
 
     __iterator__: function () Iterator(this.sheets),
 
-    get sites() array(this.sheets).map(s => s.sites).flatten().uniq().array,
+    get sites() array(this.sheets).map(s => s.sites)
+                                  .flatten()
+                                  .uniq().array,
 
     /**
      * Add a new style sheet.
@@ -189,6 +192,7 @@ var Hive = Class("Hive", {
             matches = matches.filter(i => this.sheets[i].css == css);
         if (filter)
             matches = matches.filter(i => this.sheets[i].sites.indexOf(filter) >= 0);
+
         return matches.map(i => this.sheets[i]);
     },
 
@@ -273,7 +277,8 @@ var Styles = Module("Styles", {
     },
 
     addHive: function addHive(name, ref, persist) {
-        let hive = array.nth(this.hives, h => h.name === name, 0);
+        let hive = array.nth(this.hives, h => h.name === name,
+                             0);
         if (!hive) {
             hive = Hive(name, persist);
             this.hives.push(hive);
@@ -304,14 +309,14 @@ var Styles = Module("Styles", {
     list: function list(content, sites, name, hives) {
         const { commandline, dactyl } = this.modules;
 
-        hives = hives || styles.hives.filter(h => h.modifiable && h.sheets.length);
+        hives = hives || styles.hives.filter(h => (h.modifiable && h.sheets.length));
 
         function sheets(group)
             group.sheets.slice()
-                 .filter(sheet => (!name || sheet.name === name) &&
-                                  (!sites || sites.every(s => sheet.sites.indexOf(s) >= 0)))
-                 .sort((a, b) => a.name && b.name ? String.localeCompare(a.name, b.name)
-                                                        : !!b.name - !!a.name || a.id - b.id);
+                 .filter(sheet => ((!name || sheet.name === name) &&
+                                   (!sites || sites.every(s => sheet.sites.indexOf(s) >= 0))))
+                 .sort((a, b) => (a.name && b.name ? String.localeCompare(a.name, b.name)
+                                                   : !!b.name - !!a.name || a.id - b.id));
 
         let uris = util.visibleURIs(content);
 
@@ -622,7 +627,8 @@ var Styles = Module("Styles", {
                         .filter(hive => hive.persist)
                         .map(hive =>
                              hive.sheets.filter(style => style.persist)
-                                 .sort((a, b) => String.localeCompare(a.name || "", b.name || ""))
+                                 .sort((a, b) => String.localeCompare(a.name || "",
+                                                                      b.name || ""))
                                  .map(style => ({
                                     command: "style",
                                     arguments: [style.sites.join(",")],
@@ -716,7 +722,8 @@ var Styles = Module("Styles", {
         const names = Array.slice(DOM(["div"], window.document).style);
         modules.completion.css = function (context) {
             context.title = ["CSS Property"];
-            context.keys = { text: function (p) p + ":", description: function () "" };
+            context.keys = { text: function (p) p + ":",
+                             description: function () "" };
 
             for (let match in Styles.propertyIter(context.filter, true))
                 var lastMatch = match;
@@ -749,7 +756,8 @@ var Styles = Module("Styles", {
                         if (match.function)
                             return ["", template.filter(match.word),
                                 template.highlightRegexp(match.function, patterns.string,
-                                    function (match) ["span", { highlight: "String" }, match.string])
+                                                         match => ["span", { highlight: "String" },
+                                                                       match.string])
                             ];
                         if (match.important == "!important")
                             return ["span", { highlight: "String" }, match.important];

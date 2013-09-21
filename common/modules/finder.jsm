@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -104,7 +104,7 @@ var RangeFinder = Module("rangefinder", {
             return "";
         }
 
-        this.options["findflags"].forEach(function (f) { replacer(f, f); });
+        this.options["findflags"].forEach(f => replacer(f, f));
 
         let pattern = str.replace(/\\(.|$)/g, replacer);
 
@@ -542,7 +542,7 @@ var RangeFind = Class("RangeFind", {
             }
         }
         finally {
-            saved.forEach(function ([k, v]) { this[k] = v; }, this);
+            saved.forEach(([k, v]) => { this[k] = v; });
         }
     },
 
@@ -611,7 +611,7 @@ var RangeFind = Class("RangeFind", {
         this.range = this.findRange(this.startRange) || this.ranges[0];
         util.assert(this.range, "Null range", false);
         this.ranges.first = this.range;
-        this.ranges.forEach(function (range) { range.save(); });
+        this.ranges.forEach(range => { range.save(); });
         this.forward = null;
         this.found = false;
     },

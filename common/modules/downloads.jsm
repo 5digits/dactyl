@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2011-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -131,14 +131,14 @@ var Download = Class("Download", {
     },
 
     _compare: {
-        active: function (a, b) a.alive - b.alive,
-        complete: function (a, b) a.percentComplete - b.percentComplete,
-        date: function (a, b) a.startTime - b.startTime,
-        filename: function (a, b) String.localeCompare(a.targetFile.leafName, b.targetFile.leafName),
-        size: function (a, b) a.size - b.size,
-        speed: function (a, b) a.speed - b.speed,
-        time: function (a, b) a.timeRemaining - b.timeRemaining,
-        url: function (a, b) String.localeCompare(a.source.spec, b.source.spec)
+        active: (a, b) => a.alive - b.alive,
+        complete: (a, b) => a.percentComplete - b.percentComplete,
+        date: (a, b) => a.startTime - b.startTime,
+        filename: (a, b) => String.localeCompare(a.targetFile.leafName, b.targetFile.leafName),
+        size: (a, b) => a.size - b.size,
+        speed: (a, b) => a.speed - b.speed,
+        time: (a, b) => a.timeRemaining - b.timeRemaining,
+        url: (a, b) => String.localeCompare(a.source.spec, b.source.spec)
     },
 
     compare: function compare(other) values(this.list.sortOrder).map(function (order) {
@@ -497,13 +497,13 @@ var Downloads = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
                                                            .flatten().array;
                 },
 
-                has: function () Array.some(arguments, function (val) this.value.some(v => v.substr(1) == val)),
+                has: function () Array.some(arguments, val => this.value.some(v => v.substr(1) == val)),
 
                 validator: function (value) {
                     let seen = {};
                     return value.every(val => /^[+-]/.test(val) && Set.has(this.values, val.substr(1))
-                                                                && !Set.add(seen, val.substr(1))
-                                      ) && value.length;
+                                                                && !Set.add(seen, val.substr(1)))
+                        && value.length;
                 }
             });
     }

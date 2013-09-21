@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -209,7 +209,9 @@ var History = Module("history", {
                     context.compare = CompletionContext.Sort.unsorted;
                     context.filters = [CompletionContext.Filter.textDescription];
                     context.completions = sh.slice(0, sh.index).reverse();
-                    context.keys = { text: function (item) (sh.index - item.index) + ": " + item.URI.spec, description: "title", icon: "icon" };
+                    context.keys = { text: function (item) (sh.index - item.index) + ": " + item.URI.spec,
+                                     description: "title",
+                                     icon: "icon" };
                 },
                 count: true,
                 literal: 0,
@@ -249,7 +251,9 @@ var History = Module("history", {
                     context.compare = CompletionContext.Sort.unsorted;
                     context.filters = [CompletionContext.Filter.textDescription];
                     context.completions = sh.slice(sh.index + 1);
-                    context.keys = { text: function (item) (item.index - sh.index) + ": " + item.URI.spec, description: "title", icon: "icon" };
+                    context.keys = { text: function (item) (item.index - sh.index) + ": " + item.URI.spec,
+                                     description: "title",
+                                     icon: "icon" };
                 },
                 count: true,
                 literal: 0,
@@ -305,7 +309,7 @@ var History = Module("history", {
                     jumps = [sh[sh.index]];
                 else {
                     index += jumps.index;
-                    jumps = jumps.locations.map(function (l) ({
+                    jumps = jumps.locations.map(l => ({
                         __proto__: l,
                         title: buffer.title,
                         get URI() util.newURI(this.location)

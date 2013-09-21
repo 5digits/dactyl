@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -330,7 +330,7 @@ var StatusLine = Module("statusline", {
     updateTabCount: function updateTabCount(delayed) {
         if (dactyl.has("tabs")) {
             if (delayed) {
-                this.timeout(function () this.updateTabCount(false), 0);
+                this.timeout(() => { this.updateTabCount(false); }, 0);
                 return;
             }
 

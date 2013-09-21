@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -465,7 +465,8 @@ var Events = Module("events", {
         let accel = config.OS.isMacOSX ? "metaKey" : "ctrlKey";
 
         let access = iter({ 1: "shiftKey", 2: "ctrlKey", 4: "altKey", 8: "metaKey" })
-                        .filter(function ([k, v]) this & k, prefs.get("ui.key.chromeAccess"))
+                        .filter(function ([k, v]) this & k,
+                                prefs.get("ui.key.chromeAccess"))
                         .map(([k, v]) => [v, true])
                         .toObject();
 
@@ -492,7 +493,7 @@ var Events = Module("events", {
                             break;
                     }
 
-                if (iter(needed).every(([k, v]) => v == keys[k]))
+                if (iter(needed).every(([k, v]) => (v == keys[k])))
                     return key;
             }
 
@@ -542,7 +543,8 @@ var Events = Module("events", {
         dactyl.echo(_("macro.loadWaiting"), commandline.FORCE_SINGLELINE);
 
         const maxWaitTime = (time || 25);
-        util.waitFor(function () buffer.loaded, this, maxWaitTime * 1000, true);
+        util.waitFor(() => buffer.loaded, this,
+                     maxWaitTime * 1000, true);
 
         dactyl.echo("", commandline.FORCE_SINGLELINE);
         if (!buffer.loaded)
@@ -797,8 +799,9 @@ var Events = Module("events", {
                         && let (key = DOM.Event.stringify(event))
                             !(modes.main.count && /^\d$/.test(key) ||
                               modes.main.allBases.some(
-                                mode => mappings.hives.some(
-                                    hive => hive.get(mode, key) || hive.getCandidates(mode, key))));
+                                mode => mappings.hives
+                                                .some(hive => hive.get(mode, key)
+                                                           || hive.getCandidates(mode, key))));
 
             events.dbg("ON " + event.type.toUpperCase() + " " + DOM.Event.stringify(event) +
                        " passing: " + this.passing + " " +

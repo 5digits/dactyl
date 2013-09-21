@@ -75,7 +75,7 @@ var Option = Class("Option", {
     get helpTag() "'" + this.name + "'",
 
     initValue: function initValue() {
-        util.trapErrors(() => this.value = this.value, this);
+        util.trapErrors(() => { this.value = this.value; });
     },
 
     get isDefault() this.stringValue === this.stringDefaultValue,
@@ -464,7 +464,8 @@ var Option = Class("Option", {
         let [, bang, filter] = /^(!?)(.*)/.exec(pattern);
         filter = Option.dequote(filter).trim();
 
-        let quote = this.keepQuotes ? util.identity : function (v) Option.quote(v, /:/);
+        let quote = this.keepQuotes ? v => v
+                                    : v => Option.quote(v, /:/);
 
         return update(Styles.matchFilter(filter), {
             bang: bang,
@@ -731,7 +732,7 @@ var Option = Class("Option", {
             acceptable = completions.call(this);
 
         if (isArray(acceptable))
-            acceptable = Set(acceptable.map(([k]) => k));
+            acceptable = Set(acceptable.map(([k]) => (k)));
 
         if (this.type === "regexpmap" || this.type === "sitemap")
             return Array.concat(vals).every(re => Set.has(acceptable, re.result));
@@ -927,7 +928,9 @@ var Options = Module("options", {
 
             let closure = () => this._optionMap[name];
 
-            memoize(this._optionMap, name, () => Option.types[type](modules, names, description, defaultValue, extraInfo));
+            memoize(this._optionMap, name,
+                    function () Option.types[type](modules, names, description, defaultValue, extraInfo));
+
             for (let alias in values(names.slice(1)))
                 memoize(this._optionMap, alias, closure);
 
@@ -1098,9 +1101,11 @@ var Options = Module("options", {
                 let names = Set(list.map(opt => opt.option ? opt.option.name : ""));
                 if (list.length)
                     if (list.some(opt => opt.all))
-                        options.list(opt => !(list[0].onlyNonDefault && opt.isDefault), list[0].scope);
+                        options.list(opt => !(list[0].onlyNonDefault && opt.isDefault),
+                                     list[0].scope);
                     else
-                        options.list(opt => Set.has(names, opt.name), list[0].scope);
+                        options.list(opt => Set.has(names, opt.name),
+                                     list[0].scope);
                 list = [];
             }
 
@@ -1229,8 +1234,12 @@ var Options = Module("options", {
             context.highlight();
             if (context.filter.indexOf("=") == -1) {
                 if (false && prefix)
-                    context.filters.push(({ item }) => item.type == "boolean" || prefix == "inv" && isArray(item.values));
-                return completion.option(context, opt.scope, opt.name == "inv" ? opt.name : prefix);
+                    context.filters.push(({ item }) => (item.type == "boolean" ||
+                                                        prefix == "inv" && isArray(item.values)));
+
+                return completion.option(context, opt.scope,
+                                         opt.name == "inv" ? opt.name
+                                                           : prefix);
             }
 
             function error(length, message) {
@@ -1484,7 +1493,8 @@ var Options = Module("options", {
 
             function val(obj) {
                 if (isArray(opt.defaultValue)) {
-                    let val = array.nth(obj, re => re.key == extra.key, 0);
+                    let val = array.nth(obj, re => (re.key == extra.key),
+                                        0);
                     return val && val.result;
                 }
                 if (Set.has(opt.defaultValue, extra.key))
@@ -1496,7 +1506,7 @@ var Options = Module("options", {
                     context.completions = [
                             [val(opt.value), _("option.currentValue")],
                             [val(opt.defaultValue), _("option.defaultValue")]
-                    ].filter(f => f[0] !== "" && f[0] != null);
+                    ].filter(f => (f[0] !== "" && f[0] != null));
                 });
                 context = context.fork("stuff", 0);
             }

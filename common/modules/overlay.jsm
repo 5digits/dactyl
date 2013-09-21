@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -148,7 +148,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         "content-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); },
         "xul-window-visible": function () {
             if (this.onWindowVisible)
-                this.onWindowVisible.forEach(function (f) { f.call(this); }, this);
+                this.onWindowVisible.forEach(f => { f.call(this); });
             this.onWindowVisible = null;
         }
     },
@@ -189,7 +189,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         return data[key] = val;
     },
 
-    overlayWindow: function (url, fn) {
+    overlayWindow: function overlayWindow(url, fn) {
         if (url instanceof Ci.nsIDOMWindow)
             overlay._loadOverlay(url, fn);
         else {

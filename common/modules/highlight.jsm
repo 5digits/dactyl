@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -282,8 +282,8 @@ var Highlights = Module("Highlight", {
      */
     loadCSS: function loadCSS(css, eager) {
         String.replace(css, /\\\n/g, "")
-              .replace(this.groupRegexp, (m, m1, m2) => m1 + " " + m2.replace(/\n\s*/g, " "))
-              .split("\n").filter(s => /\S/.test(s) && !/^\s*\/\//.test(s))
+              .replace(this.groupRegexp, (m, m1, m2) => (m1 + " " + m2.replace(/\n\s*/g, " ")))
+              .split("\n").filter(s => (/\S/.test(s) && !/^\s*\/\//.test(s)))
               .forEach(function (highlight) {
 
             let bang = eager || /^\s*!/.test(highlight);
@@ -354,7 +354,7 @@ var Highlights = Module("Highlight", {
                               ["span", { style: "text-align: center; line-height: 1em;" + h.value + style }, "XXX"],
                               template.map(h.extends, s => template.highlight(s), ","),
                               template.highlightRegexp(h.value, /\b[-\w]+(?=:)|\/\*.*?\*\//g,
-                                                       function (match) ["span", { highlight: match[0] == "/" ? "Comment" : "Key" }, match])
+                                                       match => ["span", { highlight: match[0] == "/" ? "Comment" : "Key" }, match])
                              ]
                              for (h in highlight)
                              if (!key || h.class.indexOf(key) > -1))));
@@ -424,12 +424,13 @@ var Highlights = Module("Highlight", {
             let extRe = RegExp("\\." + config.fileExtension + "$");
 
             context.title = ["Color Scheme", "Runtime Path"];
-            context.keys = { text: function (f) f.leafName.replace(extRe, ""), description: ".parent.path" };
+            context.keys = { text: f => f.leafName.replace(extRe, ""),
+                             description: ".parent.path" };
             context.completions =
                 array.flatten(
                         io.getRuntimeDirectories("colors").map(
-                            dir => dir.readDirectory().filter(
-                                file => extRe.test(file.leafName))))
+                            dir => dir.readDirectory()
+                                      .filter(file => extRe.test(file.leafName))))
                      .concat([
                         { leafName: "default", parent: { path: /*L*/"Revert to builtin colorscheme" } }
                      ]);

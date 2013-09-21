@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -260,7 +260,7 @@ var Marks = Module("marks", {
 
         if (filter.length > 0) {
             let pattern = util.charListToRegexp(filter, "a-zA-Z");
-            marks = marks.filter(([k, ]) => pattern.test(k));
+            marks = marks.filter(([k]) => (pattern.test(k)));
             dactyl.assert(marks.length > 0, _("mark.noMatching", filter.quote()));
         }
 

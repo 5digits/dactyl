@@ -1,5 +1,5 @@
 // Copyright (c) 2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2009-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2009-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -186,7 +186,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
 
             let (branch = Item.PREFIX + Item.SHUTDOWN_BRANCH) {
                 overlay.overlayWindow("chrome://browser/content/preferences/sanitize.xul",
-                                   function (win) prefOverlay(branch, true, {
+                                      function (win) prefOverlay(branch, true, {
                     append: {
                         SanitizeDialogPane:
                             ["groupbox", { orient: "horizontal", xmlns: "xul" },
@@ -612,11 +612,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 },
 
                 has: function has(val)
-                    let (res = array.nth(this.value, v => v == "all" || v.replace(/^!/, "") == val, 0))
+                    let (res = array.nth(this.value, v => (v == "all" || v.replace(/^!/, "") == val),
+                                         0))
                         res && !/^!/.test(res),
 
                 validator: function (values) values.length &&
-                    values.every(val => val === "all" || Set.has(sanitizer.itemMap, val.replace(/^!/, "")))
+                    values.every(val => (val === "all" || Set.has(sanitizer.itemMap, val.replace(/^!/, ""))))
             });
 
         options.add(["sanitizeshutdown", "ss"],

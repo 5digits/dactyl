@@ -435,7 +435,9 @@ var Buffer = Module("Buffer", {
                 yield elem;
 
             function a(regexp, elem) regexp.test(elem.textContent) === regexp.result ||
-                            Array.some(elem.childNodes, child => regexp.test(child.alt) === regexp.result);
+                            Array.some(elem.childNodes,
+                                       child => (regexp.test(child.alt) === regexp.result));
+
             function b(regexp, elem) regexp.test(elem.title) === regexp.result;
 
             let res = Array.filter(frame.document.querySelectorAll(selector), Hints.isVisible);
@@ -904,8 +906,11 @@ var Buffer = Module("Buffer", {
         let path = options["jumptags"][arg];
         util.assert(path, _("error.invalidArgument", arg));
 
-        let distance = reverse ? rect => -rect.top : rect => rect.top;
-        let elems = [[e, distance(e.getBoundingClientRect())] for (e in path.matcher(this.focusedFrame.document))]
+        let distance = reverse ? rect => -rect.top
+                               : rect => rect.top;
+
+        let elems = [[e, distance(e.getBoundingClientRect())]
+                     for (e in path.matcher(this.focusedFrame.document))]
                         .filter(e => e[1] > FUDGE)
                         .sort((a, b) => a[1] - b[1]);
 
@@ -1003,7 +1008,7 @@ var Buffer = Module("Buffer", {
             let info = template.map(
                 (sections || options["pageinfo"])
                     .map((opt) => Buffer.pageInfo[opt].action.call(this)),
-                res => res && iter(res).join(", ") || undefined,
+                res => (res && iter(res).join(", ") || undefined),
                 ", ").join("");
 
             if (bookmarkcache.isBookmarked(this.URL))
@@ -2413,7 +2418,8 @@ var Buffer = Module("Buffer", {
                                 var res = dactyl.userEval("(" + Option.dequote(filter.result.substr(5)) + ")")(doc, line);
                             else
                                 res = iter.nth(filter.matcher(doc),
-                                               elem => (elem.nodeValue || elem.textContent).trim() == line && DOM(elem).display != "none",
+                                               elem => ((elem.nodeValue || elem.textContent).trim() == line &&
+                                                        DOM(elem).display != "none"),
                                                0)
                                    || iter.nth(filter.matcher(doc), util.identity, line - 1);
                             if (res)

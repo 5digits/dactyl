@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -277,7 +277,7 @@ var Modes = Module("modes", {
             for (let m; m = array.nth(this.modeStack, m => m.main == mode, 0);)
                 this._modeStack.splice(this._modeStack.indexOf(m));
         }
-        else if (this.stack.some(function (m) m.main == mode)) {
+        else if (this.stack.some(m => m.main == mode)) {
             this.pop(mode);
             this.pop();
         }
@@ -361,7 +361,9 @@ var Modes = Module("modes", {
                               push ? { push: push } : stack || {},
                               prev);
 
-        delayed.forEach(([fn, self]) => dactyl.trapErrors(fn, self));
+        delayed.forEach(([fn, self]) => {
+            dactyl.trapErrors(fn, self);
+        });
 
         dactyl.triggerObserver("modes.change", [oldMain, oldExtended], [this._main, this._extended], stack);
         this.show();
@@ -425,8 +427,8 @@ var Modes = Module("modes", {
     Mode: Class("Mode", {
         init: function init(name, options, params) {
             if (options.bases)
-                util.assert(options.bases.every(function (m) m instanceof this, this.constructor),
-                           _("mode.invalidBases"), false);
+                util.assert(options.bases.every(m => m instanceof this.constructor),
+                            _("mode.invalidBases"), false);
 
             this.update({
                 id: 1 << Modes.Mode._id++,
@@ -492,7 +494,8 @@ var Modes = Module("modes", {
             get toStringParams() !loaded.modes ? this.main.name : [
                 this.main.name,
                 ["(", modes.all.filter(m => this.extended & m)
-                           .map(m => m.name).join("|"),
+                               .map(m => m.name)
+                               .join("|"),
                  ")"].join("")
             ]
         });
@@ -608,16 +611,19 @@ var Modes = Module("modes", {
             setter: function (vals) {
                 modes.all.forEach(function (m) { delete m.passUnknown; });
 
-                vals = vals.map(function (v) update(new String(v.toLowerCase()), {
-                    mode: v.replace(/^!/, "").toUpperCase(),
-                    result: v[0] !== "!"
-                }));
+                vals = vals.map(v => update(new String(v.toLowerCase()),
+                                            {
+                                                mode: v.replace(/^!/, "").toUpperCase(),
+                                                result: v[0] !== "!"
+                                            }));
 
-                this.valueMap = values(vals).map(v => [v.mode, v.result]).toObject();
+                this.valueMap = values(vals).map(v => [v.mode, v.result])
+                                            .toObject();
                 return vals;
             },
 
-            validator: function validator(vals) vals.map(v => v.replace(/^!/, "")).every(Set.has(this.values)),
+            validator: function validator(vals) vals.map(v => v.replace(/^!/, ""))
+                                                    .every(Set.has(this.values)),
 
             get values() array.toObject([[m.name.toLowerCase(), m.description] for (m in values(modes._modes)) if (!m.hidden)])
         };

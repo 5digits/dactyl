@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -375,7 +375,8 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         if (!this._observers[pref])
             this._observers[pref] = [];
-        this._observers[pref].push(!strong ? util.weakReference(callback) : { get: function () callback });
+        this._observers[pref].push(!strong ? util.weakReference(callback)
+                                           : { get: function () callback });
     },
 
     /**
@@ -422,7 +423,8 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         modules.completion.preference = function preference(context) {
             context.anchored = false;
             context.title = [config.host + " Preference", "Value"];
-            context.keys = { text: function (item) item, description: function (item) prefs.get(item) };
+            context.keys = { text: function (item) item,
+                             description: function (item) prefs.get(item) };
             context.completions = prefs.getNames();
         };
     },

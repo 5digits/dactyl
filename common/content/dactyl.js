@@ -677,7 +677,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             ];
         }
         else if (obj instanceof Map) {
-            spec = map => obj.count ? [["oa", {}, "count"], map] : DOM.DOMString(map);
+            spec = map => (obj.count ? [["oa", {}, "count"], map]
+                                     : DOM.DOMString(map));
             tag = map => [
                 let (c = obj.modes[0].char) c ? c + "_" : "",
                 map
@@ -720,7 +721,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     let (name = (obj.specs || obj.names)[0])
                           spec(template.highlightRegexp(tag(name),
                                /\[(.*?)\]/g,
-                               function (m, n0) ["oa", {}, n0]),
+                               (m, n0) => ["oa", {}, n0]),
                                name)],
                 !obj.type ? "" : [
                     ["type", {}, obj.type],
@@ -745,7 +746,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         [o.description,
                          o.names.length == 1 ? "" :
                              ["", " (short name: ",
-                                 template.map(o.names.slice(1), n => ["em", {}, n], ", "),
+                                 template.map(o.names.slice(1),
+                                              n => ["em", {}, n],
+                                              ", "),
                               ")"]]
                     ]));
 
@@ -1191,7 +1194,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         return function wrappedCallback() {
             let args = arguments;
             return dactyl.withSavedValues(save, function () {
-                saved.forEach((p, i) => dactyl[save[i]] = p);
+                saved.forEach((p, i) => { dactyl[save[i]] = p; });
                 try {
                     return callback.apply(self, args);
                 }
@@ -1225,8 +1228,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             let lang = config.bestLocale(l[1].lang for each (l in langs));
 
                             info = info.slice(0, 2).concat(
-                                info.slice(2).filter(e => !isArray(e) || !isObject(e[1])
-                                                          || e[1].lang == lang));
+                                info.slice(2).filter(e => !isArray(e)
+                                                       || !isObject(e[1])
+                                                       || e[1].lang == lang));
 
                             for each (let elem in info.slice(2).filter(e => isArray(e) && e[0] == "info" && isObject(e[1])))
                                 for (let attr in values(["name", "summary", "href"]))
@@ -1342,8 +1346,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 setter: function (opts) {
                     let dir = ["horizontal", "vertical"].filter(
                         dir => !Array.some(opts,
-                            o => this.opts[o] && this.opts[o][1] == dir)
-                        );
+                                           o => this.opts[o] && this.opts[o][1] == dir));
                     let class_ = dir.map(dir => "html|html > xul|scrollbar[orient=" + dir + "]");
 
                     styles.system.add("scrollbar", "*",
@@ -1391,7 +1394,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     "rb" + [k for ([k, v] in iter(groups[1].opts))
                             if (!Dactyl.toolbarHidden(document.getElementById(v[1][0])))].join(""),
 
-                values: array(groups).map(g => [[k, v[0]] for ([k, v] in Iterator(g.opts))]).flatten(),
+                values: array(groups).map(g => [[k, v[0]] for ([k, v] in Iterator(g.opts))])
+                                     .flatten(),
 
                 setter: function (value) {
                     for (let group in values(groups))
@@ -1399,8 +1403,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     events.checkFocus();
                     return value;
                 },
-                validator: function (val) Option.validateCompleter.call(this, val) &&
-                        groups.every(g => !g.validator || g.validator(val))
+                validator: function (val) Option.validateCompleter.call(this, val)
+                                       && groups.every(g => !g.validator || g.validator(val))
             });
 
         options.add(["loadplugins", "lpl"],
@@ -1449,7 +1453,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         options.add(["verbose", "vbs"],
             "Define which info messages are displayed",
             "number", 1,
-            { validator: function (value) Option.validIf(value >= 0 && value <= 15, "Value must be between 0 and 15") });
+            { validator: function (value) Option.validIf(value >= 0 && value <= 15,
+                                                         "Value must be between 0 and 15") });
 
         options.add(["visualbell", "vb"],
             "Use visual bell instead of beeping on errors",
@@ -1860,7 +1865,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         completion.window = function window(context) {
             context.title = ["Window", "Title"];
-            context.keys = { text: function (win) dactyl.windows.indexOf(win) + 1, description: function (win) win.document.title };
+            context.keys = { text: win => dactyl.windows.indexOf(win) + 1,
+                             description: win => win.document.title };
             context.completions = dactyl.windows;
         };
     },

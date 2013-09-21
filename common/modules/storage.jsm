@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -293,7 +293,8 @@ var Storage = Module("Storage", {
             this.observers[key] = [];
 
         if (!this.observers[key].some(o => o.callback.get() == callback))
-            this.observers[key].push({ ref: ref && Cu.getWeakReference(ref), callback: callbackRef });
+            this.observers[key].push({ ref: ref && Cu.getWeakReference(ref),
+                                       callback: callbackRef });
     },
 
     removeObserver: function (key, callback) {
@@ -495,7 +496,8 @@ var File = Class("File", {
 
         let array = [e for (e in this.iterDirectory())];
         if (sort)
-            array.sort((a, b) => b.isDirectory() - a.isDirectory() || String.localeCompare(a.path, b.path));
+            array.sort((a, b) => (b.isDirectory() - a.isDirectory() ||
+                                  String.localeCompare(a.path, b.path)));
         return array;
     },
 
@@ -693,10 +695,9 @@ var File = Class("File", {
         // Kris reckons we shouldn't replicate this 'bug'. --djk
         // TODO: should we be doing this for all paths?
         function expand(path) path.replace(
-            !win32 ? /\$(\w+)\b|\${(\w+)}/g
-                   : /\$(\w+)\b|\${(\w+)}|%(\w+)%/g,
-            (m, n1, n2, n3) => getenv(n1 || n2 || n3) || m
-        );
+            win32 ? /\$(\w+)\b|\${(\w+)}|%(\w+)%/g
+                  : /\$(\w+)\b|\${(\w+)}/g,
+            (m, n1, n2, n3) => (getenv(n1 || n2 || n3) || m));
         path = expand(path);
 
         // expand ~

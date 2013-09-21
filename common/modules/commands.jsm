@@ -766,7 +766,8 @@ var Commands = Module("commands", {
             // TODO: allow matching of aliases?
             function cmds(hive) hive._list.filter(cmd => cmd.name.indexOf(filter || "") == 0)
 
-            let hives = (hives || this.userHives).map(h => [h, cmds(h)]).filter(([h, c]) => c.length);
+            let hives = (hives || this.userHives).map(h => [h, cmds(h)])
+                                                 .filter(([h, c]) => c.length);
 
             let list = ["table", {},
                 ["tr", { highlight: "Title" },
@@ -815,7 +816,8 @@ var Commands = Module("commands", {
 
     /** @property {Iterator(Command)} @private */
     iterator: function iterator() iter.apply(null, this.hives.array)
-                              .sort((a, b) => a.serialGroup - b.serialGroup || a.name > b.name)
+                              .sort((a, b) => (a.serialGroup - b.serialGroup ||
+                                               a.name > b.name))
                               .iterValues(),
 
     /** @property {string} The last executed Ex command line. */
@@ -1016,7 +1018,7 @@ var Commands = Module("commands", {
             let matchOpts = function matchOpts(arg) {
                 // Push possible option matches into completions
                 if (complete && !onlyArgumentsRemaining)
-                    completeOpts = options.filter(opt => opt.multiple || !Set.has(args, opt.names[0]));
+                    completeOpts = options.filter(opt => (opt.multiple || !Set.has(args, opt.names[0])));
             };
             let resetCompletions = function resetCompletions() {
                 completeOpts = null;
@@ -1394,7 +1396,8 @@ var Commands = Module("commands", {
         let quote = null;
         let len = str.length;
 
-        function fixEscapes(str) str.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4}|(.))/g, (m, n1) => n1 || m);
+        function fixEscapes(str) str.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4}|(.))/g,
+                                             (m, n1) => n1 || m);
 
         // Fix me.
         if (isString(sep))
@@ -1725,7 +1728,7 @@ var Commands = Module("commands", {
                 ]
             })),
             iterateIndex: function (args) let (tags = help.tags)
-                this.iterate(args).filter(cmd => cmd.hive === commands.builtin || Set.has(tags, cmd.helpTag)),
+                this.iterate(args).filter(cmd => (cmd.hive === commands.builtin || Set.has(tags, cmd.helpTag))),
             format: {
                 headings: ["Command", "Group", "Description"],
                 description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),
@@ -1779,7 +1782,8 @@ var Commands = Module("commands", {
 let quote = function quote(q, list, map) {
     map = map || Commands.quoteMap;
     let re = RegExp("[" + list + "]", "g");
-    function quote(str) q + String.replace(str, re, $0 => $0 in map ? map[$0] : ("\\" + $0)) + q;
+    function quote(str) (q + String.replace(str, re, $0 => ($0 in map ? map[$0] : ("\\" + $0)))
+                           + q);
     quote.list = list;
     return quote;
 };

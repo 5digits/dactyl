@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2012 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 // Some code based on Venkman
 //
 // This work is licensed for reuse under an MIT license. Details are
@@ -75,7 +75,7 @@ var IO = Module("io", {
         getRuntimeDirectories: function getRuntimeDirectories(name) {
             return modules.options.get("runtimepath").files
                 .map(dir => dir.child(name))
-                .filter(dir => dir.exists() && dir.isDirectory() && dir.isReadable());
+                .filter(dir => (dir.exists() && dir.isDirectory() && dir.isReadable()));
         },
 
         // FIXME: multiple paths?
@@ -502,7 +502,9 @@ var IO = Module("io", {
 
             function async(status) {
                 let output = stdout.read();
-                [stdin, stdout, cmd].forEach(f => f.exists() && f.remove(false));
+                for (let f of [stdin, stdout, cmd])
+                    if (f.exists())
+                        f.remove(false);
                 callback(result(status, output));
             }
 
@@ -550,7 +552,7 @@ var IO = Module("io", {
         }
         finally {
             if (!checked || res !== true)
-                args.forEach(f => f.remove(false));
+                args.forEach(f => { f.remove(false); });
         }
         return res;
     }
@@ -806,7 +808,9 @@ unlet s:cpo_save
                         lines.last.push(item, sep);
                     }
                     lines.last.pop();
-                    return lines.map(l => l.join("")).join("\n").replace(/\s+\n/gm, "\n");
+                    return lines.map(l => l.join(""))
+                                .join("\n")
+                                .replace(/\s+\n/gm, "\n");
                 }//}}}
 
                 let params = { //{{{
@@ -904,8 +908,8 @@ unlet s:cpo_save
                         _("command.run.noPrevious"));
 
                     arg = arg.replace(/(\\)*!/g,
-                        m => /^\\(\\\\)*!$/.test(m) ? m.replace("\\!", "!") : m.replace("!", io._lastRunCommand)
-                    );
+                                      m => (/^\\(\\\\)*!$/.test(m) ? m.replace("\\!", "!")
+                                                                   : m.replace("!", io._lastRunCommand)));
                 }
 
                 io._lastRunCommand = arg;

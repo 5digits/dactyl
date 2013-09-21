@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -185,7 +185,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} name The name to mangle.
      * @returns {string} The mangled name.
      */
-    camelCase: function camelCase(name) String.replace(name, /-(.)/g, (m, m1) => m1.toUpperCase()),
+    camelCase: function camelCase(name) String.replace(name, /-(.)/g,
+                                                       (m, m1) => m1.toUpperCase()),
 
     /**
      * Capitalizes the first character of the given string.
@@ -261,8 +262,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         function frame() update(
             function _frame(obj)
-                _frame === stack.top || _frame.valid(obj) ?
-                    _frame.elements.map(e => callable(e) ? e(obj) : e).join("") : "",
+                _frame === stack.top || _frame.valid(obj)
+                    ? _frame.elements.map(e => callable(e) ? e(obj) : e)
+                                     .join("")
+                    : "",
             {
                 elements: [],
                 seen: {},
@@ -295,7 +298,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 char = char.toLowerCase();
 
                 stack.top.elements.push(update(
-                    obj => obj[char] != null ? quote(obj, char) : "",
+                    function (obj) obj[char] != null ? quote(obj, char)
+                                                     : "",
                     { test: function test(obj) obj[char] != null }));
 
                 for (let elem in array.iterValues(stack))
@@ -344,12 +348,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         function frame() update(
             function _frame(obj)
-                _frame === stack.top || _frame.valid(obj) ?
-                    _frame.elements.map(e => callable(e) ? e(obj) : e).join("") : "",
+                _frame === stack.top || _frame.valid(obj)
+                    ? _frame.elements.map(e => callable(e) ? e(obj) : e)
+                            .join("")
+                    : "",
             {
                 elements: [],
                 seen: {},
-                valid: function valid(obj) this.elements.every(e => !e.test || e.test(obj))
+                valid: function valid(obj) this.elements.every(e => (!e.test || e.test(obj)))
             });
 
         let defaults = { lt: "<", gt: ">" };
@@ -999,7 +1005,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         if (color) {
             obj = template.highlightFilter(util.clip(obj, 150), "\n",
-                                           function () ["span", { highlight: "NonText" }, "^J"]);
+                                           () => ["span", { highlight: "NonText" },
+                                                      "^J"]);
+
             var head = ["span", { highlight: "Title Object" }, obj, "::\n"];
         }
         else
@@ -1066,7 +1074,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             return String.localeCompare(a[0], b[0]);
         }
 
-        let vals = template.map(keys.sort(compare), f => f[1], "\n");
+        let vals = template.map(keys.sort(compare), f => f[1],
+                                "\n");
+
         if (color) {
             return ["div", { style: "white-space: pre-wrap" }, head, vals];
         }
@@ -1252,7 +1262,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         // Strip comments and white space.
         if (/x/.test(flags))
-            expr = String.replace(expr, /(\\.)|\/\/[^\n]*|\/\*[^]*?\*\/|\s+/gm, (m, m1) => m1 || "");
+            expr = String.replace(expr, /(\\.)|\/\/[^\n]*|\/\*[^]*?\*\/|\s+/gm,
+                                  (m, m1) => m1 || "");
 
         // Replace (?P<named> parameters)
         if (/\(\?P</.test(expr)) {
@@ -1296,7 +1307,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
          * @param {RegExp} re The regexp showable source of which is to be returned.
          * @returns {string}
          */
-        getSource: function regexp_getSource(re) re.source.replace(/\\(.)/g, (m0, m1) => m1 === "/" ? "/" : m0),
+        getSource: function regexp_getSource(re) re.source.replace(/\\(.)/g,
+                                                                   (m0, m1) => m1 === "/" ? m1
+                                                                                          : m0),
 
         /**
          * Iterates over all matches of the given regexp in the given

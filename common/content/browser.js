@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -193,8 +193,8 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             function (args) { dactyl.open(args[0] || "about:blank"); },
             {
                 completer: function (context) completion.url(context),
-                domains: function (args) array.compact(dactyl.parseURLs(args[0] || "").map(
-                    url => util.getHost(url))),
+                domains: function (args) array.compact(dactyl.parseURLs(args[0] || "")
+                                                             .map(url => util.getHost(url))),
                 literal: 0,
                 privateData: true
             });

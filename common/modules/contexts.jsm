@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2010-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -78,8 +78,9 @@ var Group = Class("Group", {
 
             toJSONXML: function (modules) let (uri = modules && modules.buffer.uri)
                 template.map(this.filters,
-                             function (f) ["span", { highlight: uri && f(uri) ? "Filter" : "" },
-                                               "toJSONXML" in f ? f.toJSONXML() : String(f)],
+                             f => ["span", { highlight: uri && f(uri) ? "Filter" : "" },
+                                       ("toJSONXML" in f ? f.toJSONXML()
+                                                         : String(f))],
                              ","),
 
             filters: Option.parse.sitelist(patterns)
@@ -201,9 +202,9 @@ var Contexts = Module("contexts", {
     Context: function Context(file, group, args) {
         const { contexts, io, newContext, plugins, userContext } = this.modules;
 
-        let isPlugin = array.nth(io.getRuntimeDirectories("plugins"),
-                                 dir => dir.contains(file, true),
-                                 0);
+        let isPlugin  = array.nth(io.getRuntimeDirectories("plugins"),
+                                  dir => dir.contains(file, true),
+                                  0);
         let isRuntime = array.nth(io.getRuntimeDirectories(""),
                                   dir => dir.contains(file, true),
                                   0);
@@ -795,7 +796,7 @@ var Contexts = Module("contexts", {
             context.title = ["Group"];
             let uri = modules.buffer.uri;
             context.keys = {
-                active: function (group) group.filter(uri),
+                active: group => group.filter(uri),
                 text: "name",
                 description: function (g) ["", g.filter.toJSONXML ? g.filter.toJSONXML(modules).concat("\u00a0") : "", g.description || ""]
             };

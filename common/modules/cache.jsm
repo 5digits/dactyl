@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2011-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -167,7 +167,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
     },
 
     force: function force(name, localOnly) {
-        util.waitFor(function () !this.inQueue, this);
+        util.waitFor(() => !this.inQueue);
 
         if (this.cacheReader && this.cacheReader.hasEntry(name)) {
             return this.parse(File.readStream(

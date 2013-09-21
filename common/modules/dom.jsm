@@ -1,5 +1,5 @@
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -108,7 +108,7 @@ var DOM = Class("DOM", {
         }]
     ]),
 
-    matcher: function matcher(sel) elem => elem.mozMatchesSelector && elem.mozMatchesSelector(sel),
+    matcher: function matcher(sel) elem => (elem.mozMatchesSelector && elem.mozMatchesSelector(sel)),
 
     each: function each(fn, self) {
         let obj = self || this.Empty();
@@ -794,19 +794,19 @@ var DOM = Class("DOM", {
     html: function html(txt, self) {
         return this.getSet(arguments,
                            elem => elem.innerHTML,
-                           util.wrapCallback(function (elem, val) { elem.innerHTML = val; }));
+                           util.wrapCallback((elem, val) => { elem.innerHTML = val; }));
     },
 
     text: function text(txt, self) {
         return this.getSet(arguments,
                            elem => elem.textContent,
-                           function (elem, val) { elem.textContent = val; });
+                           (elem, val) => { elem.textContent = val; });
     },
 
     val: function val(txt) {
         return this.getSet(arguments,
                            elem => elem.value,
-                           function (elem, val) { elem.value = val == null ? "" : val; });
+                           (elem, val) => { elem.value = val == null ? "" : val; });
     },
 
     listen: function listen(event, listener, capture) {
@@ -1664,13 +1664,13 @@ var DOM = Class("DOM", {
         function isFragment(args) !isString(args[0]) || args.length == 0 || args[0] === "";
 
         function hasString(args) {
-            return args.some(a => isString(a) || isFragment(a) && hasString(a));
+            return args.some(a => (isString(a) || isFragment(a) && hasString(a)));
         }
 
         function isStrings(args) {
             if (!isArray(args))
                 return util.dump("ARGS: " + {}.toString.call(args) + " " + args), false;
-            return args.every(a => isinstance(a, ["String", DOM.DOMString]) || isFragment(a) && isStrings(a));
+            return args.every(a => (isinstance(a, ["String", DOM.DOMString]) || isFragment(a) && isStrings(a)));
         }
 
         function tag(args, namespaces, indent) {
@@ -1878,7 +1878,9 @@ var DOM = Class("DOM", {
      */
     makeXPath: function makeXPath(nodes) {
         return array(nodes).map(util.debrace).flatten()
-                           .map(node => /^[a-z]+:/.test(node) ? node : [node, "xhtml:" + node]).flatten()
+                           .map(node => /^[a-z]+:/.test(node) ? node
+                                                              : [node, "xhtml:" + node])
+                           .flatten()
                            .map(node => "//" + node).join(" | ");
     },
 
@@ -1891,7 +1893,7 @@ var DOM = Class("DOM", {
     },
 
     namespaceNames: Class.Memoize(function ()
-        iter(this.namespaces).map(([k, v]) => [v, k]).toObject()),
+        iter(this.namespaces).map(([k, v]) => ([v, k])).toObject()),
 });
 
 Object.keys(DOM.Event.types).forEach(function (event) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -273,7 +273,7 @@ var JavaScript = Module("javascript", {
 
     // Don't eval any function calls unless the user presses tab.
     _checkFunction: function (start, end, key) {
-        let res = this._functions.some(idx => idx >= start && idx < end);
+        let res = this._function(idx => (idx >= start && idx < end));
         if (!res || this.context.tabPressed || key in this.cache.evalled)
             return false;
         this.context.waitingForTab = true;
@@ -371,7 +371,8 @@ var JavaScript = Module("javascript", {
             };
 
             base.keys = {
-                text: prefix ? text => text.substr(prefix.length) : util.identity,
+                text: prefix ? text => text.substr(prefix.length)
+                             : text => text,
                 description: function (item) self.getKey(this.obj, item),
                 key: function (item) {
                     if (!isNaN(key))
@@ -491,7 +492,7 @@ var JavaScript = Module("javascript", {
                         let [, prefix, args] = /^(function .*?)\((.*?)\)/.exec(Function.prototype.toString.call(func));
                         let n = this._get(i).comma.length;
                         args = template.map(Iterator(args.split(", ")),
-                            function ([i, arg]) ["span", { highlight: i == n ? "Filter" : "" }, arg],
+                            ([i, arg]) => ["span", { highlight: i == n ? "Filter" : "" }, arg],
                             ",\u00a0");
                         this.context.message = ["", prefix + "(", args, ")"];
                     }

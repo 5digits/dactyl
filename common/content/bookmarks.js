@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -408,7 +408,10 @@ var Bookmarks = Module("bookmarks", {
             names: ["-tags", "-T"],
             description: "A comma-separated list of tags",
             completer: function tags(context, args) {
-                context.generate = () => array(b.tags for (b in bookmarkcache) if (b.tags)).flatten().uniq().array;
+                context.generate = function () array(b.tags
+                                                     for (b in bookmarkcache)
+                                                     if (b.tags))
+                                                  .flatten().uniq().array;
                 context.keys = { text: util.identity, description: util.identity };
             },
             type: CommandOption.LIST
@@ -547,7 +550,9 @@ var Bookmarks = Module("bookmarks", {
                         let context = CompletionContext(args.join(" "));
                         context.fork("bookmark", 0, completion, "bookmark",
                                      args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
-                        deletedCount = bookmarks.remove(context.allItems.items.map(item => item.item.id));
+
+                        deletedCount = bookmarks.remove(context.allItems.items
+                                                               .map(item => item.item.id));
                     }
 
                     dactyl.echomsg({ message: _("bookmark.deleted", deletedCount) });

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2010 by anekos <anekos@snca.net>
-// Copyright (c) 2010-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2010-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -80,7 +80,8 @@ var Abbreviation = Class("Abbreviation", {
      * @param {Mode} mode The mode to remove.
      */
     removeMode: function (mode) {
-        this.modes = this.modes.filter(m => m != mode).sort();
+        this.modes = this.modes.filter(m => m != mode)
+                               .sort();
     },
 
     /**
@@ -248,7 +249,8 @@ var Abbreviations = Module("abbreviations", {
     match: function (mode, text) {
         let match = this._match.exec(text);
         if (match)
-            return this.hives.map(h => h.get(mode, match[2] || match[4] || match[6])).nth(util.identity, 0);
+            return this.hives.map(h => h.get(mode, match[2] || match[4] || match[6]))
+                       .nth(util.identity, 0);
         return null;
     },
 
@@ -302,7 +304,8 @@ var Abbreviations = Module("abbreviations", {
     completion: function initCompletion() {
         completion.abbreviation = function abbreviation(context, modes, group) {
             group = group || abbreviations.user;
-            let fn = modes ? ab => ab.inModes(modes) : util.identity;
+            let fn = modes ? abbr => abbr.inModes(modes)
+                           : abbr => abbr;
             context.keys = { text: "lhs" , description: "rhs" };
             context.completions = group.merged.filter(fn);
         };

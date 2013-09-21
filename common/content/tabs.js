@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -244,7 +244,7 @@ var Tabs = Module("tabs", {
 
         this._groups = iframe ? iframe.contentWindow : null;
         if (this._groups && !func)
-            util.waitFor(function () this._groups.TabItems, this);
+            util.waitFor(() => this._groups.TabItems);
         return this._groups;
     },
 
@@ -426,9 +426,13 @@ var Tabs = Module("tabs", {
         }
 
         if (focusLeftTab)
-            tabs.slice(Math.max(0, index + 1 - count), index + 1).forEach(config.closure.removeTab);
+            tabs.slice(Math.max(0, index + 1 - count),
+                       index + 1)
+                .forEach(config.closure.removeTab);
         else
-            tabs.slice(index, index + count).forEach(config.closure.removeTab);
+            tabs.slice(index,
+                       index + count)
+                .forEach(config.closure.removeTab);
         return res;
     },
 
@@ -548,7 +552,7 @@ var Tabs = Module("tabs", {
         if (matches)
             return tabs.select(this.allTabs[parseInt(matches[1], 10) - 1], false);
 
-        matches = array.nth(tabs.allTabs, function (t) (t.linkedBrowser.lastURI || {}).spec === buffer, 0);
+        matches = array.nth(tabs.allTabs, t => (t.linkedBrowser.lastURI || {}).spec === buffer, 0);
         if (matches)
             return tabs.select(matches, false);
 
@@ -992,7 +996,9 @@ var Tabs = Module("tabs", {
                         context.anchored = false;
                         context.compare = CompletionContext.Sort.unsorted;
                         context.filters = [CompletionContext.Filter.textDescription];
-                        context.keys = { text: function ([i, { state: s }]) (i + 1) + ": " + s.entries[s.index - 1].url, description: "[1].title", icon: "[1].image" };
+                        context.keys = { text: function ([i, { state: s }]) (i + 1) + ": " + s.entries[s.index - 1].url,
+                                         description: "[1].title",
+                                         icon: "[1].image" };
                         context.completions = Iterator(tabs.closedTabs);
                     },
                     count: true,

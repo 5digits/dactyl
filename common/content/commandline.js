@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -217,7 +217,8 @@ var CommandWidgets = Class("CommandWidgets", {
                 let elem = nodeSet[obj.name];
                 if (elem)
                     highlight.highlightNode(elem, obj.defaultGroup.split(/\s/)
-                                                     .map(g => g + " " + nodeSet.group + g).join(" "));
+                                                     .map(g => g + " " + nodeSet.group + g)
+                                                     .join(" "));
             });
         }
     },
@@ -254,7 +255,9 @@ var CommandWidgets = Class("CommandWidgets", {
         function check(node) {
             if (DOM(node).style.display === "-moz-stack") {
                 let nodes = Array.filter(node.children, n => !n.collapsed && n.boxObject.height);
-                nodes.forEach(function (node, i) { node.style.opacity = (i == nodes.length - 1) ? "" : "0" });
+                nodes.forEach((node, i) => {
+                    node.style.opacity = (i == nodes.length - 1) ? "" : "0";
+                });
             }
             Array.forEach(node.children, check);
         }
@@ -309,7 +312,8 @@ var CommandWidgets = Class("CommandWidgets", {
         return document.getElementById("dactyl-contextmenu");
     }),
 
-    multilineOutput: Class.Memoize(function () this._whenReady("dactyl-multiline-output", function (elem) {
+    multilineOutput: Class.Memoize(function () this._whenReady("dactyl-multiline-output",
+                                                               elem => {
         highlight.highlightNode(elem.contentDocument.body, "MOW");
     }), true),
 
@@ -1708,7 +1712,7 @@ var CommandLine = Module("commandline", {
         commands.add(["sil[ent]"],
             "Run a command silently",
             function (args) {
-                commandline.runSilently(() => commands.execute(args[0] || "", null, true));
+                commandline.runSilently(() => { commands.execute(args[0] || "", null, true); });
             }, {
                 completer: function (context) completion.ex(context),
                 literal: 0,
@@ -1908,16 +1912,20 @@ var CommandLine = Module("commandline", {
                         !(timespan.contains(item.timestamp) && (host ? commands.hasDomain(item.value, host)
                                                                      : item.privateData))));
 
-                commandline._messageHistory.filter(item => !timespan.contains(item.timestamp * 1000) ||
-                    !item.domains && !item.privateData ||
-                    host && (!item.domains || !item.domains.some(d => util.isSubdomain(d, host))));
+                commandline._messageHistory.filter(item =>
+                    ( !timespan.contains(item.timestamp * 1000)
+                   || !item.domains && !item.privateData
+                   || host && ( !item.domains
+                             || !item.domains.some(d => util.isSubdomain(d, host)))));
             }
         });
         sanitizer.addItem("messages", {
             description: "Saved :messages",
             action: function (timespan, host) {
-                commandline._messageHistory.filter(item => !timespan.contains(item.timestamp * 1000) ||
-                    host && (!item.domains || !item.domains.some(d => util.isSubdomain(d, host))));
+                commandline._messageHistory.filter(item =>
+                    ( !timespan.contains(item.timestamp * 1000)
+                   || host && ( !item.domains
+                             || !item.domains.some(d => util.isSubdomain(d, host)))));
             }
         });
     }

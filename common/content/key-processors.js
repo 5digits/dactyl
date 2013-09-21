@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -77,7 +77,7 @@ var ProcessorStack = Class("ProcessorStack", {
         if (this.ownsBuffer)
             statusline.inputBuffer = this.processors.length ? this.buffer : "";
 
-        if (!this.processors.some(function (p) !p.extended) && this.actions.length) {
+        if (!this.processors.some(p => !p.extended) && this.actions.length) {
             // We have matching actions and no processors other than
             // those waiting on further arguments. Execute actions as
             // long as they continue to return PASS.

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -48,9 +48,10 @@ var Map = Class("Map", {
     name: Class.Memoize(function () this.names[0]),
 
     /** @property {[string]} All of this mapping's names (key sequences). */
-    names: Class.Memoize(function () this._keys.map(function (k) DOM.Event.canonicalKeys(k))),
+    names: Class.Memoize(function () this._keys.map(k => DOM.Event.canonicalKeys(k))),
 
-    get toStringParams() [this.modes.map(m => m.name), this.names.map(String.quote)],
+    get toStringParams() [this.modes.map(m => m.name),
+                          this.names.map(String.quote)],
 
     get identifier() [this.modes[0].name, this.hive.prefix + this.names[0]].join("."),
 
@@ -116,7 +117,7 @@ var Map = Class("Map", {
     execute: function (args) {
         if (!isObject(args)) // Backwards compatibility :(
             args = iter(["motion", "count", "arg", "command"])
-                .map(function ([i, prop]) [prop, this[i]], arguments)
+                .map(([i, prop]) => [prop, this[i]], arguments)
                 .toObject();
 
         args = this.hive.makeArgs(this.hive.group.lastDocument,
@@ -172,7 +173,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
     iterate: function (modes) {
         let stacks = Array.concat(modes).map(this.closure.getStack);
         return values(stacks.shift().sort((m1, m2) => String.localeCompare(m1.name, m2.name))
-            .filter(map => map.rhs &&
+            .filter((map) => map.rhs &&
                 stacks.every(stack => stack.some(m => m.rhs && m.rhs === map.rhs && m.name === map.name))));
     },
 
@@ -360,7 +361,9 @@ var Mappings = Module("mappings", {
         let list = Array.map("CASM", s => s + "-");
 
         return iter(util.range(0, 1 << list.length)).map(mask =>
-            list.filter((p, i) => mask & (1 << i)).join("")).toArray().concat("*-");
+            list.filter((p, i) => mask & (1 << i)).join(""))
+                .toArray()
+                .concat("*-");
     }),
 
     expand: function expand(keys) {
@@ -442,7 +445,8 @@ var Mappings = Module("mappings", {
      * @param {string} cmd The map name to match.
      * @returns {Map}
      */
-    get: function get(mode, cmd) this.hives.map(h => h.get(mode, cmd)).compact()[0] || null,
+    get: function get(mode, cmd) this.hives.map(h => h.get(mode, cmd))
+                                     .compact()[0] || null,
 
     /**
      * Returns a count of maps with names starting with but not equal to
@@ -454,7 +458,7 @@ var Mappings = Module("mappings", {
      */
     getCandidates: function (mode, prefix)
         this.hives.map(h => h.getCandidates(mode, prefix))
-                  .reduce((a, b) => a + b, 0),
+                  .reduce((a, b) => (a + b), 0),
 
     /**
      * Lists all user-defined mappings matching *filter* for the specified
@@ -813,7 +817,8 @@ var Mappings = Module("mappings", {
         completion.userMapping = function userMapping(context, modes_, hive) {
             hive = hive || mappings.user;
             modes_ = modes_ || [modes.NORMAL];
-            context.keys = { text: function (m) m.names[0], description: function (m) m.description + ": " + m.action };
+            context.keys = { text: function (m) m.names[0],
+                             description: function (m) m.description + ": " + m.action };
             context.completions = hive.iterate(modes_);
         };
     },
@@ -821,7 +826,8 @@ var Mappings = Module("mappings", {
         JavaScript.setCompleter([Mappings.prototype.get, MapHive.prototype.get],
             [
                 null,
-                function (context, obj, args) [[m.names, m.description] for (m in this.iterate(args[0]))]
+                function (context, obj, args) [[m.names, m.description]
+                                               for (m in this.iterate(args[0]))]
             ]);
     },
     mappings: function initMappings(dactyl, modules, window) {

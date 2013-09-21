@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -300,7 +300,9 @@ var HintSession = Class("HintSession", CommandMode, {
                 return false;
 
             if (!rect.width || !rect.height)
-                if (!Array.some(elem.childNodes, elem => elem instanceof Element && DOM(elem).style.float != "none" && isVisible(elem)))
+                if (!Array.some(elem.childNodes, elem => elem instanceof Element
+                                                      && DOM(elem).style.float != "none"
+                                                      && isVisible(elem)))
                     if (elem.textContent || !elem.name)
                         return false;
 
@@ -1111,7 +1113,9 @@ var Hints = Module("hints", {
     isVisible: function isVisible(elem, offScreen) {
         let rect = elem.getBoundingClientRect();
         if (!rect.width || !rect.height)
-            if (!Array.some(elem.childNodes, elem => elem instanceof Element && DOM(elem).style.float != "none" && isVisible(elem)))
+            if (!Array.some(elem.childNodes, elem => elem instanceof Element
+                                                  && DOM(elem).style.float != "none"
+                                                  && isVisible(elem)))
                 return false;
 
         let win = elem.ownerDocument.defaultView;
@@ -1368,7 +1372,8 @@ var Hints = Module("hints", {
                     "transliterated": UTF8("When true, special latin characters are translated to their ASCII equivalents (e.g., é ⇒ e)")
                 },
                 validator: function (values) Option.validateCompleter.call(this, values) &&
-                    1 === values.reduce((acc, v) => acc + (["contains", "custom", "firstletters", "wordstartswith"].indexOf(v) >= 0), 0)
+                    1 === values.reduce((acc, v) => acc + (["contains", "custom", "firstletters", "wordstartswith"].indexOf(v) >= 0),
+                                        0)
             });
 
         options.add(["wordseparators", "wsp"],

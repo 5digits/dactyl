@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -367,8 +367,8 @@ var Help = Module("Help", {
             for (let [file, ] in Iterator(help.files)) {
                 let url = "dactyl://help/" + file;
                 dactyl.open(url);
-                util.waitFor(() => content.location.href == url && buffer.loaded
-                                && content.document.documentElement instanceof Ci.nsIDOMHTMLHtmlElement,
+                util.waitFor(() => (content.location.href == url && buffer.loaded &&
+                                    content.document.documentElement instanceof Ci.nsIDOMHTMLHtmlElement),
                              15000);
                 events.waitForPageLoad();
                 var data = [

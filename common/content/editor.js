@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2011 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
 // Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 //
 // This work is licensed for reuse under an MIT license. Details are
@@ -304,7 +304,9 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
 
         // Skip to any requested offset.
         count = Math.abs(offset);
-        Editor.extendRange(range, offset > 0, { test: function (c) !!count-- }, true);
+        Editor.extendRange(range, offset > 0,
+                           { test: c => !!count-- },
+                           true);
         range.collapse(offset < 0);
 
         return range;
@@ -400,7 +402,9 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             var editor_ = window.GetCurrentEditor ? GetCurrentEditor()
                                                   : Editor.getEditor(document.commandDispatcher.focusedWindow);
             dactyl.assert(editor_);
-            text = Array.map(editor_.rootElement.childNodes, e => DOM.stringify(e, true)).join("");
+            text = Array.map(editor_.rootElement.childNodes,
+                             e => DOM.stringify(e, true))
+                        .join("");
 
             if (!editor_.selection.rangeCount)
                 var sel = "";
@@ -1316,7 +1320,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 var range = editor.selectedRange;
                 if (range.collapsed) {
                     count = count || 1;
-                    Editor.extendRange(range, true, { test: function (c) !!count-- }, true);
+                    Editor.extendRange(range, true, { test: c => !!count-- }, true);
                 }
                 editor.mungeRange(range, munger, count != null);
 
@@ -1349,9 +1353,12 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             "The external text editor",
             "string", 'gvim -f +<line> +"sil! call cursor(0, <column>)" <file>', {
                 format: function (obj, value) {
-                    let args = commands.parseArgs(value || this.value, { argCount: "*", allowUnknownOptions: true })
-                                       .map(util.compileMacro).filter(fmt => fmt.valid(obj))
+                    let args = commands.parseArgs(value || this.value,
+                                                  { argCount: "*", allowUnknownOptions: true })
+                                       .map(util.compileMacro)
+                                       .filter(fmt => fmt.valid(obj))
                                        .map(fmt => fmt(obj));
+
                     if (obj["file"] && !this.has("file"))
                         args.push(obj["file"]);
                     return args;
@@ -1359,7 +1366,8 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 has: function (key) Set.has(util.compileMacro(this.value).seen, key),
                 validator: function (value) {
                     this.format({}, value);
-                    return Object.keys(util.compileMacro(value).seen).every(k => ["column", "file", "line"].indexOf(k) >= 0);
+                    return Object.keys(util.compileMacro(value).seen)
+                                 .every(k => ["column", "file", "line"].indexOf(k) >= 0);
                 }
             });
 
