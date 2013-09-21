@@ -377,10 +377,7 @@ var StatusLine = Module("statusline", {
      * @param {number} percent The zoom level, as a percentage. @optional
      * @param {boolean} full True if full zoom is in operation. @optional
      */
-    updateZoomLevel: function updateZoomLevel(percent, full) {
-        if (arguments.length == 0)
-            [percent, full] = [buffer.zoomLevel, buffer.fullZoom];
-
+    updateZoomLevel: function updateZoomLevel(percent=buffer.zoomLevel, full=buffer.fullZoom) {
         if (percent == 100)
             this.widgets.zoomlevel.value = "";
         else {

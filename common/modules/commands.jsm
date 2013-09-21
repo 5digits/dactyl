@@ -971,10 +971,7 @@ var Commands = Module("commands", {
     parseArgs: function parseArgs(str, params) {
         const self = this;
 
-        function getNextArg(str, _keepQuotes) {
-            if (arguments.length < 2)
-                _keepQuotes = keepQuotes;
-
+        function getNextArg(str, _keepQuotes=keepQuotes) {
             if (str.substr(0, 2) === "<<" && hereDoc) {
                 let arg = /^<<(\S*)/.exec(str)[1];
                 let count = arg.length + 2;

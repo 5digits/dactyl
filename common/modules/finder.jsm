@@ -75,9 +75,7 @@ var RangeFinder = Module("rangefinder", {
         this.find("", mode == this.modes.FIND_BACKWARD);
     },
 
-    bootstrap: function bootstrap(str, backward) {
-        if (arguments.length < 2 && this.rangeFind)
-            backward = this.rangeFind.reverse;
+    bootstrap: function bootstrap(str, backward=this.rangeFind && this.rangeFind.reverse) {
 
         let highlighted = this.rangeFind && this.rangeFind.highlighted;
         let selections = this.rangeFind && this.rangeFind.selections;

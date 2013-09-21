@@ -480,11 +480,11 @@ var Option = Class("Option", {
         stringlist: function stringlist(k) this.value.indexOf(k) >= 0,
         get charlist() this.stringlist,
 
-        regexplist: function regexplist(k, default_) {
+        regexplist: function regexplist(k, default_=null) {
             for (let re in values(this.value))
                 if ((re.test || re).call(re, k))
                     return re.result;
-            return arguments.length > 1 ? default_ : null;
+            return default_;
         },
         get regexpmap() this.regexplist,
         get sitelist() this.regexplist,

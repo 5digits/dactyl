@@ -1090,12 +1090,10 @@ var DOM = Class("DOM", {
          * @param {string} keys Messy form.
          * @param {boolean} unknownOk Whether unknown keys are passed
          *     through rather than being converted to <lt>keyname>.
-         *     @default false
+         *     @default true
          * @returns {string} Canonical form.
          */
-        canonicalKeys: function canonicalKeys(keys, unknownOk) {
-            if (arguments.length === 1)
-                unknownOk = true;
+        canonicalKeys: function canonicalKeys(keys, unknownOk=true) {
             return this.parse(keys, unknownOk).map(this.closure.stringify).join("");
         },
 
@@ -1122,15 +1120,12 @@ var DOM = Class("DOM", {
          * @param {string} keys The string to parse.
          * @param {boolean} unknownOk Whether unknown keys are passed
          *     through rather than being converted to <lt>keyname>.
-         *     @default false
+         *     @default true
          * @returns {Array[Object]}
          */
-        parse: function parse(input, unknownOk) {
+        parse: function parse(input, unknownOk=true) {
             if (isArray(input))
                 return array.flatten(input.map(k => this.parse(k, unknownOk)));
-
-            if (arguments.length === 1)
-                unknownOk = true;
 
             let out = [];
             for (let match in util.regexp.iterate(/<.*?>?>|[^<]|<(?!.*>)/g, input)) {

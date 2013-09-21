@@ -266,8 +266,8 @@ var IO = Module("io", {
      */
     File: Class.Memoize(function () let (io = this)
         Class("File", File, {
-            init: function init(path, checkCWD)
-                init.supercall(this, path, (arguments.length < 2 || checkCWD) && io.cwd)
+            init: function init(path, checkCWD=true)
+                init.supercall(this, path, checkCWD && io.cwd)
         })),
 
     /**

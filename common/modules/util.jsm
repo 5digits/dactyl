@@ -588,10 +588,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} msg The trace message.
      * @param {number} frames The number of frames to print.
      */
-    dumpStack: function dumpStack(msg, frames) {
+    dumpStack: function dumpStack(msg="Stack", frames=null) {
         let stack = util.stackLines(Error().stack);
         stack = stack.slice(1, 1 + (frames || stack.length)).join("\n").replace(/^/gm, "    ");
-        util.dump((arguments.length == 0 ? "Stack" : msg) + "\n" + stack + "\n");
+        util.dump(msg + "\n" + stack + "\n");
     },
 
     /**
