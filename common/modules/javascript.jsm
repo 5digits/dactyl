@@ -273,7 +273,7 @@ var JavaScript = Module("javascript", {
 
     // Don't eval any function calls unless the user presses tab.
     _checkFunction: function (start, end, key) {
-        let res = this._function(idx => (idx >= start && idx < end));
+        let res = this._functions.some(idx => (idx >= start && idx < end));
         if (!res || this.context.tabPressed || key in this.cache.evalled)
             return false;
         this.context.waitingForTab = true;
