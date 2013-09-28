@@ -1531,7 +1531,8 @@ var Buffer = Module("Buffer", {
      * Like scrollTo, but scrolls more smoothly and does not update
      * marks.
      */
-    smoothScrollTo: function smoothScrollTo(node, x, y) {
+    smoothScrollTo: let (timers = WeakMap())
+                    function smoothScrollTo(node, x, y) {
         let { options } = overlay.activeModules;
 
         let time = options["scrolltime"];
@@ -1539,8 +1540,8 @@ var Buffer = Module("Buffer", {
 
         let elem = Buffer.Scrollable(node);
 
-        if (node.dactylScrollTimer)
-            node.dactylScrollTimer.cancel();
+        if (timers.has(node))
+            timers.get(node).cancel();
 
         if (x == null)
             x = elem.scrollLeft;
@@ -1561,7 +1562,7 @@ var Buffer = Module("Buffer", {
             else {
                 elem.scrollLeft = startX + (x - startX) / steps * n;
                 elem.scrollTop  = startY + (y - startY) / steps * n;
-                node.dactylScrollTimer = util.timeout(next, time / steps);
+                timers.set(node, util.timeout(next, time / steps));
             }
         }).call(this);
     },
