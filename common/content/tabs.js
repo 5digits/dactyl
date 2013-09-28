@@ -916,12 +916,6 @@ var Tabs = Module("tabs", {
                     let modules     = win.dactyl.modules;
                     let { browser } = modules.config;
 
-                    if (args[1]) {
-                        let tabList = modules.tabs.visibleTabs;
-                        let target  = dactyl.assert(tabList[tabIndex]);
-                        tabIndex = Array.indexOf(tabs.allTabs, target) - 1;
-                    }
-
                     let newTab = browser.addTab("about:blank");
                     browser.stop();
                     // XXX: the implementation of DnD in tabbrowser.xml suggests
@@ -929,10 +923,13 @@ var Tabs = Module("tabs", {
                     // without this reference?
                     browser.docShell;
 
-                    let last = modules.tabs.allTabs.length - 1;
+                    if (args[1]) {
+                        let { visibleTabs, allTabs } = modules.tabs;
+                        tabIndex = Math.constrain(tabIndex, 1, visibleTabs.length);
+                        let target = visibleTabs[tabIndex - 1];
+                        browser.moveTabTo(newTab, Array.indexOf(allTabs, target));
+                    }
 
-                    if (args[1])
-                        browser.moveTabTo(newTab, tabIndex);
                     browser.selectedTab = newTab; // required
                     browser.swapBrowsersAndCloseOther(newTab, sourceTab);
                 }, {
