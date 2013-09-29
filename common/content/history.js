@@ -69,7 +69,7 @@ var History = Module("history", {
         obj.__defineSetter__("index", function (val) { webNav.gotoIndex(val); });
         obj.__iterator__ = function () array.iterItems(this);
 
-        for (let item in iter(sh.SHistoryEnumerator, Ci.nsIHistoryEntry))
+        for (let item in iter(sh.SHistoryEnumerator, Ci.nsISHEntry))
             obj.push(update(Object.create(item), {
                 index: obj.length,
                 icon: Class.Memoize(function () services.favicon.getFaviconImageForPage(this.URI).spec)
