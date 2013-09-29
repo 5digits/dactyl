@@ -1757,8 +1757,10 @@ var Buffer = Module("Buffer", {
                     if (arg) {
                         prefs.set("print.print_printer", PRINTER);
 
+                        let { path } = io.File(arg.substr(1));
                         set("print_to_file", true);
-                        set("print_to_filename", io.File(arg.substr(1)).path);
+                        set("print_to_filename", path);
+                        prefs.set("print_to_filename", path);
 
                         dactyl.echomsg(_("print.toFile", arg.substr(1)));
                     }

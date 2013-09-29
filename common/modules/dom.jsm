@@ -213,7 +213,7 @@ var DOM = Class("DOM", {
 
         for (let i = 0; i < this.length; i++) {
             let tmp = fn.call(self || update(obj, [this[i]]), this[i], i);
-            if (isObject(tmp) && "length" in tmp)
+            if (isObject(tmp) && !(tmp instanceof Ci.nsIDOMNode) && "length" in tmp)
                 for (let j = 0; j < tmp.length; j++)
                     res[res.length++] = tmp[j];
             else if (tmp != null)
