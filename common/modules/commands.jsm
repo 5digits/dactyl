@@ -155,14 +155,12 @@ var Command = Class("Command", {
      * @param {Args} args The Args object passed to {@link #action}.
      * @param {Object} modifiers Any modifiers to be passed to {@link #action}.
      */
-    execute: function execute(args, modifiers) {
+    execute: function execute(args, modifiers = {}) {
         const { dactyl } = this.modules;
 
         let context = args.context;
         if (this.deprecated)
             this.warn(context, "deprecated", _("warn.deprecated", ":" + this.name, this.deprecated));
-
-        modifiers = modifiers || {};
 
         if (args.count != null && !this.count)
             throw FailedAssertion(_("command.noCount"));
@@ -543,21 +541,21 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
     repeat: null,
 
     /**
-     * Adds a new command to the builtin hive. Accessible only to core
-     * dactyl code. Plugins should use group.commands.add instead.
+     * Adds a new command to the builtin hive. Accessible only to core dactyl
+     * code. Plugins should use group.commands.add instead.
      *
-     * @param {[string]} specs The names by which this command can be
-     *     invoked. The first name specified is the command's canonical
-     *     name.
+     * @param {[string]} specs The names by which this command can be invoked.
+     *     The first name specified is the command's canonical name.
      * @param {string} description A description of the command.
      * @param {function} action The action invoked by this command.
      * @param {Object} extra An optional extra configuration hash.
-     * @optional
+     *     @optional
+     * @param {boolean} replace Replace an existing command of the same name.
+     *     @optional
      */
-    add: function add(specs, description, action, extra, replace) {
+    add: function add(specs, description, action, extra = {}, replace = false) {
         const { commands, contexts } = this.modules;
 
-        extra = extra || {};
         if (!extra.definedAt)
             extra.definedAt = contexts.getCaller(Components.stack.caller);
         if (!extra.sourceModule)
@@ -594,10 +592,8 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         return name;
     },
 
-    _add: function _add(names, description, action, extra, replace) {
+    _add: function _add(names, description, action, extra = {}, replace = false) {
         const { contexts } = this.modules;
-
-        extra = extra || {};
         extra.definedAt = contexts.getCaller(Components.stack.caller.caller);
         return this.add.apply(this, arguments);
     },
@@ -968,7 +964,7 @@ var Commands = Module("commands", {
      *     Args object.
      * @returns {Args}
      */
-    parseArgs: function parseArgs(str, params) {
+    parseArgs: function parseArgs(str, params = {}) {
         const self = this;
 
         function getNextArg(str, _keepQuotes=keepQuotes) {
@@ -990,7 +986,7 @@ var Commands = Module("commands", {
 
         try {
 
-            var { allowUnknownOptions, argCount, complete, extra, hereDoc, literal, options, keepQuotes } = params || {};
+            var { allowUnknownOptions, argCount, complete, extra, hereDoc, literal, options, keepQuotes } = params;
 
             if (!options)
                 options = [];
@@ -1776,8 +1772,7 @@ var Commands = Module("commands", {
     }
 });
 
-let quote = function quote(q, list, map) {
-    map = map || Commands.quoteMap;
+let quote = function quote(q, list, map = Commands.quoteMap) {
     let re = RegExp("[" + list + "]", "g");
     function quote(str) (q + String.replace(str, re, $0 => ($0 in map ? map[$0] : ("\\" + $0)))
                            + q);

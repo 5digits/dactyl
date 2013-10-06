@@ -866,9 +866,7 @@ var CommandLine = Module("commandline", {
      * @... {string} default - The initial value that will be returned
      *     if the user presses <CR> straightaway. @default ""
      */
-    input: function _input(prompt, callback, extra) {
-        extra = extra || {};
-
+    input: function _input(prompt, callback, extra = {}) {
         CommandPromptMode(prompt, update({ onSubmit: callback }, extra)).open();
     },
 
@@ -1396,10 +1394,8 @@ var CommandLine = Module("commandline", {
          *      @default {@link #selected}
          * @returns {object}
          */
-        getItem: function getItem(tuple) {
-            tuple = tuple || this.selected;
-            return tuple && tuple[0] && tuple[0].items[tuple[1]];
-        },
+        getItem: function getItem(tuple = this.selected)
+            tuple && tuple[0] && tuple[0].items[tuple[1]],
 
         /**
          * Returns a tuple representing the next item, at the given
@@ -1510,11 +1506,10 @@ var CommandLine = Module("commandline", {
          *      @default 1
          * @param {boolean} fromTab If true, this function was
          *      called by {@link #tab}.
+         *      @default false
          *      @private
          */
-        select: function select(idx, count, fromTab) {
-            count = count || 1;
-
+        select: function select(idx, count = 1, fromTab = false) {
             switch (idx) {
             case this.UP:
             case this.DOWN:

@@ -34,11 +34,9 @@ var Marks = Module("marks", {
 
     get localURI() buffer.focusedFrame.document.documentURI.replace(/#.*/, ""),
 
-    Mark: function Mark(params) {
+    Mark: function Mark(params = {}) {
         let win = buffer.focusedFrame;
         let doc = win.document;
-
-        params = params || {};
 
         params.location = doc.documentURI.replace(/#.*/, ""),
         params.offset = buffer.scrollPosition;

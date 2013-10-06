@@ -502,11 +502,10 @@ var Modes = Module("modes", {
         return StackElement;
     })(),
     cacheId: 0,
-    boundProperty: function BoundProperty(desc) {
+    boundProperty: function BoundProperty(desc = {}) {
         let id = this.cacheId++;
         let value;
 
-        desc = desc || {};
         return Class.Property(update({
             configurable: true,
             enumerable: true,

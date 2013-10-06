@@ -408,8 +408,7 @@ var Tabs = Module("tabs", {
      * @param {number} count How many tabs to remove.
      * @param {boolean} focusLeftTab Focus the tab to the left of the removed tab.
      */
-    remove: function remove(tab, count, focusLeftTab) {
-        count = count || 1;
+    remove: function remove(tab, count = 1, focusLeftTab = false) {
         let res = this.count > count;
 
         let tabs = this.visibleTabs;

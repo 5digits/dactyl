@@ -13,9 +13,7 @@ var History = Module("history", {
 
     get service() services.history,
 
-    get: function get(filter, maxItems, sort) {
-        sort = sort || this.SORT_DEFAULT;
-
+    get: function get(filter, maxItems, sort = this.SORT_DEFAULT) {
         if (isString(filter))
             filter = { searchTerms: filter };
 

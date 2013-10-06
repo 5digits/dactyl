@@ -187,9 +187,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      * @param {Object} extra An optional extra configuration hash.
      * @optional
      */
-    add: function (modes, keys, description, action, extra) {
-        extra = extra || {};
-
+    add: function (modes, keys, description, action, extra = {}) {
         modes = Array.concat(modes);
         if (!modes.every(util.identity))
             throw TypeError(/*L*/"Invalid modes: " + modes);
@@ -814,9 +812,7 @@ var Mappings = Module("mappings", {
         });
     },
     completion: function initCompletion(dactyl, modules, window) {
-        completion.userMapping = function userMapping(context, modes_, hive) {
-            hive = hive || mappings.user;
-            modes_ = modes_ || [modes.NORMAL];
+        completion.userMapping = function userMapping(context, modes_ = [modes.NORMAL], hive = mappings.user) {
             context.keys = { text: function (m) m.names[0],
                              description: function (m) m.description + ": " + m.action };
             context.completions = hive.iterate(modes_);

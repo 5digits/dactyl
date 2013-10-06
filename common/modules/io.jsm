@@ -241,11 +241,13 @@ var IO = Module("io", {
     /**
      * Sets the current working directory.
      *
-     * @param {string} newDir The new CWD. This may be a relative or
+     * @param {File|string} newDir The new CWD. This may be a relative or
      *     absolute path and is expanded by {@link #expandPath}.
+     *     @optional
+     *     @default = "~"
      */
-    set cwd(newDir) {
-        newDir = newDir && newDir.path || newDir || "~";
+    set cwd(newDir = "~") {
+        newDir = newDir.path || newDir;
 
         if (newDir == "-") {
             util.assert(this._oldcwd != null, _("io.noPrevDir"));

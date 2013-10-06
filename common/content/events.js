@@ -212,8 +212,7 @@ var Events = Module("events", {
     /**
      * Wraps an event listener to ensure that errors are reported.
      */
-    wrapListener: function wrapListener(method, self) {
-        self = self || this;
+    wrapListener: function wrapListener(method, self = this) {
         method.wrapper = wrappedListener;
         wrappedListener.wrapped = method;
         function wrappedListener(event) {

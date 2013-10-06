@@ -784,11 +784,10 @@ var Buffer = Module("Buffer", {
      * @param {number} count The multiple of 'scroll' lines to scroll.
      * @optional
      */
-    scrollByScrollSize: function scrollByScrollSize(direction, count) {
+    scrollByScrollSize: function scrollByScrollSize(direction, count = 1) {
         let { options } = this.modules;
 
         direction = direction ? 1 : -1;
-        count = count || 1;
 
         if (options["scroll"] > 0)
             this.scrollVertical("lines", options["scroll"] * direction);

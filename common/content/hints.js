@@ -12,10 +12,8 @@
 var HintSession = Class("HintSession", CommandMode, {
     get extendedMode() modes.HINTS,
 
-    init: function init(mode, opts) {
+    init: function init(mode, opts = {}) {
         init.supercall(this);
-
-        opts = opts || {};
 
         if (!opts.window)
             opts.window = modes.getStack(0).params.window;
@@ -1056,10 +1054,8 @@ var Hints = Module("hints", {
         return null;
     }, //}}}
 
-    open: function open(mode, opts) {
+    open: function open(mode, opts = {}) {
         this._extendedhintCount = opts.count;
-
-        opts = opts || {};
 
         mappings.pushCommand();
         commandline.input(["Normal", mode], null, {

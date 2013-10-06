@@ -33,10 +33,7 @@ lazyRequire("template", ["template"]);
  * @constructor
  */
 var CompletionContext = Class("CompletionContext", {
-    init: function cc_init(editor, name, offset) {
-        if (!name)
-            name = "";
-
+    init: function cc_init(editor, name = "", offset = 0) {
         let self = this;
         if (editor instanceof this.constructor) {
             let parent = editor;
@@ -68,7 +65,7 @@ var CompletionContext = Class("CompletionContext", {
             self.__defineGetter__("value", function get_value() this.top.value);
 
             self.offset = parent.offset;
-            self.advance(offset || 0);
+            self.advance(offset);
 
             /**
              * @property {boolean} Specifies that this context is not finished
@@ -156,7 +153,7 @@ var CompletionContext = Class("CompletionContext", {
              * @property {number} This context's offset from the beginning of
              *     {@link #editor}'s value.
              */
-            this.offset = offset || 0;
+            this.offset = offset;
             /**
              * @property {function} A function which is called when any subcontext
              *     changes its completion list. Only called when

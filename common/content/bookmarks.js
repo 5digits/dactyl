@@ -628,10 +628,10 @@ var Bookmarks = Module("bookmarks", {
     },
 
     completion: function initCompletion() {
-        completion.bookmark = function bookmark(context, tags, extra) {
+        completion.bookmark = function bookmark(context, tags, extra = {}) {
             context.title = ["Bookmark", "Title"];
             context.format = bookmarks.format;
-            iter(extra || {}).forEach(function ([k, v]) {
+            iter(extra).forEach(function ([k, v]) {
                 if (v != null)
                     context.filters.push(function (item) item.item[k] != null && this.matchString(v, item.item[k]));
             });

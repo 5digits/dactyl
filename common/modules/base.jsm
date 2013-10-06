@@ -1094,8 +1094,7 @@ let stub = Class.Property({
  */
 var ErrorBase = Class("ErrorBase", Error, {
     level: 2,
-    init: function EB_init(message, level) {
-        level = level || 0;
+    init: function EB_init(message, level = 0) {
         let error = Error(message);
         update(this, error);
         this.stack = error.stack;
@@ -1269,10 +1268,10 @@ var StructBase = Class("StructBase", Array, {
 });
 
 var Timer = Class("Timer", {
-    init: function init(minInterval, maxInterval, callback, self) {
+    init: function init(minInterval, maxInterval, callback, self = this) {
         this._timer = services.Timer();
         this.callback = callback;
-        this.self = self || this;
+        this.self = self;
         this.minInterval = minInterval;
         this.maxInterval = maxInterval;
         this.doneAt = 0;

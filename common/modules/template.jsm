@@ -467,9 +467,7 @@ var Template = Module("Template", {
                         ["td", { style: style[i] || "" }, d])])];
     },
 
-    usage: function usage(iter, format) {
-
-        format = format || {};
+    usage: function usage(iter, format = {}) {
         let desc = format.description || (item => this.linkifyHelp(item.description));
         let help = format.help || (item => item.name);
         let sourceLink = (frame) => {
