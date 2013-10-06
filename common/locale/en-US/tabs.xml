@@ -224,9 +224,9 @@
         <p>
             If argument is neither a full URL nor an index but uniquely identifies a
             buffer, by a partial match with the URL or title, it is selected.
-            With <oa>!</oa> the next buffer matching the argument is selected,
-            even if it cannot be identified uniquely. Use <k>b</k> as a
-            shortcut to open this prompt.
+            With <oa>!</oa> the next, or <oa>count</oa>th, buffer matching the
+            argument is selected, even if it cannot be identified uniquely. Use
+            <k>b</k> as a shortcut to open this prompt.
         </p>
 
         <p>If argument is <em>#</em>, the alternate buffer will be selected (see <k name="C-^"/>).</p>

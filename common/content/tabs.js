@@ -798,7 +798,12 @@ var Tabs = Module("tabs", {
         if (config.has("tabbrowser")) {
             commands.add(["b[uffer]"],
                 "Switch to a buffer",
-                function (args) { tabs.switchTo(args[0], args.bang, args.count); }, {
+                function (args) {
+                    if (args.length)
+                        tabs.switchTo(args[0], args.bang, args.count);
+                    else if (args.count)
+                        tabs.switchTo(String(args.count));
+                }, {
                     argCount: "?",
                     bang: true,
                     count: true,
