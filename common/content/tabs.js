@@ -1173,12 +1173,12 @@ var Tabs = Module("tabs", {
 
             mappings.add([modes.NORMAL], ["d"],
                 "Delete current buffer",
-                function ({ count }) { tabs.remove(tabs.getTab(), count, false); },
+                function ({ count }) { tabs.remove(tabs.getTab(), count || 1, false); },
                 { count: true });
 
             mappings.add([modes.NORMAL], ["D"],
                 "Delete current buffer, focus tab to the left",
-                function ({ count }) { tabs.remove(tabs.getTab(), count, true); },
+                function ({ count }) { tabs.remove(tabs.getTab(), count || 1, true); },
                 { count: true });
 
             mappings.add([modes.NORMAL], ["gb"],
