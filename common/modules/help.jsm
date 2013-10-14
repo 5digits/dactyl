@@ -307,7 +307,7 @@ var Help = Module("Help", {
             let empty = Set("area base basefont br col frame hr img input isindex link meta param"
                                 .split(" "));
             function fix(node) {
-                switch(node.nodeType) {
+                switch (node.nodeType) {
                 case Ci.nsIDOMNode.ELEMENT_NODE:
                     if (isinstance(node, [Ci.nsIDOMHTMLBaseElement]))
                         return;

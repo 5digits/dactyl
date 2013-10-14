@@ -478,18 +478,18 @@ var Events = Module("events", {
                 let modifiers = (key.getAttribute("modifiers") || "").trim().split(/[\s,]+/);
                 for (let modifier in values(modifiers))
                     switch (modifier) {
-                        case "access": update(keys, access); break;
-                        case "accel":  keys[accel] = true; break;
-                        default:       keys[modifier + "Key"] = true; break;
-                        case "any":
-                            if (!iter.some(keys, ([k, v]) => v && needed[k]))
-                                continue outer;
-                            for (let [k, v] in iter(keys)) {
-                                if (v)
-                                    needed[k] = false;
-                                keys[k] = false;
-                            }
-                            break;
+                    case "access": update(keys, access); break;
+                    case "accel":  keys[accel] = true; break;
+                    default:       keys[modifier + "Key"] = true; break;
+                    case "any":
+                        if (!iter.some(keys, ([k, v]) => v && needed[k]))
+                            continue outer;
+                        for (let [k, v] in iter(keys)) {
+                            if (v)
+                                needed[k] = false;
+                            keys[k] = false;
+                        }
+                        break;
                     }
 
                 if (iter(needed).every(([k, v]) => (v == keys[k])))

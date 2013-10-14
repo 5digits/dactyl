@@ -224,7 +224,7 @@ function init() {
 
     for each (let line in manifest.split("\n")) {
         let fields = line.split(/\s+/);
-        switch(fields[0]) {
+        switch (fields[0]) {
         case "category":
             categoryManager.addCategoryEntry(fields[1], fields[2], fields[3], false, true);
             categories.push([fields[1], fields[2]]);

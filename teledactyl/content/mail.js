@@ -774,14 +774,14 @@ var Mail = Module("mail", {
                     return void dactyl.beep();
 
                 switch (arg) {
-                    case "r": MsgMarkMsgAsRead(); break;
-                    case "s": MsgMarkAsFlagged(); break;
-                    case "i": ToggleMessageTagKey(1); break; // Important
-                    case "w": ToggleMessageTagKey(2); break; // Work
-                    case "p": ToggleMessageTagKey(3); break; // Personal
-                    case "t": ToggleMessageTagKey(4); break; // TODO
-                    case "l": ToggleMessageTagKey(5); break; // Later
-                    default:  dactyl.beep();
+                case "r": MsgMarkMsgAsRead(); break;
+                case "s": MsgMarkAsFlagged(); break;
+                case "i": ToggleMessageTagKey(1); break; // Important
+                case "w": ToggleMessageTagKey(2); break; // Work
+                case "p": ToggleMessageTagKey(3); break; // Personal
+                case "t": ToggleMessageTagKey(4); break; // TODO
+                case "l": ToggleMessageTagKey(5); break; // Later
+                default:  dactyl.beep();
                 }
             },
             {
@@ -885,10 +885,10 @@ var Mail = Module("mail", {
             {
                 setter: function (value) {
                     switch (value) {
-                        case "classic":  ChangeMailLayout(0); break;
-                        case "wide":     ChangeMailLayout(1); break;
-                        case "vertical": ChangeMailLayout(2); break;
-                        // case "inherit" just does nothing
+                    case "classic":  ChangeMailLayout(0); break;
+                    case "wide":     ChangeMailLayout(1); break;
+                    case "vertical": ChangeMailLayout(2); break;
+                    // case "inherit" just does nothing
                     }
 
                     return value;
