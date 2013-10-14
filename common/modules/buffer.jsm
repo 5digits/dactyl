@@ -2707,6 +2707,12 @@ Buffer.addPageInfoSection("s", "Security", function (verbose) {
     }
 });
 
+// internal navigation doesn't currently update link[rel='shortlink']
+Buffer.addURIShortener("youtube.com", (uri, doc) =>
+    util.newURI("http://youtu.be/" +
+                    array.toObject(uri.query.split("&")
+                                      .map(p => p.split("="))).v));
+
 // catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 endModule();
