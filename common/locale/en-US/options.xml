@@ -882,7 +882,7 @@
     <description>
         <p>Change the hint matching algorithm used in Hints mode.</p>
 
-        <p>Possible values:</p>
+        <p>Possible values are one of:</p>
 
         <dl>
             <dt>contains</dt>
@@ -916,6 +916,9 @@
                 Delegate to the function
                 <tt>dactyl.plugins.customHintMatcher</tt>.
             </dd>
+        </dl>
+        <p>and optionally:</p>
+        <dl>
             <dt>transliterated</dt>
             <dd>
                 Certain alphanumeric characters are transliterated into their
