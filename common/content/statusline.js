@@ -14,6 +14,9 @@ var StatusLine = Module("statusline", {
         this.statusBar = document.getElementById("addon-bar") || this._statusLine;
         this.baseGroup = this.statusBar == this._statusLine ? "StatusLine " : "";
 
+        if (config.haveGecko("25"))
+            config.tabbrowser.getStatusPanel().hidden = true;
+
         if (this.statusBar.localName == "toolbar") {
             styles.system.add("addon-bar", config.styleableChrome, literal(/*
                 #status-bar { margin-top: 0 !important; }
