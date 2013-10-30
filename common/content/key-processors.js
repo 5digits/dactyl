@@ -139,7 +139,7 @@ var ProcessorStack = Class("ProcessorStack", {
         if (result === Events.PASS_THROUGH)
             events.feedevents(null, this.keyEvents, { skipmap: true, isMacro: true, isReplay: true });
         else {
-            let list = this.events.filter(e => e.getPreventDefault() && !e.dactylDefaultPrevented);
+            let list = this.events.filter(e => e.defaultPrevented && !e.dactylDefaultPrevented);
 
             if (result === Events.PASS)
                 events.dbg("PASS THROUGH: " + list.slice(0, length).filter(e => e.type === "keypress").map(DOM.Event.closure.stringify));
@@ -190,7 +190,7 @@ var ProcessorStack = Class("ProcessorStack", {
                 processors.push(res);
         }
 
-        events.dbg("RESULT: " + event.getPreventDefault() + " " + this._result(result));
+        events.dbg("RESULT: " + event.defaultPrevented + " " + this._result(result));
         events.dbg("ACTIONS: " + actions.length + " " + this.actions.length);
         events.dbg("PROCESSORS:", processors, "\n");
 

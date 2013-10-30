@@ -1367,7 +1367,7 @@ var DOM = Class("DOM", {
                                    .dispatchDOMEventViaPresShell(target, event, true);
                         else {
                             target.dispatchEvent(event);
-                            return !event.getPreventDefault();
+                            return !event.defaultPrevented;
                         }
                     }
                     catch (e) {

@@ -149,7 +149,7 @@ var MOW = Module("mow", {
 
     events: {
         click: function onClick(event) {
-            if (event.getPreventDefault())
+            if (event.defaultPrevented)
                 return;
 
             const openLink = function openLink(where) {

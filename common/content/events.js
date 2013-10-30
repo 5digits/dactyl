@@ -660,7 +660,7 @@ var Events = Module("events", {
         // the command-line has focus
         // TODO: ...help me...please...
         keypress: function onKeyPress(event) {
-            event.dactylDefaultPrevented = event.getPreventDefault();
+            event.dactylDefaultPrevented = event.defaultPrevented;
 
             let duringFeed = this.duringFeed || [];
             this.duringFeed = [];
