@@ -2699,9 +2699,11 @@ Buffer.addPageInfoSection("s", "Security", function (verbose) {
 
         yield ["Verified by", data.caOrg];
 
-        if (identity._overrideService.hasMatchingOverride(identity._lastLocation.hostname,
-                                                      (identity._lastLocation.port || 443),
-                                                      data.cert, {}, {}))
+        let { host, port } = identity._lastUri;
+        if (port == -1)
+            port = 443;
+
+        if (identity._overrideService.hasMatchingOverride(host, port, data.cert, {}, {}))
             yield ["User exception", /*L*/"true"];
         break;
     }
