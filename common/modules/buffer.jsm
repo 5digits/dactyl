@@ -624,11 +624,20 @@ var Buffer = Module("Buffer", {
     get shortURL() {
         let { uri, doc } = this;
 
+        function hashify(url) {
+            let newURI = util.newURI(url);
+
+            if (uri.hasRef && !newURI.hasRef)
+                newURI.ref = uri.ref;
+
+            return newURI.spec;
+        }
+
         for each (let shortener in Buffer.uriShorteners)
             try {
                 let shortened = shortener(uri, doc);
                 if (shortened)
-                    return shortened.spec;
+                    return hashify(shortened.spec);
             }
             catch (e) {
                 util.reportError(e);
@@ -637,7 +646,7 @@ var Buffer = Module("Buffer", {
         let link = DOM("link[href][rev=canonical], \
                         link[href][rel=shortlink]", doc);
         if (link)
-            return link.attr("href");
+            return hashify(link.attr("href"));
 
         return null;
     },
