@@ -150,19 +150,24 @@ this.lazyRequire("services", ["services"]);
 this.lazyRequire("storage", ["File"]);
 this.lazyRequire("util", ["FailedAssertion", "util"]);
 
+literal.files = {};
+literal.locations = {};
 function literal(/* comment */) {
     let { caller } = Components.stack;
     while (caller && caller.language != 2)
         caller = caller.caller;
 
     let file = caller.filename.replace(/.* -> /, "");
-    let key = "literal:" + file + ":" + caller.line;
+    let key = "literal:" + file + ":" + caller.lineNumber;
+    if (Set.has(literal.locations, key))
+        return literal.locations[key];
 
-    let source = File.readURL(file);
+    let source = literal.files[file] || File.readURL(file);
+    literal.files[file] = source;
 
     let match = RegExp("(?:.*\\n){" + (caller.lineNumber - 1) + "}" +
                        ".*literal\\(/\\*([^]*?)\\*/\\)").exec(source);
-    return match[1];
+    return literal.locations[key] = match[1];
 
     // Later...
     return cache.get(key, function () {

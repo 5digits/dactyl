@@ -644,9 +644,10 @@ var Buffer = Module("Buffer", {
             }
 
         let link = DOM("link[href][rev=canonical], \
-                        link[href][rel=shortlink]", doc);
-        if (link.length)
-            return hashify(link.attr("href"));
+                        link[href][rel=shortlink]", doc)
+                       .attr("href");
+        if (link)
+            return hashify(link);
 
         return null;
     },
