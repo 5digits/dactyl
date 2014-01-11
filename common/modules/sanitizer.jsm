@@ -446,6 +446,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 if (args.bang)
                     dactyl.assert(args.length == 0, _("error.trailingCharacters"));
                 else {
+                    dactyl.assert(args.length, _("error.argumentRequired"));
                     dactyl.assert(opt.validator(args), _("error.invalidArgument"));
                     opt = { __proto__: opt, value: args.slice() };
                 }
