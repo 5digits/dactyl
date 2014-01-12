@@ -576,8 +576,12 @@
     <tags>'dls' 'dlsort' 'downloadsort'</tags>
     <spec>'downloadsort' 'dlsort' 'dls'</spec>
     <strut/>
+    <!--
     <type>&option.downloadsort.type;</type>
     <default>&option.downloadsort.default;</default>
+    -->
+    <type>stringlist</type>
+    <default>-active,+filename</default>
     <description>
         <p>
             <ex>:downloads</ex> sort order, in order of precedence.
@@ -596,6 +600,9 @@
             <dt>time</dt>     <dd>Time remaining</dd>
             <dt>url</dt>      <dd>Source URL</dd>
         </dl>
+        <note>
+            This option is currently unavailable in &dactyl.host; 26 and greater.
+        </note>
     </description>
 </item>
 

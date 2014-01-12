@@ -13,7 +13,8 @@
     <dt>BookmarkRemove</dt>    <dd>Triggered after a page's bookmark is removed</dd>
     <dt>ColorScheme</dt>       <dd>Triggered after a color scheme has been loaded</dd>
     <dt>DOMLoad</dt>           <dd>Triggered when a page's DOM content has fully loaded</dd>
-    <dt>DownloadPost</dt>      <dd>Triggered when a download has completed</dd>
+    <dt>DownloadPost</dt>      <dd>Triggered when a download has completed
+                               <note>currently unavailable in &dactyl.host; 26 and greater</note></dd>
     <dt>Fullscreen</dt>        <dd>Triggered when the browser's fullscreen state changes</dd>
     <dt>LocationChange</dt>    <dd>Triggered when changing tabs or when navigating to a new location</dd>
     <dt>PageLoadPre</dt>       <dd>Triggered after a page load is initiated</dd>
