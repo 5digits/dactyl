@@ -1354,38 +1354,26 @@ var DOM = Class("DOM", {
          * @param {Node} target The DOM node to which to dispatch the event.
          * @param {Event} event The event to dispatch.
          */
-        dispatch: Class.Memoize(function ()
-            config.haveGecko("2b")
-                ? function dispatch(target, event, extra) {
-                    try {
-                        this.feedingEvent = extra;
+        dispatch: function dispatch(target, event, extra) {
+            try {
+                this.feedingEvent = extra;
 
-                        if (target instanceof Ci.nsIDOMElement)
-                            // This causes a crash on Gecko<2.0, it seems.
-                            return (target.ownerDocument || target.document || target).defaultView
-                                   .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
-                                   .dispatchDOMEventViaPresShell(target, event, true);
-                        else {
-                            target.dispatchEvent(event);
-                            return !event.defaultPrevented;
-                        }
-                    }
-                    catch (e) {
-                        util.reportError(e);
-                    }
-                    finally {
-                        this.feedingEvent = null;
-                    }
+                if (target instanceof Ci.nsIDOMElement)
+                    return (target.ownerDocument || target.document || target).defaultView
+                           .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                           .dispatchDOMEventViaPresShell(target, event, true);
+                else {
+                    target.dispatchEvent(event);
+                    return !event.defaultPrevented;
                 }
-                : function dispatch(target, event, extra) {
-                    try {
-                        this.feedingEvent = extra;
-                        target.dispatchEvent(update(event, extra));
-                    }
-                    finally {
-                        this.feedingEvent = null;
-                    }
-                })
+            }
+            catch (e) {
+                util.reportError(e);
+            }
+            finally {
+                this.feedingEvent = null;
+            }
+        }
     }),
 
     createContents: Class.Memoize(() => services.has("dactyl") && services.dactyl.createContents

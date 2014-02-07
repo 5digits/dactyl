@@ -78,12 +78,8 @@ var Buffer = Module("Buffer", {
      *      callback is not provided.
      */
     getPref: function getPref(pref, callback) {
-        // God damn it.
-        if (config.haveGecko("19.0a1"))
-            services.contentPrefs.getPref(this.uri, pref,
-                                          sanitizer.getContext(this.win), callback);
-        else
-            services.contentPrefs.getPref(this.uri, pref, callback);
+        services.contentPrefs.getPref(this.uri, pref,
+                                      sanitizer.getContext(this.win), callback);
     },
 
     /**
@@ -525,8 +521,6 @@ var Buffer = Module("Buffer", {
             };
 
             DOM(elem).mousedown(params).mouseup(params);
-            if (!config.haveGecko("2b"))
-                DOM(elem).click(params);
 
             let sel = util.selectionController(win);
             sel.getSelection(sel.SELECTION_FOCUS_REGION).collapseToStart();

@@ -1367,10 +1367,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     styles.system.add("taboptions", "chrome://*",
                                       classes.length ? classes.join(",") + "{ display: none; }" : "");
 
-                    if (!dactyl.has("Gecko2")) {
-                        tabs.tabBinding.enabled = Array.some(opts, k => k in this.opts);
-                        tabs.updateTabCount();
-                    }
                     if (config.tabbrowser.tabContainer._positionPinnedTabs)
                         config.tabbrowser.tabContainer._positionPinnedTabs();
                 },

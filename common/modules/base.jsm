@@ -734,33 +734,20 @@ function Class(...args) {
     if (callable(args[0]))
         superclass = args.shift();
 
-    if (loaded.config && (config.haveGecko("5.*", "6.0") || config.haveGecko("6.*"))) // Bug 657418.
-        var Constructor = function Constructor() {
-            var self = Object.create(Constructor.prototype);
-            self.instance = self;
-            self.globalInstance = self;
-
-            if ("_metaInit_" in self && self._metaInit_)
-                self._metaInit_.apply(self, arguments);
-
-            var res = self.init.apply(self, arguments);
-            return res !== undefined ? res : self;
-        };
-    else
-        var Constructor = eval(String.replace('\n\
-            (function constructor(PARAMS) {                      \n\
-                var self = Object.create(Constructor.prototype); \n\
-                self.instance = self;                            \n\
-                self.globalInstance = self;                      \n\
-                                                                 \n\
-                if ("_metaInit_" in self && self._metaInit_)     \n\
-                    self._metaInit_.apply(self, arguments);      \n\
-                                                                 \n\
-                var res = self.init.apply(self, arguments);      \n\
-                return res !== undefined ? res : self;           \n\
-            })',
-            "constructor", (name || superclass.className).replace(/\W/g, "_"))
-                .replace("PARAMS", /^function .*?\((.*?)\)/.exec(args[0] && args[0].init || Class.prototype.init)[1]
+    var Constructor = eval(String.replace('\n\
+        (function constructor(PARAMS) {                      \n\
+            var self = Object.create(Constructor.prototype); \n\
+            self.instance = self;                            \n\
+            self.globalInstance = self;                      \n\
+                                                             \n\
+            if ("_metaInit_" in self && self._metaInit_)     \n\
+                self._metaInit_.apply(self, arguments);      \n\
+                                                             \n\
+            var res = self.init.apply(self, arguments);      \n\
+            return res !== undefined ? res : self;           \n\
+        })',
+        "constructor", (name || superclass.className).replace(/\W/g, "_"))
+            .replace("PARAMS", /^function .*?\((.*?)\)/.exec(args[0] && args[0].init || Class.prototype.init)[1]
                                                            .replace(/\b(self|res|Constructor)\b/g, "$1_")));
 
     Constructor.className = name || superclass.className || superclass.name;

@@ -263,16 +263,6 @@ var CommandWidgets = Class("CommandWidgets", {
         }
         [this.commandbar.container, this.statusbar.container].forEach(check);
 
-        // Work around a redrawing bug.
-        if (changed && config.haveGecko("16", "20")) {
-            util.delay(function () {
-                // Urgh.
-                statusline.statusBar.style.paddingRight = "1px";
-                DOM(statusline.statusBar).rect; // Force reflow.
-                statusline.statusBar.style.paddingRight = "";
-            }, 0);
-        }
-
         if (this.initialized && loaded.mow && mow.visible)
             mow.resize(false);
     },

@@ -73,28 +73,26 @@ var Tabs = Module("tabs", {
 
     updateTabCount: function updateTabCount() {
         for (let [i, tab] in Iterator(this.visibleTabs)) {
-            if (dactyl.has("Gecko2")) {
-                let node = function node(class_) document.getAnonymousElementByAttribute(tab, "class", class_);
-                if (!node("dactyl-tab-number")) {
-                    let img = node("tab-icon-image");
-                    if (img) {
-                        let dom = DOM([
-                            ["xul:hbox", { highlight: "tab-number" },
-                                ["xul:label", { key: "icon", align: "center", highlight: "TabIconNumber",
-                                                class: "dactyl-tab-icon-number" }]],
-                            ["xul:hbox", { highlight: "tab-number" },
-                                ["html:div", { key: "label", highlight: "TabNumber",
-                                               class: "dactyl-tab-number" }]]],
-                            document).appendTo(img.parentNode);
+            let node = function node(class_) document.getAnonymousElementByAttribute(tab, "class", class_);
+            if (!node("dactyl-tab-number")) {
+                let img = node("tab-icon-image");
+                if (img) {
+                    let dom = DOM([
+                        ["xul:hbox", { highlight: "tab-number" },
+                            ["xul:label", { key: "icon", align: "center", highlight: "TabIconNumber",
+                                            class: "dactyl-tab-icon-number" }]],
+                        ["xul:hbox", { highlight: "tab-number" },
+                            ["html:div", { key: "label", highlight: "TabNumber",
+                                           class: "dactyl-tab-number" }]]],
+                        document).appendTo(img.parentNode);
 
-                        update(tab, {
-                            get dactylOrdinal() Number(dom.nodes.icon.value),
-                            set dactylOrdinal(i) {
-                                dom.nodes.icon.value = dom.nodes.label.textContent = i;
-                                this.setAttribute("dactylOrdinal", i);
-                            }
-                        });
-                    }
+                    update(tab, {
+                        get dactylOrdinal() Number(dom.nodes.icon.value),
+                        set dactylOrdinal(i) {
+                            dom.nodes.icon.value = dom.nodes.label.textContent = i;
+                            this.setAttribute("dactylOrdinal", i);
+                        }
+                    });
                 }
             }
             tab.dactylOrdinal = i + 1;
@@ -1224,7 +1222,7 @@ var Tabs = Module("tabs", {
                         tabs.tabStyle.enabled = false;
                     }
 
-                    if (value !== "multitab" || !dactyl.has("Gecko2"))
+                    if (value !== "multitab")
                         if (tabs.xulTabs)
                             tabs.xulTabs.visible = value !== "never";
                         else
