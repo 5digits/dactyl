@@ -1308,7 +1308,7 @@ var Buffer = Module("Buffer", {
         let uri = this.uri;
 
         if (prefs.get("browser.zoom.siteSpecific")) {
-            let val = this.prefs.get("dactyl.content.full-zoom");
+            let val = yield this.prefs.get("dactyl.content.full-zoom");
 
             if (val != null && uri.equals(this.uri) && val != prefs.get("browser.zoom.full"))
                 [this.contentViewer.textZoom, this.contentViewer.fullZoom] =
