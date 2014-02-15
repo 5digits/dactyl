@@ -336,9 +336,6 @@ var JavaScript = Module("javascript", {
     _complete: function (objects, key, compl, string, last) {
         const self = this;
 
-        if (!getOwnPropertyNames && !services.debugger.isOn && !this.context.message)
-            this.context.message = /*L*/"For better completion data, please enable the JavaScript debugger (:set jsdebugger)";
-
         let base = this.context.fork("js", this._top.offset);
         base.forceAnchored = true;
         base.filter = last == null ? key : string;

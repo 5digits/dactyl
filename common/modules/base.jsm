@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -6,10 +6,15 @@
 
 var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
-Cu.import("resource://gre/modules/XPCOMUtils.jsm", this);
+function module(url) {
+    let obj = {};
+    Cu.import(url, obj);
+    return obj;
+}
+
+var { XPCOMUtils } = module("resource://gre/modules/XPCOMUtils.jsm");
 try {
-    var ctypes;
-    Cu.import("resource://gre/modules/ctypes.jsm");
+    var ctypes = module("resource://gre/modules/ctypes.jsm");
 }
 catch (e) {}
 
@@ -22,7 +27,11 @@ if (typeof XPCSafeJSObjectWrapper === "undefined")
 
 let getGlobalForObject = Cu.getGlobalForObject || (obj => obj.__parent__);
 
-function require(module, target) JSMLoader.load(module, target);
+function require(module_, target) {
+    if (/^[A-Za-z0-9]+:/.test(module_))
+        return module(module_);
+    return JSMLoader.load(module_, target);
+}
 
 function lazyRequire(module, names, target) {
     for each (let name in names)
@@ -133,13 +142,16 @@ function require_(obj, name, from, targetName) {
 defineModule("base", {
     // sed -n 's/^(const|var|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
-        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Finished", "Module", "JSMLoader",
-        "Set", "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
-        "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable", "ctypes", "curry",
-        "debuggerProperties", "defineModule", "deprecated", "endModule", "forEach", "isArray",
-        "isGenerator", "isinstance", "isObject", "isString", "isSubclass", "isXML", "iter",
-        "iterAll", "iterOwnProperties", "keys", "literal", "memoize", "octal", "properties",
-        "require", "set", "update", "values", "update_"
+        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Finished",
+        "Module", "JSMLoader", "RealSet", "Set", "Struct", "StructBase",
+        "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
+        "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable",
+        "ctypes", "curry", "debuggerProperties", "defineModule",
+        "deprecated", "endModule", "forEach", "isArray", "isGenerator",
+        "isinstance", "isObject", "isString", "isSubclass", "isXML",
+        "iter", "iterAll", "iterOwnProperties", "keys", "literal",
+        "memoize", "modujle", "octal", "properties", "require", "set",
+        "update", "values", "update_"
     ]
 });
 
@@ -318,9 +330,13 @@ deprecated.warn = function warn(func, name, alternative, frame) {
  * @returns {Generator}
  */
 function keys(obj) iter(function keys() {
-    for (var k in obj)
-        if (hasOwnProperty.call(obj, k))
+    if (isinstance(obj, ["Map"]))
+        for (let [k, v] of obj)
             yield k;
+    else
+        for (var k in obj)
+            if (hasOwnProperty.call(obj, k))
+                yield k;
 }());
 
 /**
@@ -331,7 +347,10 @@ function keys(obj) iter(function keys() {
  * @returns {Generator}
  */
 function values(obj) iter(function values() {
-    if (isinstance(obj, ["Generator", "Iterator", Iter]))
+    if (isinstance(obj, ["Map"]))
+        for (let [k, v] of obj)
+            yield v;
+    else if (isinstance(obj, ["Generator", "Iterator", Iter]))
         for (let k in obj)
             yield k;
     else
@@ -343,6 +362,8 @@ function values(obj) iter(function values() {
 var forEach = deprecated("iter.forEach", function forEach() iter.forEach.apply(iter, arguments));
 var iterAll = deprecated("iter", function iterAll() iter.apply(null, arguments));
 
+var RealSet = Set;
+
 /**
  * Utility for managing sets of strings. Given an array, returns an
  * object with one key for each value thereof.
@@ -350,7 +371,7 @@ var iterAll = deprecated("iter", function iterAll() iter.apply(null, arguments))
  * @param {[string]} ary @optional
  * @returns {object}
  */
-function Set(ary) {
+this.Set = function Set(ary) {
     let obj = {};
     if (ary)
         for (let val in values(ary))
@@ -1377,6 +1398,10 @@ function iter(obj, iface) {
     if (arguments.length == 2 && iface instanceof Ci.nsIJSIID)
         return iter(obj).map(item => item.QueryInterface(iface));
 
+    if (isinstance(obj, ["Map Iterator"]))
+        // This is stupid.
+        obj = { __iterator__: (function () this).bind(obj) };
+
     let args = arguments;
     let res = Iterator(obj);
 
@@ -1388,6 +1413,9 @@ function iter(obj, iface) {
         })();
     else if (isinstance(obj, ["Iterator", "Generator"]))
         ;
+    else if (isinstance(obj, ["Map"]))
+        // This is stupid.
+        res = (r for (r of obj));
     else if (ctypes && ctypes.CData && obj instanceof ctypes.CData) {
         while (obj.constructor instanceof ctypes.PointerType)
             obj = obj.contents;

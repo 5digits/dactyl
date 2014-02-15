@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -16,6 +16,7 @@ lazyRequire("contexts", ["Group"]);
 lazyRequire("io", ["io"]);
 lazyRequire("finder", ["RangeFind"]);
 lazyRequire("overlay", ["overlay"]);
+lazyRequire("promises", ["Promise", "promises"]);
 lazyRequire("sanitizer", ["sanitizer"]);
 lazyRequire("storage", ["File", "storage"]);
 lazyRequire("template", ["template"]);
@@ -69,6 +70,50 @@ var Buffer = Module("Buffer", {
     },
 
     /**
+     * The load context of the window bound to this buffer.
+     */
+    get loadContext() sanitizer.getContext(this.win),
+
+    /**
+     * Content preference methods.
+     */
+    prefs: Class.Memoize(() => ({
+        /**
+         * Returns a promise for the given preference name.
+         *
+         * @param {string} pref The name of the preference to return.
+         * @returns {Promise<string>}
+         */
+        get: promises.withCallback(function get(callback, pref) {
+            services.contentPrefs.getByDomainAndName(
+                this.uri.host, pref, this.loadContext,
+                callback);
+        }),
+
+        /**
+         * Sets a content preference for the given buffer.
+         *
+         * @param {string} pref The preference to set.
+         * @param {string} value The value to store.
+         */
+        set: promises.withCallback(function set(callback, pref, value) {
+            services.contentPrefs.set(
+                this.uri.host, pref, value, this.loadContext,
+                callback);
+        }),
+
+        /**
+         * Clear a content preference for the given buffer.
+         *
+         * @param {string} pref The preference to clear.
+         */
+        clear: promises.withCallback(function clear(callback, pref) {
+            services.contentPrefs.removeByDomainAndName(
+                this.uri.domain, pref, this.loadContext, callback);
+        }),
+    })),
+
+    /**
      * Gets a content preference for the given buffer.
      *
      * @param {string} pref The preference to get.
@@ -77,10 +122,10 @@ var Buffer = Module("Buffer", {
      * @returns {string|number|boolean} The value of the preference, if
      *      callback is not provided.
      */
-    getPref: function getPref(pref, callback) {
+    getPref: deprecated("prefs.get", function getPref(pref, callback) {
         services.contentPrefs.getPref(this.uri, pref,
-                                      sanitizer.getContext(this.win), callback);
-    },
+                                      this.loadContext, callback);
+    }),
 
     /**
      * Sets a content preference for the given buffer.
@@ -88,20 +133,20 @@ var Buffer = Module("Buffer", {
      * @param {string} pref The preference to set.
      * @param {string} value The value to store.
      */
-    setPref: function setPref(pref, value) {
+    setPref: deprecated("prefs.set", function setPref(pref, value) {
         services.contentPrefs.setPref(
-            this.uri, pref, value, sanitizer.getContext(this.win));
-    },
+            this.uri, pref, value, this.loadContext);
+    }),
 
     /**
      * Clear a content preference for the given buffer.
      *
      * @param {string} pref The preference to clear.
      */
-    clearPref: function clearPref(pref) {
+    clearPref: deprecated("prefs.clear", function clearPref(pref) {
         services.contentPrefs.removePref(
-            this.uri, pref, sanitizer.getContext(this.win));
-    },
+            this.uri, pref, this.loadContext);
+    }),
 
     climbUrlPath: function climbUrlPath(count) {
         let { dactyl } = this.modules;
@@ -1244,12 +1289,12 @@ var Buffer = Module("Buffer", {
         if (prefs.get("browser.zoom.siteSpecific")) {
             var privacy = sanitizer.getContext(this.win);
             if (value == 1) {
-                this.clearPref("browser.content.full-zoom");
-                this.clearPref("dactyl.content.full-zoom");
+                this.prefs.clear("browser.content.full-zoom");
+                this.prefs.clear("dactyl.content.full-zoom");
             }
             else {
-                this.setPref("browser.content.full-zoom", value);
-                this.setPref("dactyl.content.full-zoom", fullZoom);
+                this.prefs.set("browser.content.full-zoom", value);
+                this.prefs.set("dactyl.content.full-zoom", fullZoom);
             }
         }
 
@@ -1259,15 +1304,15 @@ var Buffer = Module("Buffer", {
     /**
      * Updates the zoom level of this buffer from a content preference.
      */
-    updateZoom: util.wrapCallback(function updateZoom() {
+    updateZoom: promises.task(function updateZoom() {
         let uri = this.uri;
 
         if (prefs.get("browser.zoom.siteSpecific")) {
-            this.getPref("dactyl.content.full-zoom", (val) => {
-                if (val != null && uri.equals(this.uri) && val != prefs.get("browser.zoom.full"))
-                    [this.contentViewer.textZoom, this.contentViewer.fullZoom] =
-                        [this.contentViewer.fullZoom, this.contentViewer.textZoom];
-            });
+            let val = this.prefs.get("dactyl.content.full-zoom");
+
+            if (val != null && uri.equals(this.uri) && val != prefs.get("browser.zoom.full"))
+                [this.contentViewer.textZoom, this.contentViewer.fullZoom] =
+                    [this.contentViewer.fullZoom, this.contentViewer.textZoom];
         }
     }),
 

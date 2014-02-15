@@ -332,7 +332,7 @@ var HintSession = Class("HintSession", CommandMode, {
                         __proto__: this.Hint
                     });
 
-            for (let hint in values(_hints)) {
+            for (let hint of _hints) {
                 let { elem, rect } = hint;
 
                 if (elem.hasAttributeNS(NS, "hint"))

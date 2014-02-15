@@ -2136,7 +2136,8 @@ var ItemList = Class("ItemList", {
 
         // We need to collect all of the rescrolling functions in
         // one go, as the height calculation that they need to do
-        // would force a reflow after each DOM modification.
+        // would force an expensive reflow after each call due to
+        // DOM modifications, otherwise.
         this.activeGroups.filter(g => !g.collapsed)
             .map(g => g.rescrollFunc)
             .forEach(call);
@@ -2270,7 +2271,7 @@ var ItemList = Class("ItemList", {
     getGroup: function getGroup(context)
         context instanceof ItemList.Group ? context
                                           : context && context.getCache("itemlist-group",
-                                                                        bind("Group", ItemList, this, context)),
+                                                                        () => ItemList.Group(this, context)),
 
     getOffset: function getOffset(tuple) tuple && this.getGroup(tuple[0]).getOffset(tuple[1])
 }, {

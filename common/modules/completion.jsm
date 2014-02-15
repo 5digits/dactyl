@@ -733,7 +733,7 @@ var CompletionContext = Class("CompletionContext", {
         let alias = (prop) => {
             context.__defineGetter__(prop, () => this[prop]);
             context.__defineSetter__(prop, (val) => this[prop] = val);
-        }
+        };
         alias("_cache");
         alias("_completions");
         alias("_generate");
