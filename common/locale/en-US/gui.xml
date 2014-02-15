@@ -74,9 +74,6 @@
         <dl>
             <dt>-sort</dt> <dd>Sort order (see <o>downloadsort</o>) (short name: <em>-s</em>)</dd>
         </dl>
-        <note>
-            This command is currently unavailable in &dactyl.host; 26 and greater.
-        </note>
     </description>
 </item>
 
