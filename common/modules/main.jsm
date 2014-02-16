@@ -102,6 +102,8 @@ var Modules = function Modules(window) {
 
         get content() this.config.browser.contentWindow || window.content,
 
+        get document() window.document,
+
         window: window,
 
         Module: Module,

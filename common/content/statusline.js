@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -12,32 +12,50 @@ var StatusLine = Module("statusline", {
     init: function init() {
         this._statusLine = document.getElementById("status-bar");
         this.statusBar = document.getElementById("addon-bar") || this._statusLine;
+
         this.baseGroup = this.statusBar == this._statusLine ? "StatusLine " : "";
+
+        if (this.statusBar.localName == "toolbar" &&
+            this.statusBar.parentNode.id != "browser-bottombox")
+            overlay.overlayWindow(window, {
+                objects: this,
+                append: [
+                    ["vbox", { id: "browser-bottombox", xmlns: "xul" },
+                        ["toolbar", { id: "dactyl-addon-bar",
+                                      toolbarname: /*L*/ "Add-on Bar",
+                                      class: "toolbar-primary chromeclass-toolbar",
+                                      mode: "icons",
+                                      iconsize: "small", defaulticonsize: "small",
+                                      key: "statusBar" },
+                            ["statusbar", { id: "dactyl-status-bar", key: "_statusLine" }]]]
+                ]
+            });
 
         if (config.haveGecko("25"))
             config.tabbrowser.getStatusPanel().hidden = true;
 
         if (this.statusBar.localName == "toolbar") {
             styles.system.add("addon-bar", config.styleableChrome, literal(/*
-                #status-bar { margin-top: 0 !important; }
-                #addon-bar > statusbar { -moz-box-flex: 1 }
+                #status-bar, #dactyl-status-bar { margin-top: 0 !important; }
+                #dactyl-status-bar { min-height: 0 !important; }
+                :-moz-any(#addon-bar, #dactyl-addon-bar) > statusbar { -moz-box-flex: 1 }
                 #addon-bar > #addonbar-closebutton { visibility: collapse; }
-                #addon-bar > xul|toolbarspring { visibility: collapse; }
+                :-moz-any(#addon-bar, #dactyl-addon-bar) > xul|toolbarspring { visibility: collapse; }
             */));
 
             overlay.overlayWindow(window, {
                 append: [
-                    ["statusbar", { id: "status-bar", ordinal: "0" }]]
+                    ["statusbar", { id: this._statusLine.id, ordinal: "0" }]]
             });
 
             highlight.loadCSS(util.compileMacro(literal(/*
-                !AddonBar;#addon-bar {
+                !AddonBar;#addon-bar,#dactyl-addon-bar {
                     padding-left: 0 !important;
                     min-height: 18px !important;
                     -moz-appearance: none !important;
                     <padding>
                 }
-                !AddonButton;#addon-bar xul|toolbarbutton {
+                !AddonButton;:-moz-any(#addon-bar, #dactyl-addon-bar) xul|toolbarbutton {
                     -moz-appearance: none !important;
                     padding: 0 !important;
                     border-width: 0px !important;
@@ -57,7 +75,7 @@ var StatusLine = Module("statusline", {
         let prepend = [
             ["button", { id: "appmenu-button", label: "", image: "chrome://branding/content/icon16.png", highlight: "AppmenuButton", xmlns: "xul" }],
             ["toolbarbutton", { id: "appmenu-toolbar-button", label: "", image: "chrome://branding/content/icon16.png" }],
-            ["statusbar", { id: "status-bar", highlight: "StatusLine", xmlns: "xul" },
+            ["statusbar", { id: this._statusLine.id, highlight: "StatusLine", xmlns: "xul" },
                 // <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
                 ["hbox", { key: "container", hidden: "false", align: "center",  flex: "1" },
                     ["stack", { orient: "horizontal",       align: "stretch", flex: "1", highlight: "CmdLine StatusCmdLine", class: "dactyl-container" },
