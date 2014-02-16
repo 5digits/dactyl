@@ -278,10 +278,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let results = array((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
                         .array.sort((a, b) => String.localeCompare(a.name, b.name));
 
-                let haveTag = hasOwnProperty(help.tags);
                 for (let obj in values(results)) {
                     let res = dactyl.generateHelp(obj, null, null, true);
-                    if (!haveTag(obj.helpTag))
+                    if (!hasOwnProperty(help.tags, obj.helpTag))
                         res[0][1].tag = obj.helpTag;
 
                     yield res;
