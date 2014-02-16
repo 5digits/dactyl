@@ -6,6 +6,10 @@
 
 var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
+var Cs = Proxy(Components.stack, {
+    get: function Cs_get(target, prop) Components.stack.caller[prop]
+});
+
 function module(url) {
     let obj = {};
     Cu.import(url, obj);
@@ -145,7 +149,7 @@ function require_(obj, name, from, targetName) {
 defineModule("base", {
     // sed -n 's/^(const|var|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
-        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Finished",
+        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cs", "Cu", "Finished",
         "Module", "JSMLoader", "RealSet", "Set", "Struct", "StructBase",
         "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
         "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable",
