@@ -87,7 +87,7 @@ var Buffer = Module("Buffer", {
              */
             get: promises.withCallbacks(function get([resolve], pref) {
                 services.contentPrefs.getByDomainAndName(
-                    self.uri.host, pref, self.loadContext,
+                    self.uri.spec, pref, self.loadContext,
                     resolve);
             }),
 
@@ -99,7 +99,7 @@ var Buffer = Module("Buffer", {
              */
             set: promises.withCallbacks(function set([resolve], pref, value) {
                 services.contentPrefs.set(
-                    self.uri.host, pref, value, self.loadContext,
+                    self.uri.spec, pref, value, self.loadContext,
                     resolve);
             }),
 
@@ -110,8 +110,8 @@ var Buffer = Module("Buffer", {
              */
             clear: promises.withCallbacks(function clear([resolve], pref) {
                 services.contentPrefs.removeByDomainAndName(
-                    self.uri.domain, pref, self.loadContext, resolve);
-            }),
+                    self.uri.spec, pref, self.loadContext, resolve);
+            })
         })),
 
     /**
