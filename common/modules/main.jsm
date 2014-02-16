@@ -143,7 +143,6 @@ var Modules = function Modules(window) {
             sandbox.File = jsmodules.File;
             sandbox.Math = jsmodules.Math;
             sandbox.Set = jsmodules.Set;
-            sandbox.__proto__ = proto || modules;
             return sandbox;
         },
 
