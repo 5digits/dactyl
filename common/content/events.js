@@ -571,7 +571,7 @@ var Events = Module("events", {
     events: {
         blur: function onBlur(event) {
             let elem = event.originalTarget;
-            if (DOM(elem).isEditable)
+            if (DOM(elem).editor)
                 util.trapErrors("removeEditActionListener",
                                 DOM(elem).editor, editor);
 
@@ -595,7 +595,7 @@ var Events = Module("events", {
         // TODO: Merge with onFocusChange
         focus: function onFocus(event) {
             let elem = event.originalTarget;
-            if (DOM(elem).isEditable)
+            if (DOM(elem).editor)
                 util.trapErrors("addEditActionListener",
                                 DOM(elem).editor, editor);
 
