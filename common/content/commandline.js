@@ -263,7 +263,7 @@ var CommandWidgets = Class("CommandWidgets", {
         }
         [this.commandbar.container, this.statusbar.container].forEach(check);
 
-        if (this.initialized && loaded.mow && mow.visible)
+        if (this.initialized && loaded.has("mow") && mow.visible)
             mow.resize(false);
     },
 

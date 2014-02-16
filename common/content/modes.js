@@ -262,12 +262,12 @@ var Modes = Module("modes", {
 
     // show the current mode string in the command line
     show: function show() {
-        if (!loaded.modes)
+        if (!loaded.has("modes"))
             return;
 
         let msg = this._getModeMessage();
 
-        if (msg || loaded.commandline)
+        if (msg || loaded.has("commandline"))
             commandline.widgets.mode = msg || null;
     },
 
@@ -494,7 +494,7 @@ var Modes = Module("modes", {
         StackElement.defaultValue("params", function () this.main.params);
 
         update(StackElement.prototype, {
-            get toStringParams() !loaded.modes ? [this.main.name] : [
+            get toStringParams() !loaded.has("modes") ? [this.main.name] : [
                 this.main.name,
                 ["(", modes.all.filter(m => this.extended & m)
                                .map(m => m.name)

@@ -1314,7 +1314,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     M: ["Always show messages outside of the status line"]
                 },
                 setter: function (opts) {
-                    if (loaded.commandline || ~opts.indexOf("c"))
+                    if (loaded.has("commandline") || ~opts.indexOf("c"))
                         commandline.widgets.updateVisibility();
                 }
             },
