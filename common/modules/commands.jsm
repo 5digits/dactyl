@@ -155,7 +155,7 @@ var Command = Class("Command", {
      * @param {Args} args The Args object passed to {@link #action}.
      * @param {Object} modifiers Any modifiers to be passed to {@link #action}.
      */
-    execute: function execute(args, modifiers = {}) {
+    execute: function execute(args, modifiers={}) {
         const { dactyl } = this.modules;
 
         let context = args.context;
@@ -558,7 +558,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
      * @param {boolean} replace Replace an existing command of the same name.
      *     @optional
      */
-    add: function add(specs, description, action, extra = {}, replace = false) {
+    add: function add(specs, description, action, extra={}, replace=false) {
         const { commands, contexts } = this.modules;
 
         if (!extra.definedAt)
@@ -597,7 +597,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         return name;
     },
 
-    _add: function _add(names, description, action, extra = {}, replace = false) {
+    _add: function _add(names, description, action, extra={}, replace=false) {
         const { contexts } = this.modules;
         extra.definedAt = contexts.getCaller(Components.stack.caller.caller);
         return this.add.apply(this, arguments);
@@ -969,7 +969,7 @@ var Commands = Module("commands", {
      *     Args object.
      * @returns {Args}
      */
-    parseArgs: function parseArgs(str, params = {}) {
+    parseArgs: function parseArgs(str, params={}) {
         const self = this;
 
         function getNextArg(str, _keepQuotes=keepQuotes) {
@@ -1777,7 +1777,7 @@ var Commands = Module("commands", {
     }
 });
 
-let quote = function quote(q, list, map = Commands.quoteMap) {
+let quote = function quote(q, list, map=Commands.quoteMap) {
     let re = RegExp("[" + list + "]", "g");
     function quote(str) (q + String.replace(str, re, $0 => ($0 in map ? map[$0] : ("\\" + $0)))
                            + q);

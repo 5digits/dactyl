@@ -382,7 +382,7 @@ var Styles = Module("Styles", {
         return val;
     },
 
-    completeSite: function (context, content, group = styles.user) {
+    completeSite: function (context, content, group=styles.user) {
         context.anchored = false;
         try {
             context.fork("current", 0, this, function (context) {

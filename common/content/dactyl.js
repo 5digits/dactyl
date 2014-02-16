@@ -538,7 +538,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {boolean} silent Whether the command should be echoed on the
      *     command line.
      */
-    execute: function execute(str, modifiers = {}, silent = false) {
+    execute: function execute(str, modifiers={}, silent=false) {
         // skip comments and blank lines
         if (/^\s*("|$)/.test(str))
             return;
@@ -890,13 +890,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     tabs.
      * @returns {boolean}
      */
-    open: function open(urls, params = {}, force = false) {
+    open: function open(urls, params={}, force=false) {
         if (typeof urls == "string")
             urls = dactyl.parseURLs(urls);
 
         if (urls.length > prefs.get("browser.tabs.maxOpenBeforeWarn", 20) && !force)
-            return commandline.input(_("dactyl.prompt.openMany", urls.length) + " ",
-                function (resp) {
+            return commandline.input(_("dactyl.prompt.openMany", urls.length) + " ")
+                .then(function (resp) {
                     if (resp && resp.match(/^y(es)?$/i))
                         dactyl.open(urls, params, true);
                 });
@@ -1184,7 +1184,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return [];
         }
     },
-    wrapCallback: function wrapCallback(callback, self = this) {
+    wrapCallback: function wrapCallback(callback, self=this) {
         let save = ["forceOpen"];
         let saved = save.map(p => dactyl[p]);
         return function wrappedCallback() {

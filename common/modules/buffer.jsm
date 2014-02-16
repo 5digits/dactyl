@@ -85,10 +85,10 @@ var Buffer = Module("Buffer", {
              * @param {string} pref The name of the preference to return.
              * @returns {Promise<string>}
              */
-            get: promises.withCallback(function get(callback, pref) {
+            get: promises.withCallbacks(function get([resolve], pref) {
                 services.contentPrefs.getByDomainAndName(
                     self.uri.host, pref, self.loadContext,
-                    callback);
+                    resolve);
             }),
 
             /**
@@ -97,10 +97,10 @@ var Buffer = Module("Buffer", {
              * @param {string} pref The preference to set.
              * @param {string} value The value to store.
              */
-            set: promises.withCallback(function set(callback, pref, value) {
+            set: promises.withCallbacks(function set([resolve], pref, value) {
                 services.contentPrefs.set(
                     self.uri.host, pref, value, self.loadContext,
-                    callback);
+                    resolve);
             }),
 
             /**
@@ -108,9 +108,9 @@ var Buffer = Module("Buffer", {
              *
              * @param {string} pref The preference to clear.
              */
-            clear: promises.withCallback(function clear(callback, pref) {
+            clear: promises.withCallbacks(function clear([resolve], pref) {
                 services.contentPrefs.removeByDomainAndName(
-                    self.uri.domain, pref, self.loadContext, callback);
+                    self.uri.domain, pref, self.loadContext, resolve);
             }),
         })),
 
@@ -834,7 +834,7 @@ var Buffer = Module("Buffer", {
      * @param {number} count The multiple of 'scroll' lines to scroll.
      * @optional
      */
-    scrollByScrollSize: function scrollByScrollSize(direction, count = 1) {
+    scrollByScrollSize: function scrollByScrollSize(direction, count=1) {
         let { options } = this.modules;
 
         direction = direction ? 1 : -1;

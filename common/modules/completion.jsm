@@ -33,7 +33,7 @@ lazyRequire("template", ["template"]);
  * @constructor
  */
 var CompletionContext = Class("CompletionContext", {
-    init: function cc_init(editor, name = "", offset = 0) {
+    init: function cc_init(editor, name="", offset=0) {
         let self = this;
         if (editor instanceof this.constructor) {
             let parent = editor;

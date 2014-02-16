@@ -15,6 +15,7 @@ defineModule("io", {
 
 lazyRequire("config", ["config"]);
 lazyRequire("contexts", ["Contexts", "contexts"]);
+lazyRequire("promises", ["Promise"]);
 lazyRequire("storage", ["File", "storage"]);
 lazyRequire("styles", ["styles"]);
 lazyRequire("template", ["template"]);
@@ -318,7 +319,7 @@ var IO = Module("io", {
      *     @default ""
      * @returns {File}
      */
-    createTempFile: function createTempFile(ext = "txt", label = "") {
+    createTempFile: function createTempFile(ext="txt", label="") {
         let file = services.directory.get("TmpD", Ci.nsIFile);
         file.append(config.name + label + "." + ext);
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
@@ -446,26 +447,29 @@ var IO = Module("io", {
 
         let process = services.Process(file.file);
         process.run(false, args.map(String), args.length);
-        try {
-            if (callable(blocking))
-                var timer = services.Timer(
-                    function () {
-                        if (!process.isRunning) {
-                            timer.cancel();
-                            util.trapErrors(blocking, self, process.exitValue);
-                        }
-                    },
-                    100, services.Timer.TYPE_REPEATING_SLACK);
-            else if (blocking)
-                while (process.isRunning)
-                    util.threadYield(false, true);
-        }
-        catch (e) {
-            process.kill();
-            throw e;
+
+        let deferred = Promise.defer();
+
+        if (callable(blocking))
+            // Deprecated.
+            deferred.promise.then(blocking);
+        else if (blocking) {
+            // Deprecated?
+            while (process.isRunning)
+                util.threadYield(false, true);
+            return process.exitValue;
         }
 
-        return process.exitValue;
+        let timer = services.Timer(
+            function () {
+                if (!process.isRunning) {
+                    timer.cancel();
+                    deferred.resolve(process.exitValue);
+                }
+            },
+            100, services.Timer.TYPE_REPEATING_SLACK);
+
+        return deferred.promise;
     },
 
     // TODO: when https://bugzilla.mozilla.org/show_bug.cgi?id=68702 is

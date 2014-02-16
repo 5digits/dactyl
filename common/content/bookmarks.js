@@ -257,8 +257,9 @@ var Bookmarks = Module("bookmarks", {
         let engine = hasOwnProperty(this.searchEngines, engineName) && this.searchEngines[engineName];
         if (engine && engine.supportsResponseType(responseType))
             var queryURI = engine.getSubmission(query, responseType).uri.spec;
+
         if (!queryURI)
-            return (callback || util.identity)([]);
+            return promises.fail();
 
         function parse(req) JSON.parse(req.responseText)[1].filter(isString);
         return this.makeSuggestions(queryURI, parse, callback);
@@ -271,25 +272,25 @@ var Bookmarks = Module("bookmarks", {
      * @param {string} url The URL to fetch.
      * @param {function(XMLHttpRequest):[string]} parser The function which
      *      parses the response.
+     * @returns {Promise<Array>}
      */
-    makeSuggestions: function makeSuggestions(url, parser, callback) {
-        function process(req) {
+    makeSuggestions: function makeSuggestions(url, parser) {
+        let deferred = Promise.defer();
+
+        let req = util.fetchUrl(url);
+        req.then(function process(req) {
             let results = [];
             try {
                 results = parser(req);
             }
             catch (e) {
-                util.reportError(e);
+                return deferred.reject(e);
             }
-            if (callback)
-                return callback(results);
-            return results;
-        }
+            deferred.resolve(results);
+        }, Cu.reportError);
 
-        let req = util.httpGet(url, callback && process);
-        if (callback)
-            return req;
-        return process(req);
+        promises.oncancel(deferred, r => promises.cancel(req, reason));
+        return deferred.promise;
     },
 
     suggestionProviders: {},
@@ -536,7 +537,7 @@ var Bookmarks = Module("bookmarks", {
             "Delete a bookmark",
             function (args) {
                 if (args.bang)
-                    commandline.input(_("bookmark.prompt.deleteAll") + " ",
+                    commandline.input(_("bookmark.prompt.deleteAll") + " ").then(
                         function (resp) {
                             if (resp && resp.match(/^y(es)?$/i)) {
                                 bookmarks.remove(Object.keys(bookmarkcache.bookmarks));
@@ -628,7 +629,7 @@ var Bookmarks = Module("bookmarks", {
     },
 
     completion: function initCompletion() {
-        completion.bookmark = function bookmark(context, tags, extra = {}) {
+        completion.bookmark = function bookmark(context, tags, extra={}) {
             context.title = ["Bookmark", "Title"];
             context.format = bookmarks.format;
             iter(extra).forEach(function ([k, v]) {
@@ -721,11 +722,12 @@ var Bookmarks = Module("bookmarks", {
 
                 ctxt.hasItems = ctxt.completions.length;
                 ctxt.incomplete = true;
-                ctxt.cache.request = bookmarks.getSuggestions(name, ctxt.filter, function (compl) {
+                ctxt.cache.request = bookmarks.getSuggestions(name, ctxt.filter);
+                ctxt.cache.request.then(function (compl) {
                     ctxt.incomplete = false;
                     ctxt.completions = array.uniq(ctxt.completions.filter(c => compl.indexOf(c) >= 0)
                                                       .concat(compl), true);
-                });
+                }, Cu.reportError);
             });
         };
 

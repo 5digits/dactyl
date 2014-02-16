@@ -10,7 +10,7 @@ try {
 
 defineModule("util", {
     exports: ["DOM", "$", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
-    require: ["dom", "services"]
+    require: ["dom", "promises", "services"]
 });
 
 lazyRequire("overlay", ["overlay"]);
@@ -750,10 +750,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *
      * @returns {XMLHttpRequest}
      */
-    httpGet: function httpGet(url, callback, self) {
-        let params = callback;
-        if (!isObject(params))
-            params = { callback: params && ((...args) => callback.apply(self, args)) };
+    httpGet: function httpGet(url, params, self) {
+        if (callable(params))
+            // Deprecated.
+            params = { callback: params.bind(self) };
 
         try {
             let xmlhttp = services.Xmlhttp();
@@ -761,8 +761,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             let async = params.callback || params.onload || params.onerror;
             if (async) {
-                xmlhttp.addEventListener("load",  function handler(event) { util.trapErrors(params.onload  || params.callback, params, xmlhttp, event); }, false);
-                xmlhttp.addEventListener("error", function handler(event) { util.trapErrors(params.onerror || params.callback, params, xmlhttp, event); }, false);
+                xmlhttp.addEventListener("load",  event => { util.trapErrors(params.onload  || params.callback, params, xmlhttp, event); }, false);
+                xmlhttp.addEventListener("error", event => { util.trapErrors(params.onerror || params.callback, params, xmlhttp, event); }, false);
             }
 
             if (isObject(params.params)) {
@@ -809,6 +809,22 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             return null;
         }
     },
+
+    /**
+     * Like #httpGet, but returns a promise rather than accepting
+     * callbacks.
+     *
+     * @param {string} url The URL to fetch.
+     * @param {object} params Parameter object, as in #httpGet.
+     */
+    fetchUrl: promises.withCallbacks(function fetchUrl([accept, reject, deferred], url, params) {
+        params = update({}, params);
+        params.onload = accept;
+        params.onerror = reject;
+
+        let req = this.httpGet(url, params);
+        promises.oncancel(deferred, req.cancel);
+    }),
 
     /**
      * The identity function.
@@ -1555,7 +1571,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * Waits for the function *test* to return true, or *timeout*
      * milliseconds to expire.
      *
-     * @param {function} test The predicate on which to wait.
+     * @param {function|Promise} test The predicate on which to wait.
      * @param {object} self The 'this' object for *test*.
      * @param {Number} timeout The maximum number of milliseconds to
      *      wait.
@@ -1565,6 +1581,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *      thrown.
      */
     waitFor: function waitFor(test, self, timeout, interruptable) {
+        if (!callable(test)) {
+            let done = false;
+            var promise = test,
+                retVal;
+            promise.then((arg) => { retVal = arg; done = true; },
+                         (arg) => { retVal = arg; done = true; });
+            test = () => done;
+        }
+
         let end = timeout && Date.now() + timeout, result;
 
         let timer = services.Timer(function () {}, 10, services.Timer.TYPE_REPEATING_SLACK);
@@ -1575,7 +1600,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         finally {
             timer.cancel();
         }
-        return result;
+        return promise ? retVal: result;
     },
 
     /**
@@ -1595,7 +1620,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {function} A new function which may not execute
      *      synchronously.
      */
-    yieldable: function yieldable(func)
+    yieldable: deprecated("Task.spawn", function yieldable(func)
         function magic() {
             let gen = func.apply(this, arguments);
             (function next() {
@@ -1604,7 +1629,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 }
                 catch (e if e instanceof StopIteration) {};
             })();
-        },
+        }),
 
     /**
      * Wraps a callback function such that its errors are not lost. This

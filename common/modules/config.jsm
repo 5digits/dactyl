@@ -132,6 +132,7 @@ var ConfigBase = Class("ConfigBase", {
                  "options",
                  "overlay",
                  "prefs",
+                 ["promises", "Promise", "Task", "promises"],
                  "protocol",
                  "sanitizer",
                  "services",

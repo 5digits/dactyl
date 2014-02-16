@@ -11,7 +11,7 @@ defineModule("messages", {
 
 var Messages = Module("messages", {
 
-    init: function init(name = "messages") {
+    init: function init(name="messages") {
         let self = this;
         this.name = name;
 
@@ -107,7 +107,7 @@ var Messages = Module("messages", {
         let { Buffer, commands, hints, io, mappings, modes, options, sanitizer } = overlay.activeModules;
         file = io.File(file);
 
-        function properties(base, iter_, prop = "description") iter(function _properties() {
+        function properties(base, iter_, prop="description") iter(function _properties() {
             function key(...args) [base, obj.identifier || obj.name].concat(args).join(".").replace(/[\\:=]/g, "\\$&");
 
             for (var obj in iter_) {

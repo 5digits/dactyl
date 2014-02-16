@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -845,7 +845,6 @@ var CommandLine = Module("commandline", {
      * pop at any time to close the prompt.
      *
      * @param {string} prompt The input prompt to use.
-     * @param {function(string)} callback
      * @param {Object} extra
      * @... {function} onChange - A function to be called with the current
      *     input every time it changes.
@@ -856,15 +855,16 @@ var CommandLine = Module("commandline", {
      * @... {string} default - The initial value that will be returned
      *     if the user presses <CR> straightaway. @default ""
      */
-    input: function _input(prompt, callback, extra = {}) {
-        CommandPromptMode(prompt, update({ onSubmit: callback }, extra)).open();
-    },
+    input: promises.withCallbacks(function _input([callback, reject], prompt, extra={}, thing={}) {
+        if (callable(extra))
+            // Deprecated.
+            [callback, extra] = [extra, thing];
+
+        CommandPromptMode(prompt, update({ onSubmit: callback, onCancel: reject }, extra)).open();
+    }),
 
     readHeredoc: function readHeredoc(end) {
-        let args;
-        commandline.inputMultiline(end, function (res) { args = res; });
-        util.waitFor(() => args !== undefined);
-        return args;
+        return util.waitFor(commandline.inputMultiline(end));
     },
 
     /**
@@ -873,10 +873,10 @@ var CommandLine = Module("commandline", {
      * callback with that string as a parameter.
      *
      * @param {string} end
-     * @param {function(string)} callback
+     * @returns {Promise<string>}
      */
     // FIXME: Buggy, especially when pasting.
-    inputMultiline: function inputMultiline(end, callback) {
+    inputMultiline: promises.withCallbacks(function inputMultiline([callback], end) {
         let cmd = this.command;
         let self = {
             end: "\n" + end + "\n",
@@ -902,7 +902,7 @@ var CommandLine = Module("commandline", {
         this._autosizeMultilineInputWidget();
 
         this.timeout(function () { dactyl.focus(this.widgets.multilineInput); }, 10);
-    },
+    }),
 
     get commandMode() this.commandSession && isinstance(modes.main, modes.COMMAND_LINE),
 
@@ -1384,7 +1384,7 @@ var CommandLine = Module("commandline", {
          *      @default {@link #selected}
          * @returns {object}
          */
-        getItem: function getItem(tuple = this.selected)
+        getItem: function getItem(tuple=this.selected)
             tuple && tuple[0] && tuple[0].items[tuple[1]],
 
         /**
@@ -1499,7 +1499,7 @@ var CommandLine = Module("commandline", {
          *      @default false
          *      @private
          */
-        select: function select(idx, count = 1, fromTab = false) {
+        select: function select(idx, count=1, fromTab=false) {
             switch (idx) {
             case this.UP:
             case this.DOWN:

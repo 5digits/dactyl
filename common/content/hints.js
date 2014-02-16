@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -12,7 +12,7 @@
 var HintSession = Class("HintSession", CommandMode, {
     get extendedMode() modes.HINTS,
 
-    init: function init(mode, opts = {}) {
+    init: function init(mode, opts={}) {
         init.supercall(this);
 
         if (!opts.window)
@@ -1054,11 +1054,11 @@ var Hints = Module("hints", {
         return null;
     }, //}}}
 
-    open: function open(mode, opts = {}) {
+    open: function open(mode, opts={}) {
         this._extendedhintCount = opts.count;
 
         mappings.pushCommand();
-        commandline.input(["Normal", mode], null, {
+        commandline.input(["Normal", mode], {
             autocomplete: false,
             completer: function (context) {
                 context.compare = () => 0;

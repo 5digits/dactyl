@@ -161,6 +161,7 @@ defineModule("base", {
 this.lazyRequire("cache", ["cache"]);
 this.lazyRequire("config", ["config"]);
 this.lazyRequire("messages", ["_", "Messages"]);
+this.lazyRequire("promises", ["Task", "promises"]);
 this.lazyRequire("services", ["services"]);
 this.lazyRequire("storage", ["File"]);
 this.lazyRequire("util", ["FailedAssertion", "util"]);
@@ -915,16 +916,16 @@ Class.Memoize = function Memoize(getter, wait)
                         }
                     });
 
-                    util.yieldable(function () {
+                    Task.spawn(function () {
                         let wait;
                         for (var res in getter.call(obj)) {
                             if (wait !== undefined)
-                                yield wait;
+                                yield promises.sleep(wait);
                             wait = res;
                         }
                         Class.replaceProperty(obj, key, res);
                         done = true;
-                    })();
+                    });
 
                     return this[key];
                 };
@@ -1147,7 +1148,7 @@ let stub = Class.Property({
  */
 var ErrorBase = Class("ErrorBase", Error, {
     level: 2,
-    init: function EB_init(message, level = 0) {
+    init: function EB_init(message, level=0) {
         let error = Error(message);
         update(this, error);
         this.stack = error.stack;
@@ -1321,7 +1322,7 @@ var StructBase = Class("StructBase", Array, {
 });
 
 var Timer = Class("Timer", {
-    init: function init(minInterval, maxInterval, callback, self = this) {
+    init: function init(minInterval, maxInterval, callback, self=this) {
         this._timer = services.Timer();
         this.callback = callback;
         this.self = self;

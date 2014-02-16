@@ -386,8 +386,8 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         let keepFocus = modes.stack.some(m => isinstance(m.main, modes.COMMAND_LINE));
 
         if (!forceEditing && textBox && textBox.type == "password") {
-            commandline.input(_("editor.prompt.editPassword") + " ",
-                function (resp) {
+            commandline.input(_("editor.prompt.editPassword") + " ")
+                .then(function (resp) {
                     if (resp && resp.match(/^y(es)?$/i))
                         editor.editFieldExternally(true);
                 });
@@ -424,7 +424,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         column = 1 + pre.replace(/[^]*\n/, "").length;
 
         let origGroup = DOM(textBox).highlight.toString();
-        let cleanup = util.yieldable(function cleanup(error) {
+        let cleanup = promises.task(function cleanup(error) {
             if (timer)
                 timer.cancel();
 
@@ -443,9 +443,11 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 DOM(textBox).highlight.remove("EditorEditing");
                 if (!keepFocus)
                     dactyl.focus(textBox);
+
                 for (let group in values(blink.concat(blink, ""))) {
                     highlight.highlightNode(textBox, origGroup + " " + group);
-                    yield 100;
+
+                    yield promises.sleep(100);
                 }
             }
         });
