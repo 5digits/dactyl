@@ -484,7 +484,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (fileName && fileName[0] == "[")
             fileName = "dactyl://command-line/";
         else if (!context)
-            context = ctxt || _userContext;
+            context = ctxt || userContext;
 
         if (isinstance(context, ["Sandbox"]))
             return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);

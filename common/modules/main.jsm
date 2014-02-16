@@ -132,17 +132,15 @@ var Modules = function Modules(window) {
             if (normal)
                 return create(proto);
 
-            if (services.has("dactyl") && services.dactyl.createGlobal)
-                var sandbox = services.dactyl.createGlobal();
-            else
-                sandbox = Components.utils.Sandbox(window, { sandboxPrototype: proto || modules,
-                                                             sandboxName: name || ("Dactyl Sandbox " + ++_id),
-                                                             wantXrays: false });
+            sandbox = Components.utils.Sandbox(window, { sandboxPrototype: proto || modules,
+                                                         sandboxName: name || ("Dactyl Sandbox " + ++_id),
+                                                         wantXrays: false });
 
             // Hack:
             // sandbox.Object = jsmodules.Object;
             sandbox.File = jsmodules.File;
             sandbox.Math = jsmodules.Math;
+            sandbox.Set = jsmodules.Set;
             sandbox.__proto__ = proto || modules;
             return sandbox;
         },
