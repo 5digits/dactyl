@@ -1,5 +1,5 @@
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -627,7 +627,7 @@ var DOM = Class("DOM", {
                     if (callable(v))
                         v = v.call(this, elem, i);
 
-                    if (Set.has(hooks, k) && hooks[k].set)
+                    if (hasOwnProperty(hooks, k) && hooks[k].set)
                         hooks[k].set.call(this, elem, v, k);
                     else if (v == null)
                         elem.removeAttributeNS(ns, k);
@@ -639,7 +639,7 @@ var DOM = Class("DOM", {
         if (!this.length)
             return null;
 
-        if (Set.has(hooks, key) && hooks[key].get)
+        if (hasOwnProperty(hooks, key) && hooks[key].get)
             return hooks[key].get.call(this, this[0], key);
 
         if (!this[0].hasAttributeNS(ns, key))
@@ -1071,7 +1071,7 @@ var DOM = Class("DOM", {
         keyTable:       Class.Memoize(function (prop) this.init()[prop]),
         key_code:       Class.Memoize(function (prop) this.init()[prop]),
         key_key:        Class.Memoize(function (prop) this.init()[prop]),
-        pseudoKeys:     Set(["count", "leader", "nop", "pass"]),
+        pseudoKeys:     RealSet(["count", "leader", "nop", "pass"]),
 
         /**
          * Converts a user-input string of keys into a canonical
@@ -1141,19 +1141,19 @@ var DOM = Class("DOM", {
                 }
                 else {
                     let [match, modifier, keyname] = evt_str.match(/^<((?:[*12CASM⌘]-)*)(.+?)>$/i) || [false, '', ''];
-                    modifier = Set(modifier.toUpperCase());
+                    modifier = RealSet(modifier.toUpperCase());
                     keyname = keyname.toLowerCase();
                     evt_obj.dactylKeyname = keyname;
                     if (/^u[0-9a-f]+$/.test(keyname))
                         keyname = String.fromCharCode(parseInt(keyname.substr(1), 16));
 
                     if (keyname && (unknownOk || keyname.length == 1 || /mouse$/.test(keyname) ||
-                                    this.key_code[keyname] || Set.has(this.pseudoKeys, keyname))) {
-                        evt_obj.globKey  ="*" in modifier;
-                        evt_obj.ctrlKey  ="C" in modifier;
-                        evt_obj.altKey   ="A" in modifier;
-                        evt_obj.shiftKey ="S" in modifier;
-                        evt_obj.metaKey  ="M" in modifier || "⌘" in modifier;
+                                    this.key_code[keyname] || this.pseudoKeys.has(keyname))) {
+                        evt_obj.globKey  = modifier.has("*");
+                        evt_obj.ctrlKey  = modifier.has("C");
+                        evt_obj.altKey   = modifier.has("A");
+                        evt_obj.shiftKey = modifier.has("S");
+                        evt_obj.metaKey  = modifier.has("M") || modifier.has("⌘");
                         evt_obj.dactylShift = evt_obj.shiftKey;
 
                         if (keyname.length == 1) { // normal characters
@@ -1164,11 +1164,11 @@ var DOM = Class("DOM", {
                             evt_obj.charCode = keyname.charCodeAt(0);
                             evt_obj.keyCode = this.key_code[keyname.toLowerCase()];
                         }
-                        else if (Set.has(this.pseudoKeys, keyname)) {
+                        else if (this.pseudoKeys.has(keyname)) {
                             evt_obj.dactylString = "<" + this.key_key[keyname] + ">";
                         }
                         else if (/mouse$/.test(keyname)) { // mouse events
-                            evt_obj.type = (/2-/.test(modifier) ? "dblclick" : "click");
+                            evt_obj.type = (modifier.has("2") ? "dblclick" : "click");
                             evt_obj.button = ["leftmouse", "middlemouse", "rightmouse"].indexOf(keyname);
                             delete evt_obj.keyCode;
                             delete evt_obj.charCode;
@@ -1398,9 +1398,9 @@ var DOM = Class("DOM", {
      * The set of input element type attribute values that mark the element as
      * an editable field.
      */
-    editableInputs: Set(["date", "datetime", "datetime-local", "email", "file",
-                         "month", "number", "password", "range", "search",
-                         "tel", "text", "time", "url", "week"]),
+    editableInputs: RealSet(["date", "datetime", "datetime-local", "email", "file",
+                             "month", "number", "password", "range", "search",
+                             "tel", "text", "time", "url", "week"]),
 
     /**
      * Converts a given DOM Node, Range, or Selection to a string. If
@@ -1633,7 +1633,7 @@ var DOM = Class("DOM", {
     toPrettyXML: function toPrettyXML(xml, asXML, indent, namespaces) {
         const INDENT = indent || "    ";
 
-        const EMPTY = Set("area base basefont br col frame hr img input isindex link meta param"
+        const EMPTY = RealSet("area base basefont br col frame hr img input isindex link meta param"
                             .split(" "));
 
         function namespaced(namespaces, namespace, localName) {
@@ -1742,7 +1742,7 @@ var DOM = Class("DOM", {
             let res = [indent, "<", name];
 
             for (let [key, val] in Iterator(attr)) {
-                if (Set.has(skipAttr, key))
+                if (hasOwnProperty(skipAttr, key))
                     continue;
 
                 let vals = parseNamespace(key);
@@ -1758,7 +1758,7 @@ var DOM = Class("DOM", {
                              '="', DOM.escapeHTML(val), '"');
             }
 
-            if ((vals[0] || namespaces[""]) == String(XHTML) && Set.has(EMPTY, vals[1])
+            if ((vals[0] || namespaces[""]) == String(XHTML) && EMPTY.has(vals[1])
                     || asXML && !args.length)
                 res.push("/>");
             else {
@@ -1881,7 +1881,7 @@ var DOM = Class("DOM", {
 
 Object.keys(DOM.Event.types).forEach(function (event) {
     let name = event.replace(/-(.)/g, (m, m1) => m1.toUpperCase());
-    if (!Set.has(DOM.prototype, name))
+    if (!hasOwnProperty(DOM.prototype, name))
         DOM.prototype[name] =
             function _event(arg, extra) {
                 return this[callable(arg) ? "listen" : "dispatch"](event, arg, extra);

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -210,7 +210,7 @@ var Command = Class("Command", {
         extra: extra
     }),
 
-    complained: Class.Memoize(function () ({})),
+    complained: Class.Memoize(function () RealSet()),
 
     /**
      * @property {[string]} All of this command's name specs. e.g., "com[mand]"
@@ -325,7 +325,8 @@ var Command = Class("Command", {
 
                 explicitOpts: Class.Memoize(function () ({})),
 
-                has: function AP_has(opt) Set.has(this.explicitOpts, opt) || typeof opt === "number" && Set.has(this, opt),
+                has: function AP_has(opt) hasOwnProperty(this.explicitOpts, opt)
+                                       || typeof opt === "number" && hasOwnProperty(this, opt),
 
                 get literalArg() this.command.literal != null && this[this.command.literal] || "",
 
@@ -402,8 +403,12 @@ var Command = Class("Command", {
     warn: function warn(context, type, message) {
         let loc = !context ? "" : [context.file, context.line, " "].join(":");
 
-        if (!Set.add(this.complained, type + ":" + (context ? context.file : "[Command Line]")))
+        let key = type + ":" + (context ? context.file : "[Command Line]");
+
+        if (!this.complained.has(key)) {
+            this.complained.add(key);
             this.modules.dactyl.warn(loc + message);
+        }
     }
 }, {
     hasName: function hasName(specs, name)
@@ -1011,7 +1016,7 @@ var Commands = Module("commands", {
             let matchOpts = function matchOpts(arg) {
                 // Push possible option matches into completions
                 if (complete && !onlyArgumentsRemaining)
-                    completeOpts = options.filter(opt => (opt.multiple || !Set.has(args, opt.names[0])));
+                    completeOpts = options.filter(opt => (opt.multiple || !hasOwnProperty(args, opt.names[0])));
             };
             let resetCompletions = function resetCompletions() {
                 completeOpts = null;
@@ -1721,7 +1726,7 @@ var Commands = Module("commands", {
                 ]
             })),
             iterateIndex: function (args) let (tags = help.tags)
-                this.iterate(args).filter(cmd => (cmd.hive === commands.builtin || Set.has(tags, cmd.helpTag))),
+                this.iterate(args).filter(cmd => (cmd.hive === commands.builtin || hasOwnProperty(tags, cmd.helpTag))),
             format: {
                 headings: ["Command", "Group", "Description"],
                 description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),

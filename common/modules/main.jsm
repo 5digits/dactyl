@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -192,8 +192,8 @@ overlay.overlayWindow(Object.keys(config.overlays),
 
         this.startTime = Date.now();
         this.deferredInit = { load: {} };
-        this.seen = {};
-        this.loaded = {};
+        this.seen = RealSet();
+        this.loaded = RealSet();
         modules.loaded = this.loaded;
 
         this.modules = modules;
@@ -258,11 +258,12 @@ overlay.overlayWindow(Object.keys(config.overlays),
         }
 
         try {
-            if (Set.has(loaded, module.className))
+            if (loaded.has(module.className))
                 return;
 
-            if (Set.add(seen, module.className))
+            if (seen.has(module.className))
                 throw Error("Module dependency loop.");
+            seen.add(module.className);
 
             for (let dep in values(module.requires))
                 this.loadModule(Module.constructors[dep], module.className);
@@ -277,9 +278,9 @@ overlay.overlayWindow(Object.keys(config.overlays),
             let obj = defineModule.time(module.className, "init", module);
             Class.replaceProperty(modules, module.className, obj);
 
-            Set.add(loaded, module.className);
+            loaded.add(module.className);
 
-            if (loaded.dactyl && obj.signals)
+            if (loaded.has("dactyl") && obj.signals)
                 modules.dactyl.registerObservers(obj);
 
             if (!module.lazyDepends)
@@ -300,7 +301,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
 
         let className = mod.className || mod.constructor.className;
 
-        if (!Set.has(init, className)) {
+        if (!hasOwnProperty(init, className)) {
             init[className] = function callee() {
                 function finish() {
                     this.currentDependency = className;
@@ -324,11 +325,12 @@ overlay.overlayWindow(Object.keys(config.overlays),
         let { Module, modules } = this.modules;
 
         defineModule.modules.forEach((mod) => {
-            let names = Set(Object.keys(mod.INIT));
+            let names = RealSet(Object.keys(mod.INIT));
             if ("init" in mod.INIT)
-                Set.add(names, "init");
+                names.add("init");
 
-            keys(names).forEach((name) => { this.deferInit(name, mod.INIT, mod); });
+            for (let name of names)
+                this.deferInit(name, mod.INIT, mod);
         });
 
         Module.list.forEach((mod) => {

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -278,7 +278,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let results = array((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
                         .array.sort((a, b) => String.localeCompare(a.name, b.name));
 
-                let haveTag = Set.has(help.tags);
+                let haveTag = hasOwnProperty(help.tags);
                 for (let obj in values(results)) {
                     let res = dactyl.generateHelp(obj, null, null, true);
                     if (!haveTag(obj.helpTag))
@@ -620,7 +620,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {string} feature The feature name.
      * @returns {boolean}
      */
-    has: function has(feature) Set.has(config.features, feature),
+    has: function has(feature) config.has(feature),
 
     /**
      * @private

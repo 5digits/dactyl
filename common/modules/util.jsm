@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -138,7 +138,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let cleanup = ["dactyl-cleanup-modules", "quit-application"];
 
         function register(meth) {
-            for (let target in Set(cleanup.concat(Object.keys(obj.observers))))
+            for (let target of RealSet(cleanup.concat(Object.keys(obj.observers))))
                 try {
                     services.observer[meth](obj, target, true);
                 }
@@ -354,7 +354,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     : "",
             {
                 elements: [],
-                seen: {},
+                seen: RealSet(),
                 valid: function valid(obj) this.elements.every(e => (!e.test || e.test(obj)))
             });
 
@@ -387,15 +387,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             else {
                 let [, flags, name] = /^((?:[a-z]-)*)(.*)/.exec(macro);
-                flags = Set(flags);
+                flags = RealSet(flags);
 
                 let quote = util.identity;
-                if (flags.q)
+                if (flags.has("q"))
                     quote = function quote(obj) typeof obj === "number" ? obj : String.quote(obj);
-                if (flags.e)
+                if (flags.has("e"))
                     quote = function quote(obj) "";
 
-                if (Set.has(defaults, name))
+                if (hasOwnProperty(defaults, name))
                     stack.top.elements.push(quote(defaults[name]));
                 else {
                     let index = idx;
@@ -403,7 +403,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                         idx = Number(idx) - 1;
                         stack.top.elements.push(update(
                             obj => obj[name] != null && idx in obj[name] ? quote(obj[name][idx])
-                                                                                 : Set.has(obj, name) ? "" : unknown(full),
+                                                                         : hasOwnProperty(obj, name) ? "" : unknown(full),
                             {
                                 test: function test(obj) obj[name] != null && idx in obj[name]
                                                       && obj[name][idx] !== false
@@ -413,7 +413,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     else {
                         stack.top.elements.push(update(
                             obj => obj[name] != null ? quote(obj[name])
-                                                             : Set.has(obj, name) ? "" : unknown(full),
+                                                     : hasOwnProperty(obj, name) ? "" : unknown(full),
                             {
                                 test: function test(obj) obj[name] != null
                                                       && obj[name] !== false
@@ -422,7 +422,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     }
 
                     for (let elem in array.iterValues(stack))
-                        elem.seen[name] = true;
+                        elem.seen.add(name);
                 }
             }
         }
@@ -757,7 +757,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         try {
             let xmlhttp = services.Xmlhttp();
-            xmlhttp.mozBackgroundRequest = Set.has(params, "background") ? params.background : true;
+            xmlhttp.mozBackgroundRequest = hasOwnProperty(params, "background") ? params.background : true;
 
             let async = params.callback || params.onload || params.onerror;
             if (async) {
@@ -1255,10 +1255,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         // Replace replacement <tokens>.
         if (tokens)
             expr = String.replace(expr, /(\(?P)?<(\w+)>/g,
-                                  (m, n1, n2) => !n1 && Set.has(tokens, n2) ?    tokens[n2].dactylSource
-                                                                              || tokens[n2].source
-                                                                              || tokens[n2]
-                                                                            : m);
+                                  (m, n1, n2) => !n1 && hasOwnProperty(tokens, n2) ?    tokens[n2].dactylSource
+                                                                                     || tokens[n2].source
+                                                                                     || tokens[n2]
+                                                                                   : m);
 
         // Strip comments and white space.
         if (/x/.test(flags))

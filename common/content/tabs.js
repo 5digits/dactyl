@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -1036,7 +1036,7 @@ var Tabs = Module("tabs", {
             tabs.getGroups();
             tabs[visible ? "visibleTabs" : "allTabs"].forEach(function (tab, i) {
                 let group = (tab.tabItem || tab._tabViewTabItem || defItem).parent || defItem.parent;
-                if (!Set.has(tabGroups, group.id))
+                if (!hasOwnProperty(tabGroups, group.id))
                     tabGroups[group.id] = [group.getTitle(), []];
 
                 group = tabGroups[group.id];
@@ -1261,11 +1261,11 @@ var Tabs = Module("tabs", {
                     values: activateGroups,
                     has: Option.has.toggleAll,
                     setter: function (newValues) {
-                        let valueSet = Set(newValues);
+                        let valueSet = RealSet(newValues);
                         for (let group in values(activateGroups))
                             if (group[2])
                                 prefs.safeSet("browser.tabs." + group[2],
-                                              !(valueSet["all"] ^ valueSet[group[0]]),
+                                              !(valueSet.has("all") ^ valueSet.has(group[0])),
                                               _("option.safeSet", "activate"));
                         return newValues;
                     }

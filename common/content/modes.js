@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -446,9 +446,12 @@ var Modes = Module("modes", {
             this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
 
         allBases: Class.Memoize(function () {
-            let seen = {}, res = [], queue = [this].concat(this.bases);
+            let seen = RealSet(),
+                res = [],
+                queue = [this].concat(this.bases);
             for (let mode in array.iterValues(queue))
-                if (!Set.add(seen, mode)) {
+                if (!seen.has(mode)) {
+                    seen.add(mode);
                     res.push(mode);
                     queue.push.apply(queue, mode.bases);
                 }
@@ -491,7 +494,7 @@ var Modes = Module("modes", {
         StackElement.defaultValue("params", function () this.main.params);
 
         update(StackElement.prototype, {
-            get toStringParams() !loaded.modes ? this.main.name : [
+            get toStringParams() !loaded.modes ? [this.main.name] : [
                 this.main.name,
                 ["(", modes.all.filter(m => this.extended & m)
                                .map(m => m.name)
@@ -604,7 +607,7 @@ var Modes = Module("modes", {
                     return (array.nth(this.value, v => val.some(m => m.name === v.mode), 0)
                                 || { result: default_ }).result;
 
-                return Set.has(this.valueMap, val) ? this.valueMap[val] : default_;
+                return hasOwnProperty(this.valueMap, val) ? this.valueMap[val] : default_;
             },
 
             setter: function (vals) {
@@ -622,7 +625,7 @@ var Modes = Module("modes", {
             },
 
             validator: function validator(vals) vals.map(v => v.replace(/^!/, ""))
-                                                    .every(Set.has(this.values)),
+                                                    .every(k => hasOwnProperty(this.values, k)),
 
             get values() array.toObject([[m.name.toLowerCase(), m.description] for (m in values(modes._modes)) if (!m.hidden)])
         };

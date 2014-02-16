@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -261,7 +261,7 @@ var Styles = Module("Styles", {
         update(services["dactyl:"].providers, {
             "style": function styleProvider(uri, path) {
                 let id = parseInt(path);
-                if (Set.has(styles.allSheets, id))
+                if (hasOwnProperty(styles.allSheets, id))
                     return ["text/css", styles.allSheets[id].fullCSS];
                 return null;
             }

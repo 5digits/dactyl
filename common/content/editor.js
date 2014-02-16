@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 // Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 //
 // This work is licensed for reuse under an MIT license. Details are
@@ -68,7 +68,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             name = 0;
         if (name == "_")
             var res = null;
-        else if (Set.has(this.selectionRegisters, name))
+        else if (hasOwnProperty(this.selectionRegisters, name))
             res = { text: dactyl.clipboardRead(this.selectionRegisters[name]) || "" };
         else if (!/^[0-9]$/.test(name))
             res = this.registers.get(name);
@@ -105,7 +105,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             name = 0;
         if (name == "_")
             ;
-        else if (Set.has(this.selectionRegisters, name))
+        else if (hasOwnProperty(this.selectionRegisters, name))
             dactyl.clipboardWrite(value.text, verbose, this.selectionRegisters[name]);
         else if (!/^[0-9]$/.test(name))
             this.registers.set(name, value);
@@ -1363,11 +1363,12 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                         args.push(obj["file"]);
                     return args;
                 },
-                has: function (key) Set.has(util.compileMacro(this.value).seen, key),
+                has: function (key) util.compileMacro(this.value).seen.has(key),
                 validator: function (value) {
                     this.format({}, value);
-                    return Object.keys(util.compileMacro(value).seen)
-                                 .every(k => ["column", "file", "line"].indexOf(k) >= 0);
+                    let allowed = RealSet(["column", "file", "line"]);
+                    return [k for (k of util.compileMacro(value).seen)]
+                                .every(k => allowed.has(k));
                 }
             });
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2014 Kris Maglione <maglione.k@gmail.com>
 // Copyright (c) 2009-2010 by Doug Kearns <dougkearns@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
@@ -164,7 +164,8 @@ var Addon = Class("Addon", {
     },
 
     commandAllowed: function commandAllowed(cmd) {
-        util.assert(Set.has(actions, cmd), _("addon.unknownCommand"));
+        util.assert(hasOwnProperty(actions, cmd),
+                    _("addon.unknownCommand"));
 
         let action = actions[cmd];
         if ("perm" in action && !(this.permissions & AddonManager["PERM_CAN_" + action.perm.toUpperCase()]))

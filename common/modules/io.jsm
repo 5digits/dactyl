@@ -1,7 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2012 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
-// Some code based on Venkman
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -42,7 +41,7 @@ var IO = Module("io", {
             this._oldcwd = null;
 
             this._lastRunCommand = ""; // updated whenever the users runs a command with :!
-            this._scriptNames = [];
+            this._scriptNames = RealSet();
         },
 
         CommandFileMode: Class("CommandFileMode", modules.CommandMode, {
@@ -156,7 +155,7 @@ var IO = Module("io", {
                     else if (/\.js$/.test(filename)) {
                         try {
                             var context = contexts.Script(file, params.group);
-                            if (Set.has(this._scriptNames, file.path))
+                            if (this._scriptNames.has(file.path))
                                 util.flushCache();
 
                             dactyl.loadScript(uri.spec, context);
@@ -196,7 +195,7 @@ var IO = Module("io", {
                         dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
                     }
 
-                    Set.add(this._scriptNames, file.path);
+                    this._scriptNames.add(file.path);
 
                     dactyl.echomsg(_("io.sourcingEnd", filename.quote()), 2);
                     dactyl.log(_("dactyl.sourced", filename), 3);
@@ -865,7 +864,7 @@ unlet s:cpo_save
         commands.add(["scrip[tnames]"],
             "List all sourced script names",
             function () {
-                let names = Object.keys(io._scriptNames);
+                let names = [k for (k of io._scriptNames)];
                 if (!names.length)
                     dactyl.echomsg(_("command.scriptnames.none"));
                 else

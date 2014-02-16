@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -65,7 +65,7 @@ var Option = Class("Option", {
             this.globalValue = this.defaultValue;
     },
 
-    magicalProperties: Set(["cleanupValue"]),
+    magicalProperties: RealSet(["cleanupValue"]),
 
     /**
      * @property {string} This option's description, as shown in :listoptions.
@@ -329,7 +329,7 @@ var Option = Class("Option", {
         let defaultValue = this._defaultValue;
         delete this._defaultValue;
 
-        if (Set.has(this.modules.config.optionDefaults, this.name))
+        if (hasOwnProperty(this.modules.config.optionDefaults, this.name))
             defaultValue = this.modules.config.optionDefaults[this.name];
 
         if (defaultValue == null && this.getter)
@@ -682,11 +682,11 @@ var Option = Class("Option", {
                 // NOTE: Vim doesn't prepend if there's a match in the current value
                 return uniq(Array.concat(values, this.value), true);
             case "-":
-                return this.value.filter(function (item) !Set.has(this, item), Set(values));
+                return this.value.filter(function (item) !this.has(item), RealSet(values));
             case "=":
                 if (invert) {
-                    let keepValues = this.value.filter(function (item) !Set.has(this, item), Set(values));
-                    let addValues  = values.filter(function (item) !Set.has(this, item), Set(this.value));
+                    let keepValues = this.value.filter(function (item) !this.has(item), RealSet(values));
+                    let addValues  = values.filter(function (item) !this.has(item), RealSet(this.value));
                     return addValues.concat(keepValues);
                 }
                 return values;
@@ -723,7 +723,9 @@ var Option = Class("Option", {
         if (isObject(vals) && !isArray(vals)) {
             let k = values(completions.call(this, { values: {} })).toObject();
             let v = values(completions.call(this, { value: "" })).toObject();
-            return Object.keys(vals).every(Set.has(k)) && values(vals).every(Set.has(v));
+
+            return Object.keys(vals).every(hasOwnProperty.bind(null, k)) &&
+                   values(vals).every(hasOwnProperty.bind(null, v));
         }
 
         if (this.values)
@@ -732,12 +734,14 @@ var Option = Class("Option", {
             acceptable = completions.call(this);
 
         if (isArray(acceptable))
-            acceptable = Set(acceptable.map(([k]) => (k)));
+            acceptable = RealSet(acceptable.map(([k]) => (k)));
+        else
+            acceptable = RealSet(Object.keys(acceptable));
 
         if (this.type === "regexpmap" || this.type === "sitemap")
-            return Array.concat(vals).every(re => Set.has(acceptable, re.result));
+            return Array.concat(vals).every(re => acceptable.has(re.result));
 
-        return Array.concat(vals).every(Set.has(acceptable));
+        return Array.concat(vals).every(v => acceptable.has(v));
     },
 
     types: {}
@@ -789,7 +793,7 @@ var OptionHive = Class("OptionHive", Contexts.Hive, {
     init: function init(group) {
         init.supercall(this, group);
         this.values = {};
-        this.has = Set.has(this.values);
+        this.has = v => hasOwnProperty(this.values, v);
     },
 
     add: function add(names, description, type, defaultValue, extraInfo) {
@@ -1098,13 +1102,13 @@ var Options = Module("options", {
 
             let list = [];
             function flushList() {
-                let names = Set(list.map(opt => opt.option ? opt.option.name : ""));
+                let names = RealSet(list.map(opt => opt.option ? opt.option.name : ""));
                 if (list.length)
                     if (list.some(opt => opt.all))
                         options.list(opt => !(list[0].onlyNonDefault && opt.isDefault),
                                      list[0].scope);
                     else
-                        options.list(opt => Set.has(names, opt.name),
+                        options.list(opt => names.has(opt.name),
                                      list[0].scope);
                 list = [];
             }
@@ -1279,12 +1283,12 @@ var Options = Module("options", {
 
             // Fill in the current values if we're removing
             if (opt.operator == "-" && isArray(opt.values)) {
-                let have = Set([i.text for (i in values(context.allItems.items))]);
+                let have = RealSet((i.text for (i in values(context.allItems.items))));
                 context = context.fork("current-values", 0);
                 context.anchored = optcontext.anchored;
                 context.maxItems = optcontext.maxItems;
 
-                context.filters.push(i => !Set.has(have, i.text));
+                context.filters.push(i => !have.has(i.text));
                 modules.completion.optionValue(context, opt.name, opt.operator, null,
                                        function (context) {
                                            context.generate = () => option.value.map(o => [o, ""]);
@@ -1313,7 +1317,7 @@ var Options = Module("options", {
 
                     util.assert(scope == "g:" || scope == null,
                                 _("command.let.illegalVar", scope + name));
-                    util.assert(Set.has(globalVariables, name) || (expr && !op),
+                    util.assert(hasOwnProperty(globalVariables, name) || (expr && !op),
                                 _("command.let.undefinedVar", fullName));
 
                     if (!expr)
@@ -1411,7 +1415,7 @@ var Options = Module("options", {
             function (args) {
                 for (let [, name] in args) {
                     name = name.replace(/^g:/, ""); // throw away the scope prefix
-                    if (!Set.has(dactyl._globalVariables, name)) {
+                    if (!hasOwnProperty(dactyl._globalVariables, name)) {
                         if (!args.bang)
                             dactyl.echoerr(_("command.let.noSuch", name));
                         return;
@@ -1497,7 +1501,7 @@ var Options = Module("options", {
                                         0);
                     return val && val.result;
                 }
-                if (Set.has(opt.defaultValue, extra.key))
+                if (hasOwnProperty(opt.defaultValue, extra.key))
                     return obj[extra.key];
             }
 

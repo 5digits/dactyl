@@ -87,10 +87,10 @@ var Download = Class("Download", {
     })),
 
     command: function command(name) {
-        util.assert(Set.has(this.allowedCommands, name), _("download.unknownCommand"));
+        util.assert(hasOwnProperty(this.allowedCommands, name), _("download.unknownCommand"));
         util.assert(this.allowedCommands[name], _("download.commandNotAllowed"));
 
-        if (Set.has(this.commands, name))
+        if (hasOwnProperty(this.commands, name))
             this.commands[name].call(this);
     },
 
@@ -523,9 +523,9 @@ var Downloads_ = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
                 },
 
                 completer: function (context, extra) {
-                    let seen = Set.has(Set(extra.values.map(val => val.substr(1))));
+                    let seen = RealSet(extra.values.map(val => val.substr(1)));
 
-                    context.completions = iter(this.values).filter(([k, v]) => !seen(k))
+                    context.completions = iter(this.values).filter(([k, v]) => !seen.has(k))
                                                            .map(([k, v]) => [["+" + k, [v, " (", _("sort.ascending"), ")"].join("")],
                                                                              ["-" + k, [v, " (", _("sort.descending"), ")"].join("")]])
                                                            .flatten().array;
@@ -535,7 +535,7 @@ var Downloads_ = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
 
                 validator: function (value) {
                     let seen = {};
-                    return value.every(val => /^[+-]/.test(val) && Set.has(this.values, val.substr(1))
+                    return value.every(val => /^[+-]/.test(val) && hasOwnProperty(this.values, val.substr(1))
                                                                 && !Set.add(seen, val.substr(1)))
                         && value.length;
                 }

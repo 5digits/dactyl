@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -106,7 +106,7 @@ var Template = Module("Template", {
                 "click": function onClick(event) {
                     event.preventDefault();
                     if (this.commandAllowed) {
-                        if (Set.has(this.target.commands || {}, this.command))
+                        if (hasOwnProperty(this.target.commands || {}, this.command))
                             this.target.commands[this.command].call(this.target);
                         else
                             this.target.command(this.command);
@@ -115,7 +115,7 @@ var Template = Module("Template", {
             },
 
             get commandAllowed() {
-                if (Set.has(this.target.allowedCommands || {}, this.command))
+                if (hasOwnProperty(this.target.allowedCommands || {}, this.command))
                     return this.target.allowedCommands[this.command];
                 if ("commandAllowed" in this.target)
                     return this.target.commandAllowed(this.command);
@@ -140,7 +140,7 @@ var Template = Module("Template", {
 
                 let obj = params.eventTarget;
                 let events = obj[this.getAttribute("events") || "events"];
-                if (Set.has(events, "input"))
+                if (hasOwnProperty(events, "input"))
                     events["dactyl-input"] = events["input"];
 
                 for (let [event, handler] in Iterator(events))
@@ -219,7 +219,7 @@ var Template = Module("Template", {
         else if (/^n_/.test(topic))
             topic = topic.slice(2);
 
-        if (help.initialized && !Set.has(help.tags, topic))
+        if (help.initialized && !hasOwnProperty(help.tags, topic))
             return ["span", { highlight: type || ""}, text || token];
 
         type = type || (/^'.*'$/.test(token)   ? "HelpOpt" :
@@ -241,7 +241,7 @@ var Template = Module("Template", {
         else if (/^n_/.test(topic))
             topic = topic.slice(2);
 
-        if (help.initialized && !Set.has(help.tags, topic))
+        if (help.initialized && !hasOwnProperty(help.tags, topic))
             return token;
 
         let tag = (/^'.*'$/.test(token)            ? "o" :

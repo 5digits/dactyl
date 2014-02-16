@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -73,7 +73,7 @@ var Bookmarks = Module("bookmarks", {
         if (id != null)
             var bmark = bookmarkcache.bookmarks[id];
         else if (!force) {
-            if (keyword && Set.has(bookmarkcache.keywords, keyword))
+            if (keyword && hasOwnProperty(bookmarkcache.keywords, keyword))
                 bmark = bookmarkcache.keywords[keyword];
             else if (bookmarkcache.isBookmarked(uri))
                 for (bmark in bookmarkcache)
@@ -223,7 +223,7 @@ var Bookmarks = Module("bookmarks", {
             if (!alias)
                 alias = "search"; // for search engines which we can't find a suitable alias
 
-            if (Set.has(aliases, alias))
+            if (hasOwnProperty(aliases, alias))
                 alias += ++aliases[alias];
             else
                 aliases[alias] = 0;
@@ -251,10 +251,10 @@ var Bookmarks = Module("bookmarks", {
     getSuggestions: function getSuggestions(engineName, query, callback) {
         const responseType = "application/x-suggestions+json";
 
-        if (Set.has(this.suggestionProviders, engineName))
+        if (hasOwnProperty(this.suggestionProviders, engineName))
             return this.suggestionProviders[engineName](query, callback);
 
-        let engine = Set.has(this.searchEngines, engineName) && this.searchEngines[engineName];
+        let engine = hasOwnProperty(this.searchEngines, engineName) && this.searchEngines[engineName];
         if (engine && engine.supportsResponseType(responseType))
             var queryURI = engine.getSubmission(query, responseType).uri.spec;
         if (!queryURI)
@@ -320,7 +320,7 @@ var Bookmarks = Module("bookmarks", {
             param = query.substr(offset + 1);
         }
 
-        var engine = Set.has(bookmarks.searchEngines, keyword) && bookmarks.searchEngines[keyword];
+        var engine = hasOwnProperty(bookmarks.searchEngines, keyword) && bookmarks.searchEngines[keyword];
         if (engine) {
             if (engine.searchForm && !param)
                 return engine.searchForm;
@@ -700,7 +700,7 @@ var Bookmarks = Module("bookmarks", {
                 let engine = bookmarks.searchEngines[name];
                 if (engine)
                     var desc = engine.description;
-                else if (!Set.has(bookmarks.suggestionProviders, name))
+                else if (!hasOwnProperty(bookmarks.suggestionProviders, name))
                     return;
 
                 let [, word] = /^\s*(\S+)/.exec(context.filter) || [];

@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2010-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -189,7 +189,9 @@ var Contexts = Module("contexts", {
                                                           { _hive: { value: name } })));
 
                 memoize(contexts.groupsProto, name,
-                        function () [group[name] for (group in values(this.groups)) if (Set.has(group, name))]);
+                        function () [group[name]
+                                     for (group in values(this.groups))
+                                     if (hasOwnProperty(group, name))]);
             },
 
             get toStringParams() [this.name, this.Hive]
@@ -211,13 +213,13 @@ var Contexts = Module("contexts", {
         let id   = util.camelCase(name.replace(/\.[^.]*$/, ""));
 
         let contextPath = file.path;
-        let self = Set.has(plugins, contextPath) && plugins.contexts[contextPath];
+        let self = hasOwnProperty(plugins, contextPath) && plugins.contexts[contextPath];
 
         if (!self && isPlugin && false)
-            self = Set.has(plugins, id) && plugins[id];
+            self = hasOwnProperty(plugins, id) && plugins[id];
 
         if (self) {
-            if (Set.has(self, "onUnload"))
+            if (hasOwnProperty(self, "onUnload"))
                 util.trapErrors("onUnload", self);
         }
         else {
@@ -310,7 +312,7 @@ var Contexts = Module("contexts", {
                                            .replace(File.PATH_SEP, "-");
         let id   = util.camelCase(name.replace(/\.[^.]*$/, ""));
 
-        let self = Set.has(this.pluginModules, canonical) && this.pluginModules[canonical];
+        let self = hasOwnProperty(this.pluginModules, canonical) && this.pluginModules[canonical];
 
         if (!self) {
             self = Object.create(jsmodules);
@@ -411,7 +413,7 @@ var Contexts = Module("contexts", {
 
     initializedGroups: function (hive)
         let (need = hive ? [hive] : Object.keys(this.hives))
-            this.groupList.filter(group => need.some(Set.has(group))),
+            this.groupList.filter(group => need.some(hasOwnProperty.bind(null, group))),
 
     addGroup: function addGroup(name, description, filter, persist, replace) {
         let group = this.getGroup(name);
@@ -468,7 +470,7 @@ var Contexts = Module("contexts", {
     getGroup: function getGroup(name, hive) {
         if (name === "default")
             var group = this.context && this.context.context && this.context.context.GROUP;
-        else if (Set.has(this.groupMap, name))
+        else if (hasOwnProperty(this.groupMap, name))
             group = this.groupMap[name];
 
         if (group && hive)
@@ -644,7 +646,7 @@ var Contexts = Module("contexts", {
 
                 util.assert(!group.builtin ||
                                 !["-description", "-locations", "-nopersist"]
-                                    .some(Set.has(args.explicitOpts)),
+                                    .some(hasOwnProperty.bind(null, args.explicitOpts)),
                             _("group.cantModifyBuiltin"));
             },
             {

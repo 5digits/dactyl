@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2011-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -45,14 +45,24 @@ var Messages = Module("messages", {
                     "resource://dactyl-locale-local/en-US/" + this.name + ".properties"],
                    true)
              .map(services.stringBundle.createBundle)
-             .filter(function (bundle) { try { bundle.getSimpleEnumeration(); return true; } catch (e) { return false; } })),
+             .filter(function (bundle) {
+                 try {
+                     bundle.getSimpleEnumeration();
+                     return true;
+                 }
+                 catch (e) {
+                     return false;
+                 }
+             })),
 
     iterate: function () {
-        let seen = {};
+        let seen = RealSet();
         for (let bundle in values(this.bundles))
             for (let { key, value } in iter(bundle.getSimpleEnumeration(), Ci.nsIPropertyElement))
-                if (!Set.add(seen, key))
+                if (!seen.has(key)) {
+                    seen.add(key);
                     yield [key, value];
+                }
     },
 
     get: function get(value, default_) {
@@ -139,9 +149,9 @@ var Messages = Module("messages", {
                     return { configurable: true, enumerable: true, value: this.default, writable: true };
                 */
 
-                if (!Set.has(obj, "localizedProperties"))
-                    obj.localizedProperties = { __proto__: obj.localizedProperties };
-                obj.localizedProperties[prop] = true;
+                if (!hasOwnProperty(obj, "localizedProperties"))
+                    obj.localizedProperties = RealSet(obj.localizedProperties);
+                obj.localizedProperties.add(prop);
 
                 obj[_prop] = this.default;
                 return {

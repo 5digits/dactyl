@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2011-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -18,7 +18,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         this.cache = {};
         this.providers = {};
         this.globalProviders = this.providers;
-        this.providing = {};
+        this.providing = RealSet();
         this.localProviders = {};
 
         if (JSMLoader.cacheFlush)
@@ -174,22 +174,24 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
                 this.cacheReader.getInputStream(name)));
         }
 
-        if (Set.has(this.localProviders, name) && !this.isLocal) {
+        if (hasOwnProperty(this.localProviders, name) && !this.isLocal) {
             for each (let { cache } in overlay.modules)
                 if (cache._has(name))
                     return cache.force(name, true);
         }
 
-        if (Set.has(this.providers, name)) {
-            util.assert(!Set.add(this.providing, name),
+        if (hasOwnProperty(this.providers, name)) {
+            util.assert(!this.providing.has(name),
                         "Already generating cache for " + name,
                         false);
+            this.providing.add(name);
+
             try {
                 let [func, self] = this.providers[name];
                 this.cache[name] = func.call(self || this, name);
             }
             finally {
-                delete this.providing[name];
+                this.providing.delete(name);
             }
 
             cache.queue.push([Date.now(), name]);
@@ -203,9 +205,9 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
     },
 
     get: function get(name, callback, self) {
-        if (!Set.has(this.cache, name)) {
-            if (callback && !(Set.has(this.providers, name) ||
-                              Set.has(this.localProviders, name)))
+        if (!hasOwnProperty(this.cache, name)) {
+            if (callback && !(hasOwnProperty(this.providers, name) ||
+                              hasOwnProperty(this.localProviders, name)))
                 this.register(name, callback, self);
 
             this.cache[name] = this.force(name);
@@ -216,14 +218,15 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         return this.cache[name];
     },
 
-    _has: function _has(name) Set.has(this.providers, name) || set.has(this.cache, name),
+    _has: function _has(name) hasOwnProperty(this.providers, name)
+                           || hasOwnProperty(this.cache, name),
 
     has: function has(name) [this.globalProviders, this.cache, this.localProviders]
-            .some(obj => Set.has(obj, name)),
+            .some(obj => hasOwnProperty(obj, name)),
 
     register: function register(name, callback, self) {
         if (this.isLocal)
-            Set.add(this.localProviders, name);
+            this.localProviders[name] = true;
 
         this.providers[name] = [callback, self];
     },
@@ -244,7 +247,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
                 this.closeWriter();
 
             this.queue.splice(0).forEach(function ([time, entry]) {
-                if (time && Set.has(this.cache, entry)) {
+                if (time && hasOwnProperty(this.cache, entry)) {
                     let stream = services.CharsetConv("UTF-8")
                                          .convertToInputStream(this.stringify(this.cache[entry]));
 

@@ -22,6 +22,9 @@ let objproto = Object.prototype;
 let { __lookupGetter__, __lookupSetter__, __defineGetter__, __defineSetter__,
       hasOwnProperty, propertyIsEnumerable } = objproto;
 
+hasOwnProperty = Function.call.bind(hasOwnProperty);
+propertyIsEnumerable = Function.call.bind(propertyIsEnumerable);
+
 if (typeof XPCSafeJSObjectWrapper === "undefined")
     this.XPCSafeJSObjectWrapper = XPCNativeWrapper;
 
@@ -147,11 +150,11 @@ defineModule("base", {
         "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
         "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable",
         "ctypes", "curry", "debuggerProperties", "defineModule",
-        "deprecated", "endModule", "forEach", "isArray", "isGenerator",
-        "isinstance", "isObject", "isString", "isSubclass", "isXML",
-        "iter", "iterAll", "iterOwnProperties", "keys", "literal",
-        "memoize", "modujle", "octal", "properties", "require", "set",
-        "update", "values", "update_"
+        "deprecated", "endModule", "forEach", "hasOwnProperty",
+        "isArray", "isGenerator", "isinstance", "isObject", "isString",
+        "isSubclass", "isXML", "iter", "iterAll", "iterOwnProperties",
+        "keys", "literal", "memoize", "modujle", "octal", "properties",
+        "require", "set", "update", "values", "update_"
     ]
 });
 
@@ -171,7 +174,7 @@ function literal(/* comment */) {
 
     let file = caller.filename.replace(/.* -> /, "");
     let key = "literal:" + file + ":" + caller.lineNumber;
-    if (Set.has(literal.locations, key))
+    if (hasOwnProperty(literal.locations, key))
         return literal.locations[key];
 
     let source = literal.files[file] || File.readURL(file);
@@ -224,13 +227,15 @@ function prototype(obj)
 
 function properties(obj, prototypes, debugger_) {
     let orig = obj;
-    let seen = { dactylPropertyNames: true };
+    let seen = RealSet(["dactylPropertyNames"]);
 
     try {
         if ("dactylPropertyNames" in obj && !prototypes)
             for (let key in values(obj.dactylPropertyNames))
-                if (key in obj && !Set.add(seen, key))
+                if (key in obj && !seen.has(key)) {
+                    seen.add(key);
                     yield key;
+                }
     }
     catch (e) {}
 
@@ -276,8 +281,10 @@ function properties(obj, prototypes, debugger_) {
             iter = (prop.name.stringValue for (prop in values(debuggerProperties(obj))));
 
         for (let key in iter)
-            if (!prototypes || !Set.add(seen, key) && obj != orig)
+            if (!prototypes || !seen.has(key) && obj != orig) {
+                seen.add(key);
                 yield key;
+            }
     }
 }
 
@@ -291,7 +298,9 @@ function deprecated(alternative, fn) {
         return Class.Property(iter(fn).map(([k, v]) => [k, callable(v) ? deprecated(alternative, v) : v])
                                       .toObject());
 
-    let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
+    let name,
+        func = callable(fn) ? fn
+                            : function () this[fn].apply(this, arguments);
 
     function deprecatedMethod() {
         let obj = !this                      ? "" :
@@ -299,7 +308,9 @@ function deprecated(alternative, fn) {
                   this.constructor.className ? this.constructor.className + "#" :
                       "";
 
-        deprecated.warn(func, obj + (fn.name || name), alternative);
+        deprecated.warn(func,
+                        obj + (fn.realName || fn.name || name || "").replace(/__/g, "."),
+                        alternative);
         return func.apply(this, arguments);
     }
 
@@ -310,16 +321,24 @@ function deprecated(alternative, fn) {
 }
 deprecated.warn = function warn(func, name, alternative, frame) {
     if (!func.seenCaller)
-        func.seenCaller = Set([
+        func.seenCaller = RealSet([
             "resource://dactyl/javascript.jsm",
             "resource://dactyl/util.jsm"
         ]);
 
+    if (!(loaded.util && util && loaded.config && config.protocolLoaded)) {
+        dump("DACTYL: deprecated method called too early [" + [name, alternative] + "]:\n" + Error().stack + "\n\n");
+        return;
+    }
+
     frame = frame || Components.stack.caller.caller;
+
     let filename = util.fixURI(frame.filename || "unknown");
-    if (!Set.add(func.seenCaller, filename))
+    if (!func.seenCaller.has(filename)) {
+        func.seenCaller.add(filename);
         util.dactyl(func).warn([util.urlPath(filename), frame.lineNumber, " "].join(":")
                                    + _("warn.deprecated", name, alternative));
+    }
 }
 
 /**
@@ -335,7 +354,7 @@ function keys(obj) iter(function keys() {
             yield k;
     else
         for (var k in obj)
-            if (hasOwnProperty.call(obj, k))
+            if (hasOwnProperty(obj, k))
                 yield k;
 }());
 
@@ -355,7 +374,7 @@ function values(obj) iter(function values() {
             yield k;
     else
         for (var k in obj)
-            if (hasOwnProperty.call(obj, k))
+            if (hasOwnProperty(obj, k))
                 yield obj[k];
 }());
 
@@ -371,13 +390,13 @@ var RealSet = Set;
  * @param {[string]} ary @optional
  * @returns {object}
  */
-this.Set = function Set(ary) {
+this.Set = deprecated("RealSet", function Set(ary) {
     let obj = {};
     if (ary)
         for (let val in values(ary))
             obj[val] = true;
     return obj;
-}
+});
 /**
  * Adds an element to a set and returns true if the element was
  * previously contained.
@@ -386,11 +405,18 @@ this.Set = function Set(ary) {
  * @param {string} key The key to add.
  * @returns boolean
  */
-Set.add = curry(function set_add(set, key) {
-    let res = this.has(set, key);
-    set[key] = true;
-    return res;
-});
+Set.add = deprecated("Set#add",
+    curry(function Set__add(set, key) {
+        if (isinstance(set, ["Set"])) {
+            let res = set.has(key);
+            set.add(key);
+            return res;
+        }
+
+        let res = this.has(set, key);
+        set[key] = true;
+        return res;
+    }));
 /**
  * Returns true if the given set contains the given key.
  *
@@ -398,8 +424,14 @@ Set.add = curry(function set_add(set, key) {
  * @param {string} key The key to check.
  * @returns {boolean}
  */
-Set.has = curry(function set_has(set, key) hasOwnProperty.call(set, key) &&
-                                           propertyIsEnumerable.call(set, key));
+Set.has = deprecated("hasOwnProperty or Set#has",
+    curry(function Set__has(set, key) {
+        if (isinstance(set, ["Set"]))
+            return set.has(key);
+
+        return hasOwnProperty(set, key) &&
+               propertyIsEnumerable(set, key);
+    }));
 /**
  * Returns a new set containing the members of the first argument which
  * do not exist in any of the other given arguments.
@@ -414,6 +446,7 @@ Set.subtract = function set_subtract(set) {
             delete set[k];
     return set;
 };
+
 /**
  * Removes an element from a set and returns true if the element was
  * previously contained.
@@ -422,11 +455,15 @@ Set.subtract = function set_subtract(set) {
  * @param {string} key The key to remove.
  * @returns boolean
  */
-Set.remove = curry(function set_remove(set, key) {
-    let res = set.has(set, key);
-    delete set[key];
-    return res;
-});
+Set.remove = deprecated("Set#delete",
+    curry(function Set__remove(set, key) {
+        if (isinstance(set, ["Set"]))
+            return set.delete(key);
+
+        let res = set.has(set, key);
+        delete set[key];
+        return res;
+    }));
 
 function set() {
     deprecated.warn(set, "set", "Set");
@@ -472,7 +509,7 @@ function curry(fn, length, self, acc) {
     if (acc == null)
         acc = [];
 
-    return function curried(...args) {
+    function curried(...args) {
         // The curried result should preserve 'this'
         if (args.length == 0)
             return close(self || this, curried);
@@ -484,6 +521,8 @@ function curry(fn, length, self, acc) {
 
         return curry(fn, length, self || this, args);
     };
+    curried.realName = fn.realName || fn.name;
+    return curried;
 }
 
 if (curry.bind)
@@ -1009,7 +1048,7 @@ Class.prototype = {
                 }
 
                 try {
-                    if ("value" in desc && (k in this.localizedProperties || k in this.magicalProperties))
+                    if ("value" in desc && (this.localizedProperties.has(k) || this.magicalProperties.has(k)))
                         this[k] = desc.value;
                     else
                         Object.defineProperty(this, k, desc);
@@ -1020,8 +1059,8 @@ Class.prototype = {
         return this;
     },
 
-    localizedProperties: {},
-    magicalProperties: {}
+    localizedProperties: RealSet(),
+    magicalProperties: RealSet()
 };
 for (let name in properties(Class.prototype)) {
     let desc = Object.getOwnPropertyDescriptor(Class.prototype, name);
@@ -1045,6 +1084,7 @@ Class.makeClosure = function makeClosure() {
         return _closure;
     }
 
+    let x = /commandline/i.test(this);
     iter(properties(this), properties(this, true)).forEach(function (k) {
         if (!__lookupGetter__.call(this, k) && callable(this[k]))
             closure[k] = closure(this[k]);
@@ -1552,10 +1592,12 @@ update(iter, {
         array(this.toArray(iter).sort(fn, self)),
 
     uniq: function uniq(iter) {
-        let seen = {};
+        let seen = RealSet();
         for (let item in iter)
-            if (!Set.add(seen, item))
+            if (!seen.has(item)) {
+                seen.add(item);
                 yield item;
+            }
     },
 
     /**

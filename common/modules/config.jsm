@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -9,16 +9,19 @@
 let global = this;
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
-    require: ["dom", "io", "protocol", "services", "util", "template"]
+    require: ["io", "protocol", "services"]
 });
 
 lazyRequire("addons", ["AddonManager"]);
 lazyRequire("cache", ["cache"]);
+lazyRequire("dom", ["DOM"]);
 lazyRequire("highlight", ["highlight"]);
 lazyRequire("messages", ["_"]);
 lazyRequire("prefs", ["localPrefs", "prefs"]);
 lazyRequire("storage", ["storage", "File"]);
 lazyRequire("styles", ["Styles"]);
+lazyRequire("template", ["template"]);
+lazyRequire("util", ["util"]);
 
 function AboutHandler() {}
 AboutHandler.prototype = {
@@ -50,13 +53,12 @@ var ConfigBase = Class("ConfigBase", {
 
         this.loadConfig();
 
-        this.features.push = deprecated("Set.add", function push(feature) Set.add(this, feature));
-
         JSMLoader.registerFactory(JSMLoader.Factory(AboutHandler));
         JSMLoader.registerFactory(JSMLoader.Factory(
             Protocol("dactyl", "{9c8f2530-51c8-4d41-b356-319e0b155c44}",
                      "resource://dactyl-content/")));
 
+        this.protocolLoaded = true;
         this.timeout(function () {
             cache.register("config.dtd", () => util.makeDTD(config.dtd));
         });
@@ -71,7 +73,7 @@ var ConfigBase = Class("ConfigBase", {
 
     get prefs() localPrefs,
 
-    get has() Set.has(this.features),
+    has: function (feature) this.features.has(feature),
 
     configFiles: [
         "resource://dactyl-common/config.json",
@@ -91,6 +93,9 @@ var ConfigBase = Class("ConfigBase", {
 
                 if (isArray(this[prop]))
                     this[prop] = [].concat(this[prop], value);
+                else if (isinstance(this[prop], ["Set"]))
+                    for (let key of value)
+                        this[prop].add(key);
                 else if (isObject(this[prop])) {
                     if (isArray(value))
                         value = Set(value);
@@ -236,7 +241,7 @@ var ConfigBase = Class("ConfigBase", {
     bestLocale: function (list) {
         return values([this.appLocale, this.appLocale.replace(/-.*/, ""),
                        "en", "en-US", list[0]])
-            .nth(Set.has(Set(list)), 0);
+            .nth((function (l) this.has(l)).bind(RealSet(list)), 0);
     },
 
     /**
@@ -529,7 +534,7 @@ var ConfigBase = Class("ConfigBase", {
      *    dactyl.has(feature) to check for a feature's presence
      *    in this array.
      */
-    features: {},
+    features: RealSet(),
 
     /**
      * @property {string} The file extension used for command script files.

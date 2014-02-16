@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -1183,9 +1183,10 @@ var Completion = Module("completion", {
                                          if (k.indexOf(services.AUTOCOMPLETE) == 0)]),
 
                 setter: function setter(values) {
-                    if (values.length == 1 && !Set.has(values[0], this.values)
-                            && Array.every(values[0], Set.has(this.valueMap)))
-                        return Array.map(values[0], function m(v) this[v], this.valueMap);
+                    if (values.length == 1 && !hasOwnProperty(values[0], this.values)
+                            && Array.every(values[0], v => hasOwnProperty(this.valueMap, v)))
+                        return Array.map(values[0], v => this.valueMap[v]);
+
                     return values;
                 },
 

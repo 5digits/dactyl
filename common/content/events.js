@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -28,7 +28,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
         else
             [self, events] = [event, event[callback || "events"]];
 
-        if (Set.has(events, "input") && !Set.has(events, "dactyl-input"))
+        if (hasOwnProperty(events, "input") && !hasOwnProperty(events, "dactyl-input"))
             events["dactyl-input"] = events.input;
 
         return [self, events];
@@ -79,7 +79,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
             let elem = args[0].get();
             if (target == null || elem == target
                                && self == args[1].get()
-                               && Set.has(events, args[2])
+                               && hasOwnProperty(events, args[2])
                                && args[3].wrapped == events[args[2]]
                                && args[4] == capture) {
 
@@ -1124,12 +1124,12 @@ var Events = Module("events", {
             "sitemap", "", {
                 flush: function flush() {
                     memoize(this, "filters", function () this.value.filter(function (f) f(buffer.documentURI)));
-                    memoize(this, "pass", function () Set(array.flatten(this.filters.map(function (f) f.keys))));
+                    memoize(this, "pass", function () RealSet(array.flatten(this.filters.map(function (f) f.keys))));
                     memoize(this, "commandHive", function hive() Hive(this.filters, "command"));
                     memoize(this, "inputHive", function hive() Hive(this.filters, "input"));
                 },
 
-                has: function (key) Set.has(this.pass, key) || Set.has(this.commandHive.stack.mappings, key),
+                has: function (key) this.pass.has(key) || hasOwnProperty(this.commandHive.stack.mappings, key),
 
                 get pass() (this.flush(), this.pass),
 

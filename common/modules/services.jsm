@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -206,7 +206,7 @@ var Services = Module("Services", {
      *
      * @param {string} name The service's cache key.
      */
-    has: function has(name) Set.has(this.services, name) && this.services[name].class in Cc &&
+    has: function has(name) hasOwnProperty(this.services, name) && this.services[name].class in Cc &&
         this.services[name].interfaces.every(iface => iface in Ci)
 });
 

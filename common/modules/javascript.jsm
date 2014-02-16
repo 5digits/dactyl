@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -72,23 +72,29 @@ var JavaScript = Module("javascript", {
         if (obj == null)
             return;
 
-        let seen = isinstance(obj, ["Sandbox"]) ? Set(JavaScript.magicalNames) : {};
+        let seen = RealSet(isinstance(obj, ["Sandbox"]) ? JavaScript.magicalNames : []);
         let globals = values(toplevel && this.window === obj ? this.globalNames : []);
 
         if (toplevel && isObject(obj) && "wrappedJSObject" in obj)
-            if (!Set.add(seen, "wrappedJSObject"))
+            if (!seen.has("wrappedJSObject")) {
+                seen.add("wrappedJSObject");
                 yield "wrappedJSObject";
+            }
 
         for (let key in iter(globals, properties(obj, !toplevel, true)))
-            if (!Set.add(seen, key))
+            if (!seen.has(key)) {
+                seen.add(key);
                 yield key;
+            }
 
         // Properties aren't visible in an XPCNativeWrapper until
         // they're accessed.
         for (let key in properties(this.getKey(obj, "wrappedJSObject"), !toplevel, true))
             try {
-                if (key in obj && !Set.has(seen, key))
+                if (key in obj && !seen.has(key)) {
+                    seen.add(key);
                     yield key;
+                }
             }
             catch (e) {}
     },

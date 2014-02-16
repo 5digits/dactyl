@@ -1,5 +1,5 @@
 // Copyright (c) 2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2009-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2009-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -247,11 +247,11 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             if (!("value" in prop) || !callable(prop.value) && !(k in item))
                 Object.defineProperty(item, k, prop);
 
-        let names = Set([name].concat(params.contains || []).map(e => "clear-" + e));
+        let names = RealSet([name].concat(params.contains || []).map(e => "clear-" + e));
         if (params.action)
             storage.addObserver("sanitizer",
                 function (key, event, arg) {
-                    if (event in names)
+                    if (names.has(event))
                         params.action.apply(params, arg);
                 },
                 Class.objectGlobal(params.action));
@@ -618,7 +618,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         res && !/^!/.test(res),
 
                 validator: function (values) values.length &&
-                    values.every(val => (val === "all" || Set.has(sanitizer.itemMap, val.replace(/^!/, ""))))
+                    values.every(val => (val === "all" || hasOwnProperty(sanitizer.itemMap, val.replace(/^!/, ""))))
             });
 
         options.add(["sanitizeshutdown", "ss"],
@@ -636,10 +636,10 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         sanitizer.runAtShutdown = false;
                     else {
                         sanitizer.runAtShutdown = true;
-                        let have = Set(value);
+                        let have = RealSet(value);
                         for (let item in values(sanitizer.itemMap))
                             prefs.set(item.shutdownPref,
-                                      Boolean(Set.has(have, item.name) ^ Set.has(have, "all")));
+                                      Boolean(have.has(item.name) ^ have.has("all")));
                     }
                     return value;
                 }

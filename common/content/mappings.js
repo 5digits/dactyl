@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -39,7 +39,7 @@ var Map = Class("Map", {
         Object.freeze(this.modes);
 
         if (info) {
-            if (Set.has(Map.types, info.type))
+            if (hasOwnProperty(Map.types, info.type))
                 this.update(Map.types[info.type]);
             this.update(info);
         }
@@ -380,11 +380,13 @@ var Mappings = Module("mappings", {
     },
 
     iterate: function (mode) {
-        let seen = {};
+        let seen = RealSet();
         for (let hive in this.hives.iterValues())
             for (let map in array(hive.getStack(mode)).iterValues())
-                if (!Set.add(seen, map.name))
+                if (!seen.has(map.name)) {
+                    seen.add(map.name);
                     yield map;
+                }
     },
 
     // NOTE: just normal mode for now
@@ -638,11 +640,13 @@ var Mappings = Module("mappings", {
                 }
             };
             function userMappings(hive) {
-                let seen = {};
+                let seen = RealSet();
                 for (let stack in values(hive.stacks))
                     for (let map in array.iterValues(stack))
-                        if (!Set.add(seen, map.id))
+                        if (!seen.has(map.id)) {
+                            seen.add(map.id);
                             yield map;
+                        }
             }
 
             modeDescription = modeDescription ? " in " + modeDescription + " mode" : "";
@@ -748,13 +752,14 @@ var Mappings = Module("mappings", {
                 if (!mainOnly)
                     modes = modes[0].allBases;
 
-                let seen = {};
+                let seen = RealSet();
                 // Bloody hell. --Kris
                 for (let [i, mode] in Iterator(modes))
                     for (let hive in mappings.hives.iterValues())
                         for (let map in array.iterValues(hive.getStack(mode)))
                             for (let name in values(map.names))
-                                if (!Set.add(seen, name)) {
+                                if (!seen.has(name)) {
+                                    seen.add(name);
                                     yield {
                                         name: name,
                                         columns: [
@@ -800,7 +805,7 @@ var Mappings = Module("mappings", {
                     name: [mode.char + "listk[eys]", mode.char + "lk"],
                     iterateIndex: function (args)
                             let (self = this, prefix = /^[bCmn]$/.test(mode.char) ? "" : mode.char + "_",
-                                 haveTag = Set.has(help.tags))
+                                 haveTag = k => hasOwnProperty(help.tags, k))
                                     ({ helpTag: prefix + map.name, __proto__: map }
                                      for (map in self.iterate(args, true))
                                      if (map.hive === mappings.builtin || haveTag(prefix + map.name))),

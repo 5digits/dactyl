@@ -77,41 +77,42 @@ var Buffer = Module("Buffer", {
     /**
      * Content preference methods.
      */
-    prefs: Class.Memoize(() => ({
-        /**
-         * Returns a promise for the given preference name.
-         *
-         * @param {string} pref The name of the preference to return.
-         * @returns {Promise<string>}
-         */
-        get: promises.withCallback(function get(callback, pref) {
-            services.contentPrefs.getByDomainAndName(
-                this.uri.host, pref, this.loadContext,
-                callback);
-        }),
+    prefs: Class.Memoize(function ()
+        let (self = this) ({
+            /**
+             * Returns a promise for the given preference name.
+             *
+             * @param {string} pref The name of the preference to return.
+             * @returns {Promise<string>}
+             */
+            get: promises.withCallback(function get(callback, pref) {
+                services.contentPrefs.getByDomainAndName(
+                    self.uri.host, pref, self.loadContext,
+                    callback);
+            }),
 
-        /**
-         * Sets a content preference for the given buffer.
-         *
-         * @param {string} pref The preference to set.
-         * @param {string} value The value to store.
-         */
-        set: promises.withCallback(function set(callback, pref, value) {
-            services.contentPrefs.set(
-                this.uri.host, pref, value, this.loadContext,
-                callback);
-        }),
+            /**
+             * Sets a content preference for the given buffer.
+             *
+             * @param {string} pref The preference to set.
+             * @param {string} value The value to store.
+             */
+            set: promises.withCallback(function set(callback, pref, value) {
+                services.contentPrefs.set(
+                    self.uri.host, pref, value, self.loadContext,
+                    callback);
+            }),
 
-        /**
-         * Clear a content preference for the given buffer.
-         *
-         * @param {string} pref The preference to clear.
-         */
-        clear: promises.withCallback(function clear(callback, pref) {
-            services.contentPrefs.removeByDomainAndName(
-                this.uri.domain, pref, this.loadContext, callback);
-        }),
-    })),
+            /**
+             * Clear a content preference for the given buffer.
+             *
+             * @param {string} pref The preference to clear.
+             */
+            clear: promises.withCallback(function clear(callback, pref) {
+                services.contentPrefs.removeByDomainAndName(
+                    self.uri.domain, pref, self.loadContext, callback);
+            }),
+        })),
 
     /**
      * Gets a content preference for the given buffer.

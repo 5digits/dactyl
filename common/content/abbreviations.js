@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2010 by anekos <anekos@snca.net>
-// Copyright (c) 2010-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2010-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -132,7 +132,8 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
      */
     get: function (mode, lhs) {
         let abbrevs = this._store[mode];
-        return abbrevs && Set.has(abbrevs, lhs) ? abbrevs[lhs] : null;
+        return abbrevs && hasOwnProperty(abbrevs, lhs) ? abbrevs[lhs]
+                                                       : null;
     },
 
     /**
