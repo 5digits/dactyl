@@ -826,8 +826,10 @@ var JavaScript = Module("javascript", {
 
             leave: function leave(params) {
                 leave.superapply(this, arguments);
-                if (!params.push)
+                if (!params.push) {
                     modes.delay(function () { modes.pop(); });
+                    Cu.nukeSandbox(this.context);
+                }
             },
 
             updatePrompt: function updatePrompt() {

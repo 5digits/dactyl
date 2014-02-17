@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2011 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2010-2014 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -63,7 +63,7 @@ let resources = [];
 let getURI = null;
 
 let JSMLoader = {
-    SANDBOX: Cu.nukeSandbox && false,
+    SANDBOX: Cu.nukeSandbox,
 
     get addon() addon,
 
@@ -426,10 +426,11 @@ function shutdown(data, reason) {
         JSMLoader.atexit(strReason);
         JSMLoader.cleanup(strReason);
 
+        bootstrap_jsm.require = null;
         if (JSMLoader.SANDBOX)
             Cu.nukeSandbox(bootstrap);
-        bootstrap_jsm.require = null;
-        Cu.unload(BOOTSTRAP);
+        else
+            Cu.unload(BOOTSTRAP);
         bootstrap = null;
         bootstrap_jsm = null;
 

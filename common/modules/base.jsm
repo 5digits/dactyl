@@ -313,7 +313,9 @@ function iterOwnProperties(obj) {
 
 function deprecated(alternative, fn) {
     if (isObject(fn))
-        return Class.Property(iter(fn).map(([k, v]) => [k, callable(v) ? deprecated(alternative, v) : v])
+        return Class.Property(iter(fn).map(([k, v]) => [k,
+                                                        callable(v) ? deprecated(alternative, v)
+                                                                    : v])
                                       .toObject());
 
     let name,
@@ -331,6 +333,8 @@ function deprecated(alternative, fn) {
                         alternative);
         return func.apply(this, arguments);
     }
+    if (func.name)
+        deprecatedMethod.realName = func.name;
 
     return callable(fn) ? deprecatedMethod : Class.Property({
         get: function () deprecatedMethod,
