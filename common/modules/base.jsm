@@ -618,7 +618,9 @@ function isObject(obj) typeof obj === "object" && obj != null || obj instanceof 
  * any window, frame, namespace, or execution context, which
  * is not the case when using (obj instanceof Array).
  */
-var { isArray } = Array;
+var isArray =
+    // This is bloody stupid.
+    function isArray(val) Array.isArray(val) || val && val.constructor && val.constructor.name === "Array";
 
 /**
  * Returns true if and only if its sole argument is an
