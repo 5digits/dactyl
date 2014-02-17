@@ -185,6 +185,7 @@ var Storage = Module("Storage", {
         if (!Services.dactylSession)
             Services.dactylSession = Cu.createObjectIn(sessionGlobal);
         this.session = Services.dactylSession;
+        this.windows = WeakMap();
     },
 
     cleanup: function () {
@@ -287,60 +288,33 @@ var Storage = Module("Storage", {
         return this.newObject(key, ArrayStore, update({ type: Array }, options));
     },
 
-    addObserver: function addObserver(key, callback, ref) {
-        if (ref) {
-            let refs = overlay.getData(ref, "storage-refs");
-            refs.push(callback);
-            var callbackRef = util.weakReference(callback);
-        }
-        else {
-            callbackRef = { get: function () callback };
-        }
+    get observerMaps() {
+        yield this.observers;
+        for (let window of overlay.windows)
+            yield overlay.getData(window, "storage-observers", Object);
+    },
 
-        this.removeDeadObservers();
+    addObserver: function addObserver(key, callback, window) {
+        var { observers } = this;
+        if (window)
+            observers = overlay.getData(window, "storage-observers", Object);
 
-        if (!(key in this.observers))
-            this.observers[key] = [];
+        if (!hasOwnProperty(observers, key))
+            observers[key] = RealSet();
 
-        if (!this.observers[key].some(o => o.callback.get() == callback))
-            this.observers[key].push({ ref: ref && Cu.getWeakReference(ref),
-                                       callback: callbackRef });
+        observers[key].add(callback);
     },
 
     removeObserver: function (key, callback) {
-        this.removeDeadObservers();
-
-        if (!(key in this.observers))
-            return;
-
-        this.observers[key] = this.observers[key].filter(elem => elem.callback.get() != callback);
-        if (this.observers[key].length == 0)
-            delete obsevers[key];
-    },
-
-    removeDeadObservers: function () {
-        function filter(o) {
-            if (!o.callback.get())
-                return false;
-
-            let ref = o.ref && o.ref.get();
-            return ref && !ref.closed && overlay.getData(ref, "storage-refs", null);
-        }
-
-        for (let [key, ary] in Iterator(this.observers)) {
-            this.observers[key] = ary = ary.filter(filter);
-            if (!ary.length)
-                delete this.observers[key];
-        }
+        for (let observers in this.observerMaps)
+            if (key in observers)
+                observers[key].remove(callback);
     },
 
     fireEvent: function fireEvent(key, event, arg) {
-        this.removeDeadObservers();
-
-        if (key in this.observers)
-            // Safe, since we have our own Array object here.
-            for each (let observer in this.observers[key])
-                observer.callback.get()(key, event, arg);
+        for (let observers in this.observerMaps)
+            for (let observer of observers[key] || [])
+                observer(key, event, arg);
 
         if (key in this.keys && this.keys[key].timer)
             this[key].timer.tell();
@@ -392,8 +366,7 @@ var Storage = Module("Storage", {
     }
 }, {
     cleanup: function (dactyl, modules, window) {
-        overlay.setData(window, "storage-refs", null);
-        this.removeDeadObservers();
+        overlay.setData(window, "storage-callbacks", undefined);
     }
 });
 

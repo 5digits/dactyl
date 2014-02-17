@@ -185,8 +185,10 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
     setData: function setData(obj, key, val) {
         let data = this.getData(obj);
+        if (val !== undefined)
+            return data[key] = val;
 
-        return data[key] = val;
+        delete data[key];
     },
 
     overlayWindow: function overlayWindow(url, fn) {
