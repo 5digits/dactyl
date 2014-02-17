@@ -817,6 +817,20 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     events: {
+        beforecustomization: function onbeforecustomization(event) {
+            // Show navigation bar on Australis, where it's not supposed
+            // to be collapsible, and is therefore not handled by
+            // builtin code.
+            if ("CustomizableUI" in window)
+                this.setNodeVisible(document.getElementById("nav-bar"),
+                                    true);
+        },
+
+        aftercustomization: function onaftercustomization(event) {
+            // Restore toolbar states.
+            options["guioptions"] = options["guioptions"];
+        },
+
         click: function onClick(event) {
             let elem = event.originalTarget;
 
