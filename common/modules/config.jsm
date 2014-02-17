@@ -60,7 +60,8 @@ var ConfigBase = Class("ConfigBase", {
 
         this.protocolLoaded = true;
         this.timeout(function () {
-            cache.register("config.dtd", () => util.makeDTD(config.dtd));
+            cache.register("config.dtd", () => util.makeDTD(config.dtd),
+                           true);
         });
 
         services["dactyl:"].pages["dtd"] = () => [null, cache.get("config.dtd")];

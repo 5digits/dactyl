@@ -201,7 +201,7 @@ var Help = Module("Help", {
                        ["toc", { start: "2" }],
 
                        body]);
-        });
+        }, true);
     },
 
     initialize: function initialize() {

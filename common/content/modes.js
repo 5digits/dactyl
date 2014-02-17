@@ -563,9 +563,10 @@ var Modes = Module("modes", {
             return rec(roots);
         }
 
-        cache.register("modes.dtd", () =>
-            util.makeDTD(iter({ "modes.tree": makeTree() },
-                              config.dtd)));
+        cache.register("modes.dtd",
+            () => util.makeDTD(iter({ "modes.tree": makeTree() },
+                                    config.dtd)),
+            true);
     },
     mappings: function initMappings() {
         mappings.add([modes.BASE, modes.NORMAL],

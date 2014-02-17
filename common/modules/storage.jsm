@@ -136,10 +136,12 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
     },
 
     get: function get(key, default_) {
-        return key in this._object  ? this._object[key] :
+        return this.has(key)        ? this._object[key] :
                arguments.length > 1 ? this.set(key, default_) :
                                       undefined;
     },
+
+    has: function has(key) hasOwnProperty(this._object, key),
 
     keys: function keys() Object.keys(this._object),
 
@@ -240,7 +242,7 @@ var Storage = Module("Storage", {
         }
     },
 
-    newObject: function newObject(key, constructor, params) {
+    newObject: function newObject(key, constructor, params={}) {
         if (params == null || !isObject(params))
             throw Error("Invalid argument type");
 
@@ -269,11 +271,11 @@ var Storage = Module("Storage", {
         return this.keys[key];
     },
 
-    newMap: function newMap(key, options) {
+    newMap: function newMap(key, options={}) {
         return this.newObject(key, ObjectStore, options);
     },
 
-    newArray: function newArray(key, options) {
+    newArray: function newArray(key, options={}) {
         return this.newObject(key, ArrayStore, update({ type: Array }, options));
     },
 

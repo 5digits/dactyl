@@ -826,17 +826,18 @@ var Options = Module("options", {
                     opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
             }, window);
 
-            modules.cache.register("options.dtd", () =>
-                util.makeDTD(
-                    iter(([["option", o.name, "default"].join("."),
-                           o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
-                           o.defaultValue === true  ? "on"  :
-                           o.defaultValue === false ? "off" : o.stringDefaultValue]
-                          for (o in self)),
+            modules.cache.register("options.dtd",
+                () => util.makeDTD(
+                        iter(([["option", o.name, "default"].join("."),
+                               o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
+                               o.defaultValue === true  ? "on"  :
+                               o.defaultValue === false ? "off" : o.stringDefaultValue]
+                              for (o in self)),
 
-                         ([["option", o.name, "type"].join("."), o.type] for (o in self)),
+                             ([["option", o.name, "type"].join("."), o.type] for (o in self)),
 
-                         config.dtd)));
+                             config.dtd)),
+                true);
         },
 
         signals: {

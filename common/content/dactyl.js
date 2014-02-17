@@ -1250,7 +1250,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                            ["toc", { start: "2" }],
 
                            body]);
-        });
+        }, true);
 
         cache.register("help/index.xml", function () {
             return '<?xml version="1.0"?>\n' +
@@ -1259,7 +1259,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                            ["dl", { insertafter: name + "-index" },
                                template.map(iter(), util.identity)],
                            "\n\n")]);
-        });
+        }, true);
 
         cache.register("help/gui.xml", function () {
             return '<?xml version="1.0"?>\n' +
@@ -1271,7 +1271,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                       ["dd", {}, val[0]]]
                                    : undefined,
                                "\n")]]);
-        });
+        }, true);
 
         cache.register("help/privacy.xml", function () {
             return '<?xml version="1.0"?>\n' +
@@ -1284,7 +1284,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                [["dt", {}, name],
                                 ["dd", {}, template.linkifyHelp(description, true)]],
                                "\n")]]);
-        });
+        }, true);
     },
     events: function initEvents() {
         events.listen(window, dactyl, "events", true);
