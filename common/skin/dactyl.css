@@ -168,6 +168,11 @@ statusbarpanel {
     visibility: collapse;
 }
 
+#nav-bar {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
+
 .dactyl-commandline-prompt {
     /* background-color: inherit; */
     margin: 0px;

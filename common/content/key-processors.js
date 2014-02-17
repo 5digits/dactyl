@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -107,8 +107,8 @@ var ProcessorStack = Class("ProcessorStack", {
                 this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
         }
         else if (result !== Events.KILL && !this.actions.length &&
-                 !(this.events[0].isReplay || this.passUnknown
-                   || this.modes.some(function (m) m.passEvent(this), this.events[0]))) {
+                 !(this.events[0].isReplay || this.passUnknown ||
+                   this.modes.some(function (m) m.passEvent(this), this.events[0]))) {
             // No patching processors, this isn't a fake, pass-through
             // event, we're not in pass-through mode, and we're not
             // choosing to pass unknown keys. Kill the event and beep.

@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -125,7 +125,7 @@ var Highlights = Module("Highlight", {
         if (/^[[>+: ]/.test(args[1]))
             obj.selector = this.selector(obj.class) + args[1];
         else if (args[1])
-            obj.selector = this.selector(args[1]);
+            obj.selector = this.selector(args[1].replace(/^,/, ""));
 
         if (old && old.value != old.defaultValue)
             obj.value = old.value;

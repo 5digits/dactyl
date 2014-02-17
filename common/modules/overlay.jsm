@@ -113,6 +113,9 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
     cleanup: function cleanup(reason) {
         for (let doc in util.iterDocuments()) {
+            for (let callback in values(this.getData(doc, "cleanup")))
+                util.trapErrors(callback, doc, reason);
+
             for (let elem in values(this.getData(doc, "overlayElements")))
                 if (elem.parentNode)
                     elem.parentNode.removeChild(elem);
@@ -120,9 +123,6 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
             for (let [elem, ns, name, orig, value] in values(this.getData(doc, "overlayAttributes")))
                 if (getAttr(elem, ns, name) === value)
                     setAttr(elem, ns, name, orig);
-
-            for (let callback in values(this.getData(doc, "cleanup")))
-                util.trapErrors(callback, doc, reason);
 
             this.unlisten(doc, true);
 

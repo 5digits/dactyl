@@ -22,6 +22,9 @@ var StatusLine = Module("statusline", {
                 append: [
                     ["vbox", { id: "browser-bottombox", xmlns: "xul" },
                         ["toolbar", { id: "dactyl-addon-bar",
+                                      customizable: true,
+                                      defaultset: "",
+                                      toolboxid: "navigator-toolbox",
                                       toolbarname: /*L*/ "Add-on Bar",
                                       class: "toolbar-primary chromeclass-toolbar",
                                       mode: "icons",
@@ -55,7 +58,7 @@ var StatusLine = Module("statusline", {
                     -moz-appearance: none !important;
                     <padding>
                 }
-                !AddonButton;:-moz-any(#addon-bar, #dactyl-addon-bar) xul|toolbarbutton {
+                !AddonButton;,:-moz-any(#addon-bar, #dactyl-addon-bar) xul|toolbarbutton {
                     -moz-appearance: none !important;
                     padding: 0 !important;
                     border-width: 0px !important;
@@ -115,6 +118,13 @@ var StatusLine = Module("statusline", {
             this.security = content.document.dactylSecurity || "insecure";
         }
         catch (e) {}
+    },
+
+    cleanup: function cleanup(reason) {
+        util.dump("CLEANUP " + reason);
+        util.dump(this.statusBar.id, document.getElementById(this.statusBar.id));
+        if (reason != "unload" && "CustomizableUI" in window)
+            CustomizableUI.unregisterArea(this.statusBar.id, false);
     },
 
     get visible() !this.statusBar.collapsed && !this.statusBar.hidden,
