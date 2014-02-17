@@ -13,6 +13,8 @@ lazyRequire("config", ["config"]);
 lazyRequire("io", ["IO"]);
 lazyRequire("overlay", ["overlay"]);
 
+lazyRequire("resource://gre/modules/osfile.jsm", ["OS"]);
+
 var win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 var myObject = JSON.parse("{}").constructor;
 
@@ -52,7 +54,8 @@ var StoreBase = Class("StoreBase", {
     delete: function delete_() {
         delete storage.keys[this.name];
         delete storage[this.name];
-        storage.infoPath.child(this.name).remove(false);
+        return OS.File.remove(
+            storage.infoPath.child(this.name).path);
     },
 
     save: function () { (self.storage || storage)._saveData(this); },
@@ -215,8 +218,12 @@ var Storage = Module("Storage", {
     _saveData: function saveData(obj) {
         if (obj.privateData && storage.privateMode)
             return;
-        if (obj.store && storage.infoPath)
-            storage.infoPath.child(obj.name).write(obj.serial);
+        if (obj.store && storage.infoPath) {
+            var { path } = storage.infoPath.child(obj.name);
+            return OS.File.writeAtomic(
+                path, obj.serial,
+                { tmpPath: path + ".part" });
+        }
     },
 
     storeForSession: function storeForSession(key, val) {
@@ -238,7 +245,8 @@ var Storage = Module("Storage", {
                 this[key].timer.flush();
             delete this[key];
             delete this.keys[key];
-            this.infoPath.child(key).remove(false);
+            return OS.File.remove(
+                this.infoPath.child(key).path);
         }
     },
 
