@@ -247,6 +247,11 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             if (!("value" in prop) || !callable(prop.value) && !(k in item))
                 Object.defineProperty(item, k, prop);
 
+        function getWindow(obj) {
+            obj = Class.objectGlobal(obj);
+            return obj.window || obj;
+        }
+
         let names = RealSet([name].concat(params.contains || []).map(e => "clear-" + e));
         if (params.action)
             storage.addObserver("sanitizer",
@@ -254,7 +259,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     if (names.has(event))
                         params.action.apply(params, arg);
                 },
-                Class.objectGlobal(params.action));
+                getWindow(params.action));
 
         if (params.privateEnter || params.privateLeave)
             storage.addObserver("private-mode",
@@ -263,7 +268,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     if (meth)
                         meth.call(params);
                 },
-                Class.objectGlobal(params.action));
+                getWindow(params.privateEnter || params.privateLeave));
     },
 
     observers: {

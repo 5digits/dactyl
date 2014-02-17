@@ -89,12 +89,30 @@ var Modules = function Modules(window) {
     Module.list = [];
     Module.constructors = {};
 
-    const create = window.Object.create.bind(window.Object);
+    function newContext(proto, normal, name) {
+        if (normal)
+            return create(proto);
+
+        sandbox = Components.utils.Sandbox(window, { sandboxPrototype: proto || modules,
+                                                     sandboxName: name || ("Dactyl Sandbox " + ++_id),
+                                                     wantXrays: false });
+
+        // Hack:
+        // sandbox.Object = jsmodules.Object;
+        sandbox.File = jsmodules.File;
+        sandbox.Math = jsmodules.Math;
+        sandbox.Set = jsmodules.Set;
+        return sandbox;
+    };
+
 
     const BASES = [BASE, "resource://dactyl-local-content/"];
 
-    jsmodules = Cu.createObjectIn(window);
+    jsmodules = newContext(window, false, "Dactyl `jsmodules`");
     jsmodules.NAME = "jsmodules";
+
+    const create = bind("create", jsmodules.Object);
+
     const modules = update(create(jsmodules), {
         yes_i_know_i_should_not_report_errors_in_these_branches_thanks: [],
 
@@ -130,21 +148,7 @@ var Modules = function Modules(window) {
             }
         },
 
-        newContext: function newContext(proto, normal, name) {
-            if (normal)
-                return create(proto);
-
-            sandbox = Components.utils.Sandbox(window, { sandboxPrototype: proto || modules,
-                                                         sandboxName: name || ("Dactyl Sandbox " + ++_id),
-                                                         wantXrays: false });
-
-            // Hack:
-            // sandbox.Object = jsmodules.Object;
-            sandbox.File = jsmodules.File;
-            sandbox.Math = jsmodules.Math;
-            sandbox.Set = jsmodules.Set;
-            return sandbox;
-        },
+        newContext: newContext,
 
         get ownPropertyValues() array.compact(
                 Object.getOwnPropertyNames(this)
@@ -166,6 +170,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
         const modules = Modules(window);
         modules.moduleManager = this;
         this.modules = modules;
+        this.jsmodules = modules.jsmodules;
 
         window.dactyl = { modules: modules };
 
@@ -225,6 +230,8 @@ overlay.overlayWindow(Object.keys(config.overlays),
 
     cleanup: function cleanup(window) {
         overlay.windows = overlay.windows.filter(w => w != window);
+
+        Cu.nukeSandbox(this.jsmodules);
     },
 
     unload: function unload(window) {

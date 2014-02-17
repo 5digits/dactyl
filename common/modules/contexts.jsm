@@ -151,9 +151,13 @@ var Contexts = Module("contexts", {
             for each (let hive in values(this.groupList.slice()))
                 util.trapErrors("destroy", hive, "shutdown");
 
-            for (let [name, plugin] in iter(this.modules.plugins.contexts))
+            for each (let plugin in this.modules.plugins.contexts) {
                 if (plugin && "onUnload" in plugin && callable(plugin.onUnload))
                     util.trapErrors("onUnload", plugin);
+
+                if (isinstance(plugin, ["Sandbox"]))
+                    util.trapErrors("nukeSandbox", Cu, plugin);
+            }
         },
 
         signals: {
