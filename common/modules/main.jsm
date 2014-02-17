@@ -95,7 +95,7 @@ var Modules = function Modules(window) {
 
         sandbox = Components.utils.Sandbox(window, { sandboxPrototype: proto || modules,
                                                      sandboxName: name || ("Dactyl Sandbox " + ++_id),
-                                                     wantXrays: false });
+                                                     wantXrays: true });
 
         // Hack:
         // sandbox.Object = jsmodules.Object;
