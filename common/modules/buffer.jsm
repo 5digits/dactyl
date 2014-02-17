@@ -85,10 +85,12 @@ var Buffer = Module("Buffer", {
              * @param {string} pref The name of the preference to return.
              * @returns {Promise<string>}
              */
-            get: promises.withCallbacks(function get([resolve], pref) {
+            get: promises.withCallbacks(function get([resolve, reject], pref) {
                 services.contentPrefs.getByDomainAndName(
                     self.uri.spec, pref, self.loadContext,
-                    resolve);
+                    { handleCompletion: () => {},
+                      handleResult: resolve,
+                      handleError: reject });
             }),
 
             /**
@@ -97,10 +99,12 @@ var Buffer = Module("Buffer", {
              * @param {string} pref The preference to set.
              * @param {string} value The value to store.
              */
-            set: promises.withCallbacks(function set([resolve], pref, value) {
+            set: promises.withCallbacks(function set([resolve, reject], pref, value) {
                 services.contentPrefs.set(
                     self.uri.spec, pref, value, self.loadContext,
-                    resolve);
+                    { handleCompletion: () => {},
+                      handleResult: resolve,
+                      handleError: reject });
             }),
 
             /**
@@ -108,9 +112,12 @@ var Buffer = Module("Buffer", {
              *
              * @param {string} pref The preference to clear.
              */
-            clear: promises.withCallbacks(function clear([resolve], pref) {
+            clear: promises.withCallbacks(function clear([resolve, reject], pref) {
                 services.contentPrefs.removeByDomainAndName(
-                    self.uri.spec, pref, self.loadContext, resolve);
+                    self.uri.spec, pref, self.loadContext,
+                    { handleCompletion: () => {},
+                      handleResult: resolve,
+                      handleError: reject });
             })
         })),
 
