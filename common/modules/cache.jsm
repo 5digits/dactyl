@@ -138,9 +138,15 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         }
     }),
 
-    flush: function flush() {
-        this.storage.clear();
-        this.flushDiskCache();
+    flush: function flush(filter) {
+        if (filter) {
+            this.storage.keys().filter(filter)
+                .forEach(bind("remove", this.storage));
+        }
+        else {
+            this.storage.clear();
+            this.flushDiskCache();
+        }
     },
 
     flushDiskCache: function flushDiskCache() {

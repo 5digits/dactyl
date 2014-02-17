@@ -972,8 +972,16 @@ Class.prototype = {
                     util.rehashing && !isinstance(Cu.getGlobalForObject(callback), ["BackstagePass"]))
                 return;
             this.timeouts.splice(this.timeouts.indexOf(timer), 1);
-            util.trapErrors(callback, this);
+            try {
+                callback.call(this);
+            }
+            catch (e) {
+                util.dump("Error invoking timer callback registered at " +
+                          [frame.filename, frame.lineNumber, ""].join(":"));
+                Cu.reportError(e);
+            }
         };
+        let frame = Cs.caller;
         let timer = services.Timer(timeout_notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);
         this.timeouts.push(timer);
         return timer;

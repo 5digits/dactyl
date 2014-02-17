@@ -1366,6 +1366,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         storage.storeForSession("commandlineArgs", args);
         this.timeout(function () {
             this.flushCache();
+            cache.flush(bind("test", /^literal:/));
             this.rehashing = true;
             let addon = config.addon;
             addon.userDisabled = true;
