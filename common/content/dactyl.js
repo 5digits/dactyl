@@ -460,12 +460,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     userEval: function userEval(str, context, fileName, lineNumber) {
-        let ctxt;
-        if (jsmodules.__proto__ != window && jsmodules.__proto__ != XPCNativeWrapper(window) &&
-                jsmodules.isPrototypeOf(context))
-            str = "with (window) { with (modules) { (this.eval || eval)(" + str.quote() + ") } }";
+        let ctxt,
+            info = contexts.context;
 
-        let info = contexts.context;
         if (fileName == null)
             if (info)
                 ({ file: fileName, line: lineNumber, context: ctxt }) = info;
@@ -475,11 +472,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         else if (!context)
             context = ctxt || userContext;
 
-        if (isinstance(context, ["Sandbox"]))
-            return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
-
         if (!context)
             context = userContext || ctxt;
+
+        if (isinstance(context, ["Sandbox"]))
+            return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
 
         if (services.has("dactyl") && services.dactyl.evalInContext)
             return services.dactyl.evalInContext(str, context, fileName, lineNumber);
