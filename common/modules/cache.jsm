@@ -36,7 +36,13 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
                     return [contentType, cache.force(path)];
 
                 let channel = services.StreamChannel(uri);
-                channel.contentStream = cache.cacheReader.getInputStream(path);
+                try {
+                    channel.contentStream = cache.cacheReader.getInputStream(path);
+                }
+                catch (e if e.result = Cr.NS_ERROR_FILE_CORRUPTED) {
+                    cache.flushDiskCache();
+                    throw e;
+                }
                 channel.contentType = contentType;
                 channel.contentCharset = "UTF-8";
                 return channel;
@@ -83,8 +89,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
             }
             catch (e if e.result == Cr.NS_ERROR_FILE_CORRUPTED) {
                 util.reportError(e);
-                this.closeWriter();
-                this.cacheFile.remove(false);
+                this.flushDiskCache();
             }
 
         return this._cacheReader;
@@ -133,8 +138,12 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
 
     flush: function flush() {
         cache.cache = {};
+        this.flushDiskCache();
+    },
+
+    flushDiskCache: function flushDiskCache() {
         if (this.cacheFile.exists()) {
-            this.closeReader();
+            this.closeWriter();
 
             this.flushJAR(this.cacheFile);
             this.cacheFile.remove(false);
@@ -170,8 +179,13 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         util.waitFor(() => !this.inQueue);
 
         if (this.cacheReader && this.cacheReader.hasEntry(name)) {
-            return this.parse(File.readStream(
-                this.cacheReader.getInputStream(name)));
+            try {
+                return this.parse(File.readStream(
+                    this.cacheReader.getInputStream(name)));
+            }
+            catch (e if e.result == Cr.NS_ERROR_FILE_CORRUPTED) {
+                this.flushDiskCache();
+            }
         }
 
         if (hasOwnProperty(this.localProviders, name) && !this.isLocal) {
