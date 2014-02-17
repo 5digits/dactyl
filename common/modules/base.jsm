@@ -547,16 +547,9 @@ function curry(fn, length, self, acc) {
     return curried;
 }
 
-if (curry.bind)
-    var bind = function bind(meth, self, ...args) let (func = callable(meth) ? meth : self[meth])
+var bind = function bind(meth, self, ...args)
+    let (func = callable(meth) ? meth : self[meth])
         func.bind.apply(func, [self].concat(args));
-else
-    var bind = function bind(func, self, ...args) {
-        if (!callable(func))
-            func = self[func];
-
-        return function bound(...args2) func.apply(self, args.concat(args2));
-    };
 
 /**
  * Returns true if both arguments are functions and
