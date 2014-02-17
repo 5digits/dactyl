@@ -55,7 +55,8 @@ var JavaScript = Module("javascript", {
 
     lazyInit: true,
 
-    newContext: function () this.modules.newContext(this.modules.userContext, false, "Dactyl JS Temp Context"),
+    newContext: function () this.modules.newContext(this.modules.userContext, false,
+                                                    "Dactyl JS Temp Context"),
 
     completers: Class.Memoize(() => Object.create(JavaScript.completers)),
 

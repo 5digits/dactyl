@@ -13,6 +13,8 @@ defineModule("main", {
 
 var BASE = "resource://dactyl-content/";
 
+var global = this;
+
 /**
  * @class ModuleBase
  * The base class for all modules.
@@ -99,16 +101,16 @@ var Modules = function Modules(window) {
 
         // Hack:
         // sandbox.Object = jsmodules.Object;
-        sandbox.File = jsmodules.File;
-        sandbox.Math = jsmodules.Math;
-        sandbox.Set = jsmodules.Set;
+        sandbox.File = global.File;
+        sandbox.Math = global.Math;
+        sandbox.Set  = global.Set;
         return sandbox;
     };
 
 
     const BASES = [BASE, "resource://dactyl-local-content/"];
 
-    jsmodules = newContext(window, false, "Dactyl `jsmodules`");
+    var jsmodules = newContext(window, false, "Dactyl `jsmodules`");
     jsmodules.NAME = "jsmodules";
 
     const create = bind("create", jsmodules.Object);
