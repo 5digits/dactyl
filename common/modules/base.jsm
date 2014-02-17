@@ -29,11 +29,6 @@ let { __lookupGetter__, __lookupSetter__, __defineGetter__, __defineSetter__,
 hasOwnProperty = Function.call.bind(hasOwnProperty);
 propertyIsEnumerable = Function.call.bind(propertyIsEnumerable);
 
-if (typeof XPCSafeJSObjectWrapper === "undefined")
-    this.XPCSafeJSObjectWrapper = XPCNativeWrapper;
-
-let getGlobalForObject = Cu.getGlobalForObject || (obj => obj.__parent__);
-
 function require(module_, target) {
     if (/^[A-Za-z0-9]+:/.test(module_))
         return module(module_);
@@ -149,16 +144,55 @@ function require_(obj, name, from, targetName) {
 defineModule("base", {
     // sed -n 's/^(const|var|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
-        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cs", "Cu", "Finished",
-        "Module", "JSMLoader", "RealSet", "Set", "Struct", "StructBase",
-        "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
-        "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable",
-        "ctypes", "curry", "debuggerProperties", "defineModule",
-        "deprecated", "endModule", "forEach", "hasOwnProperty",
-        "isArray", "isGenerator", "isinstance", "isObject", "isString",
-        "isSubclass", "isXML", "iter", "iterAll", "iterOwnProperties",
-        "keys", "literal", "memoize", "modujle", "octal", "properties",
-        "require", "set", "update", "values", "update_"
+        "Cc",
+        "Ci",
+        "Class",
+        "Cr",
+        "Cs",
+        "Cu",
+        "ErrorBase",
+        "Finished",
+        "JSMLoader",
+        "Module",
+        "RealSet",
+        "Set",
+        "Struct",
+        "StructBase",
+        "Timer",
+        "UTF8",
+        "XPCOM",
+        "XPCOMShim",
+        "XPCOMUtils",
+        "array",
+        "bind",
+        "call",
+        "callable",
+        "ctypes",
+        "curry",
+        "defineModule",
+        "deprecated",
+        "endModule",
+        "forEach",
+        "hasOwnProperty",
+        "isArray",
+        "isGenerator",
+        "isObject",
+        "isString",
+        "isSubclass",
+        "isinstance",
+        "iter",
+        "iterAll",
+        "iterOwnProperties",
+        "keys",
+        "literal",
+        "memoize",
+        "modujle",
+        "octal",
+        "properties",
+        "require",
+        "set",
+        "update",
+        "values",
     ]
 });
 
@@ -201,24 +235,9 @@ function literal(/* comment */) {
 }
 
 /**
- * Returns a list of all of the top-level properties of an object, by
- * way of the debugger.
- *
- * @param {object} obj
- * @returns [jsdIProperty]
- */
-function debuggerProperties(obj) {
-    if (loaded.services && services.debugger.isOn) {
-        let res = {};
-        services.debugger.wrapValue(obj).getProperties(res, {});
-        return res.value;
-    }
-}
-
-/**
  * Iterates over the names of all of the top-level properties of an
  * object or, if prototypes is given, all of the properties in the
- * prototype chain below the top. Uses the debugger if possible.
+ * prototype chain below the top.
  *
  * @param {object} obj The object to inspect.
  * @param {boolean} properties Whether to inspect the prototype chain
@@ -230,7 +249,7 @@ function prototype(obj)
     XPCNativeWrapper.unwrap(obj).__proto__ ||
     Object.getPrototypeOf(XPCNativeWrapper.unwrap(obj));
 
-function properties(obj, prototypes, debugger_) {
+function properties(obj, prototypes) {
     let orig = obj;
     let seen = RealSet(["dactylPropertyNames"]);
 
@@ -277,13 +296,7 @@ function properties(obj, prototypes, debugger_) {
     }
 
     for (; obj; obj = prototypes && prototype(obj)) {
-        try {
-            if (!debugger_ || !services.debugger.isOn)
-                var iter = (v for each (v in props(obj)));
-        }
-        catch (e) {}
-        if (!iter)
-            iter = (prop.name.stringValue for (prop in values(debuggerProperties(obj))));
+        var iter = (v for each (v in props(obj)));
 
         for (let key in iter)
             if (!prototypes || !seen.has(key) && obj != orig) {
@@ -603,22 +616,12 @@ function isinstance(object, interfaces) {
 function isObject(obj) typeof obj === "object" && obj != null || obj instanceof Ci.nsISupports;
 
 /**
- * Returns true if obje is an E4X XML object.
- * @deprecated
- */
-function isXML(obj) typeof obj === "xml";
-
-/**
  * Returns true if and only if its sole argument is an
  * instance of the builtin Array type. The array may come from
  * any window, frame, namespace, or execution context, which
  * is not the case when using (obj instanceof Array).
  */
-var isArray =
-    Array.isArray
-        // This is bloody stupid.
-        ? function isArray(val) Array.isArray(val) || val && val.constructor && val.constructor.name === "Array"
-        : function isArray(val) objproto.toString.call(val) == "[object Array]";
+var { isArray } = Array;
 
 /**
  * Returns true if and only if its sole argument is an
@@ -740,33 +743,6 @@ function update(target) {
     }
     return target;
 }
-function update_(target) {
-    for (let i = 1; i < arguments.length; i++) {
-        let src = arguments[i];
-        Object.getOwnPropertyNames(src || {}).forEach(function (k) {
-            let desc = Object.getOwnPropertyDescriptor(src, k);
-            if (desc.value instanceof Class.Property)
-                desc = desc.value.init(k, target) || desc.value;
-
-            try {
-                if (typeof desc.value === "function" && target.__proto__ && !(desc.value instanceof Ci.nsIDOMElement /* wtf? */)) {
-                    let func = desc.value.wrapped || desc.value;
-                    if (!func.superapply) {
-                        func.__defineGetter__("super", function get_super_() Object.getPrototypeOf(target)[k]);
-                        func.superapply = function super_apply(self, args)
-                            let (meth = Object.getPrototypeOf(target)[k])
-                                meth && meth.apply(self, args);
-                        func.supercall = function super_call(self, ...args)
-                            func.superapply(self, args);
-                    }
-                }
-                Object.defineProperty(target, k, desc);
-            }
-            catch (e) {}
-        });
-    }
-    return target;
-}
 
 /**
  * @constructor Class
@@ -812,8 +788,10 @@ function Class(...args) {
             return res !== undefined ? res : self;           \n\
         })',
         "constructor", (name || superclass.className).replace(/\W/g, "_"))
-            .replace("PARAMS", /^function .*?\((.*?)\)/.exec(args[0] && args[0].init || Class.prototype.init)[1]
-                                                           .replace(/\b(self|res|Constructor)\b/g, "$1_")));
+            .replace("PARAMS",
+                     /^function .*?\((.*?)\)/
+                        .exec(args[0] && args[0].init || Class.prototype.init)[1]
+                        .replace(/\b(self|res|Constructor)\b/g, "$1_")));
 
     Constructor.className = name || superclass.className || superclass.name;
 
@@ -842,21 +820,14 @@ function Class(...args) {
     return Constructor;
 }
 
-if (Cu.getGlobalForObject)
-    Class.objectGlobal = function (object) {
-        try {
-            return Cu.getGlobalForObject(object);
-        }
-        catch (e) {
-            return null;
-        }
-    };
-else
-    Class.objectGlobal = function (object) {
-        while (object.__parent__)
-            object = object.__parent__;
-        return object;
-    };
+Class.objectGlobal = function (object) {
+    try {
+        return Cu.getGlobalForObject(object);
+    }
+    catch (e) {
+        return null;
+    }
+};
 
 /**
  * @class Class.Property
@@ -1089,7 +1060,6 @@ Class.makeClosure = function makeClosure() {
         return _closure;
     }
 
-    let x = /commandline/i.test(this);
     iter(properties(this), properties(this, true)).forEach(function (k) {
         if (!__lookupGetter__.call(this, k) && callable(this[k]))
             closure[k] = closure(this[k]);

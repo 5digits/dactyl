@@ -55,8 +55,6 @@ var DOM = Class("DOM", {
 
         if (val == null)
             ;
-        else if (typeof val == "xml" && context instanceof Ci.nsIDOMDocument)
-            this[length++] = DOM.fromXML(val, context, this.nodes);
         else if (DOM.isJSONXML(val)) {
             if (context instanceof Ci.nsIDOMDocument)
                 this[length++] = DOM.fromJSON(val, context, this.nodes);
@@ -1510,21 +1508,6 @@ var DOM = Class("DOM", {
         return str.replace(regexp, m => map[m]);
     },
 
-    /**
-     * Converts an E4X XML literal to a DOM node. Any attribute named
-     * highlight is present, it is transformed into dactyl:highlight,
-     * and the named highlight groups are guaranteed to be loaded.
-     *
-     * @param {Node} node
-     * @param {Document} doc
-     * @param {Object} nodes If present, nodes with the "key" attribute are
-     *     stored here, keyed to the value thereof.
-     * @returns {Node}
-     */
-    fromXML: deprecated("DOM.fromJSON", { get: function fromXML()
-               prefs.get("javascript.options.xml.chrome") !== false
-            && require("dom-e4x").fromXML }),
-
     fromJSON: update(function fromJSON(xml, doc, nodes, namespaces) {
         if (!doc)
             doc = document;
@@ -1540,8 +1523,6 @@ var DOM = Class("DOM", {
 
             if (isinstance(args, ["String", "Number", "Boolean", _]))
                 return doc.createTextNode(args);
-            if (isXML(args))
-                return DOM.fromXML(args, doc, nodes);
             if (isObject(args) && "toDOM" in args)
                 return args.toDOM(doc, namespaces, nodes);
             if (args instanceof Ci.nsIDOMNode)
@@ -1665,11 +1646,6 @@ var DOM = Class("DOM", {
             if (isinstance(args, ["String", "Number", "Boolean", _, DOM.DOMString]))
                 return indent +
                        DOM.escapeHTML(String(args), true);
-
-            if (isXML(args))
-                return indent +
-                       args.toXMLString()
-                           .replace(/^/m, indent);
 
             if (isObject(args) && "toDOM" in args)
                 return indent +

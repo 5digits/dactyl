@@ -480,13 +480,7 @@ var Contexts = Module("contexts", {
 
     getDocs: function getDocs(context) {
         try {
-            if (isinstance(context, ["Sandbox"])) {
-                let info = "INFO" in context && Cu.evalInSandbox("this.INFO instanceof XML ? INFO.toXMLString() : this.INFO", context);
-                return /^</.test(info) ? XML(info) : info;
-            }
             if (DOM.isJSONXML(context.INFO))
-                return context.INFO;
-            if (typeof context.INFO == "xml" && config.haveGecko(null, "14.*"))
                 return context.INFO;
         }
         catch (e) {}

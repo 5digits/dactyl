@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -240,16 +240,12 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                     if (elem = doc.getElementById(String(elem))) {
                         // Urgh. Hack.
                         let namespaces;
-                        if (attrs && !isXML(attrs))
+                        if (attrs)
                             namespaces = iter([k.slice(6), DOM.fromJSON.namespaces[v] || v]
                                               for ([k, v] in Iterator(attrs))
                                               if (/^xmlns(?:$|:)/.test(k))).toObject();
 
-                        let node;
-                        if (isXML(xml))
-                            node = DOM.fromXML(xml, doc, obj.objects);
-                        else
-                            node = DOM.fromJSON(xml, doc, obj.objects, namespaces);
+                        let node = DOM.fromJSON(xml, doc, obj.objects, namespaces);
 
                         if (!(node instanceof Ci.nsIDOMDocumentFragment))
                             savedElems.push(node);
@@ -258,12 +254,6 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                                 savedElems.push(n);
 
                         fn(elem, node);
-
-                        if (isXML(attrs))
-                            // Evilness and such.
-                            let (oldAttrs = attrs) {
-                                attrs = (attr for each (attr in oldAttrs));
-                            }
 
                         for (let attr in attrs || []) {
                             let [ns, localName] = DOM.parseNamespace(attr);

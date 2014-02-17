@@ -81,7 +81,7 @@ var JavaScript = Module("javascript", {
                 yield "wrappedJSObject";
             }
 
-        for (let key in iter(globals, properties(obj, !toplevel, true)))
+        for (let key in iter(globals, properties(obj, !toplevel)))
             if (!seen.has(key)) {
                 seen.add(key);
                 yield key;
@@ -89,7 +89,8 @@ var JavaScript = Module("javascript", {
 
         // Properties aren't visible in an XPCNativeWrapper until
         // they're accessed.
-        for (let key in properties(this.getKey(obj, "wrappedJSObject"), !toplevel, true))
+        for (let key in properties(this.getKey(obj, "wrappedJSObject"),
+                                   !toplevel))
             try {
                 if (key in obj && !seen.has(key)) {
                     seen.add(key);
@@ -638,7 +639,7 @@ var JavaScript = Module("javascript", {
         "ROCSSPrimitiveValue", "RangeError", "ReferenceError", "RegExp",
         "StopIteration", "String", "SyntaxError", "TypeError", "URIError",
         "Uint16Array", "Uint32Array", "Uint8Array", "XML", "XMLHttpProgressEvent",
-        "XMLList", "XMLSerializer", "XPCNativeWrapper", "XPCSafeJSWrapper",
+        "XMLList", "XMLSerializer", "XPCNativeWrapper",
         "XULControllers", "constructor", "decodeURI", "decodeURIComponent",
         "encodeURI", "encodeURIComponent", "escape", "eval", "isFinite", "isNaN",
         "isXMLName", "parseFloat", "parseInt", "undefined", "unescape", "uneval"

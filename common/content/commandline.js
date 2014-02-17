@@ -684,7 +684,7 @@ var CommandLine = Module("commandline", {
      * Displays the multi-line output of a command, preceded by the last
      * executed ex command string.
      *
-     * @param {XML} xml The output as an E4X XML object.
+     * @param {object} xml The output as a JSON XML object.
      */
     commandOutput: function commandOutput(xml) {
         if (!this.command)

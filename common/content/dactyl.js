@@ -216,22 +216,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     applyTriggerObserver: function triggerObserver(type, args) {
         if (type in this._observers)
-            this._observers[type] = this._observers[type].filter(function (callback) {
-                if (callback.get()) {
-                    try {
-                        try {
-                            callback.get().apply(null, args);
-                        }
-                        catch (e if e.message == "can't wrap XML objects") {
-                            // Horrible kludge.
-                            callback.get().apply(null, [String(args[0])].concat(args.slice(1)));
-                        }
-                    }
-                    catch (e) {
-                        dactyl.reportError(e);
-                    }
-                    return true;
-                }
+            this._observers[type] = this._observers[type]
+                                        .filter(callback => {
+                callback = callback.get();
+                if (callback)
+                    util.trapErrors(() => callback.apply(null, args));
             });
     },
 
@@ -1922,7 +1911,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             // dactyl.hideGUI();
 
             if (dactyl.userEval("typeof document", null, "test.js") === "undefined")
-                jsmodules.__proto__ = XPCSafeJSObjectWrapper(window);
+                jsmodules.__proto__ = window;
 
             if (dactyl.commandLineOptions.preCommands)
                 dactyl.commandLineOptions.preCommands.forEach(function (cmd) {

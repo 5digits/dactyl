@@ -1246,7 +1246,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *
      * This is similar to Perl's extended regular expression format.
      *
-     * @param {string|XML} expr The expression to compile into a RegExp.
+     * @param {string} expr The expression to compile into a RegExp.
      * @param {string} flags Flags to apply to the new RegExp.
      * @param {object} tokens The tokens to substitute. @optional
      * @returns {RegExp} A custom regexp object.
