@@ -213,20 +213,9 @@ function literal(/* comment */) {
 
     let file = caller.filename.replace(/.* -> /, "");
     let key = "literal:" + file + ":" + caller.lineNumber;
-    if (hasOwnProperty(literal.locations, key))
-        return literal.locations[key];
-
-    let source = literal.files[file] || File.readURL(file);
-    literal.files[file] = source;
-
-    let match = RegExp("(?:.*\\n){" + (caller.lineNumber - 1) + "}" +
-                       ".*literal\\(/\\*([^]*?)\\*/\\)").exec(source);
-    return literal.locations[key] = match[1];
-
-    // Later...
-    return cache.get(key, function () {
-        let source = cache.get("literal:" + file,
-                               () => util.httpGet(file).responseText);
+    return cache.get(key, function() {
+        let source = literal.files[file] || File.readURL(file);
+        literal.files[file] = source;
 
         let match = RegExp("(?:.*\\n){" + (caller.lineNumber - 1) + "}" +
                            ".*literal\\(/\\*([^]*?)\\*/\\)").exec(source);
