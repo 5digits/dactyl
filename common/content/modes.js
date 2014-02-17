@@ -628,7 +628,8 @@ var Modes = Module("modes", {
             validator: function validator(vals) vals.map(v => v.replace(/^!/, ""))
                                                     .every(k => hasOwnProperty(this.values, k)),
 
-            get values() array.toObject([[m.name.toLowerCase(), m.description] for (m in values(modes._modes)) if (!m.hidden)])
+            get values() array.toObject([[m.name.toLowerCase(), m.description]
+                                         for (m in values(modes._modes)) if (!m.hidden)])
         };
 
         options.add(["passunknown", "pu"],

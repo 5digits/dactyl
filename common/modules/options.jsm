@@ -95,7 +95,9 @@ var Option = Class("Option", {
         return this.globalValue = this.defaultValue;
     },
     set globalValue(val) {
-        options.store.set(this.name, { value: val, time: Date.now() });
+        options.store.set(this.name,
+                          { value: this.parse(this.stringify(val)),
+                            time: Date.now() });
     },
 
     /**
@@ -140,6 +142,9 @@ var Option = Class("Option", {
         if ((scope & Option.SCOPE_GLOBAL) && (values == undefined))
             values = this.globalValue;
 
+        if (hasOwnProperty(this, "_value"))
+            values = this._value;
+
         if (this.getter)
             return util.trapErrors(this.getter, this, values);
 
@@ -169,6 +174,7 @@ var Option = Class("Option", {
         */
         if ((scope & Option.SCOPE_GLOBAL) && !skipGlobal)
             this.globalValue = newValues;
+        this._value = newValues;
 
         this.hasChanged = true;
         this.setFrom = null;
