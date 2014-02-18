@@ -6,9 +6,10 @@
 
 var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
-var Cs = Proxy(Components.stack, {
-    get: function Cs_get(target, prop) Components.stack.caller[prop]
-});
+if (typeof Proxy == "function")
+    var Cs = Proxy(Components.stack, {
+        get: function Cs_get(target, prop) Components.stack.caller[prop]
+    });
 
 function module(url) {
     let obj = {};
@@ -981,7 +982,7 @@ Class.prototype = {
                 Cu.reportError(e);
             }
         };
-        let frame = Cs.caller;
+        let frame = Components.stack.caller;
         let timer = services.Timer(timeout_notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);
         this.timeouts.push(timer);
         return timer;
