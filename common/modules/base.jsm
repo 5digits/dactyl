@@ -1419,7 +1419,7 @@ function iter(obj, iface) {
                 for (let j in iter(args[i]))
                     yield j;
         })();
-    else if (isinstance(obj, ["Iterator", "Generator"]))
+    else if (isinstance(obj, ["Iterator", "Generator", "Array"]))
         ;
     else if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
         res = array.iterItems(obj);
