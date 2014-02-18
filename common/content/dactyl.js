@@ -1634,7 +1634,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 if (args["+purgecaches"])
                     cache.flush();
 
-                util.delay(function () { util.rehash(args) });
+                util.delay(() => { util.rehash(args) });
             },
             {
                 argCount: "0", // FIXME

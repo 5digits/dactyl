@@ -1409,10 +1409,6 @@ function iter(obj, iface) {
     if (arguments.length == 2 && iface instanceof Ci.nsIJSIID)
         return iter(obj).map(item => item.QueryInterface(iface));
 
-    if (isinstance(obj, ["Map Iterator"]))
-        // This is stupid.
-        obj = { __iterator__: (function () this).bind(obj) };
-
     let args = arguments;
     let res = Iterator(obj);
 
@@ -1424,6 +1420,17 @@ function iter(obj, iface) {
         })();
     else if (isinstance(obj, ["Iterator", "Generator"]))
         ;
+    else if (isinstance(obj, ["Map Iterator"]))
+        // This is stupid.
+        res = (function () {
+            for (;;) {
+                let { value, done } = obj.next();
+                if (done)
+                    return;
+
+                yield value;
+            }
+        })();
     else if (isinstance(obj, ["Map"]))
         // This is stupid.
         res = (r for (r of obj));
@@ -1603,6 +1610,7 @@ const Iter = Class("Iter", {
 
     __iterator__: function () this.iter
 });
+iter.Iter = Iter;
 
 /**
  * Array utility methods.
