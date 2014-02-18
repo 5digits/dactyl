@@ -121,8 +121,6 @@ var StatusLine = Module("statusline", {
     },
 
     cleanup: function cleanup(reason) {
-        util.dump("CLEANUP " + reason);
-        util.dump(this.statusBar.id, document.getElementById(this.statusBar.id));
         if (reason != "unload" && "CustomizableUI" in window)
             CustomizableUI.unregisterArea(this.statusBar.id, false);
     },

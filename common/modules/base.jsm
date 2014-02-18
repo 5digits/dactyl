@@ -1405,6 +1405,7 @@ function octal(decimal) parseInt(decimal, 8);
  * @param {nsIJSIID} iface The interface to which to query all elements.
  * @returns {Generator}
  */
+let _iterator = "@@iterator" in [] ? "@@iterator" : "iterator";
 function iter(obj, iface) {
     if (arguments.length == 2 && iface instanceof Ci.nsIJSIID)
         return iter(obj).map(item => item.QueryInterface(iface));
@@ -1420,20 +1421,10 @@ function iter(obj, iface) {
         })();
     else if (isinstance(obj, ["Iterator", "Generator"]))
         ;
-    else if (isinstance(obj, ["Map Iterator"]))
-        // This is stupid.
-        res = (function () {
-            for (;;) {
-                let { value, done } = obj.next();
-                if (done)
-                    return;
-
-                yield value;
-            }
-        })();
-    else if (isinstance(obj, ["Map"]))
-        // This is stupid.
-        res = (r for (r of obj));
+    else if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
+        res = array.iterItems(obj);
+    else if (_iterator in obj && callable(obj[_iterator]) && !("__iterator__" in obj))
+        res = (x for (x of obj));
     else if (ctypes && ctypes.CData && obj instanceof ctypes.CData) {
         while (obj.constructor instanceof ctypes.PointerType)
             obj = obj.contents;
@@ -1447,8 +1438,6 @@ function iter(obj, iface) {
         else
             return iter({});
     }
-    else if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
-        res = array.iterItems(obj);
     else if (Ci.nsIDOMNamedNodeMap && obj instanceof Ci.nsIDOMNamedNodeMap ||
              Ci.nsIDOMMozNamedAttrMap && obj instanceof Ci.nsIDOMMozNamedAttrMap)
         res = (function () {
