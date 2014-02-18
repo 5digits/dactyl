@@ -219,8 +219,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             this._observers[type] = this._observers[type]
                                         .filter(callback => {
                 callback = callback.get();
-                if (callback)
+                if (callback) {
                     util.trapErrors(() => callback.apply(null, args));
+                    return true;
+                }
             });
     },
 
