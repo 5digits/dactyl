@@ -26,7 +26,9 @@
         "{16dc34f7-6d22-4aa4-a67f-2921fb5dcb69}": {
             "path": "components/commandline-handler.js",
             "contract": "@mozilla.org/commandlinehandler/general-startup;1?type=dactyl",
-            "category": ["command-line-handler", "m-dactyl"]
+            "categories": {
+                "command-line-handler": "m-dactyl"
+            }
         }
     },
 

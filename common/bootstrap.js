@@ -221,10 +221,11 @@ function init() {
     if (!manifest.categories)
         manifest.categories = [];
 
-    for (let [classID, { contract, path, category }] of Iterator(manifest.components || {})) {
+    for (let [classID, { contract, path, categories }] of Iterator(manifest.components || {})) {
         components[classID] = new FactoryProxy(getURI(path).spec, classID, contract);
-        if (category)
-            manifest.categories.push([category[0], category[1], contract]);
+        if (categories)
+            for (let [category, id] in Iterator(categories))
+                manifest.categories.push([category, id, contract]);
     }
 
     for (let [category, id, value] of manifest.categories) {
