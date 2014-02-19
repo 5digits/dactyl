@@ -275,7 +275,7 @@ var Highlights = Module("Highlight", {
      * If Star is provided, the style is applied as an agent sheet.
      *
      * The new styles are lazily activated unless Bang or *eager* is
-     * provided. See {@link Util#xmlToDom}.
+     * provided.
      *
      * @param {string} css The rules to load. See {@link Highlights#css}.
      * @param {boolean} eager When true, load all provided rules immediately.
