@@ -252,20 +252,11 @@ function init() {
     }
     bootstrap.require = JSMLoader.load("base").require;
 
-    // Flush the cache if necessary, just to be paranoid
     let pref = "extensions.dactyl.cacheFlushCheck";
     let val  = addon.version;
     if (!Services.prefs.prefHasUserValue(pref) || Services.prefs.getCharPref(pref) != val) {
         var cacheFlush = true;
-        Services.obs.notifyObservers(null, "startupcache-invalidate", "");
         Services.prefs.setCharPref(pref, val);
-    }
-
-    try {
-        //JSMLoader.load("disable-acr").init(addon.id);
-    }
-    catch (e) {
-        reportError(e);
     }
 
     Services.obs.notifyObservers(null, "dactyl-rehash", null);
@@ -408,13 +399,6 @@ function shutdown(data, reason) {
     debug("bootstrap: shutdown " + strReason);
 
     if (reason != APP_SHUTDOWN) {
-        try {
-            //JSMLoader.load("disable-acr").cleanup(addon.id);
-        }
-        catch (e) {
-            reportError(e);
-        }
-
         if (~[ADDON_UPGRADE, ADDON_DOWNGRADE, ADDON_UNINSTALL].indexOf(reason))
             Services.obs.notifyObservers(null, "dactyl-purge", null);
 
