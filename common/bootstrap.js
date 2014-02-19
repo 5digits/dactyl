@@ -57,9 +57,7 @@ let addonData = null;
 let basePath = null;
 let bootstrap;
 let bootstrap_jsm;
-let categories = [];
 let components = {};
-let resources = [];
 let getURI = null;
 
 let JSMLoader = {
@@ -228,15 +226,12 @@ function init() {
                 manifest.categories.push([category, id, contract]);
     }
 
-    for (let [category, id, value] of manifest.categories) {
+    for (let [category, id, value] of manifest.categories)
         categoryManager.addCategoryEntry(category, id, value,
                                          false, true);
-        categories.push([category, id]);
-    }
 
     for (let [pkg, path] in Iterator(manifest.resources || {})) {
         moduleName = moduleName || pkg;
-        resources.push(pkg);
         resourceProto.setSubstitution(pkg, getURI(path));
     }
 
@@ -416,9 +411,9 @@ function shutdown(data, reason) {
         bootstrap = null;
         bootstrap_jsm = null;
 
-        for each (let [category, entry] in categories)
+        for each (let [category, entry] in JSMLoader.config.categories)
             categoryManager.deleteCategoryEntry(category, entry, false);
-        for each (let resource in resources)
+        for (let resource in JSMLoader.config.resources)
             resourceProto.setSubstitution(resource, null);
     }
 }
