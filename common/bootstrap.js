@@ -240,7 +240,7 @@ function init() {
         resourceProto.setSubstitution(pkg, getURI(path));
     }
 
-    JSMLoader.config = JSON.parse(httpGet("resource://dactyl-local/config.json").responseText);
+    JSMLoader.config = manifest;
 
     bootstrap_jsm = module(BOOTSTRAP);
     if (!JSMLoader.SANDBOX)
