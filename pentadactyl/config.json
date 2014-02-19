@@ -9,6 +9,27 @@
         "resource://dactyl/"
     ],
 
+    "resources": {
+        "dactyl":             "../common/modules/",
+        "dactyl-common":      "../common/",
+        "dactyl-content":     "../common/content/",
+        "dactyl-skin":        "../common/skin/",
+        "dactyl-locale":      "../common/locale/",
+
+        "dactyl-local":         "./",
+        "dactyl-local-content": "content/",
+        "dactyl-local-skin":    "skin/",
+        "dactyl-local-locale":  "locale/"
+    },
+
+    "components": {
+        "{16dc34f7-6d22-4aa4-a67f-2921fb5dcb69}": {
+            "path": "components/commandline-handler.js",
+            "contract": "@mozilla.org/commandlinehandler/general-startup;1?type=dactyl",
+            "category": ["command-line-handler", "m-dactyl"]
+        }
+    },
+
     "autocommands": {
         "BookmarkAdd":      "Triggered after a page is bookmarked",
         "BookmarkChange":   "Triggered after a page's bookmark is changed",

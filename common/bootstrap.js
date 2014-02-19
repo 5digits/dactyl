@@ -215,32 +215,28 @@ let JSMLoader = {
 function init() {
     debug("bootstrap: init");
 
-    let manifestURI = getURI("chrome.manifest");
-    let manifest = httpGet(manifestURI)
-            .responseText
-            .replace(/#(resource)#/g, "$1")
-            .replace(/^\s*|\s*$|#.*/g, "")
-            .replace(/^\s*\n/gm, "");
+    let manifest = JSON.parse(httpGet(getURI("config.json"))
+                                .responseText);
 
-    for each (let line in manifest.split("\n")) {
-        let fields = line.split(/\s+/);
-        switch (fields[0]) {
-        case "category":
-            categoryManager.addCategoryEntry(fields[1], fields[2], fields[3], false, true);
-            categories.push([fields[1], fields[2]]);
-            break;
-        case "component":
-            components[fields[1]] = new FactoryProxy(getURI(fields[2]).spec, fields[1]);
-            break;
-        case "contract":
-            components[fields[2]].contractID = fields[1];
-            break;
+    if (!manifest.categories)
+        manifest.categories = [];
 
-        case "resource":
-            moduleName = moduleName || fields[1];
-            resources.push(fields[1]);
-            resourceProto.setSubstitution(fields[1], getURI(fields[2]));
-        }
+    for (let [classID, { contract, path, category }] of Iterator(manifest.components || {})) {
+        components[classID] = new FactoryProxy(getURI(path).spec, classID, contract);
+        if (category)
+            manifest.categories.push([category[0], category[1], contract]);
+    }
+
+    for (let [category, id, value] of manifest.categories) {
+        categoryManager.addCategoryEntry(category, id, value,
+                                         false, true);
+        categories.push([category, id]);
+    }
+
+    for (let [pkg, path] in Iterator(manifest.resources || {})) {
+        moduleName = moduleName || pkg;
+        resources.push(pkg);
+        resourceProto.setSubstitution(pkg, getURI(path));
     }
 
     JSMLoader.config = JSON.parse(httpGet("resource://dactyl-local/config.json").responseText);
@@ -381,9 +377,10 @@ function startup(data, reason) {
  * @param {string} url The URL of the module housing the real factory.
  * @param {string} classID The CID of the class this factory represents.
  */
-function FactoryProxy(url, classID) {
+function FactoryProxy(url, classID, contractID) {
     this.url = url;
     this.classID = Components.ID(classID);
+    this.contractID = contractID;
 }
 FactoryProxy.prototype = {
     QueryInterface: XPCOMUtils.generateQI(Ci.nsIFactory),
