@@ -168,6 +168,17 @@ statusbarpanel {
     visibility: collapse;
 }
 
+:-moz-any(#addon-bar, #dactyl-addon-bar) .toolbarbutton-1 > xul|dropmarker {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+#dactyl-addon-bar .toolbarbutton-1 > xul|dropmarker::after {
+    content: "▾";
+    color: white;
+    font-size: 18px;
+}
+
 #nav-bar {
     padding-top: 0px !important;
     padding-bottom: 0px !important;

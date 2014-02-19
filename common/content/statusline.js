@@ -42,8 +42,8 @@ var StatusLine = Module("statusline", {
                 #status-bar, #dactyl-status-bar { margin-top: 0 !important; }
                 #dactyl-status-bar { min-height: 0 !important; }
                 :-moz-any(#addon-bar, #dactyl-addon-bar) > statusbar { -moz-box-flex: 1 }
-                #addon-bar > #addonbar-closebutton { visibility: collapse; }
                 :-moz-any(#addon-bar, #dactyl-addon-bar) > xul|toolbarspring { visibility: collapse; }
+                #addon-bar > #addonbar-closebutton { visibility: collapse; }
             */));
 
             overlay.overlayWindow(window, {
@@ -54,6 +54,8 @@ var StatusLine = Module("statusline", {
             highlight.loadCSS(util.compileMacro(literal(/*
                 !AddonBar;#addon-bar,#dactyl-addon-bar {
                     padding-left: 0 !important;
+                    padding-top: 0 !important;
+                    padding-bottom: 0 !important;
                     min-height: 18px !important;
                     -moz-appearance: none !important;
                     <padding>
