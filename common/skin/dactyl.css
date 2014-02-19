@@ -177,6 +177,7 @@ statusbarpanel {
     content: "▾";
     color: white;
     font-size: 18px;
+    line-height: 18px;
 }
 
 #nav-bar {
@@ -235,6 +236,29 @@ statusbarpanel {
     background-size: 30px 24px !important;
     max-height: 24px !important;
     min-height: 24px !important;
+}
+
+#PanelUI-button,
+#PanelUI-menu-button,
+#nav-bar-customization-target > .toolbarbutton-1,
+#nav-bar-customization-target > .toolbarbutton-1 > xul|toolbarbutton {
+    padding: 0 !important;
+}
+
+#nav-bar-customization-target > xul|toolbaritem > .toolbarbutton-1 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+#nav-bar-customization-target > .toolbarbutton-1,
+#nav-bar-customization-target > .toolbarbutton-1 > xul|dropmarker > xul|image {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    max-height: 24px !important;
+}
+
+#nav-bar-customization-target #urlbar {
+    margin-bottom: 0 !important;
 }
 
 }
