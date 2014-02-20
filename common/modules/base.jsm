@@ -977,9 +977,14 @@ Class.prototype = {
                 callback.call(this);
             }
             catch (e) {
-                util.dump("Error invoking timer callback registered at " +
-                          [frame.filename, frame.lineNumber, ""].join(":"));
-                Cu.reportError(e);
+                try {
+                    util.dump("Error invoking timer callback registered at " +
+                              [frame.filename, frame.lineNumber, ""].join(":"));
+                    util.reportError(e);
+                }
+                catch (e) {
+                    Cu.reportError(e);
+                }
             }
         };
         let frame = Components.stack.caller;

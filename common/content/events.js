@@ -875,19 +875,23 @@ var Events = Module("events", {
             let haveInput = modes.stack.some(m => m.main.input);
 
             if (DOM(elem || win).isEditable) {
-                if (!haveInput)
-                    if (!isinstance(modes.main, [modes.INPUT, modes.TEXT_EDIT, modes.VISUAL]))
-                        if (options["insertmode"])
-                            modes.push(modes.INSERT);
-                        else {
-                            modes.push(modes.TEXT_EDIT);
-                            if (elem.selectionEnd - elem.selectionStart > 0)
-                                modes.push(modes.VISUAL);
-                        }
+                let e = elem || win;
+                if (!(e instanceof Ci.nsIDOMWindow &&
+                        DOM(e.document.activeElement).style.MozUserModify != "read-write")) {
+                    if (!haveInput)
+                        if (!isinstance(modes.main, [modes.INPUT, modes.TEXT_EDIT, modes.VISUAL]))
+                            if (options["insertmode"])
+                                modes.push(modes.INSERT);
+                            else {
+                                modes.push(modes.TEXT_EDIT);
+                                if (elem.selectionEnd - elem.selectionStart > 0)
+                                    modes.push(modes.VISUAL);
+                            }
 
-                if (hasHTMLDocument(win))
-                    buffer.lastInputField = elem || win;
-                return;
+                    if (hasHTMLDocument(win))
+                        buffer.lastInputField = elem || win;
+                    return;
+                }
             }
 
             if (elem && Events.isInputElement(elem)) {
@@ -969,7 +973,7 @@ var Events = Module("events", {
     },
 
     isInputElement: function isInputElement(elem) {
-        return DOM(elem).isEditable ||
+        return elem instanceof Ci.nsIDOMElement && DOM(elem).isEditable ||
                isinstance(elem, [Ci.nsIDOMHTMLEmbedElement,
                                  Ci.nsIDOMHTMLObjectElement,
                                  Ci.nsIDOMHTMLSelectElement]);
