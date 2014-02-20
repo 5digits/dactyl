@@ -177,6 +177,10 @@ xpi: $(CHROME)
 	       -f $(BASE)/process_manifest.awk \
 	       "$(TOP)/chrome.manifest" >"$(XPI_PATH)/chrome.manifest"
 
+	$(AWK) -v 'name=$(NAME)' -v 'suffix=$(MANGLE)' \
+	       -f $(BASE)/process_config.awk \
+	       "$(TOP)/config.json" >"$(XPI_PATH)/config.json"
+
 	version="$(VERSION)"; 			\
 	hg root >/dev/null 2>&1 && 		\
 	case "$$version" in			\

@@ -309,7 +309,9 @@ function updateVersion() {
         // Disable automatic updates when switching to nightlies,
         // restore the default action when switching to stable.
         if (!config.lastVersion || isDev(config.lastVersion) != isDev(addon.version))
-            addon.applyBackgroundUpdates = AddonManager[isDev(addon.version) ? "AUTOUPDATE_DISABLE" : "AUTOUPDATE_DEFAULT"];
+            addon.applyBackgroundUpdates =
+                AddonManager[isDev(addon.version) ? "AUTOUPDATE_DISABLE"
+                                                  : "AUTOUPDATE_DEFAULT"];
     }
     catch (e) {
         reportError(e);
