@@ -458,6 +458,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     should be loaded.
      */
     loadScript: function loadScript(uri, context) {
+        let prefix = "literal:" + uri + ":";
+        cache.flush(s => s.indexOf(prefix) == 0);
+        delete literal.files[uri];
         JSMLoader.loadSubScript(uri, context, File.defaultEncoding);
     },
 
