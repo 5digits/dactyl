@@ -378,6 +378,9 @@ function values(obj) iter(function values() {
     else if (isinstance(obj, ["Generator", "Iterator", Iter]))
         for (let k in obj)
             yield k;
+    else if (iter.iteratorProp in obj)
+        for (let v of obj)
+            yield v;
     else
         for (var k in obj)
             if (hasOwnProperty(obj, k))

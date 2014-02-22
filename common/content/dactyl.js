@@ -1209,7 +1209,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @property {[Window]} Returns an array of all the host application's
      *     open windows.
      */
-    get windows() [win for (win in iter(services.windowMediator.getEnumerator("navigator:browser"))) if (win.dactyl)],
+    get windows() [w for (w of overlay.windows)]
 
 }, {
     toolbarHidden: function hidden(elem) (elem.getAttribute("autohide") || elem.getAttribute("collapsed")) == "true"
@@ -1591,7 +1591,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function (args) {
                 if (dactyl.has("tabs") && tabs.remove(tabs.getTab(), 1, false))
                     return;
-                else if (dactyl.windows.length > 1)
+                else if (dactyl.windows.size > 1)
                     window.close();
                 else
                     dactyl.quit(false, args.bang);

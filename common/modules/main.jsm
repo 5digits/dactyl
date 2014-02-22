@@ -231,7 +231,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
     },
 
     cleanup: function cleanup(window) {
-        overlay.windows = overlay.windows.filter(w => w != window);
+        overlay.windows.remove(window);
 
         Cu.nukeSandbox(this.jsmodules);
     },
@@ -252,7 +252,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
 
         defineModule.loadLog.push("Loaded in " + (Date.now() - this.startTime) + "ms");
 
-        overlay.windows = array.uniq(overlay.windows.concat(window), true);
+        overlay.windows.add(window);
     },
 
     loadModule: function loadModule(module, prereq, frame) {

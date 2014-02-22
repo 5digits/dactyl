@@ -404,19 +404,22 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
     get activeModules() this.activeWindow && this.activeWindow.dactyl.modules,
 
-    get modules() this.windows.map(w => w.dactyl.modules),
+    get modules() [w.dactyl.modules for (w of this.windows)],
 
     /**
      * The most recently active dactyl window.
      */
-    get activeWindow() this.windows[0],
+    get activeWindow() {
+        let win = this._activeWindow && this._activeWindow.get();
+        return this.windows.has(win) && win;
+    },
 
-    set activeWindow(win) this.windows = [win].concat(this.windows.filter(w => w != win)),
+    set activeWindow(win) this._activeWindow = util.weakReference(win),
 
     /**
      * A list of extant dactyl windows.
      */
-    windows: Class.Memoize(() => [])
+    windows: Class.Memoize(() => RealSet())
 });
 
 endModule();
