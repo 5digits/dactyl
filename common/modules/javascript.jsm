@@ -348,7 +348,7 @@ var JavaScript = Module("javascript", {
         else {
             base.quote = [last, text => util.escapeString(text, ""), last];
             if (prefix)
-                base.filters.push(item => item.item.indexOf(prefix) === 0);
+                base.filters.push(item => item.item.startsWith(prefix));
         }
 
         if (!compl) {

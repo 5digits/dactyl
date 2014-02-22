@@ -267,7 +267,7 @@ var Abbreviations = Module("abbreviations", {
         let hives = (hives || this.userHives).filter(h => !h.empty);
 
         function abbrevs(hive)
-            hive.merged.filter(ab => (ab.inModes(modes) && ab.lhs.indexOf(lhs) == 0));
+            hive.merged.filter(ab => (ab.inModes(modes) && ab.lhs.startsWith(lhs)));
 
         let list = ["table", {},
                 ["tr", { highlight: "Title" },

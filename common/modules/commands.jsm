@@ -764,7 +764,7 @@ var Commands = Module("commands", {
                 return "";
             }
             // TODO: allow matching of aliases?
-            function cmds(hive) hive._list.filter(cmd => cmd.name.indexOf(filter || "") == 0)
+            function cmds(hive) hive._list.filter(cmd => cmd.name.startsWith(filter || ""))
 
             let hives = (hives || this.userHives).map(h => [h, cmds(h)])
                                                  .filter(([h, c]) => c.length);
@@ -1067,7 +1067,7 @@ var Commands = Module("commands", {
                 if (!onlyArgumentsRemaining) {
                     for (let [, opt] in Iterator(options)) {
                         for (let [, optname] in Iterator(opt.names)) {
-                            if (sub.indexOf(optname) == 0) {
+                            if (sub.startsWith(optname)) {
                                 let count = 0;
                                 let invalid = false;
                                 let arg, quote, quoted;

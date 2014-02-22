@@ -358,7 +358,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                 delete desc.writable;
                 desc.get = function get() value;
                 desc.set = function set(val) {
-                    if (!callable(val) || Function.prototype.toString(val).indexOf(sentinel) < 0)
+                    if (!callable(val) || !Function.prototype.toString(val).contains(sentinel))
                         Class.replaceProperty(this, k, val);
                     else {
                         let package_ = util.newURI(Components.stack.caller.filename).host;

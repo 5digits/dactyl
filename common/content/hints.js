@@ -695,7 +695,7 @@ var HintSession = Class("HintSession", CommandMode, {
     updateValidNumbers: function updateValidNumbers(always) {
         let string = this.getHintString(this.hintNumber);
         for (let hint in values(this.validHints))
-            hint.valid = always || hint.span.getAttribute("number").indexOf(string) == 0;
+            hint.valid = always || hint.span.getAttribute("number").startsWith(string);
     },
 
     tab: function tab(previous) {
@@ -1071,7 +1071,7 @@ var Hints = Module("hints", {
                 mappings.popCommand();
             },
             onChange: function (arg) {
-                if (Object.keys(hints.modes).some(m => m != arg && m.indexOf(arg) == 0))
+                if (Object.keys(hints.modes).some(m => m != arg && m.startsWith(arg)))
                     return;
 
                 this.accepted = true;

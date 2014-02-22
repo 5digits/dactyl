@@ -482,7 +482,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 return obj.res;
             }
 
-            if (pattern.indexOf("{") == -1)
+            if (!pattern.contains("{"))
                 return [pattern];
 
             let res = [];
@@ -516,7 +516,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             rec([]);
             return res;
         }
-        catch (e if e.message && ~e.message.indexOf("res is undefined")) {
+        catch (e if e.message && e.message.contains("res is undefined")) {
             // prefs.safeSet() would be reset on :rehash
             prefs.set("javascript.options.methodjit.chrome", false);
             util.dactyl.warn(_(UTF8("error.damnYouJägermonkey")));
@@ -544,7 +544,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {string}
      */
     dequote: function dequote(pattern, chars)
-        pattern.replace(/\\(.)/, (m0, m1) => chars.indexOf(m1) >= 0 ? m1 : m0),
+        pattern.replace(/\\(.)/, (m0, m1) => chars.contains(m1) ? m1 : m0),
 
     /**
      * Returns the nsIDocShell for the given window.
@@ -1110,9 +1110,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         function rec(data, level, seen) {
             if (isObject(data)) {
-                if (~seen.indexOf(data))
+                seen = RealSet(seen);
+                if (seen.add(data))
                     throw Error("Recursive object passed");
-                seen = seen.concat([data]);
             }
 
             let prefix = level + INDENT;
@@ -1160,7 +1160,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
 
         let res = [];
-        rec(data, "", []);
+        rec(data, "", RealSet());
         return res.join("");
     },
 

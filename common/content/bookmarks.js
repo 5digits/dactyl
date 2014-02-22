@@ -656,7 +656,7 @@ var Bookmarks = Module("bookmarks", {
                          keyword, true);
 
             let item = keywords[keyword];
-            if (item && item.url.indexOf("%s") > -1)
+            if (item && item.url.contains("%s"))
                 context.fork("keyword/" + keyword, keyword.length + space.length, null, function (context) {
                     context.format = history.format;
                     context.title = [/*L*/keyword + " Quick Search"];
@@ -669,7 +669,7 @@ var Bookmarks = Module("bookmarks", {
                         return history.get({ uri: util.newURI(begin), uriIsPrefix: true }).map(function (item) {
                             let rest = item.url.length - end.length;
                             let query = item.url.substring(begin.length, rest);
-                            if (item.url.substr(rest) == end && query.indexOf("&") == -1)
+                            if (item.url.substr(rest) == end && query.contains("&"))
                                 try {
                                     item.url = decodeURIComponent(query.replace(/#.*/, "").replace(/\+/g, " "));
                                     return item;
@@ -718,14 +718,14 @@ var Bookmarks = Module("bookmarks", {
                     return;
 
                 let words = ctxt.filter.toLowerCase().split(/\s+/g);
-                ctxt.completions = ctxt.completions.filter(i => words.every(w => i.toLowerCase().indexOf(w) >= 0));
+                ctxt.completions = ctxt.completions.filter(i => words.every(w => i.toLowerCase().contains(w)));
 
                 ctxt.hasItems = ctxt.completions.length;
                 ctxt.incomplete = true;
                 ctxt.cache.request = bookmarks.getSuggestions(name, ctxt.filter);
                 ctxt.cache.request.then(function (compl) {
                     ctxt.incomplete = false;
-                    ctxt.completions = array.uniq(ctxt.completions.filter(c => compl.indexOf(c) >= 0)
+                    ctxt.completions = array.uniq(ctxt.completions.filter(c => compl.contains(c))
                                                       .concat(compl), true);
                 }, Cu.reportError);
             });

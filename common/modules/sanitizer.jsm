@@ -399,7 +399,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         for (let c in iter(services.cookies, Ci.nsICookie2))
             if (!host || util.isSubdomain(c.rawHost, host) ||
                     c.host[0] == "." && c.host.length < host.length
-                        && host.indexOf(c.host) == host.length - c.host.length)
+                        && host.endsWith(c.host))
                 yield c;
 
     },
@@ -597,7 +597,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     completion: function initCompletion(dactyl, modules, window) {
         modules.completion.visibleHosts = function completeHosts(context) {
             let res = util.visibleHosts(window.content);
-            if (context.filter && !res.some(host => host.indexOf(context.filter) >= 0))
+            if (context.filter && !res.some(host => host.contains(context.filter)))
                 res.push(context.filter);
 
             context.title = ["Domain"];

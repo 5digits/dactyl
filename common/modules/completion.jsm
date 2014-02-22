@@ -512,7 +512,7 @@ var CompletionContext = Class("CompletionContext", {
                 filtered.sort(this.compare);
                 if (!this.anchored) {
                     let filter = this.filter;
-                    filtered.sort(function s(a, b) (b.text.indexOf(filter) == 0) - (a.text.indexOf(filter) == 0));
+                    filtered.sort(function s(a, b) b.text.startsWith(filter) - a.text.startsWith(filter));
                 }
             }
 
@@ -549,7 +549,7 @@ var CompletionContext = Class("CompletionContext", {
             var substrings = [text];
         }
         else {
-            var compare = function compare(text, s) text.indexOf(s) >= 0;
+            var compare = function compare(text, s) text.contains(s);
             var substrings = [];
             let start = 0;
             let idx;
@@ -970,7 +970,7 @@ var Completion = Module("completion", {
                 context.generate = function generate_() {
                     return [[k.substr(services.ABOUT.length), ""]
                             for (k in Cc)
-                            if (k.indexOf(services.ABOUT) == 0)];
+                            if (k.startsWith(services.ABOUT))];
                 };
             });
 
@@ -1056,7 +1056,7 @@ var Completion = Module("completion", {
         let contains = String.indexOf;
         if (context.ignoreCase) {
             compare = util.compareIgnoreCase;
-            contains = function contains_(a, b) a && a.toLowerCase().indexOf(b.toLowerCase()) > -1;
+            contains = function contains_(a, b) a && a.toLowerCase().contains(b.toLowerCase());
         }
 
         if (tags)
@@ -1180,7 +1180,7 @@ var Completion = Module("completion", {
                                 .concat([let (name = k.substr(services.AUTOCOMPLETE.length))
                                             ["native:" + name, _("autocomplete.description", name)]
                                          for (k in Cc)
-                                         if (k.indexOf(services.AUTOCOMPLETE) == 0)]),
+                                         if (k.startsWith(services.AUTOCOMPLETE))]),
 
                 setter: function setter(values) {
                     if (values.length == 1 && !hasOwnProperty(values[0], this.values)

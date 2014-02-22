@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -626,7 +626,7 @@ var RangeFind = Class("RangeFind", {
         if (!this.matchCase)
             pattern = pattern.toLowerCase();
 
-        if (!again && (pattern === "" || pattern.indexOf(this.lastString) !== 0 || this.backward)) {
+        if (!again && (pattern === "" || !pattern.startsWith(this.lastString) || this.backward)) {
             if (!private_)
                 this.range.deselect();
             if (pattern === "")

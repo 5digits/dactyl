@@ -20,7 +20,7 @@ var MAX_LOAD_TIME = 10 * 1000;
 let prefix = "DOWNLOAD_";
 var states = iter([v, k.slice(prefix.length).toLowerCase()]
                   for ([k, v] in Iterator(Ci.nsIDownloadManager))
-                  if (k.indexOf(prefix) == 0))
+                  if (k.startsWith(prefix)))
                 .toObject();
 
 var Download = Class("Download", {
@@ -288,7 +288,7 @@ var DownloadList = Class("DownloadList",
     addDownload: function addDownload(download) {
         if (!this.downloads.has(download)) {
             download = Download(download, this);
-            if (this.filter && download.displayName.indexOf(this.filter) === -1)
+            if (this.filter && !download.displayName.contains(this.filter))
                 return;
 
             this.downloads.set(download.download, download);

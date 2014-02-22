@@ -136,14 +136,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     && !item.hidden
                     && !/rdf:http:/.test(item.getAttribute("label"))) { // FIXME
                     item.dactylPath = parent + item.getAttribute("label");
-                    if (!targetPath || targetPath.indexOf(item.dactylPath) == 0)
+                    if (!targetPath || targetPath.startsWith(item.dactylPath))
                         items.push(item);
                 }
                 else {
                     let path = parent;
                     if (item.localName == "menu")
                         path += item.getAttribute("label") + ".";
-                    if (!targetPath || targetPath.indexOf(path) == 0)
+                    if (!targetPath || targetPath.startsWith(path))
                         addChildren(item, path);
                 }
             }
@@ -459,7 +459,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      */
     loadScript: function loadScript(uri, context) {
         let prefix = "literal:" + uri + ":";
-        cache.flush(s => s.indexOf(prefix) == 0);
+        cache.flush(s => s.startsWith(prefix));
         delete literal.files[uri];
         JSMLoader.loadSubScript(uri, context, File.defaultEncoding);
     },
@@ -1147,7 +1147,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (error instanceof FailedAssertion && error.noTrace || error.message === "Interrupted") {
             let context = contexts.context;
             let prefix = context ? context.file + ":" + context.line + ": " : "";
-            if (error.message && error.message.indexOf(prefix) !== 0 &&
+            if (error.message && !error.message.startsWith(prefix) &&
                     prefix != "[Command Line]:1: ")
                 error.message = prefix + error.message;
 

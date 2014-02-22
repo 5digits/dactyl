@@ -714,6 +714,7 @@ var Mappings = Module("mappings", {
         function uniqueModes(modes) {
             let chars = [k for ([k, v] in Iterator(modules.modes.modeChars))
                          if (v.every(mode => modes.indexOf(mode) >= 0))];
+
             return array.uniq(modes.filter(m => chars.indexOf(m.char) < 0)
                                    .map(m => m.name.toLowerCase())
                                    .concat(chars));

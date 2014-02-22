@@ -325,7 +325,7 @@ var Help = Module("Help", {
                         }
                         if (name == "href") {
                             value = node.href || value;
-                            if (value.indexOf("dactyl://help-tag/") == 0) {
+                            if (value.startsWith("dactyl://help-tag/")) {
                                 try {
                                     let uri = services.io.newChannel(value, null, null).originalURI;
                                     value = uri.spec == value ? "javascript:;" : uri.path.substr(1);

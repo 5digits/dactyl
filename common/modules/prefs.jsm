@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -398,7 +398,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         function prefs() {
             for (let [, pref] in Iterator(prefArray)) {
                 let userValue = services.pref.prefHasUserValue(pref);
-                if (onlyNonDefault && !userValue || pref.indexOf(filter) == -1)
+                if (onlyNonDefault && !userValue || !pref.contains(filter))
                     continue;
 
                 let value = this.get(pref);

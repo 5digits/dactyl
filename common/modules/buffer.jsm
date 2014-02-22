@@ -1152,7 +1152,7 @@ var Buffer = Module("Buffer", {
             else {
                 let url = loc || doc.location.href;
                 const PREFIX = "view-source:";
-                if (url.indexOf(PREFIX) == 0)
+                if (url.startsWith(PREFIX))
                     url = url.substr(PREFIX.length);
                 else
                     url = PREFIX + url;
