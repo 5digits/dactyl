@@ -395,6 +395,21 @@ RealSet.prototype.add = function RealSet_add(val) {
     return res;
 };
 
+RealSet.prototype.difference = function RealSet_difference(set) {
+    return RealSet(i for (i of this) if (!set.has(i)));
+};
+
+RealSet.prototype.intersection = function RealSet_intersection(set) {
+    return RealSet(i for (i of this) if (set.has(i)));
+};
+
+RealSet.prototype.union = function RealSet_union(set) {
+    let res = RealSet(this);
+    for (let item of set)
+        res.add(item);
+    return res;
+};
+
 /**
  * Utility for managing sets of strings. Given an array, returns an
  * object with one key for each value thereof.
