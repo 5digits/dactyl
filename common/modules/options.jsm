@@ -677,8 +677,8 @@ var Option = Class("Option", {
             values = Array.concat(values);
 
             function uniq(ary) {
-                let seen = {};
-                return ary.filter(elem => !Set.add(seen, elem));
+                let seen = RealSet();
+                return ary.filter(elem => !seen.add(elem));
             }
 
             switch (operator) {

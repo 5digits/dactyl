@@ -1698,7 +1698,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {[string]} The visible domains.
      */
     visibleHosts: function visibleHosts(win) {
-        let res = [], seen = {};
+        let res = [],
+            seen = RealSet();
         (function rec(frame) {
             try {
                 if (frame.location.hostname)
@@ -1707,7 +1708,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             catch (e) {}
             Array.forEach(frame.frames, rec);
         })(win);
-        return res.filter(h => !Set.add(seen, h));
+        return res.filter(h => !seen.add(h));
     },
 
     /**
@@ -1718,7 +1719,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {[nsIURI]} The visible URIs.
      */
     visibleURIs: function visibleURIs(win) {
-        let res = [], seen = {};
+        let res = [],
+            seen = RealSet();
         (function rec(frame) {
             try {
                 res = res.concat(util.newURI(frame.location.href));
@@ -1726,7 +1728,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             catch (e) {}
             Array.forEach(frame.frames, rec);
         })(win);
-        return res.filter(h => !Set.add(seen, h.spec));
+        return res.filter(h => !seen.add(h.spec));
     },
 
     /**
