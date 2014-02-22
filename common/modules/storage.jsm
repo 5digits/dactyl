@@ -18,6 +18,8 @@ lazyRequire("resource://gre/modules/osfile.jsm", ["OS"]);
 var win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 var myObject = JSON.parse("{}").constructor;
 
+var global = Cu.getGlobalForObject(this);
+
 var StoreBase = Class("StoreBase", {
     OPTIONS: ["privateData", "replacer"],
 
@@ -25,7 +27,7 @@ var StoreBase = Class("StoreBase", {
 
     get serial() JSON.stringify(this._object, this.replacer),
 
-    init: function (name, store, load, options) {
+    init: function init(name, store, load, options) {
         this._load = load;
         this._options = options;
 
@@ -37,11 +39,19 @@ var StoreBase = Class("StoreBase", {
         this.reload();
     },
 
-    clone: function (storage) {
+    clone: function clone(storage) {
         let store = storage.privateMode ? false : this.store;
         let res = this.constructor(this.name, store, this._load, this._options);
         res.storage = storage;
         return res;
+    },
+
+    makeOwn: function makeOwn(val) {
+        if (typeof val != "object")
+            return val;
+        if (Cu.getGlobalForObject(val) == global)
+            return val;
+        return JSON.parse(JSON.stringify(val, this.replacer));
     },
 
     changed: function () { this.timer && this.timer.tell(); },
@@ -70,7 +80,7 @@ var ArrayStore = Class("ArrayStore", StoreBase, {
 
     set: function set(index, value, quiet) {
         var orig = this._object[index];
-        this._object[index] = value;
+        this._object[index] = this.makeOwn(value);
         if (!quiet)
             this.fireEvent("change", index);
 
@@ -78,7 +88,7 @@ var ArrayStore = Class("ArrayStore", StoreBase, {
     },
 
     push: function push(value) {
-        this._object.push(value);
+        this._object.push(this.makeOwn(value));
         this.fireEvent("push", this._object.length);
     },
 
@@ -99,6 +109,7 @@ var ArrayStore = Class("ArrayStore", StoreBase, {
     },
 
     insert: function insert(value, ord) {
+        value = this.makeOwn(value);
         if (ord == 0)
             this._object.unshift(value);
         else
@@ -123,7 +134,8 @@ var ArrayStore = Class("ArrayStore", StoreBase, {
     mutate: function mutate(funcName) {
         var _funcName = funcName;
         arguments[0] = this._object;
-        this._object = Array[_funcName].apply(Array, arguments);
+        this._object = Array[_funcName].apply(Array, arguments)
+                                       .map(this.makeOwn.bind(this));
         this.fireEvent("change", null);
     },
 
@@ -158,7 +170,7 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
     set: function set(key, val) {
         var defined = key in this._object;
         var orig = this._object[key];
-        this._object[key] = val;
+        this._object[key] = this.makeOwn(val);
         if (!defined)
             this.fireEvent("add", key);
         else if (orig != val)

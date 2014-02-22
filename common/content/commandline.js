@@ -1000,11 +1000,10 @@ var CommandLine = Module("commandline", {
             if (privateData == "never-save")
                 return;
 
-            this.store = this.store.filter(line => (line.value || line) != str);
-            dactyl.trapErrors(function () {
-                this.store.push({ value: str, timestamp: Date.now() * 1000, privateData: privateData });
-            }, this);
-            this.store = this.store.slice(Math.max(0, this.store.length - options["history"]));
+            let store = Array.filter(this.store, line => (line.value || line) != str);
+            dactyl.trapErrors(
+                () => store.push({ value: str, timestamp: Date.now() * 1000, privateData: privateData }));
+            this.store = store.slice(Math.max(0, store.length - options["history"]));
         },
         /**
          * @property {function} Returns whether a data item should be

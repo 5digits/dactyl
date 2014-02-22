@@ -63,7 +63,8 @@ var Marks = Module("marks", {
         let mark = this.Mark();
 
         if (Marks.isURLMark(name)) {
-            mark.tab = util.weakReference(tabs.getTab());
+            // FIXME: Disabled due to cross-compartment magic.
+            // mark.tab = util.weakReference(tabs.getTab());
             this._urlMarks.set(name, mark);
             var message = "mark.addURL";
         }
