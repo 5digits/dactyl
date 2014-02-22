@@ -1033,12 +1033,18 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         // window.content often does not want to be queried with "var i in object"
         try {
             let hasValue = !("__iterator__" in object || isinstance(object, ["Generator", "Iterator"]));
+
             if (object.dactyl && object.modules && object.modules.modules == object.modules) {
                 object = Iterator(object);
                 hasValue = false;
             }
+
             let keyIter = object;
-            if ("__iterator__" in object && !callable(object.__iterator__))
+            if (iter.iteratorProp in object) {
+                keyIter = (k for (k of object));
+                hasValue = false;
+            }
+            else if ("__iterator__" in object && !callable(object.__iterator__))
                 keyIter = keys(object);
 
             for (let i in keyIter) {
@@ -1047,6 +1053,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     value = object[i];
                 }
                 catch (e) {}
+
                 if (!hasValue) {
                     if (isArray(i) && i.length == 2)
                         [i, value] = i;

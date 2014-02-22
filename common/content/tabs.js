@@ -27,7 +27,8 @@ var Tabs = Module("tabs", {
             config.tabStrip.collapsed = true;
 
         this.tabStyle = styles.system.add("tab-strip-hiding", config.styleableChrome,
-                                          (config.tabStrip.id ? "#" + config.tabStrip.id : ".tabbrowser-strip") +
+                                          (config.tabStrip.id ? "#" + config.tabStrip.id
+                                                              : ".tabbrowser-strip") +
                                               "{ visibility: collapse; }",
                                           false, true);
 
