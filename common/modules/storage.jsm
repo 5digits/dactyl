@@ -197,7 +197,6 @@ var Storage = Module("Storage", {
         if (!Services.dactylSession)
             Services.dactylSession = Cu.createObjectIn(sessionGlobal);
         this.session = Services.dactylSession;
-        this.windows = WeakMap();
     },
 
     cleanup: function () {
