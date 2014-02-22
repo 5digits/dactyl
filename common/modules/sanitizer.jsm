@@ -456,7 +456,9 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     opt = { __proto__: opt, value: args.slice() };
                 }
 
-                let items = Object.keys(sanitizer.itemMap).slice(1).filter(opt.has, opt);
+                let items = Object.keys(sanitizer.itemMap)
+                                  .slice(1)
+                                  .filter(opt.has, opt);
 
                 function sanitize(items) {
                     sanitizer.range = range.native;

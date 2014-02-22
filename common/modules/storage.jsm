@@ -308,7 +308,7 @@ var Storage = Module("Storage", {
 
     addObserver: function addObserver(key, callback, window) {
         var { observers } = this;
-        if (window)
+        if (window instanceof Ci.nsIDOMWindow)
             observers = overlay.getData(window, "storage-observers", Object);
 
         if (!hasOwnProperty(observers, key))
