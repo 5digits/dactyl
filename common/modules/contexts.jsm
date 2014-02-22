@@ -67,8 +67,9 @@ var Group = Class("Group", {
 }, {
     compileFilter: function (patterns, default_=false) {
         function siteFilter(uri)
-            let (match = array.nth(siteFilter.filters, f => f(uri), 0))
-                match ? match.result : default_;
+            let (match = siteFilter.filters.find(f => f(uri)))
+                match ? match.result
+                      : default_;
 
         return update(siteFilter, {
             toString: function () this.filters.join(","),
@@ -205,12 +206,10 @@ var Contexts = Module("contexts", {
     Context: function Context(file, group, args) {
         const { contexts, io, newContext, plugins, userContext } = this.modules;
 
-        let isPlugin  = array.nth(io.getRuntimeDirectories("plugins"),
-                                  dir => dir.contains(file, true),
-                                  0);
-        let isRuntime = array.nth(io.getRuntimeDirectories(""),
-                                  dir => dir.contains(file, true),
-                                  0);
+        let isPlugin  = io.getRuntimeDirectories("plugins")
+                          .find(dir => dir.contains(file, true));
+        let isRuntime = io.getRuntimeDirectories("")
+                          .find(dir => dir.contains(file, true));
 
         let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-")
                             : file.leafName;
@@ -308,9 +307,8 @@ var Contexts = Module("contexts", {
         if (uri instanceof Ci.nsIFileURL)
             var file = File(uri.file);
 
-        let isPlugin = array.nth(io.getRuntimeDirectories("plugins"),
-                                 dir => dir.contains(file, true),
-                                 0);
+        let isPlugin = io.getRuntimeDirectories("plugins")
+                         .find(dir => dir.contains(file, true));
 
         let name = isPlugin && file && file.getRelativeDescriptor(isPlugin)
                                            .replace(File.PATH_SEP, "-");

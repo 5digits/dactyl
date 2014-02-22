@@ -274,7 +274,8 @@ var Modes = Module("modes", {
     remove: function remove(mode, covert) {
         if (covert && this.topOfStack.main != mode) {
             util.assert(mode != this.NORMAL);
-            for (let m; m = array.nth(this.modeStack, m => m.main == mode, 0);)
+
+            for (let m; m = this.modeStack.find(m => m.main == mode);)
                 this._modeStack.splice(this._modeStack.indexOf(m));
         }
         else if (this.stack.some(m => m.main == mode)) {
@@ -604,7 +605,7 @@ var Modes = Module("modes", {
 
             getKey: function getKey(val, default_) {
                 if (isArray(val))
-                    return (array.nth(this.value, v => val.some(m => m.name === v.mode), 0)
+                    return (this.value.find(v => val.some(m => m.name === v.mode))
                                 || { result: default_ }).result;
 
                 return hasOwnProperty(this.valueMap, val) ? this.valueMap[val] : default_;

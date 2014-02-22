@@ -2476,10 +2476,9 @@ var Buffer = Module("Buffer", {
                             if (/^func:/.test(filter.result))
                                 var res = dactyl.userEval("(" + Option.dequote(filter.result.substr(5)) + ")")(doc, line);
                             else
-                                res = iter.nth(filter.matcher(doc),
-                                               elem => ((elem.nodeValue || elem.textContent).trim() == line &&
-                                                        DOM(elem).display != "none"),
-                                               0)
+                                res = iter.find(filter.matcher(doc),
+                                                elem => ((elem.nodeValue || elem.textContent).trim() == line &&
+                                                         DOM(elem).display != "none"))
                                    || iter.nth(filter.matcher(doc), util.identity, line - 1);
                             if (res)
                                 break;

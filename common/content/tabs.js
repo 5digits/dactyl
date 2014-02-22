@@ -550,7 +550,7 @@ var Tabs = Module("tabs", {
         if (matches)
             return tabs.select(this.allTabs[parseInt(matches[1], 10) - 1], false);
 
-        matches = array.nth(tabs.allTabs, t => (t.linkedBrowser.lastURI || {}).spec === buffer, 0);
+        matches = tabs.allTabs.find(t => (t.linkedBrowser.lastURI || {}).spec === buffer);
         if (matches)
             return tabs.select(matches, false);
 

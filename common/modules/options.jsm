@@ -1504,8 +1504,7 @@ var Options = Module("options", {
 
             function val(obj) {
                 if (isArray(opt.defaultValue)) {
-                    let val = array.nth(obj, re => (re.key == extra.key),
-                                        0);
+                    let val = Array.find(obj, re => (re.key == extra.key));
                     return val && val.result;
                 }
                 if (hasOwnProperty(opt.defaultValue, extra.key))

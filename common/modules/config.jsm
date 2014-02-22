@@ -243,7 +243,7 @@ var ConfigBase = Class("ConfigBase", {
     bestLocale: function (list) {
         return values([this.appLocale, this.appLocale.replace(/-.*/, ""),
                        "en", "en-US", list[0]])
-            .nth((function (l) this.has(l)).bind(RealSet(list)), 0);
+            .find(bind("has", RealSet(list)));
     },
 
     /**

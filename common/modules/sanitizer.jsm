@@ -474,7 +474,10 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         sanitizer.sanitize(items, range);
                 }
 
-                if (array.nth(opt.value, i => i == "all" || /^!/.test(i), 0) == "all" && !args["-host"])
+                if ("all" == opt.value.find(i => (i == "all" ||
+                                                  /^!/.test(i)))
+                    && !args["-host"])
+
                     modules.commandline.input(_("sanitize.prompt.deleteAll") + " ",
                         function (resp) {
                             if (resp.match(/^y(es)?$/i)) {
@@ -620,8 +623,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 },
 
                 has: function has(val)
-                    let (res = array.nth(this.value, v => (v == "all" || v.replace(/^!/, "") == val),
-                                         0))
+                    let (res = this.value.find(v => (v == "all" || v.replace(/^!/, "") == val)))
                         res && !/^!/.test(res),
 
                 validator: function (values) values.length &&

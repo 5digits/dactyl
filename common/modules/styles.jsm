@@ -277,8 +277,7 @@ var Styles = Module("Styles", {
     },
 
     addHive: function addHive(name, ref, persist) {
-        let hive = array.nth(this.hives, h => h.name === name,
-                             0);
+        let hive = this.hives.find(h => h.name === name);
         if (!hive) {
             hive = Hive(name, persist);
             this.hives.push(hive);

@@ -1508,21 +1508,21 @@ update(iter, {
 
     every: function every(iter, pred, self) {
         pred = pred || util.identity;
-        for (let elem in iter)
+        for (let elem of iter)
             if (!pred.call(self, elem))
                 return false;
         return true;
     },
     some: function every(iter, pred, self) {
         pred = pred || util.identity;
-        for (let elem in iter)
+        for (let elem of iter)
             if (pred.call(self, elem))
                 return true;
         return false;
     },
 
     filter: function filter(iter, pred, self) {
-        for (let elem in iter)
+        for (let elem of iter)
             if (pred.call(self, elem))
                 yield elem;
     },
@@ -1536,13 +1536,13 @@ update(iter, {
      * @param {object} self The this object for *fn*.
      */
     forEach: function forEach(iter, func, self) {
-        for (let val in iter)
+        for (let val of iter)
             func.call(self, val);
     },
 
     indexOf: function indexOf(iter, elem) {
         let i = 0;
-        for (let item in iter) {
+        for (let item of iter) {
             if (item == elem)
                 return i;
             i++;
@@ -1558,7 +1558,7 @@ update(iter, {
      * @returns {Array}
      */
     map: function map(iter, func, self) {
-        for (let i in iter)
+        for (let i of iter)
             yield func.call(self, i);
     },
 
@@ -1570,8 +1570,19 @@ update(iter, {
         if (typeof pred === "number")
             [pred, n] = [() => true, pred]; // Hack.
 
-        for (let elem in iter)
+        for (let elem of iter)
             if (pred.call(self, elem) && n-- === 0)
+                return elem;
+        return undefined;
+    },
+
+    /**
+     * Analog of Array.find method. Returns the first item in the
+     * iterator for which `pred` returns true.
+     */
+    find: function find(iter, pred, self) {
+        for (let elem of iter)
+            if (pred.call(self, elem))
                 return elem;
         return undefined;
     },
@@ -1581,7 +1592,7 @@ update(iter, {
 
     uniq: function uniq(iter) {
         let seen = RealSet();
-        for (let item in iter)
+        for (let item of iter)
             if (!seen.add(item))
                 yield item;
     },

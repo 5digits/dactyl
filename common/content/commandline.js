@@ -2018,7 +2018,7 @@ var ItemList = Class("ItemList", {
         if (start < 0 || start >= this.itemCount)
             return null;
 
-        group = array.nth(groups, g => let (i = start - g.offsets.start) i >= 0 && i < g.itemCount, 0);
+        group = groups.find(g => let (i = start - g.offsets.start) i >= 0 && i < g.itemCount);
         return [group.context, start - group.offsets.start];
     },
 

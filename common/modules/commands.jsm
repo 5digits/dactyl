@@ -622,11 +622,12 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
      */
     get: function get(name, full) {
         let cmd = this._map[name]
-               || !full && array.nth(this._list, cmd => cmd.hasName(name), 0)
+               || !full && this._list.find(cmd => cmd.hasName(name))
                || null;
 
         if (!cmd && full) {
-            let name = array.nth(this.specs, spec => Command.hasName(spec, name), 0);
+            // Hrm. This is wrong. -Kris
+            let name = this._specs.find(spec => Command.hasName(spec, name));
             return name && this.get(name);
         }
 
@@ -883,7 +884,7 @@ var Commands = Module("commands", {
      * @returns {Command}
      */
     get: function get(name, full) iter(this.hives).map(([i, hive]) => hive.get(name, full))
-                                                  .nth(util.identity, 0),
+                                                  .find(util.identity),
 
     /**
      * Returns true if a command invocation contains a URL referring to the

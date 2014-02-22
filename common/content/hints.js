@@ -1299,16 +1299,21 @@ var Hints = Module("hints", {
             },
             {
                 keepQuotes: true,
+
                 getKey: function (val, default_)
-                    let (res = array.nth(this.value, re => let (match = re.exec(val)) match && match[0] == val, 0))
-                        res ? res.matcher : default_,
+                    let (res = this.value.find(re => let (match = re.exec(val)) match && match[0] == val))
+                        res ? res.matcher
+                            : default_,
+
                 parse: function parse(val) {
                     let vals = parse.supercall(this, val);
                     for (let value in values(vals))
                         value.matcher = DOM.compileMatcher(Option.splitList(value.result));
                     return vals;
                 },
+
                 testValues: function testValues(vals, validator) vals.every(re => Option.splitList(re).every(validator)),
+
                 validator: DOM.validateMatcher
             });
 

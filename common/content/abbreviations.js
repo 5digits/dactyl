@@ -105,7 +105,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
     },
 
     /** @property {boolean} True if there are no abbreviations. */
-    get empty() !values(this._store).nth(util.identity, 0),
+    get empty() !values(this._store).find(util.identity),
 
     /**
      * Adds a new abbreviation.
@@ -251,7 +251,7 @@ var Abbreviations = Module("abbreviations", {
         let match = this._match.exec(text);
         if (match)
             return this.hives.map(h => h.get(mode, match[2] || match[4] || match[6]))
-                       .nth(util.identity, 0);
+                       .find(util.identity);
         return null;
     },
 
