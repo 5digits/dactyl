@@ -405,10 +405,8 @@ var Command = Class("Command", {
 
         let key = type + ":" + (context ? context.file : "[Command Line]");
 
-        if (!this.complained.has(key)) {
-            this.complained.add(key);
+        if (!this.complained.add(key))
             this.modules.dactyl.warn(loc + message);
-        }
     }
 }, {
     hasName: function hasName(specs, name)

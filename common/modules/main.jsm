@@ -269,9 +269,8 @@ overlay.overlayWindow(Object.keys(config.overlays),
             if (loaded.has(module.className))
                 return;
 
-            if (seen.has(module.className))
+            if (seen.add(module.className))
                 throw Error("Module dependency loop.");
-            seen.add(module.className);
 
             for (let dep in values(module.requires))
                 this.loadModule(Module.constructors[dep], module.className);

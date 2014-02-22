@@ -246,10 +246,8 @@ function properties(obj, prototypes) {
     try {
         if ("dactylPropertyNames" in obj && !prototypes)
             for (let key in values(obj.dactylPropertyNames))
-                if (key in obj && !seen.has(key)) {
-                    seen.add(key);
+                if (key in obj && !seen.add(key))
                     yield key;
-                }
     }
     catch (e) {}
 
@@ -289,10 +287,8 @@ function properties(obj, prototypes) {
         var iter = (v for each (v in props(obj)));
 
         for (let key in iter)
-            if (!prototypes || !seen.has(key) && obj != orig) {
-                seen.add(key);
+            if (!prototypes || !seen.add(key) && obj != orig)
                 yield key;
-            }
     }
 }
 
@@ -346,11 +342,9 @@ deprecated.warn = function warn(func, name, alternative, frame) {
     frame = frame || Components.stack.caller.caller;
 
     let filename = util.fixURI(frame.filename || "unknown");
-    if (!func.seenCaller.has(filename)) {
-        func.seenCaller.add(filename);
+    if (!func.seenCaller.add(filename))
         util.dactyl(func).warn([util.urlPath(filename), frame.lineNumber, " "].join(":")
                                    + _("warn.deprecated", name, alternative));
-    }
 }
 
 /**
@@ -394,6 +388,12 @@ var forEach = deprecated("iter.forEach", function forEach() iter.forEach.apply(i
 var iterAll = deprecated("iter", function iterAll() iter.apply(null, arguments));
 
 var RealSet = Set;
+let Set_add = RealSet.prototype.add;
+RealSet.prototype.add = function RealSet_add(val) {
+    let res = this.has(val);
+    Set_add.apply(this, arguments);
+    return res;
+};
 
 /**
  * Utility for managing sets of strings. Given an array, returns an
@@ -1567,10 +1567,8 @@ update(iter, {
     uniq: function uniq(iter) {
         let seen = RealSet();
         for (let item in iter)
-            if (!seen.has(item)) {
-                seen.add(item);
+            if (!seen.add(item))
                 yield item;
-            }
     },
 
     /**

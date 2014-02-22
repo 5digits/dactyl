@@ -383,10 +383,8 @@ var Mappings = Module("mappings", {
         let seen = RealSet();
         for (let hive in this.hives.iterValues())
             for (let map in array(hive.getStack(mode)).iterValues())
-                if (!seen.has(map.name)) {
-                    seen.add(map.name);
+                if (!seen.add(map.name))
                     yield map;
-                }
     },
 
     // NOTE: just normal mode for now
@@ -643,10 +641,8 @@ var Mappings = Module("mappings", {
                 let seen = RealSet();
                 for (let stack in values(hive.stacks))
                     for (let map in array.iterValues(stack))
-                        if (!seen.has(map.id)) {
-                            seen.add(map.id);
+                        if (!seen.add(map.id))
                             yield map;
-                        }
             }
 
             modeDescription = modeDescription ? " in " + modeDescription + " mode" : "";
@@ -758,8 +754,7 @@ var Mappings = Module("mappings", {
                     for (let hive in mappings.hives.iterValues())
                         for (let map in array.iterValues(hive.getStack(mode)))
                             for (let name in values(map.names))
-                                if (!seen.has(name)) {
-                                    seen.add(name);
+                                if (!seen.add(name))
                                     yield {
                                         name: name,
                                         columns: [
@@ -770,7 +765,6 @@ var Mappings = Module("mappings", {
                                         ],
                                         __proto__: map
                                     };
-                                }
             },
             format: {
                 description: function (map) [

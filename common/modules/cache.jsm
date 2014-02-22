@@ -206,10 +206,9 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         }
 
         if (hasOwnProperty(this.providers, name)) {
-            util.assert(!this.providing.has(name),
+            util.assert(!this.providing.add(name),
                         "Already generating cache for " + name,
                         false);
-            this.providing.add(name);
 
             let [func, long] = this.providers[name];
             try {

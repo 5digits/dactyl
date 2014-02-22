@@ -534,9 +534,9 @@ var Downloads_ = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
                 has: function () Array.some(arguments, val => this.value.some(v => v.substr(1) == val)),
 
                 validator: function (value) {
-                    let seen = {};
+                    let seen = RealSet();
                     return value.every(val => /^[+-]/.test(val) && hasOwnProperty(this.values, val.substr(1))
-                                                                && !Set.add(seen, val.substr(1)))
+                                                                && !seen.add(val.substr(1)))
                         && value.length;
                 }
             });

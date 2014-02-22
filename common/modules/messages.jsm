@@ -59,10 +59,8 @@ var Messages = Module("messages", {
         let seen = RealSet();
         for (let bundle in values(this.bundles))
             for (let { key, value } in iter(bundle.getSimpleEnumeration(), Ci.nsIPropertyElement))
-                if (!seen.has(key)) {
-                    seen.add(key);
+                if (!seen.add(key))
                     yield [key, value];
-                }
     },
 
     get: function get(value, default_) {

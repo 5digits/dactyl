@@ -450,8 +450,7 @@ var Modes = Module("modes", {
                 res = [],
                 queue = [this].concat(this.bases);
             for (let mode in array.iterValues(queue))
-                if (!seen.has(mode)) {
-                    seen.add(mode);
+                if (!seen.add(mode)) {
                     res.push(mode);
                     queue.push.apply(queue, mode.bases);
                 }
