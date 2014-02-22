@@ -231,7 +231,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
     },
 
     cleanup: function cleanup(window) {
-        overlay.windows.remove(window);
+        overlay.windows.delete(window);
 
         Cu.nukeSandbox(this.jsmodules);
     },
