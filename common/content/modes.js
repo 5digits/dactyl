@@ -275,8 +275,9 @@ var Modes = Module("modes", {
         if (covert && this.topOfStack.main != mode) {
             util.assert(mode != this.NORMAL);
 
-            for (let m; m = this.modeStack.find(m => m.main == mode);)
-                this._modeStack.splice(this._modeStack.indexOf(m));
+            let i = this._modeStack.findIndex(m => m.main == mode);
+            if (i >= 0)
+                this._modeStack.splice(i);
         }
         else if (this.stack.some(m => m.main == mode)) {
             this.pop(mode);
