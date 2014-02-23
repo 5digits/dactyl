@@ -351,9 +351,10 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             if (observers) {
                 let value = this.get(data, false);
                 this._observers[data] = observers.filter(function (callback) {
-                    if (!callback.get())
+                    callback = callback.get();
+                    if (!callback)
                         return false;
-                    util.trapErrors(callback.get(), null, value);
+                    util.trapErrors(callback, null, value);
                     return true;
                 });
             }

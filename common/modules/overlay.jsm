@@ -103,11 +103,12 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
             target = null;
 
         this.setData(doc, "listeners", listeners.filter(function (args) {
-            if (target == null || args[0].get() == target && args[1] == event && args[2].wrapped == callback && args[3] == capture) {
-                args[0].get().removeEventListener.apply(args[0].get(), args.slice(1));
+            let elem = args[0].get();
+            if (target == null || elem == target && args[1] == event && args[2].wrapped == callback && args[3] == capture) {
+                elem.removeEventListener.apply(elem, args.slice(1));
                 return false;
             }
-            return !args[0].get();
+            return elem;
         }));
     },
 

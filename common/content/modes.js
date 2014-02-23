@@ -329,10 +329,11 @@ var Modes = Module("modes", {
                                       { push: push }, push);
 
                 for (let [id, { obj, prop, test }] in Iterator(this.boundProperties)) {
-                    if (!obj.get())
+                    obj = obj.get();
+                    if (!obj)
                         delete this.boundProperties[id];
                     else
-                        this.topOfStack.saved[id] = { obj: obj.get(), prop: prop, value: obj.get()[prop], test: test };
+                        this.topOfStack.saved[id] = { obj: obj, prop: prop, value: obj[prop], test: test };
                 }
             }
 
