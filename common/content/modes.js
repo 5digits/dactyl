@@ -21,13 +21,7 @@ var Modes = Module("modes", {
         this._recording = false;
         this._replaying = false; // playing a macro
 
-        this._modeStack = update([], {
-            pop: function pop() {
-                if (this.length <= 1)
-                    throw Error("Trying to pop last element in mode stack");
-                return pop.superapply(this, arguments);
-            }
-        });
+        this._modeStack = Modes.ModeStack([]);
 
         this._modes = [];
         this._mainModes = [];
@@ -275,9 +269,8 @@ var Modes = Module("modes", {
         if (covert && this.topOfStack.main != mode) {
             util.assert(mode != this.NORMAL);
 
-            let i = this._modeStack.findIndex(m => m.main == mode);
-            if (i >= 0)
-                this._modeStack.splice(i);
+            this._modeStack = Modes.ModeStack(
+                this._modeStack.filter(m => m.main != mode));
         }
         else if (this.stack.some(m => m.main == mode)) {
             this.pop(mode);
@@ -489,6 +482,14 @@ var Modes = Module("modes", {
     }, {
         _id: 0
     }),
+    ModeStack: function ModeStack(array)
+        update(array, {
+            pop: function pop() {
+                if (this.length <= 1)
+                    throw Error("Trying to pop last element in mode stack");
+                return pop.superapply(this, arguments);
+            }
+        }),
     StackElement: (function () {
         const StackElement = Struct("main", "extended", "params", "saved");
         StackElement.className = "Modes.StackElement";
