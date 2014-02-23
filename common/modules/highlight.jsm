@@ -134,8 +134,12 @@ var Highlights = Module("Highlight", {
             obj.style.enabled = true;
         else
             this.loaded.__defineSetter__(obj.class, function () {
-                delete this[obj.class];
-                this[obj.class] = true;
+                Object.defineProperty(this, obj.class, {
+                    value: true,
+                    configurable: true,
+                    enumerable: true,
+                    writable: true
+                });
 
                 if (obj.class === obj.baseClass)
                     for (let h in highlight)

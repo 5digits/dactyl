@@ -435,7 +435,7 @@ this.Set = deprecated("RealSet", function Set(ary) {
  * @param {string} key The key to add.
  * @returns boolean
  */
-Set.add = deprecated("Set#add",
+Set.add = deprecated("RealSet#add",
     curry(function Set__add(set, key) {
         if (isinstance(set, ["Set"])) {
             let res = set.has(key);
@@ -469,13 +469,14 @@ Set.has = deprecated("hasOwnProperty or Set#has",
  * @param {object} set The set.
  * @returns {object}
  */
-Set.subtract = function set_subtract(set) {
-    set = update({}, set);
-    for (let i = 1; i < arguments.length; i++)
-        for (let k in keys(arguments[i]))
-            delete set[k];
-    return set;
-};
+Set.subtract = deprecated("RealSet#difference",
+    function set_subtract(set) {
+        set = update({}, set);
+        for (let i = 1; i < arguments.length; i++)
+            for (let k in keys(arguments[i]))
+                delete set[k];
+        return set;
+    });
 
 /**
  * Removes an element from a set and returns true if the element was
@@ -485,7 +486,7 @@ Set.subtract = function set_subtract(set) {
  * @param {string} key The key to remove.
  * @returns boolean
  */
-Set.remove = deprecated("Set#delete",
+Set.remove = deprecated("RealSet#delete",
     curry(function Set__remove(set, key) {
         if (isinstance(set, ["Set"]))
             return set.delete(key);
@@ -1180,7 +1181,7 @@ function Module(name, prototype, ...args) {
         let proto = callable(prototype) ? args[0] : prototype;
 
         proto._metaInit_ = function () {
-            delete module.prototype._metaInit_;
+            module.prototype._metaInit_ = null;
             currentModule[name.toLowerCase()] = this;
         };
 

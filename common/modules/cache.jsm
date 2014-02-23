@@ -121,7 +121,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
     closeReader: function closeReader() {
         if (cache._cacheReader) {
             this.cacheReader.close();
-            delete cache._cacheReader;
+            cache._cacheReader = null;
         }
     },
 
@@ -130,7 +130,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
 
         if (this._cacheWriter) {
             this._cacheWriter.close();
-            delete cache._cacheWriter;
+            cache._cacheWriter = null;
 
             // ZipWriter bug.
             if (this.cacheFile.fileSize <= 22)
