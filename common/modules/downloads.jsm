@@ -98,7 +98,7 @@ var Download = Class("Download", {
         delete: promises.task(function delete_() {
             if (this.hasPartialData)
                 yield this.removePartialData();
-            else if (self.targetFile.exists())
+            else if (this.targetFile.exists())
                 this.targetFile.remove(false);
             this.updateStatus();
         }),
