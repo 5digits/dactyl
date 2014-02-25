@@ -111,8 +111,10 @@ var Hive = Class("Hive", {
     },
 
     cleanup: function cleanup() {
-        for (let sheet in values(this.sheets))
-            sheet.enabled = false;
+        for (let sheet of this.sheets)
+            util.trapErrors(() => {
+                sheet.enabled = false;
+            });
     },
 
     __iterator__: function () Iterator(this.sheets),
@@ -137,8 +139,12 @@ var Hive = Class("Hive", {
      */
     add: function add(name, filter, css, agent, lazy) {
 
-        if (!isArray(filter))
+        if (isArray(filter))
+            // Need an array from the same compartment.
+            filter = Array.slice(filter);
+        else
             filter = filter.split(",");
+
         if (name && name in this.names) {
             var sheet = this.names[name];
             sheet.agent = agent;
