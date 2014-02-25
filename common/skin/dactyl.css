@@ -227,12 +227,13 @@ statusbarpanel {
 @-moz-document url(chrome://browser/content/browser.xul) {
 
 /* Fix ginormous Australis tabs. */
-.tab-background > * {
+[dactyl-australis=true] xul|tab.tabbrowser-tab .tab-background > * {
     min-height: 24px !important;
     max-height: 24px !important;
 }
 
-.tab-background > :-moz-any(.tab-background-start, .tab-background-end)::after {
+[dactyl-australis=true] xul|tab.tabbrowser-tab
+    .tab-background > :-moz-any(.tab-background-start, .tab-background-end)::after {
     background-size: 30px 24px !important;
     max-height: 24px !important;
     min-height: 24px !important;

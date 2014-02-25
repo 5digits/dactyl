@@ -1894,6 +1894,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             });
         }
 
+        if (config.has("default-theme") && "CustomizableUI" in window)
+            overlays.overlayWindow(window, {
+                append: [
+                    ["window", { id: document.documentElement.id, "dactyl-australis": "true", xmlns: "xul" }]]
+            });
+
         dactyl.timeout(function () {
             try {
                 var args = config.prefs.get("commandline-args")

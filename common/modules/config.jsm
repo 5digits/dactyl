@@ -64,6 +64,12 @@ var ConfigBase = Class("ConfigBase", {
                            true);
         });
 
+        // FIXME: May not be ready before first window opens.
+        AddonManager.getAddonByID("{972ce4c6-7e08-4474-a285-3208198ce6fd}", a => {
+            if (!a.isActive)
+                config.features.delete("default-theme");
+        });
+
         services["dactyl:"].pages["dtd"] = () => [null, cache.get("config.dtd")];
 
         update(services["dactyl:"].providers, {
@@ -536,7 +542,7 @@ var ConfigBase = Class("ConfigBase", {
      *    dactyl.has(feature) to check for a feature's presence
      *    in this array.
      */
-    features: RealSet(),
+    features: RealSet(["default-theme"]),
 
     /**
      * @property {string} The file extension used for command script files.
