@@ -94,7 +94,7 @@ var Contexts = Module("contexts", {
     },
 
     cleanup: function () {
-        for (let module of this.pluginModules)
+        for each (let module in this.pluginModules)
             util.trapErrors("unload", module);
 
         this.pluginModules = {};

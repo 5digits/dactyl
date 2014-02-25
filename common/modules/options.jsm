@@ -109,6 +109,8 @@ var Option = Class("Option", {
      */
     parse: function parse(value) Option.dequote(value),
 
+    parseKey: function parseKey(value) value,
+
     /**
      * Returns *values* packed in the appropriate format for the option type.
      *
@@ -564,6 +566,11 @@ var Option = Class("Option", {
             }, this))
     },
 
+    parseKey: {
+        number: Number,
+        boolean: function boolean(value) value == "true" || value == true ? true : false,
+    },
+
     testValues: {
         regexpmap:  function regexpmap(vals, validator) vals.every(re => validator(re.result)),
         get sitemap() this.regexpmap,
@@ -742,7 +749,8 @@ var Option = Class("Option", {
         if (isArray(acceptable))
             acceptable = RealSet(acceptable.map(([k]) => k));
         else
-            acceptable = RealSet(this.parse(k) for (k in Object.keys(acceptable)));
+            acceptable = RealSet(this.parseKey(k)
+                                 for (k of Object.keys(acceptable)));
 
         if (this.type === "regexpmap" || this.type === "sitemap")
             return Array.concat(vals).every(re => acceptable.has(re.result));
@@ -775,6 +783,9 @@ var Option = Class("Option", {
 
     if (type in Option.parse)
         class_.prototype.parse = Option.parse[type];
+
+    if (type in Option.parseKey)
+        class_.prototype.parseKey = Option.parse[type];
 
     if (type in Option.stringify)
         class_.prototype.stringify = Option.stringify[type];
