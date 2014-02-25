@@ -258,7 +258,7 @@ var AddonList = Class("AddonList", {
         this.modules = modules;
         this.filter = filter && filter.toLowerCase();
         this.nodes = {};
-        this.addons = [];
+        this.addons = {};
         this.ready = false;
 
         AddonManager.getAddonsByTypes(types, this.closure(function (addons) {
