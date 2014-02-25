@@ -204,11 +204,11 @@ var Highlights = Module("Highlight", {
         node.setAttributeNS(NS, "highlight", group);
 
         let groups = group.split(" ");
-        for each (let group in groups)
+        for (let group of groups)
             this.loaded[group] = true;
 
         if (applyBindings)
-            for each (let group in groups) {
+            for (let group of groups) {
                 if (applyBindings.bindings && group in applyBindings.bindings)
                     applyBindings.bindings[group](node, applyBindings);
                 else if (group in template.bindings)

@@ -474,7 +474,7 @@ var DOM = Class("DOM", {
 
         let charset = doc.characterSet;
         let converter = services.CharsetConv(charset);
-        for each (let cs in form.acceptCharset.split(/\s*,\s*|\s+/)) {
+        for (let cs of form.acceptCharset.split(/\s*,\s*|\s+/)) {
             let c = services.CharsetConv(cs);
             if (c) {
                 converter = services.CharsetConv(cs);

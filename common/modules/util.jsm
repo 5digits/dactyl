@@ -895,7 +895,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let windows = services.windowMediator.getXULWindowEnumerator(null);
         while (windows.hasMoreElements()) {
             let window = windows.getNext().QueryInterface(Ci.nsIXULWindow);
-            for each (let type in types) {
+            for (let type of types) {
                 let docShells = window.docShell.getDocShellEnumerator(Ci.nsIDocShellTreeItem[type],
                                                                       Ci.nsIDocShell.ENUMERATE_FORWARDS);
                 while (docShells.hasMoreElements())

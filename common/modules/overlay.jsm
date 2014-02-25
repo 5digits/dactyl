@@ -218,7 +218,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
     _loadOverlays: function _loadOverlays(window) {
         let overlays = this.getData(window, "overlays");
 
-        for each (let obj in overlay.overlays[window.document.documentURI] || []) {
+        for (let obj of overlay.overlays[window.document.documentURI] || []) {
             if (~overlays.indexOf(obj))
                 continue;
             overlays.push(obj);
@@ -391,7 +391,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         }, this);
 
         return function unwrap() {
-            for each (let k in Object.getOwnPropertyNames(original))
+            for (let k of Object.getOwnPropertyNames(original))
                 if (Object.getOwnPropertyDescriptor(object, k).configurable)
                     Object.defineProperty(object, k, Object.getOwnPropertyDescriptor(original, k));
                 else {

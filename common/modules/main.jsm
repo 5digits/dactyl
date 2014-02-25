@@ -237,7 +237,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
     },
 
     unload: function unload(window) {
-        for each (let mod in this.modules.moduleList.reverse()) {
+        for (let mod of this.modules.moduleList.reverse()) {
             mod.stale = true;
 
             if ("destroy" in mod)

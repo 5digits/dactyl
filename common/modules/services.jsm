@@ -184,7 +184,7 @@ var Services = Module("Services", {
                     function () callable(XPCOMShim(this.interfaces)[this.init]));
 
         this[name] = (function Create() this._create(name, arguments)).bind(this);
-        update.apply(null, [this[name]].concat([Ci[i] for each (i in Array.concat(ifaces))]));
+        update.apply(null, [this[name]].concat([Ci[i] for (i of Array.concat(ifaces))]));
         return this[name];
     },
 

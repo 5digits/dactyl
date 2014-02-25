@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2012 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -143,8 +143,8 @@ ProtocolBase.prototype = {
 };
 
 function LocaleChannel(pkg, locale, path, orig) {
-    for each (let locale in [locale, "en-US"])
-        for each (let sep in "-/") {
+    for (let locale of [locale, "en-US"])
+        for (let sep of "-/") {
             var channel = Channel(["resource:/", pkg + sep + locale, path].join("/"), orig, true, true);
             if (channel)
                 return channel;

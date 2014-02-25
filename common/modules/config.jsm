@@ -85,7 +85,7 @@ var ConfigBase = Class("ConfigBase", {
 
     loadConfig: function loadConfig(documentURL) {
 
-        for each (let config in this.configs) {
+        for (let config of this.configs) {
             if (documentURL)
                 config = config.overlays && config.overlays[documentURL] || {};
 
@@ -253,7 +253,7 @@ var ConfigBase = Class("ConfigBase", {
         // Horrible hack.
         let res = {};
         function process(manifest) {
-            for each (let line in manifest.split(/\n+/)) {
+            for (let line of manifest.split(/\n+/)) {
                 let match = /^\s*(content|skin|locale|resource)\s+([^\s#]+)\s/.exec(line);
                 if (match)
                     res[match[2]] = true;
@@ -271,7 +271,7 @@ var ConfigBase = Class("ConfigBase", {
                 }
         }
 
-        for each (let dir in ["UChrm", "AChrom"]) {
+        for (let dir of ["UChrm", "AChrom"]) {
             dir = File(services.directory.get(dir, Ci.nsIFile));
             if (dir.exists() && dir.isDirectory())
                 for (let file in dir.iterDirectory())
@@ -398,7 +398,7 @@ var ConfigBase = Class("ConfigBase", {
     dtd: Class.Memoize(function ()
         iter(this.dtdExtra,
              (["dactyl." + k, v] for ([k, v] in iter(config.dtdDactyl))),
-             (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
+             (["dactyl." + s, config[s]] for (s of config.dtdStrings)))
             .toObject()),
 
     dtdDactyl: memoize({
@@ -455,7 +455,7 @@ var ConfigBase = Class("ConfigBase", {
                     ["menupopup", { id: "viewSidebarMenu", xmlns: "xul" }],
                     ["broadcasterset", { id: "mainBroadcasterSet", xmlns: "xul" }]];
 
-            for each (let [id, [name, key, uri]] in Iterator(this.sidebars)) {
+            for (let [id, [name, key, uri]] in Iterator(this.sidebars)) {
                 append[0].push(
                         ["menuitem", { observes: "pentadactyl-" + id + "Sidebar", label: name,
                                        accesskey: key }]);

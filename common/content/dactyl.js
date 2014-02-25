@@ -1212,7 +1212,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     get windows() [w for (w of overlay.windows)]
 
 }, {
-    toolbarHidden: function hidden(elem) (elem.getAttribute("autohide") || elem.getAttribute("collapsed")) == "true"
+    toolbarHidden: function toolbarHidden(elem) "true" == (elem.getAttribute("autohide") ||
+                                                           elem.getAttribute("collapsed"))
 }, {
     cache: function initCache() {
         cache.register("help/plugins.xml", function () {
@@ -1223,19 +1224,23 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 try {
                     let info = contexts.getDocs(context);
                     if (DOM.isJSONXML(info)) {
-                        let langs = info.slice(2).filter(e => isArray(e) && isObject(e[1]) && e[1].lang);
+                        let langs = info.slice(2)
+                                        .filter(e => isArray(e) && isObject(e[1]) && e[1].lang);
                         if (langs) {
-                            let lang = config.bestLocale(l[1].lang for each (l in langs));
+                            let lang = config.bestLocale(langs.map(l => l[1].lang));
 
                             info = info.slice(0, 2).concat(
                                 info.slice(2).filter(e => !isArray(e)
                                                        || !isObject(e[1])
                                                        || e[1].lang == lang));
 
-                            for each (let elem in info.slice(2).filter(e => isArray(e) && e[0] == "info" && isObject(e[1])))
-                                for (let attr in values(["name", "summary", "href"]))
+                            info.slice(2)
+                                .filter(e => isArray(e) && e[0] == "info" && isObject(e[1]))
+                                .forEach(elem => {
+                                for (let attr of ["name", "summary", "href"])
                                     if (attr in elem[1])
                                         info[attr] = elem[1][attr];
+                            });
                         }
                         body.push(["h2", { xmlns: "dactyl", tag: info[1].name + '-plugin' },
                                        String(info[1].summary)]);

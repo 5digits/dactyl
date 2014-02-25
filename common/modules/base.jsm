@@ -37,7 +37,7 @@ function require(module_, target) {
 }
 
 function lazyRequire(module, names, target) {
-    for each (let name in names)
+    for (let name of names)
         memoize(target || this, name, name => require(module)[name]);
 }
 
@@ -284,9 +284,7 @@ function properties(obj, prototypes) {
     }
 
     for (; obj; obj = prototypes && prototype(obj)) {
-        var iter = (v for each (v in props(obj)));
-
-        for (let key in iter)
+        for (let key of props(obj))
             if (!prototypes || !seen.add(key) && obj != orig)
                 yield key;
     }
@@ -670,7 +668,7 @@ function call(fn, self, ...args) {
 function memoize(obj, key, getter) {
     if (arguments.length == 1) {
         let res = update(Object.create(obj), obj);
-        for each (let prop in Object.getOwnPropertyNames(obj)) {
+        for (let prop of Object.getOwnPropertyNames(obj)) {
             let get = __lookupGetter__.call(obj, prop);
             if (get)
                 memoize(res, prop, get);

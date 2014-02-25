@@ -680,7 +680,7 @@ var Buffer = Module("Buffer", {
             return newURI.spec;
         }
 
-        for each (let shortener in Buffer.uriShorteners)
+        for (let shortener of Buffer.uriShorteners)
             try {
                 let shortened = shortener(uri, doc);
                 if (shortened)

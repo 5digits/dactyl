@@ -155,7 +155,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 }
 
                 // "Never remember passwords" ...
-                for each (let domain in services.loginManager.getAllDisabledHosts())
+                for (let domain of services.loginManager.getAllDisabledHosts())
                     if (!host || util.isSubdomain(domain, host))
                         services.loginManager.setLoginSavingEnabled(host, true);
             },

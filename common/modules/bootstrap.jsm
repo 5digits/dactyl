@@ -10,7 +10,7 @@ function create(proto) Object.create(proto);
 
 this["import"] = function import_(obj) {
     let res = {};
-    for each (let key in Object.getOwnPropertyNames(obj))
+    for (let key of Object.getOwnPropertyNames(obj))
         Object.defineProperty(res, key, Object.getOwnPropertyDescriptor(obj, key));
     return res;
 }

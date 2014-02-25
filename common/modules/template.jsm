@@ -155,7 +155,7 @@ var Template = Module("Template", {
 
         let res = [];
         let n = 0;
-        for each (let i in Iterator(iter)) {
+        for (let i in Iterator(iter)) {
             let val = func(i, n);
             if (val == undefined)
                 continue;

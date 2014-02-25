@@ -501,22 +501,21 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
      */
 
     cache: function cache() {
-        let self = this;
         let { cache } = this.modules;
         this.cached = true;
 
-        let cached = cache.get(this.cacheKey, function () {
-            self.cached = false;
+        let cached = cache.get(this.cacheKey, () => {
+            this.cached = false;
             this.modules.moduleManager.initDependencies("commands");
 
             let map = {};
-            for (let [name, cmd] in Iterator(self._map))
+            for (let [name, cmd] in Iterator(this._map))
                 if (cmd.sourceModule)
                     map[name] = { sourceModule: cmd.sourceModule, isPlaceholder: true };
 
             let specs = [];
-            for (let cmd in values(self._list))
-                for each (let spec in cmd.parsedSpecs)
+            for (let cmd of this._list)
+                for (let spec of cmd.parsedSpecs)
                     specs.push(spec.concat(cmd.name));
 
             return { map: map, specs: specs };

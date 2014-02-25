@@ -200,7 +200,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         }
 
         if (this.localProviders.has(name) && !this.isLocal) {
-            for each (let { cache } in overlay.modules)
+            for (let { cache } of overlay.modules)
                 if (cache._has(name))
                     return cache.force(name, true);
         }
@@ -267,7 +267,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         if (this.queue.length && !this.inQueue) {
             // removeEntry does not work properly with queues.
             let removed = 0;
-            for each (let [, entry] in this.queue)
+            for (let [, entry] of this.queue)
                 if (this.getCacheWriter().hasEntry(entry)) {
                     this.getCacheWriter().removeEntry(entry, false);
                     removed++;

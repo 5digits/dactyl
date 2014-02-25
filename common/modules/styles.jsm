@@ -269,7 +269,7 @@ var Styles = Module("Styles", {
     },
 
     cleanup: function cleanup() {
-        for each (let hive in this.hives)
+        for (let hive of this.hives || [])
             util.trapErrors("cleanup", hive);
         this.hives = [];
         this.user = this.addHive("user", this, true);
@@ -368,7 +368,7 @@ var Styles = Module("Styles", {
 }, {
     append: function (dest, src, sort) {
         let props = {};
-        for each (let str in [dest, src])
+        for (let str of [dest, src])
             for (let prop in Styles.propertyIter(str))
                 props[prop.name] = prop.value;
 

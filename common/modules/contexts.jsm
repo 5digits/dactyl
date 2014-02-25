@@ -94,7 +94,7 @@ var Contexts = Module("contexts", {
     },
 
     cleanup: function () {
-        for each (let module in this.pluginModules)
+        for (let module of this.pluginModules)
             util.trapErrors("unload", module);
 
         this.pluginModules = {};
@@ -144,12 +144,12 @@ var Contexts = Module("contexts", {
         },
 
         cleanup: function () {
-            for each (let hive in this.groupList.slice())
+            for (let hive of this.groupList.slice())
                 util.trapErrors("cleanup", hive, "shutdown");
         },
 
         destroy: function () {
-            for each (let hive in values(this.groupList.slice()))
+            for (let hive of values(this.groupList.slice()))
                 util.trapErrors("destroy", hive, "shutdown");
 
             for each (let plugin in this.modules.plugins.contexts) {
@@ -340,7 +340,7 @@ var Contexts = Module("contexts", {
                         delete contexts.pluginModules[canonical];
                     }
 
-                    for each (let { plugins } in overlay.modules)
+                    for (let { plugins } of overlay.modules)
                         if (plugins[this.NAME] == this)
                             delete plugins[this.name];
                 })

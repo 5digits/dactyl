@@ -452,7 +452,7 @@ var File = Class("File", {
     child: function child() {
         let f = this.constructor(this);
         for (let [, name] in Iterator(arguments))
-            for each (let elem in name.split(File.pathSplit))
+            for (let elem of name.split(File.pathSplit))
                 f.append(elem);
         return f;
     },

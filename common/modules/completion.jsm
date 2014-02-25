@@ -843,7 +843,7 @@ var CompletionContext = Class("CompletionContext", {
         }
         this.waitingForTab = false;
         this.runCount++;
-        for each (let context in this.contextList)
+        for (let context of this.contextList)
             context.lastActivated = this.runCount;
         this.contextList = [];
     },
