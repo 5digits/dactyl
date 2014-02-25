@@ -740,9 +740,9 @@ var Option = Class("Option", {
             acceptable = completions.call(this);
 
         if (isArray(acceptable))
-            acceptable = RealSet(acceptable.map(([k]) => (k)));
+            acceptable = RealSet(acceptable.map(([k]) => k));
         else
-            acceptable = RealSet(Object.keys(acceptable));
+            acceptable = RealSet(this.parse(k) for (k in Object.keys(acceptable)));
 
         if (this.type === "regexpmap" || this.type === "sitemap")
             return Array.concat(vals).every(re => acceptable.has(re.result));
