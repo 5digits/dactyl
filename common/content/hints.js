@@ -1351,15 +1351,14 @@ var Hints = Module("hints", {
             "number", 0,
             { validator: function (value) value >= 0 });
 
-        // TODO: shouldn't this be a stringlist or even boolean? --djk
         options.add(["followhints", "fh"],
             "Define the conditions under which selected hints are followed",
             "number", 0,
             {
-                values: [
-                    [0, "Follow the first hint as soon as typed text uniquely identifies it. Follow the selected hint on <Return>."],
-                    [1, "Follow the selected hint on <Return>."]
-                ]
+                values: {
+                    "0": "Follow the first hint as soon as typed text uniquely identifies it. Follow the selected hint on <Return>.",
+                    "1": "Follow the selected hint on <Return>."
+                }
             });
 
         options.add(["hintmatching", "hm"],
