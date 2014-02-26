@@ -30,6 +30,30 @@ let { __lookupGetter__, __lookupSetter__, __defineGetter__, __defineSetter__,
 hasOwnProperty = Function.call.bind(hasOwnProperty);
 propertyIsEnumerable = Function.call.bind(propertyIsEnumerable);
 
+// Gecko 24.
+if (!("find" in Array.prototype))
+    Object.defineProperty(Array.prototype, "find", {
+        configurable: true,
+        writable: true,
+        value: function Array_find(pred, self) {
+            for (let [i, elem] in Iterator(this))
+                if (pred.call(self, elem, i, this))
+                    return elem;
+        }
+    });
+
+if (!("findIndex" in Array.prototype))
+    Object.defineProperty(Array.prototype, "findIndex", {
+        configurable: true,
+        writable: true,
+        value: function Array_findIndex(pred, self) {
+            for (let [i, elem] in Iterator(this))
+                if (pred.call(self, elem, i, this))
+                    return i;
+            return -1;
+        }
+    });
+
 function require(module_, target) {
     if (/^[A-Za-z0-9]+:/.test(module_))
         return module(module_);
