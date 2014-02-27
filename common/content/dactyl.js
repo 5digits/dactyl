@@ -1596,7 +1596,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function (args) {
                 if (dactyl.has("tabs") && tabs.remove(tabs.getTab(), 1, false))
                     return;
-                else if (dactyl.windows.size > 1)
+                else if (dactyl.windows.length > 1)
                     window.close();
                 else
                     dactyl.quit(false, args.bang);

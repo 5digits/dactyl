@@ -124,6 +124,8 @@ var Modules = function Modules(window) {
 
         get document() window.document,
 
+        get navigator() window.navigator,
+
         window: window,
 
         Module: Module,
