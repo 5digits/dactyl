@@ -378,12 +378,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     UNPERMS: Class.Memoize(function () iter(this.PERMS).map(Array.reverse).toObject()),
 
     COMMANDS: {
-        unset:   /*L*/"Unset",
-        allow:   /*L*/"Allowed",
-        deny:    /*L*/"Denied",
-        session: /*L*/"Allowed for the current session",
-        list:    /*L*/"List all cookies for domain",
-        clear:   /*L*/"Clear all cookies for domain",
+        "unset":   /*L*/"Unset",
+        "allow":   /*L*/"Allowed",
+        "deny":    /*L*/"Denied",
+        "session": /*L*/"Allowed for the current session",
+        "list":    /*L*/"List all cookies for domain",
+        "clear":   /*L*/"Clear all cookies for domain",
         "clear-persistent": /*L*/"Clear all persistent cookies for domain",
         "clear-session":    /*L*/"Clear all session cookies for domain"
     },

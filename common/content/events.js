@@ -711,7 +711,10 @@ var Events = Module("events", {
                     return Events.kill(event);
                 }
 
-                if (!this.processor) {
+                if (this.processor)
+                    events.dbg("ON KEYPRESS " + key + " processor: " + this.processor,
+                               event.originalTarget instanceof Element ? event.originalTarget : String(event.originalTarget));
+                else {
                     let mode = modes.getStack(0);
                     if (event.dactylMode)
                         mode = Modes.StackElement(event.dactylMode);

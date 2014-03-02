@@ -6,7 +6,7 @@
 
 defineModule("storage", {
     exports: ["File", "Storage", "storage"],
-    require: ["services", "util"]
+    require: ["promises", "services", "util"]
 });
 
 lazyRequire("config", ["config"]);
@@ -227,16 +227,18 @@ var Storage = Module("Storage", {
         }
     },
 
-    _saveData: function saveData(obj) {
+    _saveData: promises.task(function saveData(obj) {
         if (obj.privateData && storage.privateMode)
             return;
         if (obj.store && storage.infoPath) {
             var { path } = storage.infoPath.child(obj.name);
-            return OS.File.writeAtomic(
+            yield OS.File.makeDir(storage.infoPath.path,
+                                  { ignoreExisting: true });
+            yield OS.File.writeAtomic(
                 path, obj.serial,
                 { tmpPath: path + ".part" });
         }
-    },
+    }),
 
     storeForSession: function storeForSession(key, val) {
         if (val)
