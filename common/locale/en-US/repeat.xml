@@ -46,11 +46,11 @@
 <item>
     <tags>&lt;record-macro> q</tags>
     <strut/>
-    <spec>q<a>0-9a-zA-Z</a></spec>
+    <spec>q<a>a-zA-Z</a></spec>
     <description>
         <p>
             Record a key sequence as a macro. Available macros are
-            <a>0-9a-zA-Z</a>. If the macro is an uppercase letter, the
+            <a>a-zA-Z</a>. If the macro is an uppercase letter, the
             recorded keys are appended to the lowercase macro of the same
             name. Typing <k>q</k> again stops the recording.
         </p>
@@ -82,10 +82,10 @@
 
 <item>
     <tags>&lt;play-macro> @</tags>
-    <spec><oa>count</oa>@<a>a-z0-9</a></spec>
+    <spec><oa>count</oa>@<a>a-z</a></spec>
     <description>
         <p>
-            Plays the contents of macro with name <a>a-z0-9</a> <oa>count</oa>
+            Plays the contents of macro with name <a>a-z</a> <oa>count</oa>
             times.
         </p>
     </description>
