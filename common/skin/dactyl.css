@@ -239,6 +239,10 @@ statusbarpanel {
     min-height: 24px !important;
 }
 
+[dactyl-australis=true] .tabbrowser-tabs {
+    min-height: 0 !important;
+}
+
 #PanelUI-button,
 #PanelUI-menu-button,
 #nav-bar-customization-target > .toolbarbutton-1,
