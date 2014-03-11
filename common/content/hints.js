@@ -305,6 +305,8 @@ var HintSession = Class("HintSession", CommandMode, {
                         return false;
 
             let computedStyle = doc.defaultView.getComputedStyle(elem, null);
+            if (!computedStyle)
+                return false;
             if (computedStyle.visibility != "visible" || computedStyle.display == "none")
                 return false;
             return true;

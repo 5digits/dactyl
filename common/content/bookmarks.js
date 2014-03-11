@@ -233,6 +233,31 @@ var Bookmarks = Module("bookmarks", {
     },
 
     /**
+     * Returns true if the given search engine provides suggestions.
+     * engine based on the given *query*. The results are always in the
+     * form of an array of strings. If *callback* is provided, the
+     * request is executed asynchronously and *callback* is called on
+     * completion. Otherwise, the request is executed synchronously and
+     * the results are returned.
+     *
+     * @param {string} engineName The name of the search engine from
+     *      which to request suggestions.
+     * @returns {boolean}
+     */
+    hasSuggestions: function hasSuggestions(engineName, query, callback) {
+        const responseType = "application/x-suggestions+json";
+
+        if (hasOwnProperty(this.suggestionProviders, engineName))
+            return true;
+
+        let engine = hasOwnProperty(this.searchEngines, engineName) && this.searchEngines[engineName];
+        if (engine && engine.supportsResponseType(responseType))
+            return true;
+
+        return false;
+    },
+
+    /**
      * Retrieves a list of search suggestions from the named search
      * engine based on the given *query*. The results are always in the
      * form of an array of strings. If *callback* is provided, the
@@ -697,16 +722,19 @@ var Bookmarks = Module("bookmarks", {
             let engineList = (engineAliases || options["suggestengines"].join(",") || "google").split(",");
 
             engineList.forEach(function (name) {
+                if (!bookmarks.hasSuggestions(name))
+                    return;
+
                 var desc = name;
                 let engine = bookmarks.searchEngines[name];
                 if (engine)
-                    var desc = engine.description;
-                else if (!hasOwnProperty(bookmarks.suggestionProviders, name))
-                    return;
+                    desc = engine.description;
+
 
                 let [, word] = /^\s*(\S+)/.exec(context.filter) || [];
                 if (!kludge && word == name) // FIXME: Check for matching keywords
                     return;
+
                 let ctxt = context.fork(name, 0);
 
                 ctxt.title = [/*L*/desc + " Suggestions"];
@@ -727,7 +755,12 @@ var Bookmarks = Module("bookmarks", {
                     ctxt.incomplete = false;
                     ctxt.completions = array.uniq(ctxt.completions.filter(c => compl.contains(c))
                                                       .concat(compl), true);
-                }, Cu.reportError);
+                }, function (e) {
+                    ctxt.incomplete = false;
+                    ctxt.completions = [];
+                    if (e)
+                        Cu.reportError(e);
+                });
             });
         };
 
