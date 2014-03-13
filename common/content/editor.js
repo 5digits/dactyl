@@ -46,7 +46,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         }, this);
     },
 
-    defaultRegister: "*",
+    defaultRegister: "*+",
 
     selectionRegisters: {
         "*": "selection",
@@ -64,6 +64,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         if (name == null)
             name = editor.currentRegister || editor.defaultRegister;
 
+        name = String(name)[0];
         if (name == '"')
             name = 0;
         if (name == "_")
@@ -101,17 +102,19 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             value = DOM.stringify(value);
         value = { text: value, isLine: modes.extended & modes.LINE, timestamp: Date.now() * 1000 };
 
-        if (name == '"')
-            name = 0;
-        if (name == "_")
-            ;
-        else if (hasOwnProperty(this.selectionRegisters, name))
-            dactyl.clipboardWrite(value.text, verbose, this.selectionRegisters[name]);
-        else if (!/^[0-9]$/.test(name))
-            this.registers.set(name, value);
-        else {
-            this.registerRing.insert(value, name);
-            this.registerRing.truncate(10);
+        for (let n of String(name)) {
+            if (n == '"')
+                n = 0;
+            if (n == "_")
+                ;
+            else if (hasOwnProperty(this.selectionRegisters, n))
+                dactyl.clipboardWrite(value.text, verbose, this.selectionRegisters[n]);
+            else if (!/^[0-9]$/.test(n))
+                this.registers.set(n, value);
+            else {
+                this.registerRing.insert(value, n);
+                this.registerRing.truncate(10);
+            }
         }
     },
 
