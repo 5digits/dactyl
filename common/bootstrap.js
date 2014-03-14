@@ -178,9 +178,11 @@ let JSMLoader = {
     // Cuts down on stupid, fscking url mangling.
     get loadSubScript() bootstrap_jsm.loadSubScript,
 
-    cleanup: function unregister() {
-        for each (let factory in this.factories.splice(0))
+    cleanup: function cleanup() {
+        for (let factory of this.factories.splice(0)) {
+            debug("bootstrap: unregister factory: " + factory.classID);
             manager.unregisterFactory(factory.classID, factory);
+        }
     },
 
     Factory: function Factory(class_) ({
@@ -202,6 +204,7 @@ let JSMLoader = {
     }),
 
     registerFactory: function registerFactory(factory) {
+        debug("bootstrap: register factory: " + factory.classID + " " + factory.contractID);
         manager.registerFactory(factory.classID,
                                 String(factory.classID),
                                 factory.contractID,

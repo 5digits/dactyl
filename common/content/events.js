@@ -188,6 +188,11 @@ var Events = Module("events", {
 
         this.listen(window, this, "events", true);
         this.listen(window, this.popups, "events", true);
+
+        this.grabFocus = 0;
+        this.grabFocusTimer = Timer(100, 10000, () => {
+            this.grabFocus = 0;
+        });
     },
 
     cleanup: function cleanup() {
@@ -616,11 +621,15 @@ var Events = Module("events", {
                                      Ci.nsIDOMHTMLSelectElement,
                                      Ci.nsIDOMHTMLTextAreaElement,
                                      Ci.nsIDOMWindow])) {
-
-                if (elem.frameElement)
-                    dactyl.focusContent(true);
-                else if (!(elem instanceof Window) || Editor.getEditor(elem))
-                    dactyl.focus(window);
+                if (this.grabFocus++ > 5)
+                    ; // Something is fighting us. Give up.
+                else {
+                    this.grabFocusTimer.tell();
+                    if (elem.frameElement)
+                        dactyl.focusContent(true);
+                    else if (!(elem instanceof Window) || Editor.getEditor(elem))
+                        dactyl.focus(window);
+                }
             }
 
             if (elem instanceof Element)

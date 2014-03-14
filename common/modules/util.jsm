@@ -1174,8 +1174,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     util.trapErrors(module.cleanup, module, reason);
                 }
 
-            JSMLoader.cleanup();
-
             if (!this.rehashing)
                 services.observer.addObserver(this, "dactyl-rehash", true);
         },

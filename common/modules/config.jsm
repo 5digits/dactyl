@@ -53,10 +53,14 @@ var ConfigBase = Class("ConfigBase", {
 
         this.loadConfig();
 
-        JSMLoader.registerFactory(JSMLoader.Factory(AboutHandler));
-        JSMLoader.registerFactory(JSMLoader.Factory(
-            Protocol("dactyl", "{9c8f2530-51c8-4d41-b356-319e0b155c44}",
-                     "resource://dactyl-content/")));
+        util.trapErrors(() => {
+            JSMLoader.registerFactory(JSMLoader.Factory(AboutHandler));
+        });
+        util.withProperErrors(() => {
+            JSMLoader.registerFactory(JSMLoader.Factory(
+                Protocol("dactyl", "{9c8f2530-51c8-4d41-b356-319e0b155c44}",
+                         "resource://dactyl-content/")));
+        });
 
         this.protocolLoaded = true;
         this.timeout(function () {
