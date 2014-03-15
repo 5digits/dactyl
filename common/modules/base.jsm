@@ -6,10 +6,9 @@
 
 var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
-if (typeof Proxy == "function")
-    var Cs = Proxy(Components.stack, {
-        get: function Cs_get(target, prop) Components.stack.caller[prop]
-    });
+var Cs = new Proxy(Components.stack, {
+    get: function Cs_get(target, prop) Components.stack.caller[prop]
+});
 
 function module(url) {
     let obj = {};

@@ -172,7 +172,17 @@ let JSMLoader = {
         let module = this.modules[name];
         if (target)
             for each (let symbol in module.EXPORTED_SYMBOLS)
-                target[symbol] = module[symbol];
+                try {
+                    Object.defineProperty(target, symbol, {
+                        configurable: true,
+                        enumerable: true,
+                        writable: true,
+                        value: module[symbol]
+                    });
+                }
+                catch (e) {
+                    target[symbol] = module[symbol];
+                }
 
         return module;
     },

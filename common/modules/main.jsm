@@ -110,7 +110,27 @@ var Modules = function Modules(window) {
 
     const BASES = [BASE, "resource://dactyl-local-content/"];
 
-    var jsmodules = newContext(window, false, "Dactyl `jsmodules`");
+    let proxyCache = {};
+    let proxy = new Proxy(window, {
+        get: function window_get(target, prop) {
+            // `in`, not `hasOwnProperty`, because we want to return
+            // unbound methods in `Object.prototype`
+            if (prop in proxyCache)
+                return proxyCache[prop];
+
+            let p = target[prop];
+            if (callable(p))
+                return proxyCache[prop] = p.bind(target);
+
+            return p;
+        },
+
+        set: function window_set(target, prop, val) {
+            return target[prop] = val;
+        }
+    });
+
+    var jsmodules = newContext(proxy, false, "Dactyl `jsmodules`");
     jsmodules.NAME = "jsmodules";
 
     const create = bind("create", jsmodules.Object);
@@ -119,14 +139,6 @@ var Modules = function Modules(window) {
         yes_i_know_i_should_not_report_errors_in_these_branches_thanks: [],
 
         jsmodules: jsmodules,
-
-        get content() this.config.browser.contentWindow || window.content,
-
-        get document() window.document,
-
-        get navigator() window.navigator,
-
-        window: window,
 
         Module: Module,
 
