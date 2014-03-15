@@ -5,7 +5,7 @@
         em:id="pentadactyl@dactyl.googlecode.com"
         em:type="2"
         em:name="Pentadactyl"
-        em:version="1.1pre"
+        em:version="1.1"
         em:description="Firefox for Vim and Links addicts"
         em:homepageURL="http://5digits.org/pentadactyl"
         em:bootstrap="true"
