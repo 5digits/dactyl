@@ -21,6 +21,8 @@ var { AddonManager } = module("resource://gre/modules/AddonManager.jsm");
 var { XPCOMUtils }   = module("resource://gre/modules/XPCOMUtils.jsm");
 var { Services }     = module("resource://gre/modules/Services.jsm");
 
+var Timer = Components.Constructor("@mozilla.org/timer;1", "nsITimer", "initWithCallback");
+
 const resourceProto = Services.io.getProtocolHandler("resource")
                               .QueryInterface(Ci.nsIResProtocolHandler);
 const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
@@ -179,10 +181,8 @@ let JSMLoader = {
     get loadSubScript() bootstrap_jsm.loadSubScript,
 
     cleanup: function cleanup() {
-        for (let factory of this.factories.splice(0)) {
-            debug("bootstrap: unregister factory: " + factory.classID);
+        for (let factory of this.factories.splice(0))
             manager.unregisterFactory(factory.classID, factory);
-        }
     },
 
     Factory: function Factory(class_) ({
@@ -204,7 +204,6 @@ let JSMLoader = {
     }),
 
     registerFactory: function registerFactory(factory) {
-        debug("bootstrap: register factory: " + factory.classID + " " + factory.contractID);
         manager.registerFactory(factory.classID,
                                 String(factory.classID),
                                 factory.contractID,
@@ -394,6 +393,7 @@ FactoryProxy.prototype = {
     }
 }
 
+var timer;
 function shutdown(data, reason) {
     let strReason = reasonToString(reason);
     debug("bootstrap: shutdown " + strReason);
@@ -408,18 +408,20 @@ function shutdown(data, reason) {
         JSMLoader.atexit(strReason);
         JSMLoader.cleanup(strReason);
 
-        bootstrap_jsm.require = null;
-        if (JSMLoader.SANDBOX)
-            Cu.nukeSandbox(bootstrap);
-        else
-            Cu.unload(BOOTSTRAP);
-        bootstrap = null;
-        bootstrap_jsm = null;
-
         for each (let [category, entry] in JSMLoader.config.categories)
             categoryManager.deleteCategoryEntry(category, entry, false);
         for (let resource in JSMLoader.config.resources)
             resourceProto.setSubstitution(resource, null);
+
+        timer = Timer(() => {
+            bootstrap_jsm.require = null;
+            if (JSMLoader.SANDBOX)
+                Cu.nukeSandbox(bootstrap);
+            else
+                Cu.unload(BOOTSTRAP);
+            bootstrap = null;
+            bootstrap_jsm = null;
+        }, 5000, Ci.nsITimer.TYPE_ONE_SHOT);
     }
 }
 

@@ -1173,26 +1173,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     util.dump("cleanup: " + module.constructor.className);
                     util.trapErrors(module.cleanup, module, reason);
                 }
-
-            if (!this.rehashing)
-                services.observer.addObserver(this, "dactyl-rehash", true);
-        },
-        "dactyl-rehash": function dactylRehash() {
-            services.observer.removeObserver(this, "dactyl-rehash");
-
-            defineModule.loadLog.push("dactyl: util: observe: dactyl-rehash");
-            if (!this.rehashing)
-                for (let module in values(defineModule.modules)) {
-                    defineModule.loadLog.push("dactyl: util: init(" + module + ")");
-                    if (module.reinit)
-                        module.reinit();
-                    else
-                        module.init();
-                }
-        },
-        "dactyl-purge": function dactylPurge() {
-            this.rehashing = 1;
-        },
+        }
     },
 
     /**
@@ -1371,7 +1352,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         this.timeout(function () {
             this.flushCache();
             cache.flush(bind("test", /^literal:/));
-            this.rehashing = true;
             let addon = config.addon;
             addon.userDisabled = true;
             addon.userDisabled = false;
