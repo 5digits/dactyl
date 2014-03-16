@@ -836,7 +836,10 @@ function Class(...args) {
     }
 
     Class.extend(Constructor, superclass, args[0]);
-    memoize(Constructor, "closure", Class.makeClosure);
+    memoize(Constructor, "bound", Class.makeClosure);
+    if (Iter && array) // Hack. :/
+        Object.defineProperty(Constructor, "closure",
+                              deprecated("bound", { get: function closure() this.bound }));
     update(Constructor, args[1]);
 
     Constructor.__proto__ = superclass;
@@ -1086,37 +1089,24 @@ for (let name in properties(Class.prototype)) {
     Object.defineProperty(Class.prototype, name, desc);
 }
 
-Class.makeClosure = function makeClosure() {
-    const self = this;
-    function closure(fn) {
-        function _closure() {
-            try {
-                return fn.apply(self, arguments);
-            }
-            catch (e if !(e instanceof FailedAssertion)) {
-                util.reportError(e);
-                throw e.stack ? e : Error(e);
-            }
-        }
-        _closure.wrapped = fn;
-        return _closure;
+var closureHooks = {
+    get: function closure_get(target, prop) {
+        if (hasOwnProperty(target._closureCache, prop))
+            return target._closureCache[prop];
+
+        let p = target[prop]
+        if (callable(p))
+            return target._closureCache[prop] = p.bind(target);
+        return p;
     }
-
-    iter(properties(this), properties(this, true)).forEach(function (k) {
-        if (!__lookupGetter__.call(this, k) && callable(this[k]))
-            closure[k] = closure(this[k]);
-        else if (!(k in closure))
-            Object.defineProperty(closure, k, {
-                configurable: true,
-                enumerable: true,
-                get: function get_proxy() self[k],
-                set: function set_proxy(val) self[k] = val,
-            });
-    }, this);
-
-    return closure;
 };
-memoize(Class.prototype, "closure", Class.makeClosure);
+
+Class.makeClosure = function makeClosure() {
+    this._closureCache = {};
+
+    return new Proxy(this, closureHooks);
+};
+memoize(Class.prototype, "bound", Class.makeClosure);
 
 /**
  * A base class generator for classes which implement XPCOM interfaces.
@@ -1844,6 +1834,9 @@ Object.getOwnPropertyNames(Array.prototype).forEach(function (k) {
             return res;
         };
 });
+
+Object.defineProperty(Class.prototype, "closure",
+                      deprecated("bound", { get: function closure() this.bound }));
 
 endModule();
 

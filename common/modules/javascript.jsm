@@ -463,7 +463,7 @@ var JavaScript = Module("javascript", {
         }
 
         this.context.getCache("evalled", Object);
-        this.context.getCache("evalContext", this.closure.newContext);
+        this.context.getCache("evalContext", this.bound.newContext);
 
         // Okay, have parse stack. Figure out what we're completing.
 
@@ -693,7 +693,7 @@ var JavaScript = Module("javascript", {
     completion: function (dactyl, modules, window) {
         const { completion } = modules;
         update(modules.completion, {
-            get javascript() modules.javascript.closure.complete,
+            get javascript() modules.javascript.bound.complete,
             javascriptCompleter: JavaScript // Backwards compatibility
         });
     },

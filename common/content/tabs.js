@@ -426,11 +426,11 @@ var Tabs = Module("tabs", {
         if (focusLeftTab)
             tabs.slice(Math.max(0, index + 1 - count),
                        index + 1)
-                .forEach(config.closure.removeTab);
+                .forEach(config.bound.removeTab);
         else
             tabs.slice(index,
                        index + count)
-                .forEach(config.closure.removeTab);
+                .forEach(config.bound.removeTab);
         return res;
     },
 
@@ -1113,7 +1113,7 @@ var Tabs = Module("tabs", {
         }
         for (let event in values(["TabMove", "TabOpen", "TabClose"]))
             events.listen(tabContainer, event, callback, false);
-        events.listen(tabContainer, "TabSelect", tabs.closure._onTabSelect, false);
+        events.listen(tabContainer, "TabSelect", tabs.bound._onTabSelect, false);
     },
     mappings: function initMappings() {
 

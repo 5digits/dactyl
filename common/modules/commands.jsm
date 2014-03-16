@@ -759,7 +759,7 @@ var Commands = Module("commands", {
             const { commandline, completion } = this.modules;
             function completerToString(completer) {
                 if (completer)
-                    return [k for ([k, v] in Iterator(config.completers)) if (completer == completion.closure[v])][0] || "custom";
+                    return [k for ([k, v] in Iterator(config.completers)) if (completer == completion.bound[v])][0] || "custom";
                 return "";
             }
             // TODO: allow matching of aliases?
@@ -831,9 +831,9 @@ var Commands = Module("commands", {
 
         return group._add.apply(group, arguments);
     },
-    addUserCommand: deprecated("group.commands.add", { get: function addUserCommand() this.user.closure._add }),
+    addUserCommand: deprecated("group.commands.add", { get: function addUserCommand() this.user.bound._add }),
     getUserCommands: deprecated("iter(group.commands)", function getUserCommands() iter(this.user).toArray()),
-    removeUserCommand: deprecated("group.commands.remove", { get: function removeUserCommand() this.user.closure.remove }),
+    removeUserCommand: deprecated("group.commands.remove", { get: function removeUserCommand() this.user.bound.remove }),
 
     /**
      * Returns the specified command invocation object serialized to
@@ -1546,7 +1546,7 @@ var Commands = Module("commands", {
             function (args) {
                 let cmd = args[0];
 
-                util.assert(!cmd || cmd.split(",").every(commands.validName.closure.test),
+                util.assert(!cmd || cmd.split(",").every(commands.validName.bound.test),
                             _("command.invalidName", cmd));
 
                 if (args.length <= 1)
@@ -1576,7 +1576,7 @@ var Commands = Module("commands", {
                             };
                         }
                         else
-                            completerFunc = context => modules.completion.closure[config.completers[completer]](context);
+                            completerFunc = context => modules.completion.bound[config.completers[completer]](context);
                     }
 
                     let added = args["-group"].add(cmd.split(","),

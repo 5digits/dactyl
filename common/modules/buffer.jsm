@@ -46,7 +46,7 @@ var Buffer = Module("Buffer", {
             this.win = win;
     },
 
-    get addPageInfoSection() Buffer.closure.addPageInfoSection,
+    get addPageInfoSection() Buffer.bound.addPageInfoSection,
 
     get pageInfo() Buffer.pageInfo,
 
@@ -2057,7 +2057,7 @@ var Buffer = Module("Buffer", {
     events: function initEvents(dactyl, modules, window) {
         let { buffer, config, events } = modules;
 
-        events.listen(config.browser, "scroll", buffer.closure._updateBufferPosition, false);
+        events.listen(config.browser, "scroll", buffer.bound._updateBufferPosition, false);
     },
     mappings: function initMappings(dactyl, modules, window) {
         let { Editor, Events, buffer, editor, events, ex, mappings, modes, options, tabs } = modules;

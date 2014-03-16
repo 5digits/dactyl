@@ -261,11 +261,11 @@ var AddonList = Class("AddonList", {
         this.addons = {};
         this.ready = false;
 
-        AddonManager.getAddonsByTypes(types, this.closure(function (addons) {
+        AddonManager.getAddonsByTypes(types, addons => {
             this._addons = addons;
             if (this.document)
                 this._init();
-        }));
+        });
         AddonManager.addAddonListener(this);
     },
     cleanup: function cleanup() {
@@ -273,7 +273,7 @@ var AddonList = Class("AddonList", {
     },
 
     _init: function _init() {
-        this._addons.forEach(this.closure.addAddon);
+        this._addons.forEach(this.bound.addAddon);
         this.ready = true;
         this.update();
     },

@@ -107,7 +107,7 @@ var Map = Class("Map", {
      */
     hasName: function (name) this.keys.indexOf(name) >= 0,
 
-    get keys() array.flatten(this.names.map(mappings.closure.expand)),
+    get keys() array.flatten(this.names.map(mappings.bound.expand)),
 
     /**
      * Execute the action for this mapping.
@@ -171,7 +171,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      * @param {[Modes.Mode]} modes The modes for which to return mappings.
      */
     iterate: function (modes) {
-        let stacks = Array.concat(modes).map(this.closure.getStack);
+        let stacks = Array.concat(modes).map(this.bound.getStack);
         return values(stacks.shift().sort((m1, m2) => String.localeCompare(m1.name, m2.name))
             .filter((map) => map.rhs &&
                 stacks.every(stack => stack.some(m => m.rhs && m.rhs === map.rhs && m.name === map.name))));

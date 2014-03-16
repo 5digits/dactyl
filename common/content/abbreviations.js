@@ -233,10 +233,10 @@ var Abbreviations = Module("abbreviations", {
 
     get userHives() this.allHives.filter(h => h !== this.builtin),
 
-    get: deprecated("group.abbrevs.get", { get: function get() this.user.closure.get }),
-    set: deprecated("group.abbrevs.set", { get: function set() this.user.closure.set }),
-    remove: deprecated("group.abbrevs.remove", { get: function remove() this.user.closure.remove }),
-    removeAll: deprecated("group.abbrevs.clear", { get: function removeAll() this.user.closure.clear }),
+    get: deprecated("group.abbrevs.get", { get: function get() this.user.bound.get }),
+    set: deprecated("group.abbrevs.set", { get: function set() this.user.bound.set }),
+    remove: deprecated("group.abbrevs.remove", { get: function remove() this.user.bound.remove }),
+    removeAll: deprecated("group.abbrevs.clear", { get: function removeAll() this.user.bound.clear }),
 
     /**
      * Returns the abbreviation for the given *mode* if *text* matches the

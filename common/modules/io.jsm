@@ -489,7 +489,7 @@ var IO = Module("io", {
     system: function system(command, input, callback) {
         util.dactyl.echomsg(_("io.callingShell", command), 4);
 
-        let { shellEscape } = util.closure;
+        let { shellEscape } = util.bound;
 
         return this.withTempFiles(function (stdin, stdout, cmd) {
             if (input instanceof File)

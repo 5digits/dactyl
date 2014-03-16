@@ -765,7 +765,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
     completion: function initCompletion() {
         completion.register = function complete_register(context) {
             context = context.fork("registers");
-            context.keys = { text: util.identity, description: editor.closure.getRegister };
+            context.keys = { text: util.identity, description: editor.bound.getRegister };
 
             context.match = function (r) !this.filter || this.filter.contains(r);
 

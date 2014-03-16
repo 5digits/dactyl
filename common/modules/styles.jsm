@@ -558,7 +558,7 @@ var Styles = Module("Styles", {
             let uris = util.visibleURIs(window.content);
             context.compare = modules.CompletionContext.Sort.number;
             context.generate = () => args["-group"].sheets;
-            context.keys.active = sheet => uris.some(sheet.closure.match);
+            context.keys.active = sheet => uris.some(sheet.bound.match);
             context.keys.description = sheet => [sheet.formatSites(uris), ": ", sheet.css.replace("\n", "\\n")];
             if (filter)
                 context.filters.push(({ item }) => filter(item));

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -77,9 +77,9 @@ var AutoCommands = Module("autocommands", {
 
     get activeHives() contexts.allGroups.autocmd.filter(h => h._store.length),
 
-    add: deprecated("group.autocmd.add", { get: function add() autocommands.user.closure.add }),
-    get: deprecated("group.autocmd.get", { get: function get() autocommands.user.closure.get }),
-    remove: deprecated("group.autocmd.remove", { get: function remove() autocommands.user.closure.remove }),
+    add: deprecated("group.autocmd.add", { get: function add() autocommands.user.bound.add }),
+    get: deprecated("group.autocmd.get", { get: function get() autocommands.user.bound.get }),
+    remove: deprecated("group.autocmd.remove", { get: function remove() autocommands.user.bound.remove }),
 
     /**
      * Lists all autocommands with a matching *event*, *regexp* and optionally

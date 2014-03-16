@@ -90,14 +90,14 @@ var MOW = Module("mow", {
 
         if (modes.main != modes.OUTPUT_MULTILINE) {
             modes.push(modes.OUTPUT_MULTILINE, null, {
-                onKeyPress: this.closure.onKeyPress,
+                onKeyPress: this.bound.onKeyPress,
 
-                leave: this.closure(function leave(stack) {
+                leave: stack => {
                     if (stack.pop)
                         for (let message in values(this.messages))
                             if (message.leave)
                                 message.leave(stack);
-                }),
+                },
 
                 window: this.window
             });

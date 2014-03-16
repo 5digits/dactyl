@@ -341,7 +341,7 @@ var CommandMode = Class("CommandMode", {
                       false);
 
         this.messageCount = commandline.messageCount;
-        modes.push(this.mode, this.extendedMode, this.closure);
+        modes.push(this.mode, this.extendedMode, this.bound);
 
         this.widgets.active.commandline.collapsed = false;
         this.widgets.prompt = this.prompt;
@@ -791,7 +791,7 @@ var CommandLine = Module("commandline", {
         let action = this._echoLine;
 
         if ((flags & this.FORCE_MULTILINE) || (/\n/.test(data) || !isinstance(data, [_, "String"])) && !(flags & this.FORCE_SINGLELINE))
-            action = mow.closure.echo;
+            action = mow.bound.echo;
 
         let checkSingleLine = () => action == this._echoLine;
 
@@ -803,7 +803,7 @@ var CommandLine = Module("commandline", {
             // So complicated...
             if (checkSingleLine() && !this.widgets.mowContainer.collapsed) {
                 highlightGroup += " Message";
-                action = mow.closure.echo;
+                action = mow.bound.echo;
             }
             else if (!checkSingleLine() && this.widgets.mowContainer.collapsed) {
                 if (this._lastEcho && this.widgets.message && this.widgets.message[1] == this._lastEcho.msg) {
@@ -1113,7 +1113,7 @@ var CommandLine = Module("commandline", {
             this.itemList = commandline.completionList;
             this.itemList.open(this.context);
 
-            dactyl.registerObserver("events.doneFeeding", this.closure.onDoneFeeding, true);
+            dactyl.registerObserver("events.doneFeeding", this.bound.onDoneFeeding, true);
 
             this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
                 if (events.feedingKeys && !tabPressed)
@@ -1246,7 +1246,7 @@ var CommandLine = Module("commandline", {
          * called.
          */
         cleanup: function cleanup() {
-            dactyl.unregisterObserver("events.doneFeeding", this.closure.onDoneFeeding);
+            dactyl.unregisterObserver("events.doneFeeding", this.bound.onDoneFeeding);
             this.previewClear();
 
             this.tabTimer.reset();
@@ -1945,7 +1945,7 @@ var ItemList = Class("ItemList", {
                 this.resize(flags);
         }, this);
 
-        DOM(this.win).resize(this._onResize.closure.tell);
+        DOM(this.win).resize(this._onResize.bound.tell);
     },
 
     get rootXML()
@@ -2397,8 +2397,8 @@ var ItemList = Class("ItemList", {
                         first = row;
 
                 let container = DOM(this.nodes.items);
-                let before    = first ? DOM(first).closure.before
-                                      : DOM(this.nodes.items).closure.append;
+                let before    = first ? DOM(first).bound.before
+                                      : DOM(this.nodes.items).bound.append;
 
                 for (let [i, row] in this.context.getRows(range.start, range.end,
                                                           this.doc)) {

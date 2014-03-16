@@ -206,7 +206,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     registerObservers: function registerObservers(obj, prop) {
         for (let [signal, func] in Iterator(obj[prop || "signals"]))
-            this.registerObserver(signal, obj.closure(func), false);
+            this.registerObserver(signal, func.bind(obj), false);
     },
 
     unregisterObserver: function unregisterObserver(type, callback) {
@@ -241,7 +241,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let filters = args.map(arg => let (re = util.regexp.escape(arg))
                                         util.regexp("\\b" + re + "\\b|(?:^|[()\\s])" + re + "(?:$|[()\\s])", "i"));
                 if (filters.length)
-                    results = results.filter(item => filters.every(re => keys(item).some(re.closure.test)));
+                    results = results.filter(item => filters.every(re => keys(item).some(re.bound.test)));
 
                 commandline.commandOutput(
                     template.usage(results, params.format));
@@ -377,9 +377,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     dump: deprecated("util.dump",
-                     { get: function dump() util.closure.dump }),
+                     { get: function dump() util.bound.dump }),
     dumpStack: deprecated("util.dumpStack",
-                          { get: function dumpStack() util.closure.dumpStack }),
+                          { get: function dumpStack() util.bound.dumpStack }),
 
     /**
      * Outputs a plain message to the command line.
@@ -627,8 +627,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
     },
 
-    help: deprecated("help.help", { get: function help() modules.help.closure.help }),
-    findHelp: deprecated("help.findHelp", { get: function findHelp() help.closure.findHelp }),
+    help: deprecated("help.help", { get: function help() modules.help.bound.help }),
+    findHelp: deprecated("help.findHelp", { get: function findHelp() help.bound.findHelp }),
 
     /**
      * @private
@@ -724,7 +724,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
 
         if (obj.completer && false)
-            add(completion._runCompleter(obj.closure.completer, "", null, args).items
+            add(completion._runCompleter(obj.bound.completer, "", null, args).items
                           .map(i => [i.text, i.description]));
 
         if (obj.options && obj.options.some(o => o.description) && false)

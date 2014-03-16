@@ -24,7 +24,7 @@ var HintSession = Class("HintSession", CommandMode, {
         this.activeTimeout = null; // needed for hinttimeout > 0
         this.continue = Boolean(opts.continue);
         this.docs = [];
-        this.hintKeys = DOM.Event.parse(options["hintkeys"]).map(DOM.Event.closure.stringify);
+        this.hintKeys = DOM.Event.parse(options["hintkeys"]).map(DOM.Event.bound.stringify);
         this.hintNumber = 0;
         this.hintString = opts.filter || "";
         this.pageHints = [];
@@ -36,8 +36,8 @@ var HintSession = Class("HintSession", CommandMode, {
         this.open();
 
         this.top = opts.window || content;
-        this.top.addEventListener("resize", this.closure._onResize, true);
-        this.top.addEventListener("dactyl-commandupdate", this.closure._onResize, false, true);
+        this.top.addEventListener("resize", this.bound._onResize, true);
+        this.top.addEventListener("dactyl-commandupdate", this.bound._onResize, false, true);
 
         this.generate();
 
@@ -101,8 +101,8 @@ var HintSession = Class("HintSession", CommandMode, {
             if (hints.hintSession == this)
                 hints.hintSession = null;
             if (this.top) {
-                this.top.removeEventListener("resize", this.closure._onResize, true);
-                this.top.removeEventListener("dactyl-commandupdate", this.closure._onResize, true);
+                this.top.removeEventListener("resize", this.bound._onResize, true);
+                this.top.removeEventListener("dactyl-commandupdate", this.bound._onResize, true);
             }
 
             this.removeHints(0);
@@ -750,19 +750,19 @@ var Hints = Module("hints", {
 
         let appContent = document.getElementById("appcontent");
         if (appContent)
-            events.listen(appContent, "scroll", this.resizeTimer.closure.tell, false);
+            events.listen(appContent, "scroll", this.resizeTimer.bound.tell, false);
 
         const Mode = Hints.Mode;
         Mode.prototype.__defineGetter__("matcher", function ()
             options.get("extendedhinttags").getKey(this.name, options.get("hinttags").matcher));
 
         this.modes = {};
-        this.addMode(";", "Focus hint",                           buffer.closure.focusElement);
+        this.addMode(";", "Focus hint",                           buffer.bound.focusElement);
         this.addMode("?", "Show information for hint",            elem => buffer.showElementInfo(elem));
         // TODO: allow for ! override to overwrite existing paths -- where? --djk
         this.addMode("s", "Save hint",                            elem => buffer.saveLink(elem, false));
         this.addMode("f", "Focus frame",                          elem => dactyl.focus(elem.ownerDocument.defaultView));
-        this.addMode("F", "Focus frame or pseudo-frame",          buffer.closure.focusElement, isScrollable);
+        this.addMode("F", "Focus frame or pseudo-frame",          buffer.bound.focusElement, isScrollable);
         this.addMode("o", "Follow hint",                          elem => buffer.followLink(elem, dactyl.CURRENT_TAB));
         this.addMode("t", "Follow hint in a new tab",             elem => buffer.followLink(elem, dactyl.NEW_TAB));
         this.addMode("b", "Follow hint in a background tab",      elem => buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
@@ -1044,7 +1044,7 @@ var Hints = Module("hints", {
 
         let indexOf = String.indexOf;
         if (options.get("hintmatching").has("transliterated"))
-            indexOf = Hints.closure.indexOf;
+            indexOf = Hints.bound.indexOf;
 
         switch (options["hintmatching"][0]) {
         case "contains"      : return containsMatcher(hintString);
@@ -1066,7 +1066,7 @@ var Hints = Module("hints", {
                 context.compare = () => 0;
                 context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints.modes))];
             },
-            onCancel: mappings.closure.popCommand,
+            onCancel: mappings.bound.popCommand,
             onSubmit: function (arg) {
                 if (arg)
                     hints.show(arg, opts);
@@ -1342,7 +1342,7 @@ var Hints = Module("hints", {
                     "asdfg;lkjh": "Home Row"
                 },
                 validator: function (value) {
-                    let values = DOM.Event.parse(value).map(DOM.Event.closure.stringify);
+                    let values = DOM.Event.parse(value).map(DOM.Event.bound.stringify);
                     return Option.validIf(array.uniq(values).length === values.length && values.length > 1,
                                           _("option.hintkeys.duplicate"));
                 }

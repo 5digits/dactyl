@@ -90,7 +90,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
         });
     },
 
-    get wrapListener() events.closure.wrapListener
+    get wrapListener() events.bound.wrapListener
 });
 
 /**
@@ -107,9 +107,9 @@ var Events = Module("events", {
                 ["window", { id: document.documentElement.id, xmlns: "xul" },
                     // http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands
                     ["commandset", { id: "dactyl-onfocus", commandupdater: "true", events: "focus",
-                                     commandupdate: this.closure.onFocusChange }],
+                                     commandupdate: this.bound.onFocusChange }],
                     ["commandset", { id: "dactyl-onselect", commandupdater: "true", events: "select",
-                                     commandupdate: this.closure.onSelectionChange }]]]
+                                     commandupdate: this.bound.onSelectionChange }]]]
         });
 
         this._fullscreen = window.fullScreen;
@@ -211,7 +211,7 @@ var Events = Module("events", {
         }
     },
 
-    get listen() this.builtin.closure.listen,
+    get listen() this.builtin.bound.listen,
     addSessionListener: deprecated("events.listen", { get: function addSessionListener() this.listen }),
 
     /**
@@ -424,11 +424,11 @@ var Events = Module("events", {
         return true;
     },
 
-    canonicalKeys: deprecated("DOM.Event.canonicalKeys", { get: function canonicalKeys() DOM.Event.closure.canonicalKeys }),
+    canonicalKeys: deprecated("DOM.Event.canonicalKeys", { get: function canonicalKeys() DOM.Event.bound.canonicalKeys }),
     create:        deprecated("DOM.Event", function create() DOM.Event.apply(null, arguments)),
     dispatch:      deprecated("DOM.Event.dispatch", function dispatch() DOM.Event.dispatch.apply(DOM.Event, arguments)),
-    fromString:    deprecated("DOM.Event.parse", { get: function fromString() DOM.Event.closure.parse }),
-    iterKeys:      deprecated("DOM.Event.iterKeys", { get: function iterKeys() DOM.Event.closure.iterKeys }),
+    fromString:    deprecated("DOM.Event.parse", { get: function fromString() DOM.Event.bound.parse }),
+    iterKeys:      deprecated("DOM.Event.iterKeys", { get: function iterKeys() DOM.Event.bound.iterKeys }),
 
     toString: function toString() {
         if (!arguments.length)
@@ -1153,9 +1153,9 @@ var Events = Module("events", {
                     let value = parse.superapply(this, arguments);
                     value.forEach(function (filter) {
                         let vals = Option.splitList(filter.result);
-                        filter.keys = DOM.Event.parse(vals[0]).map(DOM.Event.closure.stringify);
+                        filter.keys = DOM.Event.parse(vals[0]).map(DOM.Event.bound.stringify);
 
-                        filter.commandKeys = vals.slice(1).map(DOM.Event.closure.canonicalKeys);
+                        filter.commandKeys = vals.slice(1).map(DOM.Event.bound.canonicalKeys);
                         filter.inputKeys = filter.commandKeys.filter(bind("test", /^<[ACM]-/));
                     });
                     return value;

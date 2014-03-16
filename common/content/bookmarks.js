@@ -172,7 +172,7 @@ var Bookmarks = Module("bookmarks", {
         }
     },
 
-    isBookmarked: deprecated("bookmarkcache.isBookmarked", { get: function isBookmarked() bookmarkcache.closure.isBookmarked }),
+    isBookmarked: deprecated("bookmarkcache.isBookmarked", { get: function isBookmarked() bookmarkcache.bound.isBookmarked }),
 
     /**
      * Remove a bookmark or bookmarks. If *ids* is an array, removes the
@@ -189,7 +189,7 @@ var Bookmarks = Module("bookmarks", {
                 let uri = util.newURI(ids);
                 ids = services.bookmarks
                               .getBookmarkIdsForURI(uri, {})
-                              .filter(bookmarkcache.closure.isRegularBookmark);
+                              .filter(bookmarkcache.bound.isRegularBookmark);
             }
             ids.forEach(function (id) {
                 let bmark = bookmarkcache.bookmarks[id];

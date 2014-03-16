@@ -144,7 +144,7 @@ var Template = Module("Template", {
                     events["dactyl-input"] = events["input"];
 
                 for (let [event, handler] in Iterator(events))
-                    node.addEventListener(event, util.wrapCallback(obj.closure(handler), true), false);
+                    node.addEventListener(event, util.wrapCallback(handler.bind(obj), true), false);
             }
         })
     },

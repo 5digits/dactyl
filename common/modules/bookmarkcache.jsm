@@ -1,4 +1,4 @@
-// Copyright ©2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright ©2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -160,7 +160,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         try {
             return services.bookmarks
                            .getBookmarkIdsForURI(uri, {})
-                           .some(this.closure.isRegularBookmark);
+                           .some(this.bound.isRegularBookmark);
         }
         catch (e) {
             return false;

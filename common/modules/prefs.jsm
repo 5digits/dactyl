@@ -291,7 +291,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} branch The preference name. @optional
      */
     resetBranch: function resetBranch(branch) {
-        this.getNames(branch).forEach(this.closure.reset);
+        this.getNames(branch).forEach(this.bound.reset);
     },
 
     /**

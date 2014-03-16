@@ -72,8 +72,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     activeWindow: deprecated("overlay.activeWindow", { get: function activeWindow() overlay.activeWindow }),
-    overlayObject: deprecated("overlay.overlayObject", { get: function overlayObject() overlay.closure.overlayObject }),
-    overlayWindow: deprecated("overlay.overlayWindow", { get: function overlayWindow() overlay.closure.overlayWindow }),
+    overlayObject: deprecated("overlay.overlayObject", { get: function overlayObject() overlay.bound.overlayObject }),
+    overlayWindow: deprecated("overlay.overlayWindow", { get: function overlayWindow() overlay.bound.overlayWindow }),
 
     compileMatcher: deprecated("DOM.compileMatcher", { get: function compileMatcher() DOM.compileMatcher }),
     computedStyle: deprecated("DOM#style", function computedStyle(elem) DOM(elem).style),
@@ -95,7 +95,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     readFromClipboard: deprecated("dactyl.clipboardRead", function readFromClipboard() util.dactyl.clipboardRead(false)),
 
     chromePackages: deprecated("config.chromePackages", { get: function chromePackages() config.chromePackages }),
-    haveGecko: deprecated("config.haveGecko", { get: function haveGecko() config.closure.haveGecko }),
+    haveGecko: deprecated("config.haveGecko", { get: function haveGecko() config.bound.haveGecko }),
     OS: deprecated("config.OS", { get: function OS() config.OS }),
 
     dactyl: update(function dactyl(obj) {
@@ -1280,7 +1280,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
 
         let res = update(RegExp(expr, flags.replace("x", "")), {
-            closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
+            bound: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "bound")),
+            closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "bound")),
             dactylPropertyNames: ["exec", "match", "test", "toSource", "toString", "global", "ignoreCase", "lastIndex", "multiLine", "source", "sticky"],
             iterate: function iterate(str, idx) util.regexp.iterate(this, str, idx)
         });

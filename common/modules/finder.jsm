@@ -253,10 +253,10 @@ var RangeFinder = Module("rangefinder", {
 
             get prompt() this.mode === modules.modes.FIND_BACKWARD ? "?" : "/",
 
-            get onCancel() modules.rangefinder.closure.onCancel,
-            get onChange() modules.rangefinder.closure.onChange,
-            get onHistory() modules.rangefinder.closure.onHistory,
-            get onSubmit() modules.rangefinder.closure.onSubmit
+            get onCancel()  modules.rangefinder.bound.onCancel,
+            get onChange()  modules.rangefinder.bound.onChange,
+            get onHistory() modules.rangefinder.bound.onHistory,
+            get onSubmit()  modules.rangefinder.bound.onSubmit
         });
     },
     mappings: function initMappings(dactyl, modules, window) {
@@ -707,12 +707,12 @@ var RangeFind = Class("RangeFind", {
 
     addListeners: function addListeners() {
         for (let range in array.iterValues(this.ranges))
-            range.window.addEventListener("unload", this.closure.onUnload, true);
+            range.window.addEventListener("unload", this.bound.onUnload, true);
     },
     purgeListeners: function purgeListeners() {
         for (let range in array.iterValues(this.ranges))
             try {
-                range.window.removeEventListener("unload", this.closure.onUnload, true);
+                range.window.removeEventListener("unload", this.bound.onUnload, true);
             }
             catch (e if e.result === Cr.NS_ERROR_FAILURE) {}
     },

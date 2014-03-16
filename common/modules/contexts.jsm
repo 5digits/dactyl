@@ -43,14 +43,14 @@ var Group = Class("Group", {
             delete this[hive];
 
         if (reason != "shutdown")
-            this.children.splice(0).forEach(this.contexts.closure.removeGroup);
+            this.children.splice(0).forEach(this.contexts.bound.removeGroup);
     },
     destroy: function destroy(reason) {
         for (let hive in values(this.hives))
             util.trapErrors("destroy", hive);
 
         if (reason != "shutdown")
-            this.children.splice(0).forEach(this.contexts.closure.removeGroup);
+            this.children.splice(0).forEach(this.contexts.bound.removeGroup);
     },
 
     argsExtra: function argsExtra() ({}),

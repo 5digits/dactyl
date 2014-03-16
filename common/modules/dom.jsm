@@ -1092,7 +1092,7 @@ var DOM = Class("DOM", {
          * @returns {string} Canonical form.
          */
         canonicalKeys: function canonicalKeys(keys, unknownOk=true) {
-            return this.parse(keys, unknownOk).map(this.closure.stringify).join("");
+            return this.parse(keys, unknownOk).map(this.bound.stringify).join("");
         },
 
         iterKeys: function iterKeys(keys) iter(function () {
@@ -1480,7 +1480,7 @@ var DOM = Class("DOM", {
      * @returns {boolean} True when the patterns are all valid.
      */
     validateMatcher: function validateMatcher(list) {
-        return this.testValues(list, DOM.closure.testMatcher);
+        return this.testValues(list, DOM.bound.testMatcher);
     },
 
     testMatcher: function testMatcher(value) {

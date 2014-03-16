@@ -142,9 +142,9 @@ var ProcessorStack = Class("ProcessorStack", {
             let list = this.events.filter(e => e.defaultPrevented && !e.dactylDefaultPrevented);
 
             if (result === Events.PASS)
-                events.dbg("PASS THROUGH: " + list.slice(0, length).filter(e => e.type === "keypress").map(DOM.Event.closure.stringify));
+                events.dbg("PASS THROUGH: " + list.slice(0, length).filter(e => e.type === "keypress").map(DOM.Event.bound.stringify));
             if (list.length > length)
-                events.dbg("REFEED: " + list.slice(length).filter(e => e.type === "keypress").map(DOM.Event.closure.stringify));
+                events.dbg("REFEED: " + list.slice(length).filter(e => e.type === "keypress").map(DOM.Event.bound.stringify));
 
             if (result === Events.PASS)
                 events.feedevents(null, list.slice(0, length), { skipmap: true, isMacro: true, isReplay: true });
