@@ -1646,6 +1646,19 @@ const Iter = Class("Iter", {
 });
 iter.Iter = Iter;
 
+function arrayWrap(fn) {
+    function wrapper() {
+        let res = fn.apply(this, arguments);
+        if (isArray(res))
+            return array(res);
+        if (isinstance(res, ["Iterator", "Generator"]))
+            return iter(res);
+        return res;
+    }
+    wrapper.wrapped = fn;
+    return wrapper;
+}
+
 /**
  * Array utility methods.
  */
@@ -1656,23 +1669,25 @@ var array = Class("array", Array, {
         else if (ary.length)
             ary = Array.slice(ary);
 
-        return {
-            __proto__: ary,
-            __iterator__: function () this.iterItems(),
-            __noSuchMethod__: function (meth, args) {
-                var res = array[meth].apply(null, [this.array].concat(args));
-                if (isArray(res))
-                    return array(res);
-                if (isinstance(res, ["Iterator", "Generator"]))
-                    return iter(res);
-                return res;
-            },
-            array: ary,
-            toString: function () this.array.toString(),
-            concat: function (...args) this.__noSuchMethod__("concat", args),
-            filter: function (...args) this.__noSuchMethod__("filter", args),
-            map: function (...args) this.__noSuchMethod__("map", args)
-        };
+        let self = this;
+        return new Proxy(ary, {
+            get: function array_get(target, prop) {
+                if (prop in array && callable(array[prop]))
+                    return arrayWrap(array[prop].bind(array, target));
+
+                if (prop == "array")
+                    return target;
+
+                let p = target[prop];
+                if (!/^\d+$/.test(prop) &&
+                    prop != "toString" &&
+                    prop != "toSource" &&
+                    callable(p))
+                    return arrayWrap(p);
+
+                return p;
+            }
+        });
     }
 }, {
     /**
