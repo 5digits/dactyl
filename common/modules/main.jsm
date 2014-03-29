@@ -110,49 +110,34 @@ var Modules = function Modules(window) {
 
     const BASES = [BASE, "resource://dactyl-local-content/"];
 
+    var traps = {
+        get: function window_get(target, prop) {
+            // `in`, not `hasOwnProperty`, because we want to return
+            // unbound methods in `Object.prototype`
+            if (prop in proxyCache)
+                return proxyCache[prop];
+
+            let p = target[prop];
+            if (callable(p))
+                return proxyCache[prop] = p.bind(target);
+
+            return p;
+        },
+
+        set: function window_set(target, prop, val) {
+            return target[prop] = val;
+        }
+    };
+
     let proxyCache = {};
     if (config.haveGecko(29))
-        var proxy = new Proxy(window, {
-            get: function window_get(target, prop) {
-                // `in`, not `hasOwnProperty`, because we want to return
-                // unbound methods in `Object.prototype`
-                if (prop in proxyCache)
-                    return proxyCache[prop];
-
-                let p = target[prop];
-                if (callable(p))
-                    return proxyCache[prop] = p.bind(target);
-
-                return p;
-            },
-
-            set: function window_set(target, prop, val) {
-                return target[prop] = val;
-            }
-        });
+        var proxy = new Proxy(window, traps);
     else {
         // Bug 814892
         let o = {};
         // Oh, the brokenness... See bug 793210
         Object.preventExtensions(o);
-        proxy = new Proxy(o, {
-            get: function window_get(target, prop) {
-                // `in`, not `hasOwnProperty`, because we want to return
-                // unbound methods in `Object.prototype`
-                if (prop in proxyCache)
-                    return proxyCache[prop];
-
-                let p = window[prop];
-                if (callable(p))
-                    return proxyCache[prop] = p.bind(window);
-
-                return p;
-            },
-
-            set: function window_set(target, prop, val) {
-                return window[prop] = val;
-            },
-
+        proxy = new Proxy(o, update(traps, {
             getOwnPropertyDescriptor: function (target, prop) Object.getOwnPropertyDescriptor(window, prop),
             getOwnPropertyNames: function (target, prop) Object.getOwnPropertyNames(window),
             defineProperty: function (target, prop, desc) Object.defineProperty(window, prop, desc),
@@ -161,7 +146,7 @@ var Modules = function Modules(window) {
             hasOwn: function (target, prop) hasOwnProperty(window, prop),
             enumerate: function (target) (p for (p in window)),
             iterate: function (target) (p for (p of window))
-        });
+        }));
     }
 
     var jsmodules = newContext(proxy, false, "Dactyl `jsmodules`");

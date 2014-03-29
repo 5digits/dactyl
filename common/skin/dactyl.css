@@ -243,6 +243,11 @@ statusbarpanel {
     min-height: 0 !important;
 }
 
+/* Fix stupid line... */
+[dactyl-australis=true] #navigator-toolbox::after {
+    height: 0 !important;
+}
+
 #PanelUI-button,
 #PanelUI-menu-button,
 #nav-bar-customization-target > .toolbarbutton-1,
