@@ -83,18 +83,26 @@ var Buffer = Module("Buffer", {
              * Returns a promise for the given preference name.
              *
              * @param {string} pref The name of the preference to return.
-             * @returns {Promise<string>}
+             * @returns {Promise<*>}
              */
             get: promises.withCallbacks(function get([resolve, reject], pref) {
-                let pref = services.contentPrefs.getCachedByDomainAndName(
+                let val = services.contentPrefs.getCachedByDomainAndName(
                     self.uri.spec, pref, self.loadContext);
-                if (pref)
-                    resolve(pref.value);
+
+                let found = false;
+                if (val)
+                    resolve(val.value);
                 else
                     services.contentPrefs.getByDomainAndName(
                         self.uri.spec, pref, self.loadContext,
-                        { handleCompletion: () => {},
-                          handleResult: resolve,
+                        { handleCompletion: () => {
+                              if (!found)
+                                  resolve(undefined);
+                          },
+                          handleResult: (pref) => {
+                              found = true;
+                              resolve(pref.value);
+                          },
                           handleError: reject });
             }),
 
