@@ -86,11 +86,16 @@ var Buffer = Module("Buffer", {
              * @returns {Promise<string>}
              */
             get: promises.withCallbacks(function get([resolve, reject], pref) {
-                services.contentPrefs.getByDomainAndName(
-                    self.uri.spec, pref, self.loadContext,
-                    { handleCompletion: () => {},
-                      handleResult: resolve,
-                      handleError: reject });
+                let pref = services.contentPrefs.getCachedByDomainAndName(
+                    self.uri.spec, pref, self.loadContext);
+                if (pref)
+                    resolve(pref.value);
+                else
+                    services.contentPrefs.getByDomainAndName(
+                        self.uri.spec, pref, self.loadContext,
+                        { handleCompletion: () => {},
+                          handleResult: resolve,
+                          handleError: reject });
             }),
 
             /**

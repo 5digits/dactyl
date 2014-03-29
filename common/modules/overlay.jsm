@@ -336,18 +336,23 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         overrides = update(Object.create(original), overrides);
 
         Object.getOwnPropertyNames(overrides).forEach(function (k) {
-            let orig, desc = Object.getOwnPropertyDescriptor(overrides, k);
+            let desc = Object.getOwnPropertyDescriptor(overrides, k);
+
             if (desc.value instanceof Class.Property)
                 desc = desc.value.init(k) || desc.value;
 
             if (k in object) {
-                for (let obj = object; obj && !orig; obj = Object.getPrototypeOf(obj))
-                    if (orig = Object.getOwnPropertyDescriptor(obj, k))
+                for (let obj = object; obj && !orig; obj = Object.getPrototypeOf(obj)) {
+                    var orig = Object.getOwnPropertyDescriptor(obj, k);
+                    if (orig)
                         Object.defineProperty(original, k, orig);
+                }
 
-                if (!orig)
-                    if (orig = Object.getPropertyDescriptor(object, k))
+                if (!orig) {
+                    orig = Object.getPropertyDescriptor(object, k);
+                    if (orig)
                         Object.defineProperty(original, k, orig);
+                }
             }
 
             // Guard against horrible add-ons that use eval-based monkey

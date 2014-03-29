@@ -1,11 +1,17 @@
 #### configuration
 
 
+_SH       := $(shell if which dash >/dev/null 2>&1; \
+		     then echo dash; \
+		     else echo sh;   \
+		     fi)
+SH        ?= $(_SH)
 AWK       ?= awk
 B64ENCODE ?= base64
 CURL      ?= curl
 SED       := $(shell if [ "xoo" = x$$(echo foo | sed -E 's/f(o)/\1/' 2>/dev/null) ]; \
-		     then echo sed -E; else echo sed -r;			     \
+		     then echo sed -E; \
+		     else echo sed -r; \
 		     fi)
 
 TOP           = $(shell pwd)
@@ -28,7 +34,7 @@ LOCALEDIR     = locale
 DOC_FILES     = $(wildcard $(LOCALEDIR)/*/*.xml)
 
 export VERSION BUILD_DATE
-MAKE_JAR      = sh $(BASE)/make_jar.sh
+MAKE_JAR      = $(SH) $(BASE)/make_jar.sh
 
 # TODO: specify source files manually?
 JAR_BASES     = $(TOP) $(BASE)

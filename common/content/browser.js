@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -16,11 +16,17 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         this.cleanupProgressListener = overlay.overlayObject(window.XULBrowserWindow,
                                                              this.progressListener);
         util.addObserver(this);
+
+        this._unoverlay = overlay.overlayObject(FullZoom, {
+            get siteSpecific() false,
+            set siteSpecific(val) {}
+        });
     },
 
     destroy: function () {
         this.cleanupProgressListener();
         this.observe.unregister();
+        this._unoverlay();
     },
 
     observers: {
