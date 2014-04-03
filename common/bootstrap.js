@@ -134,7 +134,7 @@ let JSMLoader = {
                     return this.modules[name] = this.globals[uri];
 
                 this.globals[uri] = this.modules[name];
-                bootstrap_jsm.loadSubScript(url, this.modules[name]);
+                bootstrap_jsm.loadSubScript(url, this.modules[name], "UTF-8");
                 return;
             }
             catch (e) {

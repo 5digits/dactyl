@@ -749,7 +749,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *
      * @returns {XMLHttpRequest}
      */
-    httpGet: function httpGet(url, params, self) {
+    httpGet: function httpGet(url, params={}, self) {
         if (callable(params))
             // Deprecated.
             params = { callback: params.bind(self) };
