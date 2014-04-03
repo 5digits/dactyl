@@ -593,7 +593,7 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
     init: function init(dactyl, modules, window) {
         init.superapply(this, arguments);
 
-        let img = window.Image();
+        let img = new window.Image;
         img.src = this.logo || "resource://dactyl-local-content/logo.png";
         img.onload = util.wrapCallback(function () {
             highlight.loadCSS(literal(/*
