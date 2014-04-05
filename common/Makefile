@@ -96,26 +96,6 @@ info:
 
 jar: $(JAR)
 
-# This is not for you!
-dist: $(XPI)
-	@echo DIST $(XPI) $(GOOGLE)
-	set -e;							        	\
-								        	\
-	proj=$$(echo -n $(NAME) | sed 's/\(.\).*/\1/' | tr a-z A-Z);    	\
-	proj="$$proj$$(echo $(NAME) | sed 's/.//')";                    	\
-	[ -z "$$summary" ] && summary="$$proj $(VERSION) Release"; 		\
-	labels="Project-$$proj,$(labels)";					\
-	[ -n "$(featured)" ] && labels="$$labels,Featured";             	\
-								        	\
-	IFS=,; for l in $$labels; do						\
-		set -- "$$@" --form-string "label=$$l";				\
-	done;									\
-	auth=$$(echo -n "$(GOOGLE_USER):$(GOOGLE_PASS)" | $(B64ENCODE));	\
-	$(CURL) "$$@" --form-string "summary=$$summary" 			\
-		-F "filename=@$(XPI)"						\
-		-H "Authorization: Basic $$auth"				\
-		-i "$(GOOGLE)" | sed -n '/^Location/{p;q;}'
-
 install:
 	export dir; 								\
 	for dir in $(PROFILEPATHS); do 						\
