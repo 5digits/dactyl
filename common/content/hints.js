@@ -1322,7 +1322,8 @@ var Hints = Module("hints", {
         options.add(["hinttags", "ht"],
             "XPath or CSS selector strings of hintable elements for Hints mode",
             // Make sure to update the docs when you change this.
-            "stringlist", ":-moz-any-link,area,button,iframe,input:not([type=hidden]),label[for],select,textarea," +
+            "stringlist", ":-moz-any-link,area,button,iframe,input:not([type=hidden]):not([disabled])," +
+                          "label[for],select,textarea," +
                           "[onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand]," +
                           "[tabindex],[role=link],[role=button],[contenteditable=true]",
             {
