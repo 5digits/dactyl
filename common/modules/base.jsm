@@ -1283,6 +1283,7 @@ var StructBase = Class("StructBase", Array, {
 
     clone: function struct_clone() this.constructor.apply(null, this.slice()),
 
+    bound: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "bound")),
     closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
 
     get: function struct_get(key, val) this[this.members[key]],
