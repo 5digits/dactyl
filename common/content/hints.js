@@ -756,6 +756,16 @@ var Hints = Module("hints", {
         Mode.prototype.__defineGetter__("matcher", function ()
             options.get("extendedhinttags").getKey(this.name, options.get("hinttags").matcher));
 
+        function cleanLoc(loc) {
+            try {
+                let uri = util.newURI(loc);
+                if (uri.scheme == "mailto" && !~uri.path.indexOf("?"))
+                    return uri.path;
+            }
+            catch (e) {}
+            return loc;
+        }
+
         this.modes = {};
         this.addMode(";", "Focus hint",                           buffer.bound.focusElement);
         this.addMode("?", "Show information for hint",            elem => buffer.showElementInfo(elem));
@@ -774,7 +784,7 @@ var Hints = Module("hints", {
         this.addMode("S", "Add a search keyword",                 elem => bookmarks.addSearchKeyword(elem));
         this.addMode("v", "View hint source",                     (elem, loc) => buffer.viewSource(loc, false));
         this.addMode("V", "View hint source in external editor",  (elem, loc) => buffer.viewSource(loc, true));
-        this.addMode("y", "Yank hint location",                   (elem, loc) => editor.setRegister(null, loc, true));
+        this.addMode("y", "Yank hint location",                   (elem, loc) => editor.setRegister(null, cleanLoc(loc), true));
         this.addMode("Y", "Yank hint description",                elem => editor.setRegister(null, elem.textContent || "", true));
         this.addMode("A", "Yank hint anchor url",                 function (elem) {
             let uri = elem.ownerDocument.documentURIObject.clone();
