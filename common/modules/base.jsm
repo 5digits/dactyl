@@ -1099,6 +1099,21 @@ var closureHooks = {
             return target._closureCache[prop] = p.bind(target);
         return p;
     }
+
+    /*
+    getOwnPropertyNames: function getOwnPropertyNames(target) {
+        return [k for (k in properties(target, true))];
+    },
+
+    getOwnPropertyDescriptor: function getOwnPropertyDescriptor(target, prop) {
+        let self = this;
+        return {
+            configurable: false,
+            writable: false,
+            get value() self.get(target, prop)
+        }
+    }
+    */
 };
 
 Class.makeClosure = function makeClosure() {

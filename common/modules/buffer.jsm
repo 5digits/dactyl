@@ -1812,7 +1812,7 @@ var Buffer = Module("Buffer", {
                 let arg = args[0];
 
                 // FIXME: arg handling is a bit of a mess, check for filename
-                dactyl.assert(!arg || arg[0] == ">" && !config.OS.isWindows,
+                dactyl.assert(!arg || arg[0] == ">",
                               _("error.trailingCharacters"));
 
                 const PRINTER  = "PostScript/default";
@@ -1822,26 +1822,25 @@ var Buffer = Module("Buffer", {
                     BRANCHES.forEach(function (branch) { prefs.set(branch + pref, value); });
                 }
 
-                prefs.withContext(function () {
-                    if (arg) {
-                        prefs.set("print.print_printer", PRINTER);
+                let settings = services.printSettings.newPrintSettings;
+                settings.printSilent = args.bang;
+                if (arg) {
+                    settings.printToFile = true;
+                    settings.toFileName = io.File(arg.substr(1)).path;
+                    settings.outputFormat = settings.kOutputFormatPDF;
 
-                        let { path } = io.File(arg.substr(1));
-                        set("print_to_file", true);
-                        set("print_to_filename", path);
-                        prefs.set("print_to_filename", path);
+                    dactyl.echomsg(_("print.toFile", arg.substr(1)));
+                }
+                else {
+                    dactyl.echomsg(_("print.sending"));
 
-                        dactyl.echomsg(_("print.toFile", arg.substr(1)));
-                    }
-                    else
-                        dactyl.echomsg(_("print.sending"));
-
-                    prefs.set("print.always_print_silent", args.bang);
                     if (false)
                         prefs.set("print.show_print_progress", !args.bang);
+                }
 
-                    config.browser.contentWindow.print();
-                });
+                config.browser.contentWindow
+                      .QueryInterface(Ci.nsIInterfaceRequestor)
+                      .getInterface(Ci.nsIWebBrowserPrint).print(settings, null);
 
                 dactyl.echomsg(_("print.sent"));
             },

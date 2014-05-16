@@ -63,6 +63,7 @@ var Services = Module("Services", {
         this.add("mime",                "@mozilla.org/mime;1",                              "nsIMIMEService");
         this.add("observer",            "@mozilla.org/observer-service;1",                  "nsIObserverService");
         this.add("pref",                "@mozilla.org/preferences-service;1",               ["nsIPrefBranch2", "nsIPrefService"]);
+        this.add("printSettings",       "@mozilla.org/gfx/printsettings-service;1",         "nsIPrintSettingsService");
         this.add("privateBrowsing",     "@mozilla.org/privatebrowsing;1",                   "nsIPrivateBrowsingService");
         this.add("profile",             "@mozilla.org/toolkit/profile-service;1",           "nsIToolkitProfileService");
         this.add("resource:",           this.PROTOCOL + "resource",                         ["nsIProtocolHandler", "nsIResProtocolHandler"]);
