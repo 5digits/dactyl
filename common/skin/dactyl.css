@@ -248,6 +248,12 @@ statusbarpanel {
     height: 0 !important;
 }
 
+#nav-bar-customization-target > .toolbarbutton-1 {
+    margin-top: -5px !important;
+    margin-bottom: -5px !important;
+}
+
+/*
 #PanelUI-button,
 #PanelUI-menu-button,
 #nav-bar-customization-target > .toolbarbutton-1,
@@ -270,6 +276,7 @@ statusbarpanel {
 #nav-bar-customization-target #urlbar {
     margin-bottom: 0 !important;
 }
+*/
 
 }
 
