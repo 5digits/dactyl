@@ -254,7 +254,8 @@ function init() {
         bootstrap = bootstrap_jsm;
     else {
         bootstrap = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance(),
-                               { sandboxName: BOOTSTRAP });
+                               { sandboxName: BOOTSTRAP,
+                                 metadata: { addonID: addon.id } });
         Services.scriptloader.loadSubScript(BOOTSTRAP, bootstrap);
     }
     bootstrap.require = JSMLoader.load("base").require;
