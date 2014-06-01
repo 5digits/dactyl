@@ -2290,7 +2290,7 @@ var Buffer = Module("Buffer", {
 
                         elem = DOM(elem);
 
-                        if (elem[0].readOnly || !DOM(elem).isEditable)
+                        if (elem[0].readOnly || elem[0].disabled || !DOM(elem).isEditable)
                             return false;
 
                         let style = elem.style;
