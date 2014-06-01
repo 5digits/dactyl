@@ -1113,7 +1113,7 @@ var Commands = Module("commands", {
 
                                             if (arg == null || (typeof arg == "number" && isNaN(arg))) {
                                                 if (!complete || orig != "" || args.completeStart != str.length)
-                                                    fail(_("command.invalidOptTypeArg", opt.type.description, optname, argString));
+                                                    fail(_("command.invalidOptTypeArg", opt.type.description, optname, quoted));
                                                 if (complete)
                                                     complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
                                             }
@@ -1122,7 +1122,7 @@ var Commands = Module("commands", {
                                         // we have a validator function
                                         if (typeof opt.validator == "function") {
                                             if (opt.validator(arg, quoted) == false && (arg || !complete)) {
-                                                fail(_("command.invalidOptArg", optname, argString));
+                                                fail(_("command.invalidOptArg", optname, quoted));
                                                 if (complete) // Always true.
                                                     complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
                                             }
