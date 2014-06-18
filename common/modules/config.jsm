@@ -596,14 +596,14 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
         let img = new window.Image;
         img.src = this.logo || "resource://dactyl-local-content/logo.png";
         img.onload = util.wrapCallback(function () {
-            highlight.loadCSS(literal(/*
+            highlight.loadCSS(literal(function () /*
                 !Logo  {
                      display:    inline-block;
                      background: url({src});
                      width:      {width}px;
                      height:     {height}px;
                 }
-            */).replace(/\{(.*?)\}/g, (m, m1) => img[m1]));
+            */$).replace(/\{(.*?)\}/g, (m, m1) => img[m1]));
             img = null;
         });
     },

@@ -252,11 +252,11 @@ var Template = Module("Template", {
         return [tag, { xmlns: "dactyl" }, topic];
     },
     linkifyHelp: function linkifyHelp(str, help) {
-        let re = util.regexp(literal(/*
+        let re = util.regexp(literal(function () /*
             (?P<pre> [/\s]|^)
             (?P<tag> '[\w-]+' | :(?:[\w-]+!?|!) | (?:._)?<[\w-]+>\w* | \b[a-zA-Z]_(?:[\w[\]]+|.) | \[[\w-;]+\] | E\d{3} )
             (?=      [[\)!,:;./\s]|$)
-        */), "gx");
+        */$), "gx");
         return this.highlightSubstrings(str, (function () {
             for (let res in re.iterate(str))
                 yield [res.index + res.pre.length, res.tag.length];

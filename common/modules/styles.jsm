@@ -469,7 +469,7 @@ var Styles = Module("Styles", {
         }
     },
 
-    propertyPattern: util.regexp(literal(/*
+    propertyPattern: util.regexp(literal(function () /*
             (?:
                 (?P<preSpace> <space>*)
                 (?P<name> [-a-z]*)
@@ -491,14 +491,14 @@ var Styles = Module("Styles", {
                 )?
             )
             (?P<postSpace> <space>* (?: ; | $) )
-        */), "gix",
+        */$), "gix",
         {
             space: /(?: \s | \/\* .*? \*\/ )/,
             string: /(?:" (?:[^\\"]|\\.)* (?:"|$) | '(?:[^\\']|\\.)* (?:'|$) )/
         }),
 
     patterns: memoize({
-        get property() util.regexp(literal(/*
+        get property() util.regexp(literal(function () /*
                 (?:
                     (?P<preSpace> <space>*)
                     (?P<name> [-a-z]*)
@@ -509,26 +509,26 @@ var Styles = Module("Styles", {
                     )?
                 )
                 (?P<postSpace> <space>* (?: ; | $) )
-            */), "gix", this),
+            */$), "gix", this),
 
-        get function() util.regexp(literal(/*
+        get function() util.regexp(literal(function () /*
                 (?P<function>
                     \s* \( \s*
                         (?: <string> | [^)]*  )
                     \s* (?: \) | $)
                 )
-            */), "gx", this),
+            */$), "gx", this),
 
         space: /(?: \s | \/\* .*? \*\/ )/,
 
-        get string() util.regexp(literal(/*
+        get string() util.regexp(literal(function () /*
                 (?P<string>
                     " (?:[^\\"]|\\.)* (?:"|$) |
                     ' (?:[^\\']|\\.)* (?:'|$)
                 )
-            */), "gx", this),
+            */$), "gx", this),
 
-        get token() util.regexp(literal(/*
+        get token() util.regexp(literal(function () /*
             (?P<token>
                 (?P<word> [-\w]+)
                 <function>?
@@ -538,7 +538,7 @@ var Styles = Module("Styles", {
                 | <space>+
                 | [^;}\s]+
             )
-        */), "gix", this)
+        */$), "gix", this)
     }),
 
     /**

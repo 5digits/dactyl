@@ -40,7 +40,7 @@ fi
 mungeliterals=$(cat <<'!'
     local $/;
     $_ = <>;
-    s{(?<!function )\bliteral\(/\*(.*?)\*/\)}{
+    s{(?<!function )\bliteral\((?:function \(\) )?/\*(.*?)\*/\$?\)}{
         my $s = $1;
         $s =~ s/[\\']/\\$&/g;
         $s =~ s/\n/\\n\\$&/g;

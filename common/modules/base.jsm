@@ -230,7 +230,10 @@ this.lazyRequire("util", ["FailedAssertion", "util"]);
 
 literal.files = {};
 literal.locations = {};
-function literal(/* comment */) {
+function literal(comment) {
+    if (comment)
+        return /^function.*?\/\*([^]*)\*\/(?:\/\* use strict \*\/)\s*\S$/.exec(comment)[1];
+
     let { caller } = Components.stack;
     while (caller && caller.language != 2)
         caller = caller.caller;

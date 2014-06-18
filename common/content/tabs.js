@@ -36,9 +36,9 @@ var Tabs = Module("tabs", {
             tabs.switchTo(event.originalTarget.getAttribute("identifier"));
         };
 
-        this.tabBinding = styles.system.add("tab-binding", "chrome://browser/content/browser.xul", literal(/*
+        this.tabBinding = styles.system.add("tab-binding", "chrome://browser/content/browser.xul", literal(function () /*
                 xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab) !important; }
-            */).replace(/tab-./g, m => config.OS.isMacOSX ? "tab-mac" : m),
+            */$).replace(/tab-./g, m => config.OS.isMacOSX ? "tab-mac" : m),
             false, true);
 
         this.timeout(function () {

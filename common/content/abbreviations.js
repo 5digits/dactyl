@@ -215,18 +215,18 @@ var Abbreviations = Module("abbreviations", {
             nonkeyword: /[   "']/
         };
 
-        this._match = util.regexp(literal(/*
+        this._match = util.regexp(literal(function () /*
             (^ | \s | <nonkeyword>) (<keyword>+             )$ | // full-id
             (^ | \s | <keyword>   ) (<nonkeyword>+ <keyword>)$ | // end-id
             (^ | \s               ) (\S* <nonkeyword>       )$   // non-id
-        */), "x", params);
-        this._check = util.regexp(literal(/*
+        */$), "x", params);
+        this._check = util.regexp(literal(function () /*
             ^ (?:
               <keyword>+              | // full-id
               <nonkeyword>+ <keyword> | // end-id
               \S* <nonkeyword>          // non-id
             ) $
-        */), "x", params);
+        */$), "x", params);
     },
 
     get allHives() contexts.allGroups.abbrevs,

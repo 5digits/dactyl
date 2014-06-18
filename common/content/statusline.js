@@ -38,20 +38,20 @@ var StatusLine = Module("statusline", {
             config.tabbrowser.getStatusPanel().hidden = true;
 
         if (this.statusBar.localName == "toolbar") {
-            styles.system.add("addon-bar", config.styleableChrome, literal(/*
+            styles.system.add("addon-bar", config.styleableChrome, literal(function () /*
                 #status-bar, #dactyl-status-bar { margin-top: 0 !important; }
                 #dactyl-status-bar { min-height: 0 !important; }
                 :-moz-any(#addon-bar, #dactyl-addon-bar) > statusbar { -moz-box-flex: 1 }
                 :-moz-any(#addon-bar, #dactyl-addon-bar) > xul|toolbarspring { visibility: collapse; }
                 #addon-bar > #addonbar-closebutton { visibility: collapse; }
-            */));
+            */$));
 
             overlay.overlayWindow(window, {
                 append: [
                     ["statusbar", { id: this._statusLine.id, ordinal: "0" }]]
             });
 
-            highlight.loadCSS(util.compileMacro(literal(/*
+            highlight.loadCSS(util.compileMacro(literal(function () /*
                 !AddonBar;#addon-bar,#dactyl-addon-bar {
                     padding-left: 0 !important;
                     padding-top: 0 !important;
@@ -68,12 +68,12 @@ var StatusLine = Module("statusline", {
                     color: inherit !important;
                 }
                 AddonButton:not(:hover)  background: transparent;
-            */))({ padding: config.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
+            */$))({ padding: config.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
 
             if (document.getElementById("appmenu-button"))
-                highlight.loadCSS(literal(/*
+                highlight.loadCSS(literal(function () /*
                     AppmenuButton       min-width: 0 !important; padding: 0 .5em !important;
-                */));
+                */$));
         }
 
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";

@@ -190,7 +190,7 @@ function XMLChannel(uri, contentType, noErrorChannel, unprivileged) {
     let type = this.channel.contentType;
     if (/^text\/|[\/+]xml$/.test(type)) {
         let stream = services.InputStream(channelStream);
-        let [, pre, doctype, url, extra, open, post] = util.regexp(literal(/*
+        let [, pre, doctype, url, extra, open, post] = util.regexp(literal(function () /*
                 ^ ([^]*?)
                 (?:
                     (<!DOCTYPE \s+ \S+ \s+) (?:SYSTEM \s+ "([^"]*)" | ((?:[^[>\s]|\s[^[])*))
@@ -198,7 +198,7 @@ function XMLChannel(uri, contentType, noErrorChannel, unprivileged) {
                     ([^]*)
                 )?
                 $
-            */), "x").exec(stream.read(4096));
+            */$), "x").exec(stream.read(4096));
         this.writes.push(pre);
         if (doctype) {
             this.writes.push(doctype + (extra || "") + " [\n");

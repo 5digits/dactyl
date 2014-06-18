@@ -229,14 +229,14 @@ var Highlights = Module("Highlight", {
                 return n1 + "[dactyl|highlight~=" + hl + "]";
             }),
 
-    groupRegexp: util.regexp(literal(/*
+    groupRegexp: util.regexp(literal(function () /*
         ^
         (\s* (?:\S|\s\S)+ \s+)
         \{ ([^}]*) \}
         \s*
         $
-    */), "gmx"),
-    sheetRegexp: util.regexp(literal(/*
+    */$), "gmx"),
+    sheetRegexp: util.regexp(literal(function () /*
         ^\s*
         !? \*?
              (?P<group>    (?:[^;\s]|\s[^;\s])+ )
@@ -245,7 +245,7 @@ var Highlights = Module("Highlight", {
         (?:; (?P<extends>  (?:[^;\s]|\s[^;\s])+ )? )?
         \s*  (?P<css>      .*)
         $
-    */), "x"),
+    */$), "x"),
     // </css>
 
     /**
@@ -328,7 +328,7 @@ var Highlights = Module("Highlight", {
         commands.add(["hi[ghlight]"],
             "Set the style of certain display elements",
             function (args) {
-                let style = literal(/*
+                let style = literal(function () /*
                     ;
                     display: inline-block !important;
                     position: static !important;
@@ -336,7 +336,7 @@ var Highlights = Module("Highlight", {
                     width: 3em !important; min-width: 3em !important; max-width: 3em !important;
                     height: 1em !important; min-height: 1em !important; max-height: 1em !important;
                     overflow: hidden !important;
-                */);
+                */$);
                 let clear = args[0] == "clear";
                 if (clear)
                     args.shift();

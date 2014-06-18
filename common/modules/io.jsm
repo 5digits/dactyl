@@ -680,13 +680,13 @@ var IO = Module("io", {
                 }
 
                 rtItems.ftdetect.template = //{{{
-literal(/*" Vim filetype detection file
+literal(function () /*" Vim filetype detection file
 <header>
 
 au BufNewFile,BufRead *<name>rc*,*.<fileext> set filetype=<name>
-*/);//}}}
+*/$);//}}}
                 rtItems.ftplugin.template = //{{{
-literal(/*" Vim filetype plugin file
+literal(function () /*" Vim filetype plugin file
 <header>
 
 if exists("b:did_ftplugin")
@@ -711,9 +711,9 @@ endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
-*/);//}}}
+*/$);//}}}
                 rtItems.syntax.template = //{{{
-literal(/*" Vim syntax file
+literal(function () /*" Vim syntax file
 <header>
 
 if exists("b:current_syntax")
@@ -792,7 +792,7 @@ let &cpo = s:cpo_save
 unlet s:cpo_save
 
 " vim: tw=130 et ts=8 sts=4 sw=4:
-*/);//}}}
+*/$);//}}}
 
                 const { options } = modules;
 
@@ -1047,7 +1047,7 @@ unlet s:cpo_save
         };
 
         completion.addUrlCompleter("file", "Local files", function (context, full) {
-            let match = util.regexp(literal(/*
+            let match = util.regexp(literal(function () /*
                 ^
                 (?P<prefix>
                     (?P<proto>
@@ -1058,7 +1058,7 @@ unlet s:cpo_save
                 )
                 (?P<path> \/[^\/]* )?
                 $
-            */), "x").exec(context.filter);
+            */$), "x").exec(context.filter);
             if (match) {
                 if (!match.path) {
                     context.key = match.proto;
