@@ -1,5 +1,5 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
-// Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2007-2011 Doug Kearns <dougkearns@gmail.com>
 // Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
