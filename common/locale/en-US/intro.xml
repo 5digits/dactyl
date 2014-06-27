@@ -24,10 +24,10 @@
 <set opt="guioptions" op="+="><str delim="">mT</str><k name="CR"/></set>
 <p>
     If you have trouble remembering commands or keyboard shortcuts, you can
-    bring up this help page at any time by typing <ex>:help</ex> or
-    <k name="F1"/>. If you find that you don't like &dactyl.appName; at all,
-    you can disable it by typing <ex>:extdisable <str delim="">&dactyl.appName;</str></ex> or
-    delete it entirely by typing <ex>:extdelete <str delim="">&dactyl.appName;</str></ex>
+    bring up this help page at any time by typing <ex>:help</ex>.  If you find
+    that you don't like &dactyl.appName; at all, you can disable it by typing
+    <ex>:extdisable <str delim="">&dactyl.appName;</str></ex> or delete it
+    entirely by typing <ex>:extdelete <str delim="">&dactyl.appName;</str></ex>
 </p>
 
 <h2 tag="overview">Help topics</h2>

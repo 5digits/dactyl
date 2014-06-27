@@ -170,9 +170,8 @@
 <h2 tag="online-help">Online help</h2>
 
 <item>
-    <tags><![CDATA[<open-help> <F1> :help :h help]]></tags>
+    <tags><![CDATA[<open-help> :help :h help]]></tags>
     <spec>:h<oa>elp</oa> <oa>subject</oa></spec>
-    <spec>&lt;F1></spec>
     <description>
         <p>
             Open a help page for <oa>subject</oa>. If <oa>subject</oa> is
@@ -184,9 +183,8 @@
 </item>
 
 <item>
-    <tags><![CDATA[<open-single-help> <A-F1> :helpall :helpa help-all]]></tags>
+    <tags><![CDATA[<open-single-help> :helpall :helpa help-all]]></tags>
     <spec>:helpa<oa>ll</oa> <oa>subject</oa></spec>
-    <spec>&lt;A-F1></spec>
     <description>
         <p>
             Open all help pages consolidated into a single page and scroll to
