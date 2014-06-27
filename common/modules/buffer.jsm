@@ -2428,12 +2428,14 @@ var Buffer = Module("Buffer", {
                         return val;
 
                     // Stolen from browser.jar/content/browser/browser.js, more or less.
-                    try {
-                        buffer.docShell.QueryInterface(Ci.nsIDocCharset).charset = val;
-                        window.PlacesUtils.history.setCharsetForURI(buffer.uri, val);
-                        buffer.docShell.reload(Ci.nsIWebNavigation.LOAD_FLAGS_CHARSET_CHANGE);
-                    }
-                    catch (e) { dactyl.reportError(e); }
+                    Task.spawn(function () {
+                        try {
+                            buffer.docShell.QueryInterface(Ci.nsIDocCharset).charset = val;
+                            yield window.PlacesUtils.setCharsetForURI(buffer.uri, val);
+                            buffer.docShell.reload(Ci.nsIWebNavigation.LOAD_FLAGS_CHARSET_CHANGE);
+                        }
+                        catch (e) { dactyl.reportError(e); }
+                    });
                     return null;
                 },
                 completer: function (context) completion.charset(context)

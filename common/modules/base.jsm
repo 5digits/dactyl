@@ -416,26 +416,43 @@ var iterAll = deprecated("iter", function iterAll() iter.apply(null, arguments))
 
 var RealSet = Set;
 let Set_add = RealSet.prototype.add;
-RealSet.prototype.add = function RealSet_add(val) {
-    let res = this.has(val);
-    Set_add.apply(this, arguments);
-    return res;
-};
 
-RealSet.prototype.difference = function RealSet_difference(set) {
-    return RealSet(i for (i of this) if (!set.has(i)));
-};
+Object.defineProperty(RealSet.prototype, "add", {
+    configurable: true,
+    writable: true,
+    value: function RealSet_add(val) {
+        let res = this.has(val);
+        Set_add.apply(this, arguments);
+        return res;
+    },
+});
 
-RealSet.prototype.intersection = function RealSet_intersection(set) {
-    return RealSet(i for (i of this) if (set.has(i)));
-};
+Object.defineProperty(RealSet.prototype, "difference", {
+    configurable: true,
+    writable: true,
+    value: function RealSet_difference(set) {
+        return RealSet(i for (i of this) if (!set.has(i)));
+    },
+});
 
-RealSet.prototype.union = function RealSet_union(set) {
-    let res = RealSet(this);
-    for (let item of set)
-        res.add(item);
-    return res;
-};
+Object.defineProperty(RealSet.prototype, "intersection", {
+    configurable: true,
+    writable: true,
+    value: function RealSet_intersection(set) {
+        return RealSet(i for (i of this) if (set.has(i)));
+    },
+});
+
+Object.defineProperty(RealSet.prototype, "union", {
+    configurable: true,
+    writable: true,
+    value: function RealSet_union(set) {
+        let res = RealSet(this);
+        for (let item of set)
+            res.add(item);
+        return res;
+    },
+});
 
 /**
  * Utility for managing sets of strings. Given an array, returns an

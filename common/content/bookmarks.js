@@ -366,7 +366,8 @@ var Bookmarks = Module("bookmarks", {
                 [, url, charset] = matches;
             else
                 try {
-                    charset = services.history.getCharsetForURI(util.newURI(url));
+                    charset = services.annotation.getPageAnnotation(util.newURI(url),
+                                                                    PlacesUtils.CHARSET_ANNO);
                 }
                 catch (e) {}
 

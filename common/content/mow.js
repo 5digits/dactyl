@@ -37,8 +37,8 @@ var MOW = Module("mow", {
         modules.mow = this;
         let fontSize = DOM(document.documentElement).style.fontSize;
         styles.system.add("font-size", "dactyl://content/buffer.xhtml",
-                          "body { font-size: " + fontSize + "; } \
-                           html|html > xul|scrollbar { visibility: collapse !important; }",
+                          // "body { font-size: " + fontSize + "; } \
+                          "html|html > xul|scrollbar { visibility: collapse !important; }",
                           true);
 
         overlay.overlayWindow(window, {
