@@ -79,7 +79,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         let dir = File(services.directory.get("ProfD", Ci.nsIFile))
                     .child("dactyl");
         if (!dir.exists())
-            dir.create(dir.DIRECTORY_TYPE, octal(777));
+            dir.create(dir.DIRECTORY_TYPE, 0o777);
         return dir.child("cache.zip");
     }),
 

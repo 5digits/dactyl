@@ -322,7 +322,7 @@ var IO = Module("io", {
     createTempFile: function createTempFile(ext="txt", label="") {
         let file = services.directory.get("TmpD", Ci.nsIFile);
         file.append(config.name + label + "." + ext);
-        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
+        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0o666);
 
         services.externalApp.deleteTemporaryFileOnExit(file);
 

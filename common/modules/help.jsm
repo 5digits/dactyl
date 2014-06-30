@@ -287,7 +287,7 @@ var Help = Module("Help", {
             const TIME = Date.now();
 
             if (!FILE.exists() && (/\/$/.test(path) && !/\./.test(FILE.leafName)))
-                FILE.create(FILE.DIRECTORY_TYPE, octal(755));
+                FILE.create(FILE.DIRECTORY_TYPE, 0o755);
 
             dactyl.initHelp();
             if (FILE.isDirectory()) {

@@ -1444,7 +1444,7 @@ function UTF8(str) {
     }
 }
 
-function octal(decimal) parseInt(decimal, 8);
+var octal = deprecated("octal integer literals", function octal(decimal) parseInt(decimal, 8));
 
 /**
  * Iterates over an arbitrary object. The following iterator types are

@@ -747,7 +747,7 @@ var Buffer = Module("Buffer", {
 
                     try {
                         if (!file.exists())
-                            file.create(File.NORMAL_FILE_TYPE, octal(644));
+                            file.create(File.NORMAL_FILE_TYPE, 0o644);
                     }
                     catch (e) {
                         util.assert(false, _("save.invalidDestination", e.name));
@@ -784,7 +784,7 @@ var Buffer = Module("Buffer", {
         let privacy = sanitizer.getContext(params.context || this.win);
         let file = File(params.file);
         if (!file.exists())
-            file.create(Ci.nsIFile.NORMAL_FILE_TYPE, octal(666));
+            file.create(Ci.nsIFile.NORMAL_FILE_TYPE, 0o666);
 
         let downloadListener = new window.DownloadListener(window,
                 services.Transfer(params.uri, file.URI, "", null, null, null,

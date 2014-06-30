@@ -544,7 +544,7 @@ var File = Class("File", {
             mode = File.MODE_WRONLY | File.MODE_CREATE | File.MODE_TRUNCATE;
 
         if (!perms)
-            perms = octal(644);
+            perms = 0o644;
         if (!this.exists()) // OCREAT won't create the directory
             this.create(this.NORMAL_FILE_TYPE, perms);
 
