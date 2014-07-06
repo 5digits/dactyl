@@ -123,7 +123,9 @@ var Bookmarks = Module("bookmarks", {
         else
             var [url, postData, charset] = [elem.href || elem.src, null, elem.ownerDocument.characterSet];
 
-        let options = { "-title": "Search " + elem.ownerDocument.title };
+        let title = elem.title || elem instanceof Ci.nsIDOMHTMLAnchorElement && elem.textContent.trim();
+        let options = { "-title": title || "Search " + elem.ownerDocument.title };
+
         if (postData != null)
             options["-post"] = postData;
         if (charset != null && charset !== "UTF-8")
