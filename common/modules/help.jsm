@@ -408,7 +408,7 @@ var Help = Module("Help", {
 
         [
             {
-                name: "h[elp]",
+                name: ["h[elp]", "halp"],
                 description: "Open the introductory help page"
             }, {
                 name: "helpa[ll]",
