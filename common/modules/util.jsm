@@ -1093,7 +1093,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         function compare(a, b) {
             if (!isNaN(a[0]) && !isNaN(b[0]))
                 return a[0] - b[0];
-            return String.localeCompare(a[0], b[0]);
+            return String.localeCompare(String(a[0]),
+                                        String(b[0]));
         }
 
         let vals = template.map(keys.sort(compare), f => f[1],
