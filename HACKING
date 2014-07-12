@@ -111,8 +111,7 @@ In general: Just look at the existing source code!
   Wrong:
     for each (let elem in ary)
 
-  The exceptions to this rule are for objects with __iterator__ set,
-  and for XML objects (see README.E4X).
+  The exceptions to this rule are for objects with __iterator__ set.
 
 * Avoid using 'new' with constructors where possible, and use [] and
   {} rather than new Array/new Object.

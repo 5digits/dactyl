@@ -177,55 +177,17 @@
 <h3 tag="plugin-documentation">Plugin documentation</h3>
 
 <p>
-    Plugins should provide inline documentation, which will appear on the
-    <ex>:help <str delim="">plugins</str></ex> page. The markup for help entries is the same
-    as the above, along with a few extra plugin-specific entries. Here is an
-    example from the popular <em>flashblock</em> extension:
+    Plugins should provide documentation, which will appear on the
+    <ex>:help <str delim="">plugins</str></ex> page. The XML markup for help
+    entries is similar to the above, but has to be written in JSON syntax. You
+    can find some examples in the
+    <link topic="&dactyl.plugins;">official plugins</link>.
 </p>
 
-<xml-block><escape><hl key="HelpXMLString">use strict</hl>;
-XML.ignoreWhitespace = <hl key="Boolean">false</hl>;
-XML.prettyPrinting   = <hl key="Boolean">false</hl>;
-<hl key="HelpXMLBase">var</hl> INFO = <!-- Cursed manual XML highlighting! -->
-<hl key="HelpXMLTagStart">&lt;plugin
-    <hl key="HelpXMLAttribute">name</hl><hl key="HelpXMLString">flashblock</hl>
-    <hl key="HelpXMLAttribute">version</hl><hl key="HelpXMLString">1.0</hl>
-    <hl key="HelpXMLAttribute">href</hl><hl key="HelpXMLString">http://5digits.org/pentadactyl/plugins#flashblock-plugin</hl>
-    <hl key="HelpXMLAttribute">summary</hl><hl key="HelpXMLString">Flash Blocker</hl>
-    <hl key="HelpXMLAttribute">xmlns</hl>{NS}></hl></escape>
-    <author email="maglione.k@gmail.com">Kris Maglione</author>
-    <license href="http://opensource.org/licenses/mit-license.php">MIT</license>
-    <project name="Pentadactyl" min-version="1.0"/>
-    <p>
-        This plugin provides the same features as the ever popular FlashBlock
-        Firefox addon. Flash animations are substituted with place holders which
-        play the original animation when clicked. Additionally, this plugin provides
-        options to control which sites can play animations without restrictions, and
-        triggers to toggle the playing of animation on the current page.
-    </p>
-    <item>
-        <tags>'fb' 'flashblock'</tags>
-        <spec>'flashblock' 'fb'</spec>
-        <type>boolean</type>
-        <default>true</default>
-        <description>
-            <p>
-                Controls the blocking of flash animations. When true, place
-                holders are substituted for flash animations on untrusted sites.
-            </p>
-        </description>
-    </item>
-    <escape><oa>…</oa>
-<hl key="HelpXMLTagEnd">&lt;/plugin></hl></escape>;</xml-block>
-
 <p>
-    The inline XML is made possible by
-    <link topic="https://developer.mozilla.org/en/E4X">E4X</link>.
     It is important that the documentation be assigned to the
     <em>INFO</em> variable, or &dactyl.appName; will not be able
-    to find it. The XML property changes are not compulsory, but
-    they do prevent certain formatting problems that may occur
-    otherwise. Beginning your file with <str>use strict</str>, while
+    to find it. Beginning your file with <str>use strict</str>, while
     not required, helps to prevent a lot of common errors.
 </p>
 
