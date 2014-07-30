@@ -2312,7 +2312,7 @@ var Buffer = Module("Buffer", {
             let url = dactyl.clipboardRead();
             dactyl.assert(url, _("error.clipboardEmpty"));
 
-            let proto = /^([-\w]+):/.exec(url);
+            let proto = /^\s*([-\w]+):/.exec(url);
             if (proto && services.PROTOCOL + proto[1] in Cc && !RegExp(options["urlseparator"]).test(url))
                 return url.replace(/\s+/g, "");
             return url;
