@@ -302,7 +302,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 rect.left > offsets.right || rect.right < offsets.left)
                 return false;
 
-            if (!rect.width || !rect.height)
+            if (!rect.width && !rect.height)
                 if (!Array.some(elem.childNodes, elem => elem instanceof Element
                                                       && DOM(elem).style.float != "none"
                                                       && isVisible(elem)))
@@ -1125,7 +1125,7 @@ var Hints = Module("hints", {
 }, {
     isVisible: function isVisible(elem, offScreen) {
         let rect = elem.getBoundingClientRect();
-        if (!rect.width || !rect.height)
+        if (!rect.width && !rect.height)
             if (!Array.some(elem.childNodes, elem => elem instanceof Element
                                                   && DOM(elem).style.float != "none"
                                                   && isVisible(elem)))

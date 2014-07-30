@@ -481,18 +481,17 @@ var Buffer = Module("Buffer", {
 
         let selector = path || options.get("hinttags").stringDefaultValue;
 
+        let relRev = ["next", "prev"];
+        let rev = relRev[1 - relRev.indexOf(rel)];
+
         function followFrame(frame) {
             function iter(elems) {
                 for (let i = 0; i < elems.length; i++)
-                    if (elems[i].rel.toLowerCase() === rel || elems[i].rev.toLowerCase() === rel)
+                    if (elems[i].rel.toLowerCase() === rel || elems[i].rev.toLowerCase() === rev)
                         yield elems[i];
             }
 
             let elems = frame.document.getElementsByTagName("link");
-            for (let elem in iter(elems))
-                yield elem;
-
-            elems = frame.document.getElementsByTagName("a");
             for (let elem in iter(elems))
                 yield elem;
 
@@ -502,8 +501,10 @@ var Buffer = Module("Buffer", {
 
             function b(regexp, elem) regexp.test(elem.title) === regexp.result;
 
-            let res = Array.filter(frame.document.querySelectorAll(selector), Hints.isVisible);
-            for (let test in values([a, b]))
+            let res = Array.filter(frame.document.querySelectorAll(selector),
+                                   Hints.isVisible);
+
+            for (let test of [a, b])
                 for (let regexp in values(regexps))
                     for (let i in util.range(res.length, 0, -1))
                         if (test(regexp, res[i]))
@@ -2522,12 +2523,12 @@ var Buffer = Module("Buffer", {
 
         options.add(["nextpattern"],
             "Patterns to use when guessing the next page in a document sequence",
-            "regexplist", UTF8(/'^Next [>»]','^Next »','\bnext\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\bmore\b'/.source),
+            "regexplist", UTF8(/'^\s*Next Page\s*$','^\s*Next [>»]','\bnext\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\bmore\b'/.source),
             { regexpFlags: "i" });
 
         options.add(["previouspattern"],
             "Patterns to use when guessing the previous page in a document sequence",
-            "regexplist", UTF8(/'[<«] Prev$','« Prev$','\bprev(ious)?\b',^<$,^(<<|«)$,^(<|«),(<|«)$/.source),
+            "regexplist", UTF8(/'^\s*Prev(ious)? Page\s*$','[<«] Prev\s*$','\bprev(ious)?\b',^<$,^(<<|«)$,^(<|«),(<|«)$/.source),
             { regexpFlags: "i" });
 
         options.add(["pageinfo", "pa"],
