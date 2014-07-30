@@ -54,6 +54,11 @@ var HintSession = Class("HintSession", CommandMode, {
             this.checkUnique();
     },
 
+    get docs() this._docs = this._docs.filter(({ doc }) => !Cu.isDeadWrapper(doc)),
+    set docs(docs) {
+        this._docs = docs;
+    },
+
     Hint: {
         get active() this._active,
         set active(val) {
