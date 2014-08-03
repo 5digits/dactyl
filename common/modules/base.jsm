@@ -17,6 +17,7 @@ function module(url) {
 }
 
 var { XPCOMUtils } = module("resource://gre/modules/XPCOMUtils.jsm");
+var { OS, TextDecoder, TextEncoder } = module("resource://gre/modules/osfile.jsm");
 try {
     var ctypes = module("resource://gre/modules/ctypes.jsm");
 }
@@ -178,10 +179,13 @@ defineModule("base", {
         "Finished",
         "JSMLoader",
         "Module",
+        "OS",
         "RealSet",
         "Set",
         "Struct",
         "StructBase",
+        "TextEncoder",
+        "TextDecoder",
         "Timer",
         "UTF8",
         "XPCOM",

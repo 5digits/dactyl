@@ -1,3 +1,6 @@
+1.2pre:
+    • Remove 'jsdebugger' option.
+
 1.1:
     • Vim runtime files:
       - renamed :mksyntax to :mkvimruntime which now generates

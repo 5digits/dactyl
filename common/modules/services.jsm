@@ -33,7 +33,6 @@ var Services = Module("Services", {
         this.add("bookmarks",           "@mozilla.org/browser/nav-bookmarks-service;1",     "nsINavBookmarksService");
         this.add("browserSearch",       "@mozilla.org/browser/search-service;1",            "nsIBrowserSearchService");
         this.add("cache",               "@mozilla.org/network/cache-service;1",             "nsICacheService");
-        this.add("charset",             "@mozilla.org/charset-converter-manager;1",         "nsICharsetConverterManager");
         this.add("chromeRegistry",      "@mozilla.org/chrome/chrome-registry;1",            "nsIXULChromeRegistry");
         this.add("clipboard",           "@mozilla.org/widget/clipboard;1",                  "nsIClipboard");
         this.add("clipboardHelper",     "@mozilla.org/widget/clipboardhelper;1",            "nsIClipboardHelper");
@@ -43,7 +42,6 @@ var Services = Module("Services", {
                                                                                              "nsIContentPrefService2"]);
         this.add("dactyl",              "@dactyl.googlecode.com/extra/utils",               "dactylIUtils");
         this.add("dactyl:",             this.PROTOCOL + "dactyl");
-        this.add("debugger",            "@mozilla.org/js/jsd/debugger-service;1",           "jsdIDebuggerService");
         this.add("directory",           "@mozilla.org/file/directory_service;1",            "nsIProperties");
         this.add("downloadManager",     "@mozilla.org/download-manager;1",                  "nsIDownloadManager");
         this.add("environment",         "@mozilla.org/process/environment;1",               "nsIEnvironment");

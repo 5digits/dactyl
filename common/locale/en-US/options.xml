@@ -1035,19 +1035,6 @@
 </item>
 
 <item>
-    <tags>'nojsd' 'nojsdebugger'</tags>
-    <tags>'jsd' 'jsdebugger'</tags>
-    <spec>'jsdebugger' 'jsd'</spec>
-    <type>&option.jsdebugger.type;</type>
-    <default>&option.jsdebugger.default;</default>
-    <description>
-        <p>
-            Use the JavaScript debugger service for JavaScript completion.
-        </p>
-    </description>
-</item>
-
-<item>
     <tags>'jt' 'jumptags'</tags>
     <spec>'jumptags' 'jt'</spec>
     <type>&option.jumptags.type;</type>

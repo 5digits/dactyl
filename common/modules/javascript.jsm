@@ -879,20 +879,6 @@ var JavaScript = Module("javascript", {
 
         bind(["<C-b>", "<PageUp>"], "Scroll up half a page",
              function ({ self }) { self.repl.scrollVertical("pages", -1); });
-    },
-    options: function initOptions(dactyl, modules, window) {
-        modules.options.add(["jsdebugger", "jsd"],
-            "Enable the JavaScript debugger service for use in JavaScript completion",
-            "boolean", false, {
-                setter: function (value) {
-                    if (services.debugger.isOn != value)
-                        if (value)
-                            (services.debugger.asyncOn || services.debugger.on)(null);
-                        else
-                            services.debugger.off();
-                },
-                getter: function () services.debugger.isOn
-            });
     }
 });
 
