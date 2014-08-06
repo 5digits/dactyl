@@ -61,6 +61,11 @@
             <dt>\r</dt> <dd>Process the entire pattern as a regular expression.</dd>
             <dt>\R</dt> <dd>Process the entire pattern as an ordinary string.</dd>
         </dl>
+
+	<p>
+	    <o>findflags</o> can be used to set flags that will be applied
+	    implicitly to each search.
+	</p>
     </description>
 </item>
 
