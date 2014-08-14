@@ -1816,13 +1816,6 @@ var Buffer = Module("Buffer", {
                 dactyl.assert(!arg || arg[0] == ">",
                               _("error.trailingCharacters"));
 
-                const PRINTER  = "PostScript/default";
-                const BRANCH   = "printer_" + PRINTER + ".";
-                const BRANCHES = ["print.", BRANCH, "print." + BRANCH];
-                function set(pref, value) {
-                    BRANCHES.forEach(function (branch) { prefs.set(branch + pref, value); });
-                }
-
                 let settings = services.printSettings.newPrintSettings;
                 settings.printSilent = args.bang;
                 if (arg) {
@@ -1834,9 +1827,6 @@ var Buffer = Module("Buffer", {
                 }
                 else {
                     dactyl.echomsg(_("print.sending"));
-
-                    if (false)
-                        prefs.set("print.show_print_progress", !args.bang);
                 }
 
                 config.browser.contentWindow
