@@ -184,7 +184,8 @@ var MOW = Module("mow", {
 
     windowEvents: {
         resize: function onResize(event) {
-            this._resize.tell();
+            if (event.target == window)
+                this._resize.tell();
         }
     },
 
