@@ -451,9 +451,9 @@ var File = Class("File", {
     /**
      * Returns a new file for the given child of this directory entry.
      */
-    child: function child() {
+    child: function child(...args) {
         let f = this.constructor(this);
-        for (let [, name] in Iterator(arguments))
+        for (let name of args)
             for (let elem of name.split(File.pathSplit))
                 f.append(elem);
         return f;

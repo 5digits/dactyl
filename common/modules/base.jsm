@@ -19,7 +19,7 @@ function module(url) {
 var { XPCOMUtils } = module("resource://gre/modules/XPCOMUtils.jsm");
 var { OS, TextDecoder, TextEncoder } = module("resource://gre/modules/osfile.jsm");
 try {
-    var ctypes = module("resource://gre/modules/ctypes.jsm");
+    var { ctypes } = module("resource://gre/modules/ctypes.jsm");
 }
 catch (e) {}
 
@@ -310,6 +310,7 @@ function properties(obj, prototypes) {
             else if (!e.stack) {
                 throw Error(e);
             }
+            throw e;
         }
     }
 
