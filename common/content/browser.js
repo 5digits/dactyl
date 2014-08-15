@@ -81,7 +81,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         // page is loaded in a background tab
         load: function onLoad(event) {
             let doc = event.originalTarget;
-            if (doc instanceof Document)
+            if (doc instanceof Ci.nsIDOMDocument)
                 dactyl.initDocument(doc);
 
             if (doc instanceof Ci.nsIDOMHTMLDocument) {

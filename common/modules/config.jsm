@@ -454,7 +454,7 @@ var ConfigBase = Class("ConfigBase", {
                 if (this.helpStyles.test(k))
                     highlight.loaded[k] = true;
         }
-        this.helpCSS = true;
+        this.helpStyled = true;
     },
 
     Local: function Local(dactyl, modules, { document, window }) ({
