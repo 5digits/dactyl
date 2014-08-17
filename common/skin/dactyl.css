@@ -168,7 +168,7 @@ statusbarpanel {
     visibility: collapse;
 }
 
-:-moz-any(#addon-bar, #dactyl-addon-bar) .toolbarbutton-1 > xul|dropmarker {
+:-moz-any(#brower-bottombox > #addon-bar, #dactyl-addon-bar) .toolbarbutton-1 > xul|dropmarker {
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
