@@ -699,7 +699,7 @@ var Bookmarks = Module("bookmarks", {
                             let query = item.url.substring(begin.length, rest);
                             if (item.url.substr(rest) == end && query.contains("&"))
                                 try {
-                                    item.url = decodeURIComponent(query.replace(/#.*/, "").replace(/\+/g, " "));
+                                    item.url = decodeURIComponent(query.replace(/[&#].*/, "").replace(/\+/g, " "));
                                     return item;
                                 }
                                 catch (e) {}
