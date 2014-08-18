@@ -41,9 +41,9 @@ var StatusLine = Module("statusline", {
             styles.system.add("addon-bar", config.styleableChrome, literal(function () /*
                 #status-bar, #dactyl-status-bar { margin-top: 0 !important; }
                 #dactyl-status-bar { min-height: 0 !important; }
-                :-moz-any(#addon-bar, #dactyl-addon-bar) > statusbar { -moz-box-flex: 1 }
-                :-moz-any(#addon-bar, #dactyl-addon-bar) > xul|toolbarspring { visibility: collapse; }
-                #addon-bar > #addonbar-closebutton { visibility: collapse; }
+                :-moz-any(#browser-bottombox>#addon-bar, #dactyl-addon-bar) > statusbar { -moz-box-flex: 1 }
+                :-moz-any(#browser-bottombox>#addon-bar, #dactyl-addon-bar) > xul|toolbarspring { visibility: collapse; }
+                #browser-bottombox>#addon-bar > #addonbar-closebutton { visibility: collapse; }
             */$));
 
             overlay.overlayWindow(window, {
@@ -52,7 +52,7 @@ var StatusLine = Module("statusline", {
             });
 
             highlight.loadCSS(util.compileMacro(literal(function () /*
-                !AddonBar;#addon-bar,#dactyl-addon-bar {
+                !AddonBar;#browser-bottombox>#addon-bar,#dactyl-addon-bar {
                     padding-left: 0 !important;
                     padding-top: 0 !important;
                     padding-bottom: 0 !important;
@@ -60,7 +60,7 @@ var StatusLine = Module("statusline", {
                     -moz-appearance: none !important;
                     <padding>
                 }
-                !AddonButton;,:-moz-any(#addon-bar, #dactyl-addon-bar) xul|toolbarbutton {
+                !AddonButton;,:-moz-any(#browser-bottombox>#addon-bar, #dactyl-addon-bar) xul|toolbarbutton {
                     -moz-appearance: none !important;
                     padding: 0 !important;
                     border-width: 0px !important;
