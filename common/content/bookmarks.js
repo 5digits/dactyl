@@ -529,7 +529,7 @@ var Bookmarks = Module("bookmarks", {
                         description: "The character encoding of the bookmark",
                         type: CommandOption.STRING,
                         completer: function (context) completion.charset(context),
-                        validator: Option.validateCompleter
+                        validator: io.bound.validateCharset
                     },
                     {
                         names: ["-id"],

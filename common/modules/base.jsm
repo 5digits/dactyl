@@ -17,7 +17,7 @@ function module(url) {
 }
 
 var { XPCOMUtils } = module("resource://gre/modules/XPCOMUtils.jsm");
-var { OS, TextDecoder, TextEncoder } = module("resource://gre/modules/osfile.jsm");
+var { OS } = module("resource://gre/modules/osfile.jsm");
 try {
     var { ctypes } = module("resource://gre/modules/ctypes.jsm");
 }
@@ -748,8 +748,12 @@ function memoize(obj, key, getter) {
     }
 }
 
-let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance());
+
+let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance(),
+                         { wantGlobalProperties: ["TextDecoder", "TextEncoder"] });
 sandbox.__proto__ = this;
+
+var { TextEncoder, TextDecoder } = sandbox;
 
 /**
  * Updates an object with the properties of another object. Getters

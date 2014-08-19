@@ -216,6 +216,28 @@ var IO = Module("io", {
         }
     }),
 
+    charsets: Class.Memoize(function () {
+        const BASE = "@mozilla.org/intl/unicode/decoder;1?charset=";
+        return [k.slice(BASE.length)
+                for (k of Object.keys(Cc))
+                if (k.startsWith(BASE))];
+    }),
+
+    charsetBundle: Class.Memoize(
+        () => services.stringBundle.createBundle("chrome://global/locale/charsetTitles.properties")),
+
+    charsetTitle: function charsetTitle(charset, default_=charset) {
+        try {
+            return this.charsetBundle.GetStringFromName(charset + ".title");
+        }
+        catch (e) {}
+        return default_;
+    },
+
+    validateCharset: function validateCharset(charset) {
+        new TextDecoder(charset);
+    },
+
     // TODO: there seems to be no way, short of a new component, to change
     // the process's CWD - see https://bugzilla.mozilla.org/show_bug.cgi?id=280953
     /**
@@ -942,16 +964,9 @@ unlet s:cpo_save
             context.anchored = false;
             context.keys = {
                 text: util.identity,
-                description: function (charset) {
-                    try {
-                        return services.charset.getCharsetTitle(charset);
-                    }
-                    catch (e) {
-                        return charset;
-                    }
-                }
+                description: charset => io.charsetTitle(charset),
             };
-            context.generate = () => iter(services.charset.getDecoderList());
+            context.completions = io.charsets;
         };
 
         completion.directory = function directory(context, full) {
