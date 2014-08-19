@@ -41,8 +41,8 @@ var StatusLine = Module("statusline", {
             styles.system.add("addon-bar", config.styleableChrome, literal(function () /*
                 #status-bar, #dactyl-status-bar { margin-top: 0 !important; }
                 #dactyl-status-bar { min-height: 0 !important; }
-                :-moz-any(#browser-bottombox>#addon-bar, #dactyl-addon-bar) > statusbar { -moz-box-flex: 1 }
-                :-moz-any(#browser-bottombox>#addon-bar, #dactyl-addon-bar) > xul|toolbarspring { visibility: collapse; }
+                :-moz-any(#addon-bar, #dactyl-addon-bar) > statusbar { -moz-box-flex: 1 }
+                :-moz-any(#addon-bar, #dactyl-addon-bar) > xul|toolbarspring { visibility: collapse; }
                 #browser-bottombox>#addon-bar > #addonbar-closebutton { visibility: collapse; }
             */$));
 
@@ -60,7 +60,7 @@ var StatusLine = Module("statusline", {
                     -moz-appearance: none !important;
                     <padding>
                 }
-                !AddonButton;,:-moz-any(#browser-bottombox>#addon-bar, #dactyl-addon-bar) xul|toolbarbutton {
+                !AddonButton;#browser-bottombox>#addon-bar xul|toolbarbutton, #dactyl-addon-bar xul|toolbarbutton {
                     -moz-appearance: none !important;
                     padding: 0 !important;
                     border-width: 0px !important;
