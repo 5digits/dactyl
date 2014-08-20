@@ -160,6 +160,7 @@ const Config = Module("config", ConfigBase, {
         LocationChange: "Triggered when changing tabs or when navigation to a new location",
         PageLoadPre: "Triggered after a page load is initiated",
         PageLoad: "Triggered when a page gets (re)loaded/opened",
+        Resize: "Triggered after the window has been resized",
         ShellCmdPost: "Triggered after executing a shell command with :!cmd",
         TrackChangePre: "Triggered before a playing track is changed",
         TrackChange: "Triggered after a playing track has changed",

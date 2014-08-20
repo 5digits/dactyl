@@ -16,6 +16,7 @@
     <dt>LocationChange</dt><dd>Triggered when changing tabs or when navigating to a new location</dd>
     <dt>PageLoadPre</dt>   <dd>Triggered after a page load is initiated</dd>
     <dt>PageLoad</dt>      <dd>Triggered when a page gets (re)loaded/opened</dd>
+    <dt>Resize</dt>        <dd>Triggered after the window has been resized</dd>
     <dt>ShellCmdPost</dt>  <dd>Triggered after executing a shell command with <ex>:!</ex>#{cmd}</dd>
     <dt>TrackChangePre</dt><dd>Triggered before a playing track is changed</dd>
     <dt>TrackChange</dt>   <dd>Triggered after a playing track has changed</dd>

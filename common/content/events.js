@@ -113,6 +113,8 @@ var Events = Module("events", {
         });
 
         this._fullscreen = window.fullScreen;
+        this._outerWidth = window.outerWidth;
+        this._outerHeight = window.outerHeight;
         this._lastFocus = { get: function () null };
         this._macroKeys = [];
         this._lastMacro = "";
@@ -852,6 +854,11 @@ var Events = Module("events", {
                 this._fullscreen = window.fullScreen;
                 dactyl.triggerObserver("fullscreen", this._fullscreen);
                 autocommands.trigger("Fullscreen", { url: this._fullscreen ? "on" : "off", state: this._fullscreen });
+            }
+            if (window.outerWidth != this._outerWidth || window.outerHeight != this._outerHeight) {
+                this._outerWidth = window.outerWidth;
+                this._outerHeight = window.outerHeight;
+                autocommands.trigger("Resize", {});
             }
             statusline.updateZoomLevel();
         }
