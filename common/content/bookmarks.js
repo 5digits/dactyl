@@ -286,7 +286,7 @@ var Bookmarks = Module("bookmarks", {
             var queryURI = engine.getSubmission(query, responseType).uri.spec;
 
         if (!queryURI)
-            return promises.fail();
+            return Promise.reject();
 
         function parse(req) JSON.parse(req.responseText)[1].filter(isString);
         return this.makeSuggestions(queryURI, parse, callback);
@@ -311,12 +311,13 @@ var Bookmarks = Module("bookmarks", {
                 results = parser(req);
             }
             catch (e) {
-                return deferred.reject(e);
+                deferred.reject(e);
+                return;
             }
             deferred.resolve(results);
-        }, Cu.reportError);
+        });
 
-        promises.oncancel(deferred, r => promises.cancel(req, reason));
+        promises.oncancel(deferred, reason => promises.cancel(req, reason));
         return deferred.promise;
     },
 
@@ -756,9 +757,9 @@ var Bookmarks = Module("bookmarks", {
                 ctxt.cache.request = bookmarks.getSuggestions(name, ctxt.filter);
                 ctxt.cache.request.then(function (compl) {
                     ctxt.incomplete = false;
-                    ctxt.completions = array.uniq(ctxt.completions.filter(c => compl.contains(c))
+                    ctxt.completions = array.uniq(ctxt.completions.filter(c => ~compl.indexOf(c))
                                                       .concat(compl), true);
-                }, function (e) {
+                }).catch(function (e) {
                     ctxt.incomplete = false;
                     ctxt.completions = [];
                     if (e)

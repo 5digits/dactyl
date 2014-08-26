@@ -62,24 +62,6 @@ var Promises = Module("Promises", {
     }),
 
     /**
-     * Returns a promise which resolves with the given argument.
-     */
-    accept: function fail(arg) {
-        let deferred = Promise.defer();
-        deferred.resolve(arg);
-        return deferred.promise;
-    },
-
-    /**
-     * Returns a promise which fails with the given argument.
-     */
-    fail: function fail(arg) {
-        let deferred = Promise.defer();
-        deferred.reject(arg);
-        return deferred.promise;
-    },
-
-    /**
      * Returns a promise which resolves after the given number of
      * milliseconds.
      *
