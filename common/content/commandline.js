@@ -1481,6 +1481,9 @@ var CommandLine = Module("commandline", {
                 if (cmd.substr(cmd.length - str.length) == str)
                     commandline.widgets.active.command.value = cmd.substr(0, cmd.length - str.length);
             }
+            let e = this.editor.selection.focusNode;
+            if (e != this.editor.rootElement && e.parentNode != this.editor.rootElement)
+                this.editor.selection.getRangeAt(0).selectNodeContents(this.editor.rootElement);
             delete this.removeSubstring;
         },
 

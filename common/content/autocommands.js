@@ -91,8 +91,7 @@ var AutoCommands = Module("autocommands", {
      * @optional
      */
     list: function (event, regexp, hives) {
-
-        let hives = hives || this.activeHives;
+        hives = hives || this.activeHives;
 
         function cmds(hive) {
             let cmds = {};

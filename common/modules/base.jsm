@@ -591,7 +591,7 @@ function curry(fn, length, self, acc) {
         if (args.length == 0)
             return close(self || this, curried);
 
-        let args = acc.concat(args);
+        args = acc.concat(args);
 
         if (args.length >= length)
             return fn.apply(self || this, args);

@@ -380,7 +380,7 @@ var Help = Module("Help", {
                 addDataEntry(file + ".xhtml", data.join(""));
             }
 
-            let data = [h for (h in highlight) if (styles.has(h.class) || /^Help/.test(h.class))]
+            data = [h for (h in highlight) if (styles.has(h.class) || /^Help/.test(h.class))]
                 .map(h => h.selector
                            .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
                            .replace(/html\|/g, "") + "\t" + "{" + h.cssText + "}")

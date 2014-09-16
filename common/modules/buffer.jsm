@@ -540,7 +540,7 @@ var Buffer = Module("Buffer", {
         let { dactyl } = this.modules;
 
         let doc = elem.ownerDocument;
-        let win = doc.defaultView;
+        win = doc.defaultView;
         let { left: offsetX, top: offsetY } = elem.getBoundingClientRect();
 
         if (isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
@@ -559,8 +559,6 @@ var Buffer = Module("Buffer", {
             Buffer.openUploadPrompt(elem);
             return;
         }
-
-        let { dactyl } = this.modules;
 
         let ctrlKey = false, shiftKey = false;
         let button = 0;
@@ -941,7 +939,7 @@ var Buffer = Module("Buffer", {
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
             return win;
 
-        let win = this.focusedFrame;
+        win = this.focusedFrame;
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
             return win;
 

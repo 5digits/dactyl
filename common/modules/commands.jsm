@@ -521,7 +521,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
             return { map: map, specs: specs };
         });
 
-        let cached = cache.get(this.cacheKey);
+        cached = cache.get(this.cacheKey);
         if (this.cached) {
             this._specs = cached.specs;
             for (let [k, v] in Iterator(cached.map))
@@ -765,8 +765,8 @@ var Commands = Module("commands", {
             // TODO: allow matching of aliases?
             function cmds(hive) hive._list.filter(cmd => cmd.name.startsWith(filter || ""))
 
-            let hives = (hives || this.userHives).map(h => [h, cmds(h)])
-                                                 .filter(([h, c]) => c.length);
+            hives = (hives || this.userHives).map(h => [h, cmds(h)])
+                                             .filter(([h, c]) => c.length);
 
             let list = ["table", {},
                 ["tr", { highlight: "Title" },
@@ -989,6 +989,7 @@ var Commands = Module("commands", {
 
         try {
 
+            let count, arg, quote, error;
             var { allowUnknownOptions, argCount, complete, extra, hereDoc, literal, options, keepQuotes } = params;
 
             if (!options)
@@ -1006,7 +1007,7 @@ var Commands = Module("commands", {
 
             // FIXME: best way to specify these requirements?
             var onlyArgumentsRemaining = allowUnknownOptions || options.length == 0; // after a -- has been found
-            var arg = null;
+            arg = null;
             var i = 0;
             var completeOpts;
 
@@ -1176,7 +1177,7 @@ var Commands = Module("commands", {
                 }
 
                 // if not an option, treat this token as an argument
-                let [count, arg, quote, error] = getNextArg(sub);
+                [count, arg, quote, error] = getNextArg(sub);
                 util.assert(!error, error);
 
                 if (complete) {

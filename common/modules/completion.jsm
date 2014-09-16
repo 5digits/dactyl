@@ -985,7 +985,7 @@ var Completion = Module("completion", {
     },
 
     addUrlCompleter: function addUrlCompleter(name, description, completer, ...args) {
-        let completer = Completion.UrlCompleter(name, description, completer);
+        completer = Completion.UrlCompleter(name, description, completer);
         completer.args = args;
         this.urlCompleters[name] = completer;
     },

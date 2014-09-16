@@ -1278,7 +1278,7 @@ var Hints = Module("hints", {
             function ({ count }) { hints.open("g;", { continue: true, count: count }); },
             { count: true });
 
-        let bind = function bind(names, description, action, params)
+        bind = function bind(names, description, action, params)
             mappings.add([modes.HINTS], names, description,
                          action, params);
 

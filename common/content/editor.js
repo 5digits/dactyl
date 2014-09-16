@@ -369,7 +369,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             args = { file: args };
         args.file = args.file.path || args.file;
 
-        let args = options.get("editor").format(args);
+        args = options.get("editor").format(args);
 
         dactyl.assert(args.length >= 1, _("option.notSet", "editor"));
 
@@ -1153,7 +1153,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             ["<C-]>", "<C-5>"], "Expand Insert mode abbreviation",
             function () { editor.expandAbbreviation(modes.INSERT); });
 
-        let bind = function bind(names, description, action, params)
+        bind = function bind(names, description, action, params)
             mappings.add([modes.TEXT_EDIT], names, description,
                          action, update({ type: "editor" }, params));
 
@@ -1266,7 +1266,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             },
             { arg: true });
 
-        let bind = function bind(names, description, action, params)
+        bind = function bind(names, description, action, params)
             mappings.add([modes.TEXT_EDIT, modes.OPERATOR, modes.VISUAL],
                          names, description,
                          action, update({ type: "editor" }, params));
@@ -1333,7 +1333,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             },
             { count: true });
 
-        let bind = function bind(...args) mappings.add.apply(mappings, [[modes.AUTOCOMPLETE]].concat(args));
+        bind = function bind(...args) mappings.add.apply(mappings, [[modes.AUTOCOMPLETE]].concat(args));
 
         bind(["<Esc>"], "Return to Insert mode",
              () => Events.PASS_THROUGH);
