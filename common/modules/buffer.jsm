@@ -540,7 +540,7 @@ var Buffer = Module("Buffer", {
         let { dactyl } = this.modules;
 
         let doc = elem.ownerDocument;
-        win = doc.defaultView;
+        let win = doc.defaultView;
         let { left: offsetX, top: offsetY } = elem.getBoundingClientRect();
 
         if (isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
