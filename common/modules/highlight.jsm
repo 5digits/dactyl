@@ -153,8 +153,6 @@ var Highlights = Module("Highlight", {
     get: function get(k) this.highlight[k],
 
     set: function set(key, newStyle, force, append, extend) {
-        let [, class_, selectors] = key.match(/^([a-zA-Z_-]+)(.*)/);
-
         let highlight = this.highlight[key];
         if (!highlight) {
             highlight = this._create(false, [key]);
