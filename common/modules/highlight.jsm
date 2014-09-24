@@ -165,8 +165,6 @@ var Highlights = Module("Highlight", {
             bases = highlight.extends.concat(bases);
         }
 
-        if (/^\s*$/.test(newStyle))
-            newStyle = null;
         if (newStyle == null && extend == null) {
             if (highlight.defaultValue == null && highlight.defaultExtends.length == 0) {
                 highlight.style.enabled = false;
