@@ -166,7 +166,7 @@ var Highlights = Module("Highlight", {
         if (/^\s*$/.test(newStyle))
             newStyle = null;
         if (newStyle == null && extend == null) {
-            if (highlight.defaultValue == null && highight.defaultExtends.length == 0) {
+            if (highlight.defaultValue == null && highlight.defaultExtends.length == 0) {
                 highlight.style.enabled = false;
                 delete this.loaded[highlight.class];
                 delete this.highlight[highlight.class];
