@@ -2661,25 +2661,22 @@ Buffer.addPageInfoSection("g", "General Info", function (verbose) {
     let doc = this.focusedFrame.document;
 
     // get file size
-    const ACCESS_READ = Ci.nsICache.ACCESS_READ;
-    let cacheKey = doc.documentURI;
-
-    for (let proto in array.iterValues(["HTTP", "FTP"])) {
-        try {
-            var cacheEntryDescriptor = services.cache.createSession(proto, 0, true)
-                                               .openCacheEntry(cacheKey, ACCESS_READ, false);
-            break;
-        }
-        catch (e) {}
-    }
-
+    let { LoadContextInfo } = Cu.import("resource://gre/modules/LoadContextInfo.jsm", {});
+    let contextInfo = LoadContextInfo.fromLoadContext(sanitizer.getContext(doc), false);
+    let storage = services.cache.diskCacheStorage(contextInfo, false);
     let pageSize = []; // [0] bytes; [1] kbytes
-    if (cacheEntryDescriptor) {
-        pageSize[0] = util.formatBytes(cacheEntryDescriptor.dataSize, 0, false);
-        pageSize[1] = util.formatBytes(cacheEntryDescriptor.dataSize, 2, true);
-        if (pageSize[1] == pageSize[0])
-            pageSize.length = 1; // don't output "xx Bytes" twice
-    }
+
+    storage.asyncOpenURI(util.createURI(doc.documentURI), "",
+        Ci.nsICacheStorage.OPEN_NORMALLY,
+        {
+            onCacheEntryCheck: () => Ci.nsICacheEntryOpenCallback.ENTRY_WANTED,
+            onCacheEntryAvailable: entry => {
+                pageSize[0] = util.formatBytes(entry.dataSize, 0, false);
+                pageSize[1] = util.formatBytes(entry.dataSize, 2, true);
+                if (pageSize[1] == pageSize[0])
+                    pageSize.length = 1; // don't output "xx Bytes" twice
+        }
+    });
 
     let lastModVerbose = new Date(doc.lastModified).toLocaleString();
     let lastMod = new Date(doc.lastModified).toLocaleFormat("%x %X");

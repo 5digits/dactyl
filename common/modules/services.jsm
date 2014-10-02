@@ -32,7 +32,7 @@ var Services = Module("Services", {
         this.add("appStartup",          "@mozilla.org/toolkit/app-startup;1",               "nsIAppStartup");
         this.add("bookmarks",           "@mozilla.org/browser/nav-bookmarks-service;1",     "nsINavBookmarksService");
         this.add("browserSearch",       "@mozilla.org/browser/search-service;1",            "nsIBrowserSearchService");
-        this.add("cache",               "@mozilla.org/network/cache-service;1",             "nsICacheService");
+        this.add("cache",               "@mozilla.org/netwerk/cache-storage-service;1",     "nsICacheStorageService");
         this.add("chromeRegistry",      "@mozilla.org/chrome/chrome-registry;1",            "nsIXULChromeRegistry");
         this.add("clipboard",           "@mozilla.org/widget/clipboard;1",                  "nsIClipboard");
         this.add("clipboardHelper",     "@mozilla.org/widget/clipboardhelper;1",            "nsIClipboardHelper");
