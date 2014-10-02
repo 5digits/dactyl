@@ -2667,7 +2667,7 @@ Buffer.addPageInfoSection("g", "General Info", function (verbose) {
     let pageSize = []; // [0] bytes; [1] kbytes
 
     storage.asyncOpenURI(util.createURI(doc.documentURI), "",
-        Ci.nsICacheStorage.OPEN_NORMALLY,
+        Ci.nsICacheStorage.OPEN_READONLY,
         {
             onCacheEntryCheck: () => Ci.nsICacheEntryOpenCallback.ENTRY_WANTED,
             onCacheEntryAvailable: entry => {
