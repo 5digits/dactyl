@@ -48,9 +48,6 @@ var ConfigBase = Class("ConfigBase", {
      * initialization code. Must call superclass's init function.
      */
     init: function init() {
-        if (!config.haveGecko("26"))
-            this.modules.global = this.modules.global.filter(m => m != "downloads"); // FIXME
-
         this.loadConfig();
 
         util.trapErrors(() => {

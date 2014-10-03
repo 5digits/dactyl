@@ -70,11 +70,6 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
  * @instance autocommands
  */
 var AutoCommands = Module("autocommands", {
-    init: function () {
-        if (!config.haveGecko("26"))
-            delete config.autocommands.DownloadPost; // FIXME
-    },
-
     get activeHives() contexts.allGroups.autocmd.filter(h => h._store.length),
 
     add: deprecated("group.autocmd.add", { get: function add() autocommands.user.bound.add }),

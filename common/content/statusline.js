@@ -34,8 +34,7 @@ var StatusLine = Module("statusline", {
                 ]
             });
 
-        if (config.haveGecko("25"))
-            config.tabbrowser.getStatusPanel().hidden = true;
+        config.tabbrowser.getStatusPanel().hidden = true;
 
         if (this.statusBar.localName == "toolbar") {
             styles.system.add("addon-bar", config.styleableChrome, literal(function () /*
