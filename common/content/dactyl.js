@@ -1894,7 +1894,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             });
         }
 
-        if (config.has("default-theme") && "CustomizableUI" in window)
+        if (config.has("default-theme") && "CustomizableUI" in window &&
+                config.tabbrowser.tabContainer.orient != "vertical")
             overlay.overlayWindow(window, {
                 append: [
                     ["window", { id: document.documentElement.id, "dactyl-australis": "true", xmlns: "xul" }]]
