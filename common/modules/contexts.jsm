@@ -512,10 +512,11 @@ var Contexts = Module("contexts", {
 
         let rhs = args.literalArg;
         let type = ["-builtin", "-ex", "-javascript", "-keys"].reduce((a, b) => args[b] ? b : a, default_);
+        let noremap = false;
 
         switch (type) {
         case "-builtin":
-            let noremap = true;
+            noremap = true;
             /* fallthrough */
         case "-keys":
             let silent = args["-silent"];
