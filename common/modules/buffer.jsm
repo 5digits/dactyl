@@ -172,13 +172,13 @@ var Buffer = Module("Buffer", {
     climbUrlPath: function climbUrlPath(count) {
         let { dactyl } = this.modules;
 
-        let url = this.documentURI.clone();
+        let url = this.uri.clone();
         dactyl.assert(url instanceof Ci.nsIURL);
 
         while (count-- && url.path != "/")
             url.path = url.path.replace(/[^\/]*\/*$/, "");
 
-        dactyl.assert(!url.equals(this.documentURI));
+        dactyl.assert(!url.equals(this.uri));
         dactyl.open(url.spec);
     },
 
