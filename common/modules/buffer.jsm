@@ -257,6 +257,16 @@ var Buffer = Module("Buffer", {
     get uri() util.newURI(this.win.location.href),
 
     /**
+     * @property {nsIURI} The current top-level document's URI, sans
+     *  fragment ID.
+     */
+    get pageURI() {
+        let uri = this.uri;
+        uri.ref = "";
+        return uri;
+    },
+
+    /**
      * @property {nsIURI} The current top-level document's URI, sans any
      *     fragment identifier.
      */
@@ -702,13 +712,35 @@ var Buffer = Module("Buffer", {
                 util.reportError(e);
             }
 
+        let sane = link => {
+            let a = [link.href, this.pageURI.spec];
+            let b = overlay.getData(link, "link-check");
+            return !b
+                || a[0] == b[0] && a[1] == b[1]
+                || a[0] != b[0] && a[1] != b[1];
+        }
+
         let link = DOM("link[href][rev=canonical], \
                         link[href][rel=shortlink]", doc)
+                       .filter(sane)
                        .attr("href");
         if (link)
             return hashify(link);
 
         return null;
+    },
+
+    locationChanged: function locationChanged() {
+        // Store current URL to detect tomfoolery. Might go awry if
+        // links get updated before `history.pushState`, but better safe
+        // than whatever.
+
+        DOM("link[href][rev=canonical], \
+             link[href][rel=shortlink]", this.doc)
+            .each(elem => {
+                overlay.getData(elem, "link-check",
+                                () => [elem.href, this.pageURI.spec])
+            });
     },
 
     /**
@@ -2763,13 +2795,6 @@ Buffer.addPageInfoSection("s", "Security", function (verbose) {
             yield ["User exception", /*L*/"true"];
         break;
     }
-});
-
-// internal navigation doesn't currently update link[rel='shortlink']
-Buffer.addURIShortener("youtube.com", (uri, doc) => {
-    let video = array.toObject(uri.query.split("&")
-                                        .map(p => p.split("="))).v;
-    return video ? util.newURI("http://youtu.be/" + video) : null;
 });
 
 // catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }

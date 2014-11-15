@@ -21,12 +21,15 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             get siteSpecific() false,
             set siteSpecific(val) {}
         });
+
+        config.tabbrowser.addTabsProgressListener(this.tabsProgressListener);
     },
 
     destroy: function () {
         this.cleanupProgressListener();
         this.observe.unregister();
         this._unoverlay();
+        config.tabbrowser.removeTabsProgressListener(this.tabsProgressListener);
     },
 
     observers: {
@@ -108,7 +111,6 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
      * @property {Object} The document loading progress listener.
      */
     progressListener: {
-        // XXX: function may later be needed to detect a canceled synchronous openURL()
         onStateChange: util.wrapCallback(function onStateChange(webProgress, request, flags, status) {
             const L = Ci.nsIWebProgressListener;
 
@@ -146,7 +148,6 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             onProgressChange.superapply(this, arguments);
             dactyl.applyTriggerObserver("browser.progressChange", arguments);
         }),
-        // happens when the users switches tabs
         onLocationChange: util.wrapCallback(function onLocationChange(webProgress, request, uri) {
             onLocationChange.superapply(this, arguments);
 
@@ -187,6 +188,17 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             setOverLink.superapply(this, arguments);
             dactyl.triggerObserver("browser.overLink", link);
         })
+    },
+
+    tabsProgressListener: {
+        onStateChange: function onStateChange(webProgress, request, flags, status) {},
+        onSecurityChange: function onSecurityChange(webProgress, request, state) {},
+        onStatusChange: function onStatusChange(webProgress, request, status, message) {},
+        onProgressChange: function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {},
+
+        onLocationChange: util.wrapCallback(function onLocationChange(browser) {
+            Buffer(browser.contentWindow).locationChanged();
+        }),
     }
 }, {
 }, {
