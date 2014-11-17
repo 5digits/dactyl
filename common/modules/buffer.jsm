@@ -262,7 +262,8 @@ var Buffer = Module("Buffer", {
      */
     get pageURI() {
         let uri = this.uri;
-        uri.ref = "";
+        if (!uri.ref.startsWith("!"))
+            uri.ref = "";
         return uri;
     },
 
