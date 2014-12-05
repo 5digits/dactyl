@@ -13,7 +13,7 @@
         </content>
     </binding>
 
-    <binding id="hints" inheritstyle="false">
+    <binding id="hints" inheritstyle="false" bindToUntrustedContent="true">
         <content>
             <html:div anonid="hints"/>
         </content>
