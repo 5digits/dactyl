@@ -176,7 +176,7 @@
         </p>
 
         <warning>
-            This behavior differs differs from that of Vim, which defaults to
+            This behavior differs from that of Vim, which defaults to
             writing the file in the current directory.
         </warning>
     </description>
