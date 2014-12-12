@@ -658,8 +658,6 @@ var HintSession = Class("HintSession", CommandMode, {
             }
             styles.system.add("hint-positions", "*", css.join("\n"));
         }
-
-        return true;
     },
 
     /**
