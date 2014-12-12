@@ -354,7 +354,7 @@
     <tags>:styleenable :stylee</tags>
     <tags>:styenable :stye</tags>
     <strut/>
-    <spec>:styled<oa>isable</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
+    <spec>:stylee<oa>nable</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
     <description>
         <p>Enable any matching styles. With <oa>!</oa>, enable all styles. Arguments are the same as for <ex>:delstyle</ex></p>
     </description>
@@ -364,7 +364,7 @@
     <tags>:styledisable :styled</tags>
     <tags>:stydisable :styd</tags>
     <strut/>
-    <spec>:stylee<oa>nable</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
+    <spec>:styled<oa>isable</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
     <description>
         <p>Disable any matching styles. With <oa>!</oa>, disable all styles. Arguments are the same as for <ex>:delstyle</ex></p>
     </description>
