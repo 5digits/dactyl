@@ -153,9 +153,11 @@ var Highlights = Module("Highlight", {
     get: function get(k) this.highlight[k],
 
     set: function set(key, newStyle, force, append, extend) {
-        let [, class_, selectors] = key.match(/^([a-zA-Z_-]+)(.*)/);
-
-        let highlight = this.highlight[key] || this._create(false, [key]);
+        let highlight = this.highlight[key];
+        if (!highlight) {
+            highlight = this._create(false, [key]);
+            highlight.defaultValue = null;
+        }
 
         let bases = extend || highlight.extends;
         if (append) {
@@ -163,19 +165,29 @@ var Highlights = Module("Highlight", {
             bases = highlight.extends.concat(bases);
         }
 
-        if (/^\s*$/.test(newStyle))
-            newStyle = null;
         if (newStyle == null && extend == null) {
-            if (highlight.defaultValue == null && highight.defaultExtends.length == 0) {
-                highlight.style.enabled = false;
-                delete this.loaded[highlight.class];
-                delete this.highlight[highlight.class];
-                return null;
-            }
-            newStyle = highlight.defaultValue;
-            bases = highlight.defaultExtends;
+            return this._reset(highlight, force, bases, extend);
+        } else {
+            return this._set(highlight, newStyle, force, bases, extend);
         }
+    },
 
+    _reset: function set(highlight, force, bases, extend) {
+        if (highlight.defaultValue == null && highlight.defaultExtends.length == 0) {
+            highlight.style.enabled = false;
+            delete this.loaded[highlight.class];
+            delete this.highlight[highlight.class];
+            return null;
+        }
+        highlight.set("value", highlight.defaultValue || "");
+        highlight.extends = highlight.defaultExtends;
+        if (force)
+            highlight.style.enabled = true;
+        this.highlight[highlight.class] = highlight;
+        return highlight;
+    },
+
+    _set: function set(highlight, newStyle, force, bases, extend) {
         highlight.set("value", newStyle || "");
         highlight.extends = array.uniq(bases, true);
         if (force)
@@ -190,7 +202,7 @@ var Highlights = Module("Highlight", {
      */
     clear: function clear() {
         for (let [k, v] in Iterator(this.highlight))
-            this.set(k, null, true);
+            this._reset(v, true);
     },
 
     /**
