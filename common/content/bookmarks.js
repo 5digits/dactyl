@@ -695,13 +695,15 @@ var Bookmarks = Module("bookmarks", {
                     context.generate = function () {
                         let [begin, end] = item.url.split("%s");
 
+                        let seen = RealSet();
                         return history.get({ uri: util.newURI(begin), uriIsPrefix: true }).map(function (item) {
                             let rest = item.url.length - end.length;
                             let query = item.url.substring(begin.length, rest);
                             if (item.url.substr(rest) == end && query.contains("&"))
                                 try {
                                     item.url = decodeURIComponent(query.replace(/[&#].*/, "").replace(/\+/g, " "));
-                                    return item;
+                                    if (!seen.add(item.url))
+                                        return item;
                                 }
                                 catch (e) {}
                             return null;
