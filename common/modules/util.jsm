@@ -783,6 +783,17 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (params.mimeType)
                 xmlhttp.overrideMimeType(params.mimeType);
 
+            if (params.method == "HEAD" && !params.notificationCallbacks)
+                params.notificationCallbacks = Class(XPCOM([Ci.nsIChannelEventSink, Ci.nsIInterfaceRequestor]), {
+                    getInterface: function getInterface(iid) this.QueryInterface(iid),
+
+                    asyncOnChannelRedirect: function (oldChannel, newChannel, flags, callback) {
+                        if (newChannel instanceof Ci.nsIHttpChannel)
+                            newChannel.requestMethod = "HEAD";
+                        callback.onRedirectVerifyCallback(Cr.NS_OK);
+                    }
+                })();
+
             let args = [params.method || "GET", url, async];
             if (params.user != null || params.pass != null)
                 args.push(params.user);
