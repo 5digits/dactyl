@@ -35,18 +35,18 @@ var Group = Class("Group", {
     modifiable: true,
 
     cleanup: function cleanup(reason) {
-        for (let hive in values(this.hives))
+        for (let hive of values(this.hives))
             util.trapErrors("cleanup", hive);
 
         this.hives = [];
-        for (let hive in keys(this.hiveMap))
+        for (let hive of keys(this.hiveMap))
             delete this[hive];
 
         if (reason != "shutdown")
             this.children.splice(0).forEach(this.contexts.bound.removeGroup);
     },
     destroy: function destroy(reason) {
-        for (let hive in values(this.hives))
+        for (let hive of values(this.hives))
             util.trapErrors("destroy", hive);
 
         if (reason != "shutdown")
@@ -66,20 +66,25 @@ var Group = Class("Group", {
 
 }, {
     compileFilter: function (patterns, default_=false) {
-        function siteFilter(uri)
-            let (match = siteFilter.filters.find(f => f(uri)))
-                match ? match.result
-                      : default_;
+        function siteFilter(uri) {
+            let match = siteFilter.filters.find(f => f(uri));
+            return match ? match.result
+                         : default_;
+        }
 
         return update(siteFilter, {
             toString: function () this.filters.join(","),
 
-            toJSONXML: function (modules) let (uri = modules && modules.buffer.uri)
-                template.map(this.filters,
-                             f => ["span", { highlight: uri && f(uri) ? "Filter" : "" },
-                                       ("toJSONXML" in f ? f.toJSONXML()
-                                                         : String(f))],
-                             ","),
+            toJSONXML: function (modules) {
+                let uri = modules && modules.buffer.uri;
+
+                return template.map(
+                    this.filters,
+                    f => ["span", { highlight: uri && f(uri) ? "Filter" : "" },
+                              ("toJSONXML" in f ? f.toJSONXML()
+                                                : String(f))],
+                    ",");
+            },
 
             filters: Option.parse.sitelist(patterns)
         });
@@ -94,7 +99,7 @@ var Contexts = Module("contexts", {
     },
 
     cleanup: function () {
-        for each (let module in this.pluginModules)
+        for (let module of values(this.pluginModules))
             util.trapErrors("unload", module);
 
         this.pluginModules = {};
@@ -152,7 +157,7 @@ var Contexts = Module("contexts", {
             for (let hive of values(this.groupList.slice()))
                 util.trapErrors("destroy", hive, "shutdown");
 
-            for each (let plugin in this.modules.plugins.contexts) {
+            for (let plugin of values(this.modules.plugins.contexts)) {
                 if (plugin && "onUnload" in plugin && callable(plugin.onUnload))
                     util.trapErrors("onUnload", plugin);
 
@@ -195,7 +200,7 @@ var Contexts = Module("contexts", {
 
                 memoize(contexts.groupsProto, name,
                         function () [group[name]
-                                     for (group in values(this.groups))
+                                     for (group of values(this.groups))
                                      if (hasOwnProperty(group, name))]);
             },
 
@@ -413,9 +418,12 @@ var Contexts = Module("contexts", {
         delete this.allGroups;
     },
 
-    initializedGroups: function (hive)
-        let (need = hive ? [hive] : Object.keys(this.hives))
-            this.groupList.filter(group => need.some(hasOwnProperty.bind(null, group))),
+    initializedGroups: function (hive) {
+        let need = hive ? [hive]
+                        : Object.keys(this.hives);
+
+        return this.groupList.filter(group => need.some(hasOwnProperty.bind(null, group)));
+    },
 
     addGroup: function addGroup(name, description, filter, persist, replace) {
         let group = this.getGroup(name);
@@ -502,13 +510,18 @@ var Contexts = Module("contexts", {
         let process = util.identity;
 
         if (callable(params))
-            var makeParams = function makeParams(self, args)
-                let (obj = params.apply(self, args))
-                    iter.toObject([k, Proxy(obj, k)] for (k in properties(obj)));
+            var makeParams = function makeParams(self, args) {
+                let obj = params.apply(self, args);
+
+                return iter.toObject([k, Proxy(obj, k)]
+                                     for (k of properties(obj)));
+            };
+
         else if (params)
-            makeParams = function makeParams(self, args)
-                iter.toObject([name, process(args[i])]
-                              for ([i, name] in Iterator(params)));
+            makeParams = function makeParams(self, args) {
+                return iter.toObject([name, process(args[i])]
+                                     for ([i, name] of iter(params)));
+            };
 
         let rhs = args.literalArg;
         let type = ["-builtin", "-ex", "-javascript", "-keys"].reduce((a, b) => args[b] ? b : a, default_);
@@ -684,7 +697,7 @@ var Contexts = Module("contexts", {
                         bang: true,
                         options: iter([v, typeof group[k] == "boolean" ? null : group[k]]
                                       // FIXME: this map is expressed multiple times
-                                      for ([k, v] in Iterator({
+                                      for ([k, v] of iter({
                                           args: "-args",
                                           description: "-description",
                                           filter: "-locations"
@@ -693,7 +706,7 @@ var Contexts = Module("contexts", {
                         arguments: [group.name],
                         ignoreDefaults: true
                     }
-                    for (group in values(contexts.initializedGroups()))
+                    for (group of values(contexts.initializedGroups()))
                     if (!group.builtin && group.persist)
                 ].concat([{ command: this.name, arguments: ["user"] }])
             });

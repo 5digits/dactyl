@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -57,7 +57,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         if (this == prefs) {
             if (~["uninstall", "disable"].indexOf(reason)) {
-                for (let name in values(this.branches.saved.getNames()))
+                for (let name of values(this.branches.saved.getNames()))
                     this.safeReset(name, null, true);
 
                 this.branches.original.resetBranch();
@@ -320,7 +320,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @see #withContext
      */
     popContext: function popContext() {
-        for (let [k, v] in Iterator(this._prefContexts.pop()))
+        for (let [k, v] of iter(this._prefContexts.pop()))
             this.set(k, v);
     },
 
@@ -396,8 +396,8 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         let prefArray = this.getNames();
         prefArray.sort();
-        function prefs() {
-            for (let [, pref] in Iterator(prefArray)) {
+        function* prefs() {
+            for (let pref of prefArray) {
                 let userValue = services.pref.prefHasUserValue(pref);
                 if (onlyNonDefault && !userValue || !pref.contains(filter))
                     continue;

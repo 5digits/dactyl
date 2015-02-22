@@ -179,7 +179,7 @@ var HintSession = Class("HintSession", CommandMode, {
     getHintNumber: function getHintNumber(str) {
         let base = this.hintKeys.length;
         let res = 0;
-        for (let char in values(str))
+        for (let char of values(str))
             res = res * base + this.hintKeys.indexOf(char);
         return res;
     },
@@ -286,7 +286,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
         memoize(doc, "dactylLabels", () =>
             iter([l.getAttribute("for"), l]
-                 for (l in array.iterValues(doc.querySelectorAll("label[for]"))))
+                 for (l of array.iterValues(doc.querySelectorAll("label[for]"))))
              .toObject());
 
         let [offsetX, offsetY] = this.getContainerOffsets(doc);
@@ -330,7 +330,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
             let start = this.pageHints.length;
             let _hints = [];
-            for (let elem in res)
+            for (let elem of res)
                 if (isVisible(elem) && (!mode.filter || mode.filter(elem)))
                     _hints.push({
                         elem: elem,
@@ -545,14 +545,14 @@ var HintSession = Class("HintSession", CommandMode, {
      *     hint disappears.
      */
     removeHints: function _removeHints(timeout) {
-        for (let { doc, start, end } in values(this.docs)) {
+        for (let { doc, start, end } of values(this.docs)) {
             DOM(doc.documentElement).highlight.remove("Hinting");
             // Goddamn stupid fucking Gecko 1.x security manager bullshit.
             try { delete doc.dactylLabels; } catch (e) { doc.dactylLabels = undefined; }
 
-            for (let elem in DOM.XPath("//*[@dactyl:highlight='hints']", doc))
+            for (let elem of DOM.XPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
-            for (let i in util.range(start, end + 1)) {
+            for (let i of util.range(start, end + 1)) {
                 this.pageHints[i].ambiguous = false;
                 this.pageHints[i].valid = false;
             }
@@ -590,12 +590,12 @@ var HintSession = Class("HintSession", CommandMode, {
         let activeHint = this.hintNumber || 1;
         this.validHints = [];
 
-        for (let { doc, start, end } in values(this.docs)) {
+        for (let { doc, start, end } of values(this.docs)) {
             DOM(doc.documentElement).highlight.add("Hinting");
             let [offsetX, offsetY] = this.getContainerOffsets(doc);
 
         inner:
-            for (let i in (util.interruptibleRange(start, end + 1, 500))) {
+            for (let i of util.interruptibleRange(start, end + 1, 500)) {
                 if (this.showCount != count)
                     return;
 
@@ -644,13 +644,13 @@ var HintSession = Class("HintSession", CommandMode, {
         }
 
         let base = this.hintKeys.length;
-        for (let [i, hint] in Iterator(this.validHints))
+        for (let [i, hint] of iter(this.validHints))
             hint.ambiguous = (i + 1) * base <= this.validHints.length;
 
         if (options["usermode"]) {
             let css = [];
-            for (let hint in values(this.pageHints)) {
-                let selector = highlight.selector("Hint") + "[number=" + hint.span.getAttribute("number").quote() + "]";
+            for (let hint of values(this.pageHints)) {
+                let selector = highlight.selector("Hint") + "[number=" + JSON.stringify(hint.span.getAttribute("number")) + "]";
                 let imgSpan = "[dactyl|hl=HintImage]";
                 css.push(selector + ":not(" + imgSpan + ") { " + hint.span.style.cssText + " }");
                 if (hint.imgSpan)
@@ -699,7 +699,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
     updateValidNumbers: function updateValidNumbers(always) {
         let string = this.getHintString(this.hintNumber);
-        for (let hint in values(this.validHints))
+        for (let hint of values(this.validHints))
             hint.valid = always || hint.span.getAttribute("number").startsWith(string);
     },
 
@@ -866,7 +866,7 @@ var Hints = Module("hints", {
         if (DOM(elem).isInput)
             return [elem.value, false];
         else {
-            for (let [, option] in Iterator(options["hintinputs"])) {
+            for (let option of options["hintinputs"]) {
                 if (option == "value") {
                     if (elem instanceof Ci.nsIDOMHTMLSelectElement) {
                         if (elem.selectedIndex >= 0)
@@ -1022,7 +1022,7 @@ var Hints = Module("hints", {
              */
             function stringsAtBeginningOfWords(strings, words, allowWordOverleaping) {
                 let strIdx = 0;
-                for (let [, word] in Iterator(words)) {
+                for (let word of words) {
                     if (word.length == 0)
                         continue;
 
@@ -1077,7 +1077,8 @@ var Hints = Module("hints", {
             autocomplete: false,
             completer: function (context) {
                 context.compare = () => 0;
-                context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints.modes))];
+                context.completions = [[k, v.prompt]
+                                       for ([k, v] of iter(hints.modes))];
             },
             onCancel: mappings.bound.popCommand,
             onSubmit: function (arg) {
@@ -1315,14 +1316,18 @@ var Hints = Module("hints", {
             {
                 keepQuotes: true,
 
-                getKey: function (val, default_)
-                    let (res = this.value.find(re => let (match = re.exec(val)) match && match[0] == val))
-                        res ? res.matcher
-                            : default_,
+                getKey: function (val, default_) {
+                    let res = this.value.find(re => {
+                        let match = re.exec(val);
+                        return match && match[0] == val;
+                    });
+                    return res ? res.matcher
+                               : default_;
+                },
 
                 parse: function parse(val) {
                     let vals = parse.supercall(this, val);
-                    for (let value in values(vals))
+                    for (let value of values(vals))
                         value.matcher = DOM.compileMatcher(Option.splitList(value.result));
                     return vals;
                 },

@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -13,9 +13,9 @@ lazyRequire("contexts", ["Contexts"]);
 lazyRequire("template", ["template"]);
 
 function cssUri(css) "chrome-data:text/css," + encodeURI(css);
-var namespace = "@namespace html " + XHTML.quote() + ";\n" +
-                "@namespace xul " + XUL.quote() + ";\n" +
-                "@namespace dactyl " + NS.quote() + ";\n";
+var namespace = "@namespace html " + JSON.stringify(XHTML) + ";\n" +
+                "@namespace xul " + JSON.stringify(XUL) + ";\n" +
+                "@namespace dactyl " + JSON.stringify(NS) + ";\n";
 
 var Sheet = Struct("name", "id", "sites", "css", "hive", "agent");
 Sheet.liveProperty = function (name) {
@@ -117,7 +117,7 @@ var Hive = Class("Hive", {
             });
     },
 
-    __iterator__: function () Iterator(this.sheets),
+    "@@iterator": function () iter(this.sheets),
 
     get sites() array(this.sheets).map(s => s.sites)
                                   .flatten()
@@ -189,7 +189,7 @@ var Hive = Class("Hive", {
      */
     find: function find(name, filter, css, index) {
         // Grossly inefficient.
-        let matches = [k for ([k, v] in Iterator(this.sheets))];
+        let matches = [k for ([k, v] of iter(this.sheets))];
         if (index)
             matches = String(index).split(",").filter(i => i in this.sheets);
         if (name)
@@ -230,7 +230,7 @@ var Hive = Class("Hive", {
         if (matches.length == 0)
             return null;
 
-        for (let [, sheet] in Iterator(matches.reverse())) {
+        for (let sheet of matches.reverse()) {
             if (filter) {
                 let sites = sheet.sites.filter(f => f != filter);
                 if (sites.length) {
@@ -294,11 +294,13 @@ var Styles = Module("Styles", {
         return hive;
     },
 
-    __iterator__: function () Iterator(this.user.sheets.concat(this.system.sheets)),
+    "@@iterator": function () iter(this.user.sheets.concat(this.system.sheets)),
 
-    _proxy: function (name, args)
-        let (obj = this[args[0] ? "system" : "user"])
-            obj[name].apply(obj, Array.slice(args, 1)),
+    _proxy: function (name, args) {
+        let obj = this[args[0] ? "system" : "user"];
+
+        return obj[name].apply(obj, Array.slice(args, 1));
+    },
 
     addSheet: deprecated("Styles#{user,system}.add", function addSheet() this._proxy("add", arguments)),
     findSheets: deprecated("Styles#{user,system}.find", function findSheets() this._proxy("find", arguments)),
@@ -336,16 +338,19 @@ var Styles = Module("Styles", {
                 ["col", { style: "min-width: 1em; text-align: center; color: red; font-weight: bold;" }],
                 ["col", { style: "padding: 0 1em 0 1ex; vertical-align: top;" }],
                 ["col", { style: "padding: 0 1em 0 0; vertical-align: top;" }],
-                template.map(hives, hive => let (i = 0) [
-                    ["tr", { style: "height: .5ex;" }],
-                    template.map(sheets(hive), sheet =>
-                        ["tr", {},
-                            ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
-                            ["td", {}, sheet.enabled ? "" : UTF8("×")],
-                            ["td", {}, sheet.name || hive.sheets.indexOf(sheet)],
-                            ["td", {}, sheet.formatSites(uris)],
-                            ["td", {}, sheet.css]]),
-                    ["tr", { style: "height: .5ex;" }]])];
+                template.map(hives, hive => {
+                    let i = 0;
+                    return [
+                        ["tr", { style: "height: .5ex;" }],
+                        template.map(sheets(hive), sheet =>
+                            ["tr", {},
+                                ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
+                                ["td", {}, sheet.enabled ? "" : UTF8("×")],
+                                ["td", {}, sheet.name || hive.sheets.indexOf(sheet)],
+                                ["td", {}, sheet.formatSites(uris)],
+                                ["td", {}, sheet.css]]),
+                        ["tr", { style: "height: .5ex;" }]];
+                })];
 
         // E4X-FIXME
         // // TODO: Move this to an ItemList to show this automatically
@@ -375,7 +380,7 @@ var Styles = Module("Styles", {
     append: function (dest, src, sort) {
         let props = {};
         for (let str of [dest, src])
-            for (let prop in Styles.propertyIter(str))
+            for (let prop of Styles.propertyIter(str))
                 props[prop.name] = prop.value;
 
         let val = Object.keys(props)[sort ? "sort" : "slice"]()
@@ -450,7 +455,7 @@ var Styles = Module("Styles", {
     },
 
     splitContext: function splitContext(context, title) {
-        for (let item in Iterator({ Active: true, Inactive: false })) {
+        for (let item of iter({ Active: true, Inactive: false })) {
             let [name, active] = item;
             context.split(name, null, function (context) {
                 context.title[0] = /*L*/name + " " + (title || "Sheets");
@@ -459,9 +464,10 @@ var Styles = Module("Styles", {
         }
     },
 
-    propertyIter: function (str, always) {
+    propertyIter: function* (str, always) {
         let i = 0;
-        for (let match in this.propertyPattern.iterate(str)) {
+        let x = /The status bar/.test(str);
+        for (let match of this.propertyPattern.iterate(str)) {
             if (match.value || always && match.name || match.wholeMatch === match.preSpace && always && !i++)
                 yield match;
             if (!/;/.test(match.postSpace))
@@ -729,7 +735,7 @@ var Styles = Module("Styles", {
             context.keys = { text: function (p) p + ":",
                              description: function () "" };
 
-            for (let match in Styles.propertyIter(context.filter, true))
+            for (let match of Styles.propertyIter(context.filter, true))
                 var lastMatch = match;
 
             if (lastMatch != null && !lastMatch.value && !lastMatch.postSpace) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -36,7 +36,7 @@ if (!("find" in Array.prototype))
         configurable: true,
         writable: true,
         value: function Array_find(pred, self) {
-            for (let [i, elem] in Iterator(this))
+            for (let [i, elem] of this.entries())
                 if (pred.call(self, elem, i, this))
                     return elem;
         }
@@ -47,7 +47,7 @@ if (!("findIndex" in Array.prototype))
         configurable: true,
         writable: true,
         value: function Array_findIndex(pred, self) {
-            for (let [i, elem] in Iterator(this))
+            for (let [i, elem] of this.entries())
                 if (pred.call(self, elem, i, this))
                     return i;
             return -1;
@@ -86,7 +86,7 @@ function defineModule(name, params, module) {
     defineModule.loadLog.push("[Begin " + name + "]");
     defineModule.prefix += "  ";
 
-    for (let [, mod] in Iterator(params.require || []))
+    for (let mod of (params.require || []))
         require(mod, module);
 
     module._lastModule = currentModule;
@@ -105,13 +105,20 @@ Object.defineProperty(defineModule.loadLog, "push", {
 });
 defineModule.prefix = "";
 defineModule.dump = function dump_(...args) {
-    let msg = args.map(function (msg) {
-        if (loaded.util && typeof msg == "object")
-            msg = util.objectToString(msg);
-        return msg;
-    }).join(", ");
-    dump(String.replace(msg, /\n?$/, "\n")
-               .replace(/^./gm, JSMLoader.name + ": $&"));
+    try {
+        let msg = args.map(function (msg) {
+            if (loaded.util && typeof msg == "object")
+                msg = util.objectToString(msg);
+            return msg;
+        }).join(", ");
+        dump(String.replace(msg, /\n?$/, "\n")
+                   .replace(/^./gm, JSMLoader.name + ": $&"));
+    }
+    catch (e) {
+        let msg = "Error dumping object: " + e + "\n" + (e && e.stack || Error.stack);
+        dump(String.replace(msg, /\n?$/, "\n")
+                   .replace(/^./gm, JSMLoader.name + ": $&"));
+    }
 }
 defineModule.modules = [];
 defineModule.time = function time(major, minor, func, self, ...args) {
@@ -175,6 +182,7 @@ defineModule("base", {
         "Cr",
         "Cs",
         "Cu",
+        "DOMPromise",
         "ErrorBase",
         "Finished",
         "JSMLoader",
@@ -184,6 +192,7 @@ defineModule("base", {
         "Set",
         "Struct",
         "StructBase",
+        "Symbol",
         "TextEncoder",
         "TextDecoder",
         "Timer",
@@ -191,6 +200,7 @@ defineModule("base", {
         "XPCOM",
         "XPCOMShim",
         "XPCOMUtils",
+        "apply",
         "array",
         "bind",
         "call",
@@ -200,7 +210,6 @@ defineModule("base", {
         "defineModule",
         "deprecated",
         "endModule",
-        "forEach",
         "hasOwnProperty",
         "isArray",
         "isGenerator",
@@ -209,12 +218,11 @@ defineModule("base", {
         "isSubclass",
         "isinstance",
         "iter",
-        "iterAll",
         "iterOwnProperties",
         "keys",
         "literal",
         "memoize",
-        "modujle",
+        "module",
         "octal",
         "properties",
         "require",
@@ -231,6 +239,11 @@ this.lazyRequire("promises", ["Task", "promises"]);
 this.lazyRequire("services", ["services"]);
 this.lazyRequire("storage", ["File"]);
 this.lazyRequire("util", ["FailedAssertion", "util"]);
+
+if (typeof Symbol == "undefined")
+    this.Symbol = {
+        iterator: "@@iterator",
+    };
 
 literal.files = {};
 literal.locations = {};
@@ -254,6 +267,12 @@ function literal(comment) {
     });
 }
 
+function apply(obj, meth, args) {
+    // The function's own apply method breaks in strange ways
+    // when using CPOWs.
+    Function.prototype.apply.call(obj[meth], obj, args);
+}
+
 /**
  * Iterates over the names of all of the top-level properties of an
  * object or, if prototypes is given, all of the properties in the
@@ -269,13 +288,13 @@ function prototype(obj)
     XPCNativeWrapper.unwrap(obj).__proto__ ||
     Object.getPrototypeOf(XPCNativeWrapper.unwrap(obj));
 
-function properties(obj, prototypes) {
+function* properties(obj, prototypes) {
     let orig = obj;
-    let seen = RealSet(["dactylPropertyNames"]);
+    let seen = new RealSet(["dactylPropertyNames"]);
 
     try {
         if ("dactylPropertyNames" in obj && !prototypes)
-            for (let key in values(obj.dactylPropertyNames))
+            for (let key of obj.dactylPropertyNames)
                 if (key in obj && !seen.add(key))
                     yield key;
     }
@@ -321,8 +340,8 @@ function properties(obj, prototypes) {
     }
 }
 
-function iterOwnProperties(obj) {
-    for (let prop in properties(obj))
+function* iterOwnProperties(obj) {
+    for (let prop of properties(obj))
         yield [prop, Object.getOwnPropertyDescriptor(obj, prop)];
 }
 
@@ -358,7 +377,7 @@ function deprecated(alternative, fn) {
 }
 deprecated.warn = function warn(func, name, alternative, frame) {
     if (!func.seenCaller)
-        func.seenCaller = RealSet([
+        func.seenCaller = new RealSet([
             "resource://dactyl/javascript.jsm",
             "resource://dactyl/util.jsm"
         ]);
@@ -383,15 +402,13 @@ deprecated.warn = function warn(func, name, alternative, frame) {
  * @param {object} obj The object to inspect.
  * @returns {Generator}
  */
-function keys(obj) iter(function keys() {
+function keys(obj) {
     if (isinstance(obj, ["Map"]))
-        for (let [k, v] of obj)
-            yield k;
-    else
-        for (var k in obj)
-            if (hasOwnProperty(obj, k))
-                yield k;
-}());
+        return iter(obj.keys());
+
+    return iter(k for (k in obj)
+                if (hasOwnProperty(obj, k)));
+}
 
 /**
  * Iterates over all of the top-level, iterable property values of an
@@ -400,24 +417,19 @@ function keys(obj) iter(function keys() {
  * @param {object} obj The object to inspect.
  * @returns {Generator}
  */
-function values(obj) iter(function values() {
+function values(obj)  {
     if (isinstance(obj, ["Map"]))
-        for (let [k, v] of obj)
-            yield v;
-    else if (isinstance(obj, ["Generator", "Iterator", Iter]))
-        for (let k in obj)
-            yield k;
-    else if (iter.iteratorProp in obj)
-        for (let v of obj)
-            yield v;
-    else
-        for (var k in obj)
-            if (hasOwnProperty(obj, k))
-                yield obj[k];
-}());
+        return iter(obj.values());
 
-var forEach = deprecated("iter.forEach", function forEach() iter.forEach.apply(iter, arguments));
-var iterAll = deprecated("iter", function iterAll() iter.apply(null, arguments));
+    if (isinstance(obj, ["Generator", "Iterator", Iter]))
+        return iter(k for (k of obj));
+
+    if (Symbol.iterator in obj)
+        return iter(obj[Symbol.iterator]());
+
+    return iter(obj[k] for (k in obj)
+                if (hasOwnProperty(obj, k)));
+}
 
 var RealSet = Set;
 let Set_add = RealSet.prototype.add;
@@ -436,7 +448,7 @@ Object.defineProperty(RealSet.prototype, "difference", {
     configurable: true,
     writable: true,
     value: function RealSet_difference(set) {
-        return RealSet(i for (i of this) if (!set.has(i)));
+        return new RealSet(i for (i of this) if (!set.has(i)));
     },
 });
 
@@ -444,7 +456,7 @@ Object.defineProperty(RealSet.prototype, "intersection", {
     configurable: true,
     writable: true,
     value: function RealSet_intersection(set) {
-        return RealSet(i for (i of this) if (set.has(i)));
+        return new RealSet(i for (i of this) if (set.has(i)));
     },
 });
 
@@ -452,7 +464,7 @@ Object.defineProperty(RealSet.prototype, "union", {
     configurable: true,
     writable: true,
     value: function RealSet_union(set) {
-        let res = RealSet(this);
+        let res = new RealSet(this);
         for (let item of set)
             res.add(item);
         return res;
@@ -469,7 +481,7 @@ Object.defineProperty(RealSet.prototype, "union", {
 this.Set = deprecated("RealSet", function Set(ary) {
     let obj = {};
     if (ary)
-        for (let val in values(ary))
+        for (let val of values(ary))
             obj[val] = true;
     return obj;
 });
@@ -519,7 +531,7 @@ Set.subtract = deprecated("RealSet#difference",
     function set_subtract(set) {
         set = update({}, set);
         for (let i = 1; i < arguments.length; i++)
-            for (let k in keys(arguments[i]))
+            for (let k of keys(arguments[i]))
                 delete set[k];
         return set;
     });
@@ -602,9 +614,11 @@ function curry(fn, length, self, acc) {
     return curried;
 }
 
-var bind = function bind(meth, self, ...args)
-    let (func = callable(meth) ? meth : self[meth])
-        func.bind.apply(func, [self].concat(args));
+var bind = function bind(meth, self, ...args) {
+    let func = callable(meth) ? meth : self[meth];
+
+    return func.bind.apply(func, [self].concat(args));
+}
 
 /**
  * Returns true if both arguments are functions and
@@ -748,12 +762,11 @@ function memoize(obj, key, getter) {
     }
 }
 
-
 let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance(),
-                         { wantGlobalProperties: ["TextDecoder", "TextEncoder"] });
-sandbox.__proto__ = this;
+                         { wantGlobalProperties: ["TextDecoder", "TextEncoder"],
+                           sandboxPrototype: this });
 
-var { TextEncoder, TextDecoder } = sandbox;
+var { TextEncoder, TextDecoder, Promise: DOMPromise } = sandbox;
 
 /**
  * Updates an object with the properties of another object. Getters
@@ -787,13 +800,21 @@ function update(target) {
                     let func = desc.value.wrapped || desc.value;
                     if (!func.superapply) {
                         func.__defineGetter__("super", function get_super() Object.getPrototypeOf(target)[k]);
-                        func.superapply = function superapply(self, args)
-                            let (meth = Object.getPrototypeOf(target)[k])
-                                meth && meth.apply(self, args);
-                        func.supercall = function supercall(self, ...args)
-                            func.superapply(self, args);
+
+                        func.superapply = function superapply(self, args) {
+                            let meth = Object.getPrototypeOf(target)[k];
+                            return meth && meth.apply(self, args);
+                        }
+
+                        func.supercall = function supercall(self, ...args) {
+                            return func.superapply(self, args);
+                        }
                     }
                 }
+
+                if (k.startsWith("@@") && k.slice(2) in Symbol)
+                    k = Symbol[k.slice(2)];
+
                 Object.defineProperty(target, k, desc);
             }
             catch (e) {}
@@ -952,9 +973,9 @@ Class.Memoize = function Memoize(getter, wait)
                         }
                     });
 
-                    Task.spawn(function () {
+                    Task.spawn(function* () {
                         let wait;
-                        for (var res in getter.call(obj)) {
+                        for (var res of getter.call(obj)) {
                             if (wait !== undefined)
                                 yield promises.sleep(wait);
                             wait = res;
@@ -980,8 +1001,6 @@ Class.Memoize = function Memoize(getter, wait)
             this.set = function s_Memoize(val) Class.replaceProperty(this.instance || this, key, val);
         }
     });
-
-Class.memoize = deprecated("Class.Memoize", function memoize() Class.Memoize.apply(this, arguments));
 
 /**
  * Updates the given object with the object in the target class's
@@ -1025,7 +1044,7 @@ Class.prototype = {
     toString: function C_toString() {
         if (this.toStringParams)
             var params = "(" + this.toStringParams.map(m => (isArray(m)  ? "[" + m + "]" :
-                                                             isString(m) ? m.quote() : String(m)))
+                                                             isString(m) ? JSON.stringify(m) : String(m)))
                                    .join(", ") + ")";
         return "[instance " + this.constructor.className + (params || "") + "]";
     },
@@ -1077,6 +1096,9 @@ Class.prototype = {
         for (let i = 0; i < arguments.length; i++) {
             let src = arguments[i];
             Object.getOwnPropertyNames(src || {}).forEach((k) => {
+                if (k.startsWith("@@") && k.slice(2) in Symbol)
+                    k = Symbol[k.slice(2)];
+
                 let desc = Object.getOwnPropertyDescriptor(src, k);
                 if (desc.value instanceof Class.Property)
                     desc = desc.value.init(k, this) || desc.value;
@@ -1098,6 +1120,9 @@ Class.prototype = {
                 }
 
                 try {
+                    if (k.startsWith("@@") && k.slice(2) in Symbol)
+                        k = Symbol[k.slice(2)];
+
                     if ("value" in desc && (this.localizedProperties.has(k) || this.magicalProperties.has(k)))
                         this[k] = desc.value;
                     else
@@ -1109,10 +1134,19 @@ Class.prototype = {
         return this;
     },
 
-    localizedProperties: RealSet(),
-    magicalProperties: RealSet()
+    localizedProperties: new RealSet,
+    magicalProperties: new RealSet
 };
-for (let name in properties(Class.prototype)) {
+
+/*
+Object.defineProperty(Class.prototype, Symbol.iterator, {
+    get: function () this.__iterator__,
+    set: function (val) { this.__iterator__ = val },
+    configurable: true
+});
+*/
+
+for (let name of properties(Class.prototype)) {
     let desc = Object.getOwnPropertyDescriptor(Class.prototype, name);
     desc.enumerable = false;
     Object.defineProperty(Class.prototype, name, desc);
@@ -1165,14 +1199,22 @@ function XPCOM(interfaces, superClass) {
 
     let shim = XPCOMShim(interfaces);
 
-    let res = Class("XPCOM(" + interfaces + ")", superClass || Class,
-        update(iter([k,
-                     v === undefined || callable(v) ? stub : v]
-                     for ([k, v] in Iterator(shim))).toObject(),
-               { QueryInterface: XPCOMUtils.generateQI(interfaces) }));
+    let base = { QueryInterface: XPCOMUtils.generateQI(interfaces) };
+
+    for (let [k, v] of iter(shim)) {
+        if (v === undefined || callable(v))
+            base[k] = stub;
+        else
+            base[k] = v;
+    }
+
+    let res = Class("XPCOM(" + interfaces + ")",
+                    superClass || Class,
+                    base);
 
     return res;
 }
+
 function XPCOMShim(interfaces) {
     let ip = services.InterfacePointer({
         QueryInterface: function (iid) {
@@ -1336,9 +1378,9 @@ var StructBase = Class("StructBase", Array, {
     toString: function struct_toString() Class.prototype.toString.apply(this, arguments),
 
     // Iterator over our named members
-    __iterator__: function struct__iterator__() {
-        let self = this;
-        return ([k, self[k]] for (k in keys(self.members)))
+    "@@iterator": function* struct__iterator__() {
+        for (let k of keys(this.members))
+            yield [k, this[k]];
     }
 }, {
     fromArray: function fromArray(ary) {
@@ -1486,59 +1528,60 @@ var octal = deprecated("octal integer literals", function octal(decimal) parseIn
  * @param {nsIJSIID} iface The interface to which to query all elements.
  * @returns {Generator}
  */
-iter.iteratorProp = "@@iterator" in [] ? "@@iterator" : "iterator";
 function iter(obj, iface) {
     if (arguments.length == 2 && iface instanceof Ci.nsIJSIID)
         return iter(obj).map(item => item.QueryInterface(iface));
 
     let args = arguments;
-    let res = Iterator(obj);
+    let res;
 
     if (args.length > 1)
-        res = (function () {
+        res = (function* () {
             for (let i = 0; i < args.length; i++)
-                for (let j in iter(args[i]))
+                for (let j of iter(args[i]))
                     yield j;
         })();
-    else if (isinstance(obj, ["Iterator", "Generator", "Array"]))
-        ;
+    else if (isinstance(obj, ["Array"]))
+        res = obj.entries();
+    else if (Symbol.iterator in obj)
+        res = obj[Symbol.iterator]();
     else if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
         res = array.iterItems(obj);
-    else if (iter.iteratorProp in obj && callable(obj[iter.iteratorProp]) && !("__iterator__" in obj))
-        res = (x for (x of obj));
     else if (ctypes && ctypes.CData && obj instanceof ctypes.CData) {
         while (obj.constructor instanceof ctypes.PointerType)
             obj = obj.contents;
         if (obj.constructor instanceof ctypes.ArrayType)
             res = array.iterItems(obj);
         else if (obj.constructor instanceof ctypes.StructType)
-            res = (function () {
-                for (let prop in values(obj.constructor.fields))
-                    yield let ([name, type] = Iterator(prop).next()) [name, obj[name]];
+            res = (function* () {
+                for (let prop of values(obj.constructor.fields)) {
+                    let [name, type] = Iterator(prop).next();
+                    yield [name, obj[name]];
+                }
             })();
         else
             return iter({});
     }
     else if (Ci.nsIDOMNamedNodeMap && obj instanceof Ci.nsIDOMNamedNodeMap ||
              Ci.nsIDOMMozNamedAttrMap && obj instanceof Ci.nsIDOMMozNamedAttrMap)
-        res = (function () {
+        res = (function* () {
             for (let i = 0; i < obj.length; i++)
                 yield [obj.name, obj];
         })();
     else if (obj instanceof Ci.mozIStorageStatement)
-        res = (function (obj) {
+        res = (function* (obj) {
             while (obj.executeStep())
                 yield obj.row;
             obj.reset();
         })(obj);
     else if ("getNext" in obj) {
         if ("hasMoreElements" in obj)
-            res = (function () {
+            res = (function* () {
                 while (obj.hasMoreElements())
                     yield obj.getNext();
             })();
         else if ("hasMore" in obj)
-            res = (function () {
+            res = (function* () {
                 while (obj.hasMore())
                     yield obj.getNext();
             })();
@@ -1548,6 +1591,10 @@ function iter(obj, iface) {
             return iter(obj.enumerator());
         return iter(obj.enumerator);
     }
+
+    if (res === undefined)
+        res = Iterator(obj)[Symbol.iterator]();
+
     return Iter(res);
 }
 update(iter, {
@@ -1556,7 +1603,7 @@ update(iter, {
     // See array.prototype for API docs.
     toObject: function toObject(iter) {
         let obj = {};
-        for (let [k, v] in iter)
+        for (let [k, v] of iter)
             if (v instanceof Class.Property)
                 Object.defineProperty(obj, k, v.init(k, obj) || v);
             else
@@ -1564,7 +1611,7 @@ update(iter, {
         return obj;
     },
 
-    compact: function compact(iter) (item for (item in iter) if (item != null)),
+    compact: function compact(iter) (item for (item of iter) if (item != null)),
 
     every: function every(iter, pred, self) {
         pred = pred || util.identity;
@@ -1581,7 +1628,7 @@ update(iter, {
         return false;
     },
 
-    filter: function filter(iter, pred, self) {
+    filter: function* filter(iter, pred, self) {
         for (let elem of iter)
             if (pred.call(self, elem))
                 yield elem;
@@ -1618,7 +1665,7 @@ update(iter, {
      * @param {function} func
      * @returns {Array}
      */
-    map: function map(iter, func, self) {
+    map: function* map(iter, func, self) {
         for (let i of iter)
             yield func.call(self, i);
     },
@@ -1651,8 +1698,8 @@ update(iter, {
     sort: function sort(iter, fn, self)
         array(this.toArray(iter).sort(fn, self)),
 
-    uniq: function uniq(iter) {
-        let seen = RealSet();
+    uniq: function* uniq(iter) {
+        let seen = new RealSet;
         for (let item of iter)
             if (!seen.add(item))
                 yield item;
@@ -1666,7 +1713,7 @@ update(iter, {
      * @param {Array} ary2
      * @returns {Array}
      */
-    zip: function zip(iter1, iter2) {
+    zip: function* zip(iter1, iter2) {
         try {
             yield [iter1.next(), iter2.next()];
         }
@@ -1688,7 +1735,7 @@ const Iter = Class("Iter", {
 
     send: function send() this.iter.send.apply(this.iter, arguments),
 
-    __iterator__: function () this.iter
+    "@@iterator": function () this.iter,
 });
 iter.Iter = Iter;
 
@@ -1710,8 +1757,10 @@ function arrayWrap(fn) {
  */
 var array = Class("array", Array, {
     init: function (ary) {
-        if (isinstance(ary, ["Iterator", "Generator"]) || "__iterator__" in ary)
-            ary = [k for (k in ary)];
+        if (Symbol.iterator in ary)
+            ary = [k for (k of ary)];
+        else if (isinstance(ary, ["Iterator", "Generator"]) || Symbol.iterator in ary)
+            ary = [k for (k of ary)];
         else if (ary.length)
             ary = Array.slice(ary);
 
@@ -1793,7 +1842,7 @@ var array = Class("array", Array, {
      * @param {Array} ary
      * @returns {Iterator(Object)}
      */
-    iterValues: function iterValues(ary) {
+    iterValues: function* iterValues(ary) {
         for (let i = 0; i < ary.length; i++)
             yield ary[i];
     },
@@ -1804,7 +1853,7 @@ var array = Class("array", Array, {
      * @param {Array} ary
      * @returns {Iterator([{number}, {Object}])}
      */
-    iterItems: function iterItems(ary) {
+    iterItems: function* iterItems(ary) {
         let length = ary.length;
         for (let i = 0; i < length; i++)
             yield [i, ary[i]];
@@ -1815,7 +1864,7 @@ var array = Class("array", Array, {
      * given predicate.
      */
     nth: function nth(ary, pred, n, self) {
-        for (let elem in values(ary))
+        for (let elem of values(ary))
             if (pred.call(self, elem) && n-- === 0)
                 return elem;
         return undefined;
@@ -1832,12 +1881,12 @@ var array = Class("array", Array, {
     uniq: function uniq(ary, unsorted) {
         let res = [];
         if (unsorted) {
-            for (let item in values(ary))
+            for (let item of ary)
                 if (res.indexOf(item) == -1)
                     res.push(item);
         }
         else {
-            for (let [, item] in Iterator(ary.sort())) {
+            for (let item of ary.sort()) {
                 if (item != last || !res.length)
                     res.push(item);
                 var last = item;
@@ -1856,7 +1905,7 @@ var array = Class("array", Array, {
      */
     zip: function zip(ary1, ary2) {
         let res = [];
-        for (let [i, item] in Iterator(ary1))
+        for (let [i, item] of iter(ary1))
             res.push([item, i in ary2 ? ary2[i] : ""]);
         return res;
     }

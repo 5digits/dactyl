@@ -1,86 +1,88 @@
 // Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2011 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
 var Config = Module("config", ConfigBase, {
-    Local: function Local(dactyl, modules, window)
-        let ({ config } = modules) ({
+    Local: function Local(dactyl, modules, window) {
+        let { config } = modules;
+        return {
 
-        dialogs: {
-            about: ["About Firefox",
-                function () { window.openDialog("chrome://browser/content/aboutDialog.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-            addbookmark: ["Add bookmark for the current page",
-                function () { window.PlacesCommandHook.bookmarkCurrentPage(true, window.PlacesUtils.bookmarksRootId); }],
-            addons: ["Manage Add-ons",
-                function () { window.BrowserOpenAddonsMgr(); }],
-            bookmarks: ["List your bookmarks",
-                function () { window.openDialog("chrome://browser/content/bookmarks/bookmarksPanel.xul", "Bookmarks", "dialog,centerscreen,width=600,height=600"); }],
-            checkupdates: ["Check for updates",
-                function () { window.checkForUpdates(); },
-                () => "checkForUpdates" in window],
-            cookies: ["List your cookies",
-                function () { window.toOpenWindowByType("Browser:Cookies", "chrome://browser/content/preferences/cookies.xul", "chrome,dialog=no,resizable"); }],
-            console: ["Browser console",
-                function () { window.HUDService.toggleBrowserConsole(); }],
-            customizetoolbar: ["Customize the Toolbar",
-                function () { window.BrowserCustomizeToolbar(); }],
-            dominspector: ["DOM Inspector",
-                function () { window.inspectDOMDocument(window.content.document); },
-                () => "inspectDOMDocument" in window],
-            downloads: ["Manage Downloads",
-                function () { window.BrowserDownloadsUI(); }],
-            history: ["List your history",
-                function () { window.openDialog("chrome://browser/content/history/history-panel.xul", "History", "dialog,centerscreen,width=600,height=600"); }],
-            openfile: ["Open the file selector dialog",
-                function () { window.BrowserOpenFileWindow(); }],
-            pageinfo: ["Show information about the current page",
-                function () { window.BrowserPageInfo(); }],
-            pagesource: ["View page source",
-                function () { window.BrowserViewSourceOfDocument(window.content.document); }],
-            passwords: ["Passwords dialog",
-                function () { window.openDialog("chrome://passwordmgr/content/passwordManager.xul"); }],
-            places: ["Places Organizer: Manage your bookmarks and history",
-                function () { window.PlacesCommandHook.showPlacesOrganizer(window.ORGANIZER_ROOT_BOOKMARKS); }],
-            preferences: ["Show Firefox preferences dialog",
-                function () { window.openPreferences(); }],
-            printpreview: ["Preview the page before printing",
-                function () { window.PrintUtils.printPreview(window.PrintPreviewListener || window.onEnterPrintPreview, window.onExitPrintPreview); }],
-            printsetup: ["Setup the page size and orientation before printing",
-                function () { window.PrintUtils.showPageSetup(); }],
-            print: ["Show print dialog",
-                function () { window.PrintUtils.print(); }],
-            saveframe: ["Save frame to disk",
-                function () { window.saveFrameDocument(); }],
-            savepage: ["Save page to disk",
-                function () { window.saveDocument(window.content.document); }],
-            searchengines: ["Manage installed search engines",
-                function () { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-            selectionsource: ["View selection source",
-                function () { modules.buffer.viewSelectionSource(); }],
-            venkman: ["The JavaScript debugger",
-                function () { dactyl.assert("start_venkman" in window, "Venkman is not installed"); window.start_venkman() },
-                () => "start_venkman" in window]
-        },
+            dialogs: {
+                about: ["About Firefox",
+                    function () { window.openDialog("chrome://browser/content/aboutDialog.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
+                addbookmark: ["Add bookmark for the current page",
+                    function () { window.PlacesCommandHook.bookmarkCurrentPage(true, window.PlacesUtils.bookmarksRootId); }],
+                addons: ["Manage Add-ons",
+                    function () { window.BrowserOpenAddonsMgr(); }],
+                bookmarks: ["List your bookmarks",
+                    function () { window.openDialog("chrome://browser/content/bookmarks/bookmarksPanel.xul", "Bookmarks", "dialog,centerscreen,width=600,height=600"); }],
+                checkupdates: ["Check for updates",
+                    function () { window.checkForUpdates(); },
+                    () => "checkForUpdates" in window],
+                cookies: ["List your cookies",
+                    function () { window.toOpenWindowByType("Browser:Cookies", "chrome://browser/content/preferences/cookies.xul", "chrome,dialog=no,resizable"); }],
+                console: ["Browser console",
+                    function () { window.HUDService.toggleBrowserConsole(); }],
+                customizetoolbar: ["Customize the Toolbar",
+                    function () { window.BrowserCustomizeToolbar(); }],
+                dominspector: ["DOM Inspector",
+                    function () { window.inspectDOMDocument(window.content.document); },
+                    () => "inspectDOMDocument" in window],
+                downloads: ["Manage Downloads",
+                    function () { window.BrowserDownloadsUI(); }],
+                history: ["List your history",
+                    function () { window.openDialog("chrome://browser/content/history/history-panel.xul", "History", "dialog,centerscreen,width=600,height=600"); }],
+                openfile: ["Open the file selector dialog",
+                    function () { window.BrowserOpenFileWindow(); }],
+                pageinfo: ["Show information about the current page",
+                    function () { window.BrowserPageInfo(); }],
+                pagesource: ["View page source",
+                    function () { window.BrowserViewSourceOfDocument(window.content.document); }],
+                passwords: ["Passwords dialog",
+                    function () { window.openDialog("chrome://passwordmgr/content/passwordManager.xul"); }],
+                places: ["Places Organizer: Manage your bookmarks and history",
+                    function () { window.PlacesCommandHook.showPlacesOrganizer(window.ORGANIZER_ROOT_BOOKMARKS); }],
+                preferences: ["Show Firefox preferences dialog",
+                    function () { window.openPreferences(); }],
+                printpreview: ["Preview the page before printing",
+                    function () { window.PrintUtils.printPreview(window.PrintPreviewListener || window.onEnterPrintPreview, window.onExitPrintPreview); }],
+                printsetup: ["Setup the page size and orientation before printing",
+                    function () { window.PrintUtils.showPageSetup(); }],
+                print: ["Show print dialog",
+                    function () { window.PrintUtils.print(); }],
+                saveframe: ["Save frame to disk",
+                    function () { window.saveFrameDocument(); }],
+                savepage: ["Save page to disk",
+                    function () { window.saveDocument(window.content.document); }],
+                searchengines: ["Manage installed search engines",
+                    function () { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
+                selectionsource: ["View selection source",
+                    function () { modules.buffer.viewSelectionSource(); }],
+                venkman: ["The JavaScript debugger",
+                    function () { dactyl.assert("start_venkman" in window, "Venkman is not installed"); window.start_venkman() },
+                    () => "start_venkman" in window]
+            },
 
-        removeTab: function removeTab(tab) {
-            if (window.gInPrintPreviewMode)
-                window.PrintUtils.exitPrintPreview();
-            else if (this.tabbrowser.mTabs.length > 1)
-                this.tabbrowser.removeTab(tab);
-            else {
-                if (modules.buffer.uri.spec !== "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
-                    dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
+            removeTab: function removeTab(tab) {
+                if (window.gInPrintPreviewMode)
+                    window.PrintUtils.exitPrintPreview();
+                else if (this.tabbrowser.mTabs.length > 1)
                     this.tabbrowser.removeTab(tab);
+                else {
+                    if (modules.buffer.uri.spec !== "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
+                        dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
+                        this.tabbrowser.removeTab(tab);
+                    }
+                    else
+                        dactyl.beep();
                 }
-                else
-                    dactyl.beep();
             }
-        }
-    })
+        };
+    },
 
 }, {
 }, {

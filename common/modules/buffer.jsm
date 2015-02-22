@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -77,8 +77,9 @@ var Buffer = Module("Buffer", {
     /**
      * Content preference methods.
      */
-    prefs: Class.Memoize(function ()
-        let (self = this) ({
+    prefs: Class.Memoize(function () {
+        let self = this;
+        return {
             /**
              * Returns a promise for the given preference name.
              *
@@ -132,7 +133,8 @@ var Buffer = Module("Buffer", {
                       handleResult: resolve,
                       handleError: reject });
             })
-        })),
+        };
+    }),
 
     /**
      * Gets a content preference for the given buffer.
@@ -495,15 +497,15 @@ var Buffer = Module("Buffer", {
         let relRev = ["next", "prev"];
         let rev = relRev[1 - relRev.indexOf(rel)];
 
-        function followFrame(frame) {
-            function iter(elems) {
+        function* followFrame(frame) {
+            function* iter(elems) {
                 for (let i = 0; i < elems.length; i++)
                     if (elems[i].rel.toLowerCase() === rel || elems[i].rev.toLowerCase() === rev)
                         yield elems[i];
             }
 
             let elems = frame.document.getElementsByTagName("link");
-            for (let elem in iter(elems))
+            for (let elem of iter(elems))
                 yield elem;
 
             function a(regexp, elem) regexp.test(elem.textContent) === regexp.result ||
@@ -516,14 +518,14 @@ var Buffer = Module("Buffer", {
                                    Hints.isVisible);
 
             for (let test of [a, b])
-                for (let regexp in values(regexps))
-                    for (let i in util.range(res.length, 0, -1))
+                for (let regexp of values(regexps))
+                    for (let i of util.range(res.length, 0, -1))
                         if (test(regexp, res[i]))
                             yield res[i];
         }
 
-        for (let frame in values(this.allFrames(null, true)))
-            for (let elem in followFrame(frame))
+        for (let frame of values(this.allFrames(null, true)))
+            for (let elem of followFrame(frame))
                 if (count-- === 0) {
                     if (follow)
                         this.followLink(elem, dactyl.CURRENT_TAB);
@@ -936,7 +938,7 @@ var Buffer = Module("Buffer", {
 
         if (!elem) {
             let area = -1;
-            for (let e in DOM(Buffer.SCROLLABLE_SEARCH_SELECTOR,
+            for (let e of DOM(Buffer.SCROLLABLE_SEARCH_SELECTOR,
                               this.focusedFrame.document)) {
                 if (Buffer.isScrollable(e, dir, horizontal)) {
                     let r = DOM(e).rect;
@@ -980,7 +982,7 @@ var Buffer = Module("Buffer", {
         if (win.scrollMaxX > 0 || win.scrollMaxY > 0)
             return win;
 
-        for (let frame in array.iterValues(win.frames))
+        for (let frame of array.iterValues(win.frames))
             if (frame.scrollMaxX > 0 || frame.scrollMaxY > 0)
                 return frame;
 
@@ -1011,7 +1013,7 @@ var Buffer = Module("Buffer", {
                                : rect => rect.top;
 
         let elems = [[e, distance(e.getBoundingClientRect())]
-                     for (e in path.matcher(this.focusedFrame.document))]
+                     for (e of path.matcher(this.focusedFrame.document))]
                         .filter(e => e[1] > FUDGE)
                         .sort((a, b) => a[1] - b[1]);
 
@@ -1048,9 +1050,12 @@ var Buffer = Module("Buffer", {
 
         // remove all hidden frames
         frames = frames.filter(frame => !(frame.document.body instanceof Ci.nsIDOMHTMLFrameSetElement))
-                       .filter(frame => !frame.frameElement ||
-            let (rect = frame.frameElement.getBoundingClientRect())
-                rect.width && rect.height);
+                       .filter(frame => {
+            if (!frame.frameElement)
+                return false;
+            let rect = frame.frameElement.getBoundingClientRect();
+            return rect.width && rect.height;
+        });
 
         // find the currently focused frame index
         let current = Math.max(0, frames.indexOf(this.focusedFrame));
@@ -1115,7 +1120,7 @@ var Buffer = Module("Buffer", {
             if (bookmarkcache.isBookmarked(this.URL))
                 info += ", " + _("buffer.bookmarked");
 
-            let pageInfoText = [file.quote(), " [", info, "] ", title].join("");
+            let pageInfoText = [JSON.stringify(file), " [", info, "] ", title].join("");
             dactyl.echo(pageInfoText, commandline.FORCE_SINGLELINE);
             return;
         }
@@ -1357,7 +1362,7 @@ var Buffer = Module("Buffer", {
     /**
      * Updates the zoom level of this buffer from a content preference.
      */
-    updateZoom: promises.task(function updateZoom() {
+    updateZoom: promises.task(function* updateZoom() {
         let uri = this.uri;
 
         if (prefs.get("browser.zoom.siteSpecific")) {
@@ -1482,10 +1487,10 @@ var Buffer = Module("Buffer", {
     get ZOOM_MIN() prefs.get("zoom.minPercent"),
     get ZOOM_MAX() prefs.get("zoom.maxPercent"),
 
-    setZoom: deprecated("buffer.setZoom", function setZoom()
-                        let ({ buffer } = overlay.activeModules) buffer.setZoom.apply(buffer, arguments)),
-    bumpZoomLevel: deprecated("buffer.bumpZoomLevel", function bumpZoomLevel()
-                              let ({ buffer } = overlay.activeModules) buffer.bumpZoomLevel.apply(buffer, arguments)),
+    setZoom: deprecated("buffer.setZoom",
+                        function setZoom(...args) apply(overlay.activeModules.buffer, "setZoom", args)),
+    bumpZoomLevel: deprecated("buffer.bumpZoomLevel",
+                              function bumpZoomLevel(...args) apply(overlay.activeModules.buffer, "bumpZoomLevel", args)),
 
     /**
      * Returns the currently selected word in *win*. If the selection is
@@ -1554,10 +1559,10 @@ var Buffer = Module("Buffer", {
                                                  .replace(re, ext), title]);
     },
 
-    findScrollableWindow: deprecated("buffer.findScrollableWindow", function findScrollableWindow()
-                                     let ({ buffer } = overlay.activeModules) buffer.findScrollableWindow.apply(buffer, arguments)),
-    findScrollable: deprecated("buffer.findScrollable", function findScrollable()
-                               let ({ buffer } = overlay.activeModules) buffer.findScrollable.apply(buffer, arguments)),
+    findScrollableWindow: deprecated("buffer.findScrollableWindow",
+                                     function findScrollableWindow() apply(overlay.activeModules, "findScrollableWindow", arguments)),
+    findScrollable: deprecated("buffer.findScrollable",
+                               function findScrollable() apply(overlay.activeModules, "findScrollable", arguments)),
 
     isScrollable: function isScrollable(elem, dir, horizontal) {
         if (!DOM(elem).isScrollable(horizontal ? "horizontal" : "vertical"))
@@ -1632,40 +1637,43 @@ var Buffer = Module("Buffer", {
      * Like scrollTo, but scrolls more smoothly and does not update
      * marks.
      */
-    smoothScrollTo: let (timers = WeakMap())
-                    function smoothScrollTo(node, x, y) {
-        let { options } = overlay.activeModules;
+    smoothScrollTo: new function () {
+        let timers = new WeakMap;
 
-        let time = options["scrolltime"];
-        let steps = options["scrollsteps"];
+        return function smoothScrollTo(node, x, y) {
+            let { options } = overlay.activeModules;
 
-        let elem = Buffer.Scrollable(node);
+            let time = options["scrolltime"];
+            let steps = options["scrollsteps"];
 
-        if (timers.has(node))
-            timers.get(node).cancel();
+            let elem = Buffer.Scrollable(node);
 
-        if (x == null)
-            x = elem.scrollLeft;
-        if (y == null)
-            y = elem.scrollTop;
+            if (timers.has(node))
+                timers.get(node).cancel();
 
-        x = node.dactylScrollDestX = Math.min(x, elem.scrollWidth  - elem.clientWidth);
-        y = node.dactylScrollDestY = Math.min(y, elem.scrollHeight - elem.clientHeight);
-        let [startX, startY] = [elem.scrollLeft, elem.scrollTop];
-        let n = 0;
-        (function next() {
-            if (n++ === steps) {
-                elem.scrollLeft = x;
-                elem.scrollTop  = y;
-                delete node.dactylScrollDestX;
-                delete node.dactylScrollDestY;
-            }
-            else {
-                elem.scrollLeft = startX + (x - startX) / steps * n;
-                elem.scrollTop  = startY + (y - startY) / steps * n;
-                timers.set(node, util.timeout(next, time / steps));
-            }
-        }).call(this);
+            if (x == null)
+                x = elem.scrollLeft;
+            if (y == null)
+                y = elem.scrollTop;
+
+            x = node.dactylScrollDestX = Math.min(x, elem.scrollWidth  - elem.clientWidth);
+            y = node.dactylScrollDestY = Math.min(y, elem.scrollHeight - elem.clientHeight);
+            let [startX, startY] = [elem.scrollLeft, elem.scrollTop];
+            let n = 0;
+            (function next() {
+                if (n++ === steps) {
+                    elem.scrollLeft = x;
+                    elem.scrollTop  = y;
+                    delete node.dactylScrollDestX;
+                    delete node.dactylScrollDestY;
+                }
+                else {
+                    elem.scrollLeft = startX + (x - startX) / steps * n;
+                    elem.scrollTop  = startY + (y - startY) / steps * n;
+                    timers.set(node, util.timeout(next, time / steps));
+                }
+            }).call(this);
+        };
     },
 
     /**
@@ -1946,7 +1954,7 @@ var Buffer = Module("Buffer", {
                     if (/^>>/.test(filename)) {
                         let file = io.File(filename.replace(/^>>\s*/, ""));
                         dactyl.assert(args.bang || file.exists() && file.isWritable(),
-                                      _("io.notWriteable", file.path.quote()));
+                                      _("io.notWriteable", JSON.stringify(file.path)));
 
                         return buffer.viewSourceExternally(buffer.focusedFrame.document,
                             function (tmpFile) {
@@ -1954,7 +1962,7 @@ var Buffer = Module("Buffer", {
                                     file.write(tmpFile, ">>");
                                 }
                                 catch (e) {
-                                    dactyl.echoerr(_("io.notWriteable", file.path.quote()));
+                                    dactyl.echoerr(_("io.notWriteable", JSON.stringify(file.path)));
                                 }
                             });
                     }
@@ -2046,13 +2054,13 @@ var Buffer = Module("Buffer", {
             context.title = ["Stylesheet", "Location"];
 
             // unify split style sheets
-            let styles = iter([s.title, []] for (s in values(buffer.alternateStyleSheets))).toObject();
+            let styles = iter([s.title, []] for (s of values(buffer.alternateStyleSheets))).toObject();
 
             buffer.alternateStyleSheets.forEach(function (style) {
                 styles[style.title].push(style.href || _("style.inline"));
             });
 
-            context.completions = [[title, href.join(", ")] for ([title, href] in Iterator(styles))];
+            context.completions = [[title, href.join(", ")] for ([title, href] of iter(styles))];
         };
 
         completion.savePage = function savePage(context, node) {
@@ -2131,7 +2139,7 @@ var Buffer = Module("Buffer", {
             "Repeat the last key event",
             function ({ count }) {
                 if (mappings.repeat) {
-                    for (let i in util.interruptibleRange(0, Math.max(count, 1), 100))
+                    for (let i of util.interruptibleRange(0, Math.max(count, 1), 100))
                         mappings.repeat();
                 }
             },
@@ -2304,7 +2312,7 @@ var Buffer = Module("Buffer", {
 
                     let frames = buffer.allFrames(null, true);
 
-                    let elements = array.flatten(frames.map(win => [m for (m in DOM.XPath(xpath, win.document))]))
+                    let elements = array.flatten(frames.map(win => [m for (m of DOM.XPath(xpath, win.document))]))
                                         .filter(function (elem) {
                         if (isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
                                               Ci.nsIDOMHTMLIFrameElement]))
@@ -2450,7 +2458,7 @@ var Buffer = Module("Buffer", {
                         return val;
 
                     // Stolen from browser.jar/content/browser/browser.js, more or less.
-                    Task.spawn(function () {
+                    Task.spawn(function* () {
                         try {
                             buffer.docShell.QueryInterface(Ci.nsIDocCharset).charset = val;
                             yield window.PlacesUtils.setCharsetForURI(buffer.uri, val);
@@ -2483,7 +2491,7 @@ var Buffer = Module("Buffer", {
             {
                 keepQuotes: true,
                 setter: function (vals) {
-                    for (let [k, v] in Iterator(vals))
+                    for (let [k, v] of iter(vals))
                         vals[k] = update(new String(v), { matcher: DOM.compileMatcher(Option.splitList(v)) });
                     return vals;
                 },
@@ -2507,7 +2515,7 @@ var Buffer = Module("Buffer", {
             {
                 getLine: function getLine(doc, line) {
                     let uri = util.newURI(doc.documentURI);
-                    for (let filter in values(this.value))
+                    for (let filter of values(this.value))
                         if (filter(uri, doc)) {
                             if (/^func:/.test(filter.result))
                                 var res = dactyl.userEval("(" + Option.dequote(filter.result.substr(5)) + ")")(doc, line);
@@ -2526,7 +2534,7 @@ var Buffer = Module("Buffer", {
                 keepQuotes: true,
 
                 setter: function (vals) {
-                    for (let value in values(vals))
+                    for (let value of values(vals))
                         if (!/^func:/.test(value.result))
                             value.matcher = DOM.compileMatcher(Option.splitList(value.result));
                     return vals;
@@ -2610,16 +2618,16 @@ var Buffer = Module("Buffer", {
     }
 });
 
-Buffer.addPageInfoSection("e", "Search Engines", function (verbose) {
+Buffer.addPageInfoSection("e", "Search Engines", function* (verbose) {
     let n = 1;
     let nEngines = 0;
 
-    for (let { document: doc } in values(this.allFrames())) {
+    for (let { document: doc } of values(this.allFrames())) {
         let engines = DOM("link[href][rel=search][type='application/opensearchdescription+xml']", doc);
         nEngines += engines.length;
 
         if (verbose)
-            for (let link in engines)
+            for (let link of engines)
                 yield [link.title || /*L*/ "Engine " + n++,
                        ["a", { href: link.href, highlight: "URL",
                                onclick: "if (event.button == 0) { window.external.AddSearchProvider(this.href); return false; }" },
@@ -2630,7 +2638,7 @@ Buffer.addPageInfoSection("e", "Search Engines", function (verbose) {
         yield nEngines + /*L*/" engine" + (nEngines > 1 ? "s" : "");
 });
 
-Buffer.addPageInfoSection("f", "Feeds", function (verbose) {
+Buffer.addPageInfoSection("f", "Feeds", function* (verbose) {
     const feedTypes = {
         "application/rss+xml": "RSS",
         "application/atom+xml": "Atom",
@@ -2669,10 +2677,10 @@ Buffer.addPageInfoSection("f", "Feeds", function (verbose) {
     }
 
     let nFeed = 0;
-    for (let [i, win] in Iterator(this.allFrames())) {
+    for (let win of this.allFrames()) {
         let doc = win.document;
 
-        for (let link in DOM("link[href][rel=feed], link[href][rel=alternate][type]", doc)) {
+        for (let link of DOM("link[href][rel=feed], link[href][rel=alternate][type]", doc)) {
             let rel = link.rel.toLowerCase();
             let feed = { title: link.title, href: link.href, type: link.type || "" };
             if (isValidFeed(feed, doc.nodePrincipal, rel == "feed")) {
@@ -2690,7 +2698,7 @@ Buffer.addPageInfoSection("f", "Feeds", function (verbose) {
         yield nFeed + /*L*/" feed" + (nFeed > 1 ? "s" : "");
 });
 
-Buffer.addPageInfoSection("g", "General Info", function (verbose) {
+Buffer.addPageInfoSection("g", "General Info", function* (verbose) {
     let doc = this.focusedFrame.document;
 
     // get file size
@@ -2758,7 +2766,7 @@ Buffer.addPageInfoSection("m", "Meta Tags", function (verbose) {
                 .sort((a, b) => util.compareIgnoreCase(a[0], b[0]));
 });
 
-Buffer.addPageInfoSection("s", "Security", function (verbose) {
+Buffer.addPageInfoSection("s", "Security", function* (verbose) {
     let { statusline } = this.modules;
 
     let identity = this.topWindow.gIdentityHandler;

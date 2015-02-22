@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2012 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -33,188 +33,191 @@ var IO = Module("io", {
         lazyRequire("config", ["config"], this);
     },
 
-    Local: function Local(dactyl, modules, window) let ({ io, plugins } = modules) ({
+    Local: function Local(dactyl, modules, window) {
+        let { io, plugins } = modules;
+        return {
 
-        init: function init() {
-            this.config = modules.config;
-            this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);
-            this._cwd = this._processDir.path;
-            this._oldcwd = null;
+            init: function init() {
+                this.config = modules.config;
+                this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);
+                this._cwd = this._processDir.path;
+                this._oldcwd = null;
 
-            this._lastRunCommand = ""; // updated whenever the users runs a command with :!
-            this._scriptNames = RealSet();
-        },
-
-        CommandFileMode: Class("CommandFileMode", modules.CommandMode, {
-            init: function init(prompt, params) {
-                init.supercall(this);
-                this.prompt = isArray(prompt) ? prompt : ["Question", prompt];
-                update(this, params);
+                this._lastRunCommand = ""; // updated whenever the users runs a command with :!
+                this._scriptNames = new RealSet;
             },
 
-            historyKey: "file",
+            CommandFileMode: Class("CommandFileMode", modules.CommandMode, {
+                init: function init(prompt, params) {
+                    init.supercall(this);
+                    this.prompt = isArray(prompt) ? prompt : ["Question", prompt];
+                    update(this, params);
+                },
 
-            get mode() modules.modes.FILE_INPUT,
+                historyKey: "file",
 
-            complete: function (context) {
-                if (this.completer)
-                    this.completer(context);
+                get mode() modules.modes.FILE_INPUT,
 
-                context = context.fork("files", 0);
-                modules.completion.file(context);
-                context.filters = context.filters.concat(this.filters || []);
-            }
-        }),
+                complete: function (context) {
+                    if (this.completer)
+                        this.completer(context);
 
-        /**
-         * Returns all directories named *name* in 'runtimepath'.
-         *
-         * @param {string} name
-         * @returns {nsIFile[])
-         */
-        getRuntimeDirectories: function getRuntimeDirectories(name) {
-            return modules.options.get("runtimepath").files
-                .map(dir => dir.child(name))
-                .filter(dir => (dir.exists() && dir.isDirectory() && dir.isReadable()));
-        },
+                    context = context.fork("files", 0);
+                    modules.completion.file(context);
+                    context.filters = context.filters.concat(this.filters || []);
+                }
+            }),
 
-        // FIXME: multiple paths?
-        /**
-         * Sources files found in 'runtimepath'. For each relative path in *paths*
-         * each directory in 'runtimepath' is searched and if a matching file is
-         * found it is sourced. Only the first file found (per specified path) is
-         * sourced unless *all* is specified, then all found files are sourced.
-         *
-         * @param {[string]} paths An array of relative paths to source.
-         * @param {boolean} all Whether all found files should be sourced.
-         */
-        sourceFromRuntimePath: function sourceFromRuntimePath(paths, all) {
-            let dirs = modules.options.get("runtimepath").files;
-            let found = null;
+            /**
+             * Returns all directories named *name* in 'runtimepath'.
+             *
+             * @param {string} name
+             * @returns {nsIFile[]
+             */
+            getRuntimeDirectories: function getRuntimeDirectories(name) {
+                return modules.options.get("runtimepath").files
+                    .map(dir => dir.child(name))
+                    .filter(dir => (dir.exists() && dir.isDirectory() && dir.isReadable()));
+            },
 
-            dactyl.echomsg(_("io.searchingFor", paths.join(" ").quote(), modules.options.get("runtimepath").stringValue), 2);
+            // FIXME: multiple paths?
+            /**
+             * Sources files found in 'runtimepath'. For each relative path in *paths*
+             * each directory in 'runtimepath' is searched and if a matching file is
+             * found it is sourced. Only the first file found (per specified path) is
+             * sourced unless *all* is specified, then all found files are sourced.
+             *
+             * @param {[string]} paths An array of relative paths to source.
+             * @param {boolean} all Whether all found files should be sourced.
+             */
+            sourceFromRuntimePath: function sourceFromRuntimePath(paths, all) {
+                let dirs = modules.options.get("runtimepath").files;
+                let found = null;
 
-        outer:
-            for (let dir in values(dirs)) {
-                for (let [, path] in Iterator(paths)) {
-                    let file = dir.child(path);
+                dactyl.echomsg(_("io.searchingFor", JSON.stringify(paths.join(" ")), modules.options.get("runtimepath").stringValue), 2);
 
-                    dactyl.echomsg(_("io.searchingFor", file.path.quote()), 3);
+            outer:
+                for (let dir of values(dirs)) {
+                    for (let [, path] of iter(paths)) {
+                        let file = dir.child(path);
 
-                    if (file.exists() && file.isFile() && file.isReadable()) {
-                        found = io.source(file.path, false) || true;
+                        dactyl.echomsg(_("io.searchingFor", JSON.stringify(file.path)), 3);
 
-                        if (!all)
-                            break outer;
+                        if (file.exists() && file.isFile() && file.isReadable()) {
+                            found = io.source(file.path, false) || true;
+
+                            if (!all)
+                                break outer;
+                        }
                     }
                 }
-            }
 
-            if (!found)
-                dactyl.echomsg(_("io.notInRTP", paths.join(" ").quote()), 1);
+                if (!found)
+                    dactyl.echomsg(_("io.notInRTP", JSON.stringify(paths.join(" "))), 1);
 
-            return found;
-        },
+                return found;
+            },
 
-        /**
-         * Reads Ex commands, JavaScript or CSS from *filename*.
-         *
-         * @param {string} filename The name of the file to source.
-         * @param {object} params Extra parameters:
-         *      group:  The group in which to execute commands.
-         *      silent: Whether errors should not be reported.
-         */
-        source: function source(filename, params) {
-            const { contexts } = modules;
-            defineModule.loadLog.push("sourcing " + filename);
+            /**
+             * Reads Ex commands, JavaScript or CSS from *filename*.
+             *
+             * @param {string} filename The name of the file to source.
+             * @param {object} params Extra parameters:
+             *      group:  The group in which to execute commands.
+             *      silent: Whether errors should not be reported.
+             */
+            source: function source(filename, params) {
+                const { contexts } = modules;
+                defineModule.loadLog.push("sourcing " + filename);
 
-            if (!isObject(params))
-                params = { silent: params };
+                if (!isObject(params))
+                    params = { silent: params };
 
-            let time = Date.now();
-            return contexts.withContext(null, function () {
-                try {
-                    var file = util.getFile(filename) || io.File(filename);
+                let time = Date.now();
+                return contexts.withContext(null, function () {
+                    try {
+                        var file = util.getFile(filename) || io.File(filename);
 
-                    if (!file.exists() || !file.isReadable() || file.isDirectory()) {
-                        if (!params.silent)
-                            dactyl.echoerr(_("io.notReadable", filename.quote()));
-                        return;
-                    }
+                        if (!file.exists() || !file.isReadable() || file.isDirectory()) {
+                            if (!params.silent)
+                                dactyl.echoerr(_("io.notReadable", JSON.stringify(filename)));
+                            return;
+                        }
 
-                    dactyl.echomsg(_("io.sourcing", filename.quote()), 2);
+                        dactyl.echomsg(_("io.sourcing", JSON.stringify(filename)), 2);
 
-                    let uri = file.URI;
+                        let uri = file.URI;
 
-                    let sourceJSM = function sourceJSM() {
-                        context = contexts.Module(uri);
-                        dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
-                    };
+                        let sourceJSM = function sourceJSM() {
+                            context = contexts.Module(uri);
+                            dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
+                        };
 
-                    if (/\.jsm$/.test(filename))
-                        sourceJSM();
-                    else if (/\.js$/.test(filename)) {
-                        try {
-                            var context = contexts.Script(file, params.group);
-                            if (this._scriptNames.has(file.path))
-                                util.flushCache();
+                        if (/\.jsm$/.test(filename))
+                            sourceJSM();
+                        else if (/\.js$/.test(filename)) {
+                            try {
+                                var context = contexts.Script(file, params.group);
+                                if (this._scriptNames.has(file.path))
+                                    util.flushCache();
 
-                            dactyl.loadScript(uri.spec, context);
+                                dactyl.loadScript(uri.spec, context);
+                                dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
+                            }
+                            catch (e) {
+                                if (e == Contexts) { // Hack;
+                                    context.unload();
+                                    sourceJSM();
+                                }
+                                else {
+                                    if (e instanceof Finished)
+                                        return;
+                                    if (e.fileName && !(e instanceof FailedAssertion))
+                                        try {
+                                            e.fileName = util.fixURI(e.fileName);
+                                            if (e.fileName == uri.spec)
+                                                e.fileName = filename;
+                                            e.echoerr = [e.fileName, ":", e.lineNumber, ": ", e].join("");
+                                        }
+                                        catch (e) {}
+                                    throw e;
+                                }
+                            }
+                        }
+                        else if (/\.css$/.test(filename))
+                            styles.registerSheet(uri.spec, false, true);
+                        else {
+                            context = contexts.Context(file, params.group);
+                            modules.commands.execute(file.read(), null, params.silent,
+                                                     null, {
+                                context: context,
+                                file: file.path,
+                                group: context.GROUP,
+                                line: 1
+                            });
                             dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
                         }
-                        catch (e) {
-                            if (e == Contexts) { // Hack;
-                                context.unload();
-                                sourceJSM();
-                            }
-                            else {
-                                if (e instanceof Finished)
-                                    return;
-                                if (e.fileName && !(e instanceof FailedAssertion))
-                                    try {
-                                        e.fileName = util.fixURI(e.fileName);
-                                        if (e.fileName == uri.spec)
-                                            e.fileName = filename;
-                                        e.echoerr = [e.fileName, ":", e.lineNumber, ": ", e].join("");
-                                    }
-                                    catch (e) {}
-                                throw e;
-                            }
-                        }
+
+                        this._scriptNames.add(file.path);
+
+                        dactyl.echomsg(_("io.sourcingEnd", JSON.stringify(filename)), 2);
+                        dactyl.log(_("dactyl.sourced", filename), 3);
+
+                        return context;
                     }
-                    else if (/\.css$/.test(filename))
-                        styles.registerSheet(uri.spec, false, true);
-                    else {
-                        context = contexts.Context(file, params.group);
-                        modules.commands.execute(file.read(), null, params.silent,
-                                                 null, {
-                            context: context,
-                            file: file.path,
-                            group: context.GROUP,
-                            line: 1
-                        });
-                        dactyl.triggerObserver("io.source", context, file, file.lastModifiedTime);
+                    catch (e) {
+                        util.reportError(e);
+                        let message = _("io.sourcingError", e.echoerr || (file ? file.path : filename) + ": " + e);
+                        if (!params.silent)
+                            dactyl.echoerr(message);
                     }
-
-                    this._scriptNames.add(file.path);
-
-                    dactyl.echomsg(_("io.sourcingEnd", filename.quote()), 2);
-                    dactyl.log(_("dactyl.sourced", filename), 3);
-
-                    return context;
-                }
-                catch (e) {
-                    util.reportError(e);
-                    let message = _("io.sourcingError", e.echoerr || (file ? file.path : filename) + ": " + e);
-                    if (!params.silent)
-                        dactyl.echoerr(message);
-                }
-                finally {
-                    defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
-                }
-            }, this);
-        }
-    }),
+                    finally {
+                        defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
+                    }
+                }, this);
+            }
+        };
+    },
 
     charsets: Class.Memoize(function () {
         const BASE = "@mozilla.org/intl/unicode/decoder;1?charset=";
@@ -277,7 +280,7 @@ var IO = Module("io", {
         }
         else {
             let dir = io.File(newDir);
-            util.assert(dir.exists() && dir.isDirectory(), _("io.noSuchDir", dir.path.quote()));
+            util.assert(dir.exists() && dir.isDirectory(), _("io.noSuchDir", JSON.stringify(dir.path)));
             dir.normalize();
             [this._cwd, this._oldcwd] = [dir.path, this.cwd];
         }
@@ -288,11 +291,13 @@ var IO = Module("io", {
      * @property {function} File class.
      * @final
      */
-    File: Class.Memoize(function () let (io = this)
-        Class("File", File, {
+    File: Class.Memoize(function () {
+        let io = this;
+        return Class("File", File, {
             init: function init(path, checkCWD=true)
                 init.supercall(this, path, checkCWD && io.cwd)
-        })),
+        });
+    }),
 
     /**
      * @property {Object} The current file sourcing context. As a file is
@@ -380,7 +385,7 @@ var IO = Module("io", {
      * @param {nsIURI|string} file The URI of the JAR file to list.
      * @param {string} path The prefix path to search.
      */
-    listJar: function listJar(file, path) {
+    listJar: function* listJar(file, path) {
         file = util.getFile(file);
         if (file && file.exists() && file.isFile() && file.isReadable()) {
             // let jar = services.zipReader.getZip(file); Crashes.
@@ -389,7 +394,7 @@ var IO = Module("io", {
                 let filter = RegExp("^" + util.regexp.escape(decodeURI(path))
                                     + "[^/]*/?$");
 
-                for (let entry in iter(jar.findEntries("*")))
+                for (let entry of iter(jar.findEntries("*")))
                     if (filter.test(entry))
                         yield entry;
             }
@@ -426,7 +431,7 @@ var IO = Module("io", {
         if (config.OS.isWindows)
             dirs = [io.cwd].concat(dirs);
 
-        for (let [, dir] in Iterator(dirs))
+        for (let dir of dirs)
             try {
                 dir = this.File(dir, true);
 
@@ -438,7 +443,7 @@ var IO = Module("io", {
                 // automatically try to add the executable path extensions on windows
                 if (config.OS.isWindows) {
                     let extensions = services.environment.get("PATHEXT").split(";");
-                    for (let [, extension] in Iterator(extensions)) {
+                    for (let extension of extensions) {
                         file = dir.child(bin + extension);
                         if (file.exists())
                             return file;
@@ -494,8 +499,6 @@ var IO = Module("io", {
         return deferred.promise;
     },
 
-    // TODO: when https://bugzilla.mozilla.org/show_bug.cgi?id=68702 is
-    // fixed use that instead of a tmpfile
     /**
      * Runs *command* in a subshell and returns the output. The shell used is
      * that specified by the 'shell' option.
@@ -624,7 +627,7 @@ var IO = Module("io", {
                 }
                 else {
                     let dirs = modules.options.get("cdpath").files;
-                    for (let dir in values(dirs)) {
+                    for (let dir of values(dirs)) {
                         dir = dir.child(arg);
 
                         if (dir.exists() && dir.isDirectory() && dir.isReadable()) {
@@ -634,7 +637,7 @@ var IO = Module("io", {
                         }
                     }
 
-                    dactyl.echoerr(_("io.noSuchDir", arg.quote()));
+                    dactyl.echoerr(_("io.noSuchDir", JSON.stringify(arg)));
                     dactyl.echoerr(_("io.commandFailed"));
                 }
             }, {
@@ -655,10 +658,13 @@ var IO = Module("io", {
 
                 let file = io.File(args[0] || io.getRCFile(null, true));
 
-                dactyl.assert(!file.exists() || args.bang, _("io.exists", file.path.quote()));
+                dactyl.assert(!file.exists() || args.bang, _("io.exists", JSON.stringify(file.path)));
 
                 // TODO: Use a set/specifiable list here:
-                let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator()) if (cmd.serialize)];
+                let lines = [cmd.serialize().map(commands.commandToString, cmd)
+                             for (cmd of commands.iterator())
+                             if (cmd.serialize)];
+
                 lines = array.flatten(lines);
 
                 lines.unshift('"' + config.version + "\n");
@@ -666,10 +672,10 @@ var IO = Module("io", {
 
                 try {
                     file.write(lines.join("\n").concat("\n"));
-                    dactyl.echomsg(_("io.writing", file.path.quote()), 2);
+                    dactyl.echomsg(_("io.writing", JSON.stringify(file.path)), 2);
                 }
                 catch (e) {
-                    dactyl.echoerr(_("io.notWriteable", file.path.quote()));
+                    dactyl.echoerr(_("io.notWriteable", JSON.stringify(file.path)));
                     dactyl.log(_("error.notWriteable", file.path, e.message)); // XXX
                 }
             }, {
@@ -685,19 +691,19 @@ var IO = Module("io", {
 
                 if (args.length) {
                     var rtDir = io.File(args[0]);
-                    dactyl.assert(rtDir.exists(), _("io.noSuchDir", rtDir.path.quote()));
+                    dactyl.assert(rtDir.exists(), _("io.noSuchDir", JSON.stringify(rtDir.path)));
                 }
                 else
                     rtDir = io.File(config.OS.isWindows ? "~/vimfiles/" : "~/.vim/");
 
-                dactyl.assert(!rtDir.exists() || rtDir.isDirectory(), _("io.eNotDir", rtDir.path.quote()));
+                dactyl.assert(!rtDir.exists() || rtDir.isDirectory(), _("io.eNotDir", JSON.stringify(rtDir.path)));
 
                 let rtItems = { ftdetect: {}, ftplugin: {}, syntax: {} };
 
                 // require bang if any of the paths exist
-                for (let [type, item] in iter(rtItems)) {
+                for (let [type, item] of iter(rtItems)) {
                     let file = io.File(rtDir).child(type, config.name + ".vim");
-                    dactyl.assert(!file.exists() || args.bang, _("io.exists", file.path.quote()));
+                    dactyl.assert(!file.exists() || args.bang, _("io.exists", JSON.stringify(file.path)));
                     item.file = file;
                 }
 
@@ -825,7 +831,7 @@ unlet s:cpo_save
                     let lines = [];
                     lines.__defineGetter__("last", function () this[this.length - 1]);
 
-                    for (let item in values(items.array || items)) {
+                    for (let item of values(items.array || items)) {
                         if (item.length > width && (!lines.length || lines.last.length > 1)) {
                             lines.push([prefix]);
                             width = WIDTH - prefix.length;
@@ -851,22 +857,22 @@ unlet s:cpo_save
                     autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
                                        keys(config.autocommands)),
                     commands: wrap("syn keyword " + config.name + "Command ",
-                                  array(c.specs for (c in commands.iterator())).flatten()),
+                                  array(c.specs for (c of commands.iterator())).flatten()),
                     options: wrap("syn keyword " + config.name + "Option ",
-                                  array(o.names for (o in options) if (o.type != "boolean")).flatten()),
+                                  array(o.names for (o of options) if (o.type != "boolean")).flatten()),
                     toggleoptions: wrap("let s:toggleOptions = [",
-                                        array(o.realNames for (o in options) if (o.type == "boolean"))
+                                        array(o.realNames for (o of options) if (o.type == "boolean"))
                                             .flatten().map(String.quote),
                                         ", ") + "]"
                 }; //}}}
 
-                for (let { file, template } in values(rtItems)) {
+                for (let { file, template } of values(rtItems)) {
                     try {
                         file.write(util.compileMacro(template, true)(params));
-                        dactyl.echomsg(_("io.writing", file.path.quote()), 2);
+                        dactyl.echomsg(_("io.writing", JSON.stringify(file.path)), 2);
                     }
                     catch (e) {
-                        dactyl.echoerr(_("io.notWriteable", file.path.quote()));
+                        dactyl.echoerr(_("io.notWriteable", JSON.stringify(file.path)));
                         dactyl.log(_("error.notWriteable", file.path, e.message));
                     }
                 }
@@ -896,7 +902,7 @@ unlet s:cpo_save
                 else
                     modules.commandline.commandOutput(
                         template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
-                            ([i + 1, file] for ([i, file] in Iterator(names)))));
+                            ([i + 1, file] for ([i, file] of iter(names)))));
 
             },
             { argCount: "0" });
@@ -1022,7 +1028,7 @@ unlet s:cpo_save
                               isDirectory: function () s.substr(-1) == "/",
                               leafName: /([^\/]*)\/?$/.exec(s)[1]
                         }
-                        for (s in io.listJar(uri.JARFile, getDir(uri.JAREntry)))]
+                        for (s of io.listJar(uri.JARFile, getDir(uri.JAREntry)))]
                 };
             else
                 context.generate = function generate_file() {
@@ -1035,7 +1041,7 @@ unlet s:cpo_save
         };
 
         completion.runtime = function (context) {
-            for (let [, dir] in Iterator(modules.options["runtimepath"]))
+            for (let dir of modules.options["runtimepath"])
                 context.fork(dir, 0, this, function (context) {
                     dir = dir.replace("/+$", "") + "/";
                     completion.file(context, true, dir + context.filter);
@@ -1050,10 +1056,10 @@ unlet s:cpo_save
                 let dirNames = services.environment.get("PATH").split(config.OS.pathListSep);
                 let commands = [];
 
-                for (let [, dirName] in Iterator(dirNames)) {
+                for (let dirName of dirNames) {
                     let dir = io.File(dirName);
                     if (dir.exists() && dir.isDirectory())
-                        commands.push([[file.leafName, dir.path] for (file in iter(dir.directoryEntries))
+                        commands.push([[file.leafName, dir.path] for (file of iter(dir.directoryEntries))
                                        if (file.isFile() && file.isExecutable())]);
                 }
 

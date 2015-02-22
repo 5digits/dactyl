@@ -26,7 +26,7 @@ var ProcessorStack = Class("ProcessorStack", {
                                     .flatten().array;
         this.ownsBuffer = !this.processors.some(p => p.main.ownsBuffer);
 
-        for (let [i, input] in Iterator(this.processors)) {
+        for (let input of this.processors) {
             let params = input.main.params;
 
             if (params.preExecute)
@@ -82,7 +82,7 @@ var ProcessorStack = Class("ProcessorStack", {
             // those waiting on further arguments. Execute actions as
             // long as they continue to return PASS.
 
-            for (var action in values(this.actions)) {
+            for (var action of values(this.actions)) {
                 while (callable(action)) {
                     length = action.eventLength;
                     action = dactyl.trapErrors(action);
@@ -171,7 +171,7 @@ var ProcessorStack = Class("ProcessorStack", {
 
         events.dbg("PROCESS(" + key + ") skipmap: " + event.skipmap + " macro: " + event.isMacro + " replay: " + event.isReplay);
 
-        for (let [i, input] in Iterator(this.processors)) {
+        for (let input of this.processors) {
             let res = input.process(event);
             if (res !== Events.ABORT)
                 var result = res;
@@ -197,14 +197,14 @@ var ProcessorStack = Class("ProcessorStack", {
         this._actions = actions;
         this.actions = actions.concat(this.actions);
 
-        for (let action in values(actions))
+        for (let action of values(actions))
             if (!("eventLength" in action))
                 action.eventLength = this.events.length;
 
         if (result === Events.KILL)
             this.actions = [];
         else if (!this.actions.length && !processors.length)
-            for (let input in values(this.processors))
+            for (let input of values(this.processors))
                 if (input.fallthrough) {
                     if (result === Events.KILL)
                         break;

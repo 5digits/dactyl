@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -96,7 +96,7 @@ var ConfigBase = Class("ConfigBase", {
             if (documentURL)
                 config = config.overlays && config.overlays[documentURL] || {};
 
-            for (let [name, value] in Iterator(config)) {
+            for (let [name, value] of iter(config)) {
                 let prop = util.camelCase(name);
 
                 if (isArray(this[prop]))
@@ -223,13 +223,13 @@ var ConfigBase = Class("ConfigBase", {
         if (jar) {
             let prefix = getDir(jar.JAREntry);
             var res = iter(s.slice(prefix.length).replace(/\/.*/, "")
-                           for (s in io.listJar(jar.JARFile, prefix)))
+                           for (s of io.listJar(jar.JARFile, prefix)))
                         .toArray();
         }
         else {
             res = array(f.leafName
-                        // Fails on FF3: for (f in util.getFile(uri).iterDirectory())
-                        for (f in values(util.getFile(uri).readDirectory()))
+                        // Fails on FF3: for (f of util.getFile(uri).iterDirectory())
+                        for (f of util.getFile(uri).readDirectory())
                         if (f.isDirectory())).array;
         }
 
@@ -250,7 +250,7 @@ var ConfigBase = Class("ConfigBase", {
     bestLocale: function (list) {
         return values([this.appLocale, this.appLocale.replace(/-.*/, ""),
                        "en", "en-US", list[0]])
-            .find(bind("has", RealSet(list)));
+            .find(bind("has", new RealSet(list)));
     },
 
     /**
@@ -281,19 +281,19 @@ var ConfigBase = Class("ConfigBase", {
         for (let dir of ["UChrm", "AChrom"]) {
             dir = File(services.directory.get(dir, Ci.nsIFile));
             if (dir.exists() && dir.isDirectory())
-                for (let file in dir.iterDirectory())
+                for (let file of dir.iterDirectory())
                     if (/\.manifest$/.test(file.leafName))
                         process(file.read());
 
             dir = File(dir.parent);
             if (dir.exists() && dir.isDirectory())
-                for (let file in dir.iterDirectory())
+                for (let file of dir.iterDirectory())
                     if (/\.jar$/.test(file.leafName))
                         processJar(file);
 
             dir = dir.child("extensions");
             if (dir.exists() && dir.isDirectory())
-                for (let ext in dir.iterDirectory()) {
+                for (let ext of dir.iterDirectory()) {
                     if (/\.xpi$/.test(ext.leafName))
                         processJar(ext);
                     else {
@@ -316,10 +316,13 @@ var ConfigBase = Class("ConfigBase", {
      * @param {string} max The maximum required version. @optional
      * @returns {boolean}
      */
-    haveGecko: function (min, max) let ({ compare } = services.versionCompare,
-                                        { platformVersion } = services.runtime)
-        (min == null || compare(platformVersion, min) >= 0) &&
-        (max == null || compare(platformVersion, max) < 0),
+    haveGecko: function (min, max) {
+        let { compare } = services.versionCompare;
+        let { platformVersion } = services.runtime;
+
+        return (min == null || compare(platformVersion, min) >= 0) &&
+               (max == null || compare(platformVersion, max) < 0);
+    },
 
     /** Dactyl's notion of the current operating system platform. */
     OS: memoize({
@@ -377,7 +380,7 @@ var ConfigBase = Class("ConfigBase", {
         // without explicitly selecting a profile.
 
         let dir = services.directory.get("ProfD", Ci.nsIFile);
-        for (let prof in iter(services.profile.profiles))
+        for (let prof of iter(services.profile.profiles))
             if (prof.QueryInterface(Ci.nsIToolkitProfile).rootDir.path === dir.path)
                 return prof.name;
         return "unknown";
@@ -404,7 +407,7 @@ var ConfigBase = Class("ConfigBase", {
 
     dtd: Class.Memoize(function ()
         iter(this.dtdExtra,
-             (["dactyl." + k, v] for ([k, v] in iter(config.dtdDactyl))),
+             (["dactyl." + k, v] for ([k, v] of iter(config.dtdDactyl))),
              (["dactyl." + s, config[s]] for (s of config.dtdStrings)))
             .toObject()),
 
@@ -447,7 +450,7 @@ var ConfigBase = Class("ConfigBase", {
     helpStyles: /^(Help|StatusLine|REPL)|^(Boolean|Dense|Indicator|MoreMsg|Number|Object|Logo|Key(word)?|String)$/,
     styleHelp: function styleHelp() {
         if (!this.helpStyled) {
-            for (let k in keys(highlight.loaded))
+            for (let k of keys(highlight.loaded))
                 if (this.helpStyles.test(k))
                     highlight.loaded[k] = true;
         }
@@ -462,7 +465,7 @@ var ConfigBase = Class("ConfigBase", {
                     ["menupopup", { id: "viewSidebarMenu", xmlns: "xul" }],
                     ["broadcasterset", { id: "mainBroadcasterSet", xmlns: "xul" }]];
 
-            for (let [id, [name, key, uri]] in Iterator(this.sidebars)) {
+            for (let [id, [name, key, uri]] of iter(this.sidebars)) {
                 append[0].push(
                         ["menuitem", { observes: "pentadactyl-" + id + "Sidebar", label: name,
                                        accesskey: key }]);
@@ -543,7 +546,7 @@ var ConfigBase = Class("ConfigBase", {
      *    dactyl.has(feature) to check for a feature's presence
      *    in this array.
      */
-    features: RealSet(["default-theme"]),
+    features: new RealSet(["default-theme"]),
 
     /**
      * @property {string} The file extension used for command script files.

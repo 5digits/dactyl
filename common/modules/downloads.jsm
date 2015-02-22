@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2011-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -19,7 +19,7 @@ var MAX_LOAD_TIME = 10 * 1000;
 
 let prefix = "DOWNLOAD_";
 var states = iter([v, k.slice(prefix.length).toLowerCase()]
-                  for ([k, v] in Iterator(Ci.nsIDownloadManager))
+                  for ([k, v] of iter(Ci.nsIDownloadManager))
                   if (k.startsWith(prefix)))
                 .toObject();
 
@@ -78,13 +78,16 @@ var Download = Class("Download", {
 
     inState: function inState(states) states.indexOf(this.status) >= 0,
 
-    allowedCommands: Class.Memoize(function () let (self = this) ({
-        get delete() !self.active && (self.targetFile.exists() || self.hasPartialData),
-        get launch() self.targetFile.exists() && self.succeeded,
-        get stop()  self.active,
-        get remove() !self.active,
-        get resume() self.canceled
-    })),
+    allowedCommands: Class.Memoize(function () {
+        let self = this;
+        return {
+            get delete() !self.active && (self.targetFile.exists() || self.hasPartialData),
+            get launch() self.targetFile.exists() && self.succeeded,
+            get stop()  self.active,
+            get remove() !self.active,
+            get resume() self.canceled
+        };
+    }),
 
     command: function command(name) {
         util.assert(hasOwnProperty(this.allowedCommands, name), _("download.unknownCommand"));
@@ -95,7 +98,7 @@ var Download = Class("Download", {
     },
 
     commands: {
-        delete: promises.task(function delete_() {
+        delete: promises.task(function* delete_() {
             if (this.hasPartialData)
                 yield this.removePartialData();
             else if (this.targetFile.exists())
@@ -133,7 +136,7 @@ var Download = Class("Download", {
         resume: function resume() {
             this.download.start();
         },
-        remove: promises.task(function remove() {
+        remove: promises.task(function* remove() {
             yield this.list.list.remove(this.download);
             yield this.download.finalize(true);
         }),
@@ -201,7 +204,7 @@ var Download = Class("Download", {
         this.nodes.row.setAttribute("status", this.status);
         this.nodes.state.textContent = util.capitalize(this.status);
 
-        for (let node in values(this.nodes))
+        for (let node of values(this.nodes))
             if (node.update)
                 node.update();
 
@@ -266,7 +269,7 @@ var DownloadList = Class("DownloadList",
         this.index = Array.indexOf(this.nodes.list.childNodes,
                                    this.nodes.head);
 
-        Task.spawn(function () {
+        Task.spawn(function* () {
             this.list = yield Downloads.getList(Downloads.ALL);
 
             let start = Date.now();
@@ -312,9 +315,12 @@ var DownloadList = Class("DownloadList",
             this.cleanup();
     },
 
-    allowedCommands: Class.Memoize(function () let (self = this) ({
-        get clear() iter(self.downloads.values()).some(dl => dl.allowedCommands.remove)
-    })),
+    allowedCommands: Class.Memoize(function () {
+        let self = this;
+        return {
+            get clear() iter(self.downloads.values()).some(dl => dl.allowedCommands.remove)
+        };
+    }),
 
     commands: {
         clear: function () {
@@ -325,7 +331,7 @@ var DownloadList = Class("DownloadList",
     sort: function sort() {
         let list = iter(this.downloads.values()).sort((a, b) => a.compare(b));
 
-        for (let [i, download] in iter(list))
+        for (let [i, download] of iter(list))
             if (this.nodes.list.childNodes[i + 1] != download.nodes.row)
                 this.nodes.list.insertBefore(download.nodes.row,
                                              this.nodes.list.childNodes[i + 1]);
@@ -334,7 +340,7 @@ var DownloadList = Class("DownloadList",
     shouldSort: function shouldSort() Array.some(arguments, val => this.sortOrder.some(v => v.substr(1) == val)),
 
     update: function update() {
-        for (let node in values(this.nodes))
+        for (let node of values(this.nodes))
             if (node.update && node.update != update)
                 node.update();
         this.updateProgress();
@@ -351,7 +357,7 @@ var DownloadList = Class("DownloadList",
         let active    = downloads.filter(d => d.active);
 
         let self = Object.create(this);
-        for (let prop in values(["currentBytes", "totalBytes", "speed", "timeRemaining"]))
+        for (let prop of values(["currentBytes", "totalBytes", "speed", "timeRemaining"]))
             this[prop] = active.reduce((acc, dl) => dl[prop] + acc, 0);
 
         this.hasProgress = active.every(d => d.hasProgress);
@@ -362,7 +368,7 @@ var DownloadList = Class("DownloadList",
 
         if (active.length)
             this.nodes.total.textContent = _("download.nActive", active.length);
-        else for (let key in values(["total", "percent", "speed", "time"]))
+        else for (let key of values(["total", "percent", "speed", "time"]))
             this.nodes[key].textContent = "";
 
         if (this.shouldSort("complete", "size", "speed", "time"))
@@ -523,7 +529,7 @@ var Downloads_ = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
                 },
 
                 completer: function (context, extra) {
-                    let seen = RealSet(extra.values.map(val => val.substr(1)));
+                    let seen = new RealSet(extra.values.map(val => val.substr(1)));
 
                     context.completions = iter(this.values).filter(([k, v]) => !seen.has(k))
                                                            .map(([k, v]) => [["+" + k, [v, " (", _("sort.ascending"), ")"].join("")],
@@ -534,7 +540,7 @@ var Downloads_ = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
                 has: function () Array.some(arguments, val => this.value.some(v => v.substr(1) == val)),
 
                 validator: function (value) {
-                    let seen = RealSet();
+                    let seen = new RealSet();
                     return value.every(val => /^[+-]/.test(val) && hasOwnProperty(this.values, val.substr(1))
                                                                 && !seen.add(val.substr(1)))
                         && value.length;

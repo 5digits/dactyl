@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -150,7 +150,7 @@ var Modes = Module("modes", {
                     dactyl.focusContent(true);
                 if (prev.main == modes.NORMAL) {
                     dactyl.focusContent(true);
-                    for (let frame in values(buffer.allFrames())) {
+                    for (let frame of values(buffer.allFrames())) {
                         // clear any selection made
                         let selection = frame.getSelection();
                         if (selection && !selection.isCollapsed)
@@ -194,11 +194,13 @@ var Modes = Module("modes", {
 
     NONE: 0,
 
-    __iterator__: function __iterator__() array.iterValues(this.all),
+    "@@iterator": function __iterator__() array.iterValues(this.all),
 
     get all() this._modes.slice(),
 
-    get mainModes() (mode for ([k, mode] in Iterator(modes._modeMap)) if (!mode.extended && mode.name == k)),
+    get mainModes() (mode
+                     for ([k, mode] of iter(modes._modeMap))
+                     if (!mode.extended && mode.name == k)),
 
     get mainMode() this._modeMap[this._main],
 
@@ -236,7 +238,7 @@ var Modes = Module("modes", {
 
     dumpStack: function dumpStack() {
         util.dump("Mode stack:");
-        for (let [i, mode] in array.iterItems(this._modeStack))
+        for (let [i, mode] of array.iterItems(this._modeStack))
             util.dump("    " + i + ": " + mode);
     },
 
@@ -283,7 +285,7 @@ var Modes = Module("modes", {
 
     save: function save(id, obj, prop, test) {
         if (!(id in this.boundProperties))
-            for (let elem in array.iterValues(this._modeStack))
+            for (let elem of array.iterValues(this._modeStack))
                 elem.saved[id] = { obj: obj, prop: prop, value: obj[prop], test: test };
         this.boundProperties[id] = { obj: util.weakReference(obj), prop: prop, test: test };
     },
@@ -328,7 +330,7 @@ var Modes = Module("modes", {
                     dactyl.trapErrors("leave", this.topOfStack.params,
                                       { push: push }, push);
 
-                for (let [id, { obj, prop, test }] in Iterator(this.boundProperties)) {
+                for (let [id, { obj, prop, test }] of iter(this.boundProperties)) {
                     obj = obj.get();
                     if (!obj)
                         delete this.boundProperties[id];
@@ -346,7 +348,7 @@ var Modes = Module("modes", {
         });
 
         if (stack && stack.pop)
-            for (let { obj, prop, value, test } in values(this.topOfStack.saved))
+            for (let { obj, prop, value, test } of values(this.topOfStack.saved))
                 if (!test || !test(stack, prev))
                     dactyl.trapErrors(function () { obj[prop] = value });
 
@@ -442,10 +444,10 @@ var Modes = Module("modes", {
             this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
 
         allBases: Class.Memoize(function () {
-            let seen = RealSet(),
+            let seen = new RealSet,
                 res = [],
                 queue = [this].concat(this.bases);
-            for (let mode in array.iterValues(queue))
+            for (let mode of array.iterValues(queue))
                 if (!seen.add(mode)) {
                     res.push(mode);
                     queue.push.apply(queue, mode.bases);
@@ -537,15 +539,15 @@ var Modes = Module("modes", {
 
             let tree = {};
 
-            for (let mode in values(list))
+            for (let mode of values(list))
                 tree[mode.name] = {};
 
-            for (let mode in values(list))
-                for (let base in values(mode.bases))
+            for (let mode of values(list))
+                for (let base of values(mode.bases))
                     tree[base.name][mode.name] = tree[mode.name];
 
             let roots = iter([m.name, tree[m.name]]
-                             for (m in values(list))
+                             for (m of values(list))
                              if (!m.bases.length)).toObject();
 
             function rec(obj) {
@@ -632,7 +634,7 @@ var Modes = Module("modes", {
                                                     .every(k => hasOwnProperty(this.values, k)),
 
             get values() array.toObject([[m.name.toLowerCase(), m.description]
-                                         for (m in values(modes._modes)) if (!m.hidden)])
+                                         for (m of values(modes._modes)) if (!m.hidden)])
         };
 
         options.add(["passunknown", "pu"],

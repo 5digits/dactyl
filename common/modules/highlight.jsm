@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -29,7 +29,7 @@ Highlight.liveProperty = function (name, prop) {
         this.set(name, val);
 
         if (name === "value" || name === "extends")
-            for (let h in highlight)
+            for (let h of highlight)
                 if (h.extends.indexOf(this.class) >= 0)
                     h.style.css = h.css;
 
@@ -84,7 +84,8 @@ update(Highlight.prototype, {
     get cssText() this.inheritedCSS + this.value,
 
     toString: function () "Highlight(" + this.class + ")\n\t" +
-        [k + ": " + String(v).quote() for ([k, v] in this)] .join("\n\t")
+        [k + ": " + JSON.stringify(String(v))
+         for ([k, v] of this)].join("\n\t")
 });
 
 /**
@@ -100,7 +101,7 @@ var Highlights = Module("Highlight", {
 
     keys: function keys() Object.keys(this.highlight).sort(),
 
-    __iterator__: function () values(this.highlight).sort((a, b) => String.localeCompare(a.class, b.class))
+    "@@iterator": function () values(this.highlight).sort((a, b) => String.localeCompare(a.class, b.class))
                                                     .iterValues(),
 
     _create: function _create(agent, args) {
@@ -142,7 +143,7 @@ var Highlights = Module("Highlight", {
                 });
 
                 if (obj.class === obj.baseClass)
-                    for (let h in highlight)
+                    for (let h of highlight)
                         if (h.baseClass === obj.class)
                             this[h.class] = true;
                 obj.style.enabled = true;
@@ -189,7 +190,7 @@ var Highlights = Module("Highlight", {
      * reset.
      */
     clear: function clear() {
-        for (let [k, v] in Iterator(this.highlight))
+        for (let [k, v] of iter(this.highlight))
             this.set(k, null, true);
     },
 
@@ -296,7 +297,7 @@ var Highlights = Module("Highlight", {
             if (bang)
                 highlight.style.enabled = true;
        }, this);
-       for (let h in this)
+       for (let h of this)
            h.style.css = h.css;
     }
 }, {
@@ -360,7 +361,7 @@ var Highlights = Module("Highlight", {
                               template.highlightRegexp(h.value, /\b[-\w]+(?=:)|\/\*.*?\*\//g,
                                                        match => ["span", { highlight: match[0] == "/" ? "Comment" : "Key" }, match])
                              ]
-                             for (h in highlight)
+                             for (h of highlight)
                              if (!key || h.class.indexOf(key) > -1))));
                 else if (!key && clear)
                     highlight.clear();
@@ -416,7 +417,7 @@ var Highlights = Module("Highlight", {
                             "-link": v.extends.length ? v.extends : undefined
                         }
                     }
-                    for (v in Iterator(highlight))
+                    for (v of highlight)
                     if (v.value != v.defaultValue)
                 ]
             });
@@ -443,7 +444,7 @@ var Highlights = Module("Highlight", {
 
         completion.highlightGroup = function highlightGroup(context) {
             context.title = ["Highlight Group", "Value"];
-            context.completions = [[v.class, v.value] for (v in highlight)];
+            context.completions = [[v.class, v.value] for (v of highlight)];
         };
     },
     javascript: function initJavascript(dactyl, modules, window) {

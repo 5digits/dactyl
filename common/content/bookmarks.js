@@ -76,7 +76,7 @@ var Bookmarks = Module("bookmarks", {
             if (keyword && hasOwnProperty(bookmarkcache.keywords, keyword))
                 bmark = bookmarkcache.keywords[keyword];
             else if (bookmarkcache.isBookmarked(uri))
-                for (bmark in bookmarkcache)
+                for (bmark of bookmarkcache)
                     if (bmark.url == uri.spec)
                         break;
         }
@@ -421,11 +421,11 @@ var Bookmarks = Module("bookmarks", {
             return dactyl.open(items.map(i => i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0 && tags.length > 0)
-            dactyl.echoerr(_("bookmark.noMatching", tags.map(String.quote), filter.quote()));
+            dactyl.echoerr(_("bookmark.noMatching", tags.map(JSON.stringify), JSON.stringify(filter)));
         else if (filter.length > 0)
-            dactyl.echoerr(_("bookmark.noMatchingString", filter.quote()));
+            dactyl.echoerr(_("bookmark.noMatchingString", JSON.stringify(filter)));
         else if (tags.length > 0)
-            dactyl.echoerr(_("bookmark.noMatchingTags", tags.map(String.quote)));
+            dactyl.echoerr(_("bookmark.noMatchingTags", tags.map(JSON.stringify)));
         else
             dactyl.echoerr(_("bookmark.none"));
         return null;
@@ -455,7 +455,7 @@ var Bookmarks = Module("bookmarks", {
                 if (!args.bang)
                     return [
                         [win.document.title, frames.length == 1 ? /*L*/"Current Location" : /*L*/"Frame: " + win.location.href]
-                        for ([, win] in Iterator(frames))];
+                        for (win of frames)];
                 context.keys.text = "title";
                 context.keys.description = "url";
                 return bookmarks.get(args.join(" "), args["-tags"], null, { keyword: args["-keyword"], title: context.filter });
@@ -519,7 +519,7 @@ var Bookmarks = Module("bookmarks", {
                         let frames = buffer.allFrames();
                         context.completions = [
                             [win.document.documentURI, frames.length == 1 ? /*L*/"Current Location" : /*L*/"Frame: " + win.document.title]
-                            for ([, win] in Iterator(frames))];
+                            for (win of frames)];
                         return;
                     }
                     completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
@@ -695,7 +695,7 @@ var Bookmarks = Module("bookmarks", {
                     context.generate = function () {
                         let [begin, end] = item.url.split("%s");
 
-                        let seen = RealSet();
+                        let seen = new RealSet;
                         return history.get({ uri: util.newURI(begin), uriIsPrefix: true }).map(function (item) {
                             let rest = item.url.length - end.length;
                             let query = item.url.substring(begin.length, rest);

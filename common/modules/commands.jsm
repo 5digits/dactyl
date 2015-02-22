@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -172,7 +172,7 @@ var Command = Class("Command", {
         return !dactyl.trapErrors(function exec() {
             let extra = this.hive.argsExtra(args);
 
-            for (let k in properties(extra))
+            for (let k of properties(extra))
                 if (!(k in args))
                     Object.defineProperty(args, k, Object.getOwnPropertyDescriptor(extra, k));
 
@@ -204,13 +204,14 @@ var Command = Class("Command", {
      * @returns {Args}
      * @see Commands#parseArgs
      */
-    parseArgs: function parseArgs(args, complete, extra) this.modules.commands.parseArgs(args, {
-        __proto__: this,
-        complete: complete,
-        extra: extra
-    }),
+    parseArgs: function parseArgs(args, complete, extra)
+        this.modules.commands.parseArgs(args, {
+            __proto__: this,
+            complete: complete,
+            extra: extra
+        }),
 
-    complained: Class.Memoize(function () RealSet()),
+    complained: Class.Memoize(() => new RealSet),
 
     /**
      * @property {[string]} All of this command's name specs. e.g., "com[mand]"
@@ -311,16 +312,13 @@ var Command = Class("Command", {
                 .flatten().toObject()),
 
     newArgs: function newArgs(base) {
-        let res = [];
+        let res = Object.create(this.argsPrototype);
         update(res, base);
-        res.__proto__ = this.argsPrototype;
         return res;
     },
 
     argsPrototype: Class.Memoize(function argsPrototype() {
         let res = update([], {
-                __iterator__: function AP__iterator__() array.iterItems(this),
-
                 command: this,
 
                 explicitOpts: Class.Memoize(function () ({})),
@@ -442,7 +440,7 @@ var Ex = Module("Ex", {
 
         let res = cmd.newArgs({ context: this.context });
         if (isObject(args[0]))
-            for (let [k, v] in Iterator(args.shift()))
+            for (let [k, v] of iter(args.shift()))
                 if (k == "!")
                     res.bang = v;
                 else if (k == "#")
@@ -457,18 +455,19 @@ var Ex = Module("Ex", {
                     Class.replaceProperty(res, opt.names[0], val);
                     res.explicitOpts[opt.names[0]] = val;
                 }
-        for (let [i, val] in array.iterItems(args))
+        for (let [i, val] of array.iterItems(args))
             res[i] = String(val);
         return res;
     },
 
-    _complete: function E_complete(cmd) let (self = this)
-        function _complete(context, func, obj, args) {
-            args = self._args(cmd, args);
+    _complete: function E_complete(cmd) {
+        return (context, func, obj, args) => {
+            args = this._args(cmd, args);
             args.completeArg = args.length - 1;
             if (cmd.completer && args.length)
                 return cmd.completer(context, args);
-        },
+        };
+    },
 
     _run: function E_run(name) {
         const self = this;
@@ -509,7 +508,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
             this.modules.moduleManager.initDependencies("commands");
 
             let map = {};
-            for (let [name, cmd] in Iterator(this._map))
+            for (let [name, cmd] of iter(this._map))
                 if (cmd.sourceModule)
                     map[name] = { sourceModule: cmd.sourceModule, isPlaceholder: true };
 
@@ -524,7 +523,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         cached = cache.get(this.cacheKey);
         if (this.cached) {
             this._specs = cached.specs;
-            for (let [k, v] in Iterator(cached.map))
+            for (let [k, v] of iter(cached.map))
                 this._map[k] = v;
         }
     },
@@ -532,7 +531,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
     get cacheKey() "commands/hives/" + this.name + ".json",
 
     /** @property {Iterator(Command)} @private */
-    __iterator__: function __iterator__() {
+    "@@iterator": function __iterator__() {
         if (this.cached)
             this.modules.initDependencies("commands");
         this.cached = false;
@@ -577,7 +576,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
                         _("command.wontReplace", name));
         }
 
-        for (let name in values(names)) {
+        for (let name of values(names)) {
             ex.__defineGetter__(name, function () this._run(name));
             if (name in this._map && !this._map[name].isPlaceholder)
                 this.remove(name);
@@ -588,7 +587,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         memoize(this._map, name, () => commands.Command(specs, description, action, extra));
         if (!extra.hidden)
             memoize(this._list, this._list.length, closure);
-        for (let alias in values(names.slice(1)))
+        for (let alias of values(names.slice(1)))
             memoize(this._map, alias, closure);
 
         return name;
@@ -648,7 +647,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
 
         let cmd = this.get(name);
         this._list = this._list.filter(c => c !== cmd);
-        for (let name in values(cmd.names))
+        for (let name of values(cmd.names))
             delete this._map[name];
     }
 });
@@ -660,144 +659,153 @@ var Commands = Module("commands", {
     lazyInit: true,
     lazyDepends: true,
 
-    Local: function Local(dactyl, modules, window) let ({ Group, contexts } = modules) ({
-        init: function init() {
-            this.Command = Class("Command", Command, { modules: modules });
-            update(this, {
-                hives: contexts.Hives("commands", Class("CommandHive", CommandHive, { modules: modules })),
-                user: contexts.hives.commands.user,
-                builtin: contexts.hives.commands.builtin
-            });
-        },
+    Local: function Local(dactyl, modules, window) {
+        let { Group, contexts } = modules;
+        return {
+            init: function init() {
+                this.Command = Class("Command", Command, { modules: modules });
+                update(this, {
+                    hives: contexts.Hives("commands", Class("CommandHive", CommandHive, { modules: modules })),
+                    user: contexts.hives.commands.user,
+                    builtin: contexts.hives.commands.builtin
+                });
+            },
 
-        reallyInit: function reallyInit() {
-            if (false)
-                this.builtin.cache();
-            else
-                this.modules.moduleManager.initDependencies("commands");
-        },
+            reallyInit: function reallyInit() {
+                if (false)
+                    this.builtin.cache();
+                else
+                    this.modules.moduleManager.initDependencies("commands");
+            },
 
-        get context() contexts.context,
+            get context() contexts.context,
 
-        get readHeredoc() modules.io.readHeredoc,
+            get readHeredoc() modules.io.readHeredoc,
 
-        get allHives() contexts.allGroups.commands,
+            get allHives() contexts.allGroups.commands,
 
-        get userHives() this.allHives.filter(h => h !== this.builtin),
+            get userHives() this.allHives.filter(h => h !== this.builtin),
 
-        /**
-         * Executes an Ex command script.
-         *
-         * @param {string} string A string containing the commands to execute.
-         * @param {object} tokens An optional object containing tokens to be
-         *      interpolated into the command string.
-         * @param {object} args Optional arguments object to be passed to
-         *      command actions.
-         * @param {object} context An object containing information about
-         *      the file that is being or has been sourced to obtain the
-         *      command string.
-         */
-        execute: function execute(string, tokens, silent, args, context) {
-            contexts.withContext(context || this.context || { file: "[Command Line]", line: 1 },
-                                 function (context) {
-                modules.io.withSavedValues(["readHeredoc"], function () {
-                    this.readHeredoc = function readHeredoc(end) {
-                        let res = [];
-                        contexts.context.line++;
-                        while (++i < lines.length) {
-                            if (lines[i] === end)
-                                return res.join("\n");
-                            res.push(lines[i]);
-                        }
-                        util.assert(false, _("command.eof", end));
-                    };
+            /**
+             * Executes an Ex command script.
+             *
+             * @param {string} string A string containing the commands to execute.
+             * @param {object} tokens An optional object containing tokens to be
+             *      interpolated into the command string.
+             * @param {object} args Optional arguments object to be passed to
+             *      command actions.
+             * @param {object} context An object containing information about
+             *      the file that is being or has been sourced to obtain the
+             *      command string.
+             */
+            execute: function execute(string, tokens, silent, args, context) {
+                contexts.withContext(context || this.context || { file: "[Command Line]", line: 1 },
+                                     function (context) {
+                    modules.io.withSavedValues(["readHeredoc"], function () {
+                        this.readHeredoc = function readHeredoc(end) {
+                            let res = [];
+                            contexts.context.line++;
+                            while (++i < lines.length) {
+                                if (lines[i] === end)
+                                    return res.join("\n");
+                                res.push(lines[i]);
+                            }
+                            util.assert(false, _("command.eof", end));
+                        };
 
-                    args = update({}, args || {});
+                        args = update({}, args || {});
 
-                    if (tokens && !callable(string))
-                        string = util.compileMacro(string, true);
-                    if (callable(string))
-                        string = string(tokens || {});
+                        if (tokens && !callable(string))
+                            string = util.compileMacro(string, true);
+                        if (callable(string))
+                            string = string(tokens || {});
 
-                    let lines = string.split(/\r\n|[\r\n]/);
-                    let startLine = context.line;
+                        let lines = string.split(/\r\n|[\r\n]/);
+                        let startLine = context.line;
 
-                    for (var i = 0; i < lines.length && !context.finished; i++) {
-                        // Deal with editors from Silly OSs.
-                        let line = lines[i].replace(/\r$/, "");
+                        for (var i = 0; i < lines.length && !context.finished; i++) {
+                            // Deal with editors from Silly OSs.
+                            let line = lines[i].replace(/\r$/, "");
 
-                        context.line = startLine + i;
+                            context.line = startLine + i;
 
-                        // Process escaped new lines
-                        while (i < lines.length && /^\s*\\/.test(lines[i + 1]))
-                            line += "\n" + lines[++i].replace(/^\s*\\/, "");
+                            // Process escaped new lines
+                            while (i < lines.length && /^\s*\\/.test(lines[i + 1]))
+                                line += "\n" + lines[++i].replace(/^\s*\\/, "");
 
-                        try {
-                            dactyl.execute(line, args);
-                        }
-                        catch (e) {
-                            if (!silent) {
-                                e.message = context.file + ":" + context.line + ": " + e.message;
-                                dactyl.reportError(e, true);
+                            try {
+                                dactyl.execute(line, args);
+                            }
+                            catch (e) {
+                                if (!silent) {
+                                    e.message = context.file + ":" + context.line + ": " + e.message;
+                                    dactyl.reportError(e, true);
+                                }
                             }
                         }
-                    }
+                    });
                 });
-            });
-        },
+            },
 
-        /**
-         * Lists all user-defined commands matching *filter* and optionally
-         * *hives*.
-         *
-         * @param {string} filter Limits the list to those commands with a name
-         *     matching this anchored substring.
-         * @param {[Hive]} hives List of hives.
-         * @optional
-         */
-        list: function list(filter, hives) {
-            const { commandline, completion } = this.modules;
-            function completerToString(completer) {
-                if (completer)
-                    return [k for ([k, v] in Iterator(config.completers)) if (completer == completion.bound[v])][0] || "custom";
-                return "";
+            /**
+             * Lists all user-defined commands matching *filter* and optionally
+             * *hives*.
+             *
+             * @param {string} filter Limits the list to those commands with a name
+             *     matching this anchored substring.
+             * @param {[Hive]} hives List of hives.
+             * @optional
+             */
+            list: function list(filter, hives) {
+                const { commandline, completion } = this.modules;
+                function completerToString(completer) {
+                    if (completer)
+                        return [k
+                                for ([k, v] of iter(config.completers))
+                                if (completer == completion.bound[v])][0] || "custom";
+
+                    return "";
+                }
+                // TODO: allow matching of aliases?
+                function cmds(hive) hive._list.filter(cmd => cmd.name.startsWith(filter || ""))
+
+                hives = (hives || this.userHives).map(h => [h, cmds(h)])
+                                                 .filter(([h, c]) => c.length);
+
+                let list = ["table", {},
+                    ["tr", { highlight: "Title" },
+                        ["td"],
+                        ["td", { style: "padding-right: 1em;" }],
+                        ["td", { style: "padding-right: 1ex;" }, _("title.Name")],
+                        ["td", { style: "padding-right: 1ex;" }, _("title.Args")],
+                        ["td", { style: "padding-right: 1ex;" }, _("title.Range")],
+                        ["td", { style: "padding-right: 1ex;" }, _("title.Complete")],
+                        ["td", { style: "padding-right: 1ex;" }, _("title.Definition")]],
+                    ["col", { style: "min-width: 6em; padding-right: 1em;" }],
+                    hives.map(([hive, cmds]) => {
+                        let i = 0;
+                        return [
+                            ["tr", { style: "height: .5ex;" }],
+                            cmds.map(cmd =>
+                                ["tr", {},
+                                    ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
+                                    ["td", {}, cmd.bang ? "!" : " "],
+                                    ["td", {}, cmd.name],
+                                    ["td", {}, cmd.argCount],
+                                    ["td", {}, cmd.count ? "0c" : ""],
+                                    ["td", {}, completerToString(cmd.completer)],
+                                    ["td", {}, cmd.replacementText || "function () { ... }"]]),
+                            ["tr", { style: "height: .5ex;" }]];
+                    })];
+
+                // E4X-FIXME
+                // if (list.*.length() === list.text().length() + 2)
+                //     dactyl.echomsg(_("command.none"));
+                // else
+                commandline.commandOutput(list);
             }
-            // TODO: allow matching of aliases?
-            function cmds(hive) hive._list.filter(cmd => cmd.name.startsWith(filter || ""))
-
-            hives = (hives || this.userHives).map(h => [h, cmds(h)])
-                                             .filter(([h, c]) => c.length);
-
-            let list = ["table", {},
-                ["tr", { highlight: "Title" },
-                    ["td"],
-                    ["td", { style: "padding-right: 1em;" }],
-                    ["td", { style: "padding-right: 1ex;" }, _("title.Name")],
-                    ["td", { style: "padding-right: 1ex;" }, _("title.Args")],
-                    ["td", { style: "padding-right: 1ex;" }, _("title.Range")],
-                    ["td", { style: "padding-right: 1ex;" }, _("title.Complete")],
-                    ["td", { style: "padding-right: 1ex;" }, _("title.Definition")]],
-                ["col", { style: "min-width: 6em; padding-right: 1em;" }],
-                hives.map(([hive, cmds]) => let (i = 0) [
-                    ["tr", { style: "height: .5ex;" }],
-                    cmds.map(cmd =>
-                        ["tr", {},
-                            ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
-                            ["td", {}, cmd.bang ? "!" : " "],
-                            ["td", {}, cmd.name],
-                            ["td", {}, cmd.argCount],
-                            ["td", {}, cmd.count ? "0c" : ""],
-                            ["td", {}, completerToString(cmd.completer)],
-                            ["td", {}, cmd.replacementText || "function () { ... }"]]),
-                    ["tr", { style: "height: .5ex;" }]])];
-
-            // E4X-FIXME
-            // if (list.*.length() === list.text().length() + 2)
-            //     dactyl.echomsg(_("command.none"));
-            // else
-            commandline.commandOutput(list);
-        }
-    }),
+        };
+    },
 
     /**
      * @property Indicates that no count was specified for this
@@ -850,7 +858,7 @@ var Commands = Module("commands", {
             defaults = array(this.options).map(opt => [opt.names[0], opt.default])
                                           .toObject();
 
-        for (let [opt, val] in Iterator(args.options || {})) {
+        for (let [opt, val] of iter(args.options || {})) {
             if (val === undefined)
                 continue;
             if (val != null && defaults[opt] === val)
@@ -864,7 +872,7 @@ var Commands = Module("commands", {
             res.push(opt);
         }
 
-        for (let [, arg] in Iterator(args.arguments || []))
+        for (let arg of (args.arguments || []))
             res.push(Commands.quote(arg));
 
         let str = args.literalArg;
@@ -895,7 +903,7 @@ var Commands = Module("commands", {
      */
     hasDomain: function hasDomain(command, host) {
         try {
-            for (let [cmd, args] in this.subCommands(command))
+            for (let [cmd, args] of this.subCommands(command))
                 if (Array.concat(cmd.domains(args)).some(domain => util.isSubdomain(domain, host)))
                     return true;
         }
@@ -913,7 +921,7 @@ var Commands = Module("commands", {
      * @returns {boolean}
      */
     hasPrivateData: function hasPrivateData(command) {
-        for (let [cmd, args] in this.subCommands(command))
+        for (let [cmd, args] of this.subCommands(command))
             if (cmd.privateData)
                 return !callable(cmd.privateData) ? cmd.privateData
                                                   : cmd.privateData(args);
@@ -1002,7 +1010,7 @@ var Commands = Module("commands", {
             args.string = str; // for access to the unparsed string
 
             // FIXME!
-            for (let [k, v] in Iterator(extra || []))
+            for (let [k, v] of iter(extra || {}))
                 args[k] = v;
 
             // FIXME: best way to specify these requirements?
@@ -1065,8 +1073,8 @@ var Commands = Module("commands", {
 
                 var optname = "";
                 if (!onlyArgumentsRemaining) {
-                    for (let [, opt] in Iterator(options)) {
-                        for (let [, optname] in Iterator(opt.names)) {
+                    for (let opt of options) {
+                        for (let optname of opt.names) {
                             if (sub.startsWith(optname)) {
                                 let count = 0;
                                 let invalid = false;
@@ -1166,10 +1174,10 @@ var Commands = Module("commands", {
                     sub = re.exec(str)[1];
 
                     // Hack.
-                    if (sub.substr(0, 2) === "<<" && hereDoc)
-                        let ([count, arg] = getNextArg(sub)) {
-                            sub = arg + sub.substr(count);
-                        };
+                    if (sub.substr(0, 2) === "<<" && hereDoc) {
+                        let [count, arg] = getNextArg(sub);
+                        sub = arg + sub.substr(count);
+                    }
 
                     args.push(sub);
                     args.quote = null;
@@ -1333,7 +1341,7 @@ var Commands = Module("commands", {
         return [count, cmd, !!bang, args || "", spec.length, group];
     },
 
-    parseCommands: function parseCommands(str, complete) {
+    parseCommands: function* parseCommands(str, complete) {
         const { contexts } = this.modules;
         do {
             let [count, cmd, bang, args, len, group] = commands.parseCommand(str);
@@ -1365,11 +1373,11 @@ var Commands = Module("commands", {
         while (str);
     },
 
-    subCommands: function subCommands(command) {
+    subCommands: function* subCommands(command) {
         let commands = [command];
         while (command = commands.shift())
             try {
-                for (let [command, args] in this.parseCommands(command)) {
+                for (let [command, args] of this.parseCommands(command)) {
                     if (command) {
                         yield [command, args];
                         if (command.subCommand && args[command.subCommand])
@@ -1447,7 +1455,7 @@ var Commands = Module("commands", {
 
             // if there is no space between the command name and the cursor
             // then get completions of the command name
-            for (var [command, args] in commands.parseCommands(context.filter, context))
+            for (var [command, args] of commands.parseCommands(context.filter, context))
                 if (args.trailing)
                     context.advance(args.commandString.length + 1);
             if (!args)
@@ -1622,7 +1630,7 @@ var Commands = Module("commands", {
                         // TODO: "E180: invalid complete value: " + arg
                         names: ["-complete", "-C"],
                         description: "The argument completion function",
-                        completer: function (context) [[k, ""] for ([k, v] in Iterator(config.completers))],
+                        completer: function (context) [[k, ""] for ([k, v] of iter(config.completers))],
                         type: CommandOption.STRING,
                         validator: function (arg) arg in config.completers || /^custom,/.test(arg),
                     },
@@ -1669,7 +1677,7 @@ var Commands = Module("commands", {
                             bang: true,
                             options: iter([v, typeof cmd[k] == "boolean" ? null : cmd[k]]
                                           // FIXME: this map is expressed multiple times
-                                          for ([k, v] in Iterator({
+                                          for ([k, v] of iter({
                                               argCount: "-nargs",
                                               bang: "-bang",
                                               count: "-count",
@@ -1680,7 +1688,7 @@ var Commands = Module("commands", {
                             literalArg: cmd.action,
                             ignoreDefaults: true
                         }
-                        for (cmd in hive) if (cmd.persist)
+                        for (cmd of hive) if (cmd.persist)
                     ])
                     .flatten().array
             });
@@ -1724,8 +1732,11 @@ var Commands = Module("commands", {
                                                             cmd.hive.name]
                 ]
             })),
-            iterateIndex: function (args) let (tags = help.tags)
-                this.iterate(args).filter(cmd => (cmd.hive === commands.builtin || hasOwnProperty(tags, cmd.helpTag))),
+            iterateIndex: function (args) {
+                let tags = help.tags;
+                return this.iterate(args).filter(cmd => (cmd.hive === commands.builtin ||
+                                                         hasOwnProperty(tags, cmd.helpTag)));
+            },
             format: {
                 headings: ["Command", "Group", "Description"],
                 description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),
@@ -1755,9 +1766,9 @@ var Commands = Module("commands", {
         const { JavaScript, commands } = modules;
 
         JavaScript.setCompleter([CommandHive.prototype.get, CommandHive.prototype.remove],
-                                [function () [[c.names, c.description] for (c in this)]]);
+                                [function () [[c.names, c.description] for (c of this)]]);
         JavaScript.setCompleter([Commands.prototype.get],
-                                [function () [[c.names, c.description] for (c in this.iterator())]]);
+                                [function () [[c.names, c.description] for (c of this.iterator())]]);
     },
     mappings: function initMappings(dactyl, modules, window) {
         const { commands, mappings, modes } = modules;
@@ -1766,7 +1777,7 @@ var Commands = Module("commands", {
             ["@:"], "Repeat the last Ex command",
             function ({ count }) {
                 if (commands.repeat) {
-                    for (let i in util.interruptibleRange(0, Math.max(count, 1), 100))
+                    for (let i of util.interruptibleRange(0, Math.max(count, 1), 100))
                         dactyl.execute(commands.repeat);
                 }
                 else

@@ -21,7 +21,7 @@ var History = Module("history", {
         let query = services.history.getNewQuery();
         let options = services.history.getNewQueryOptions();
 
-        for (let [k, v] in Iterator(filter))
+        for (let [k, v] of iter(filter))
             query[k] = v;
 
         let res = /^([+-])(.+)/.exec(sort);
@@ -65,9 +65,9 @@ var History = Module("history", {
         let obj = [];
         obj.__defineGetter__("index", () => sh.index);
         obj.__defineSetter__("index", function (val) { webNav.gotoIndex(val); });
-        obj.__iterator__ = function () array.iterItems(this);
+        obj[Symbol.iterator] = function () array.iterItems(this);
 
-        for (let item in iter(sh.SHistoryEnumerator, Ci.nsISHEntry))
+        for (let item of iter(sh.SHistoryEnumerator, Ci.nsISHEntry))
             obj.push(update(Object.create(item), {
                 index: obj.length,
                 icon: Class.Memoize(function () services.favicon.getFaviconImageForPage(this.URI).spec)
@@ -166,7 +166,7 @@ var History = Module("history", {
             return dactyl.open(items.map(i => i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0)
-            dactyl.echoerr(_("history.noMatching", filter.quote()));
+            dactyl.echoerr(_("history.noMatching", JSON.stringify(filter)));
         else
             dactyl.echoerr(_("history.none"));
         return null;
@@ -187,7 +187,7 @@ var History = Module("history", {
                         if (/^\d+(:|$)/.test(url) && sh.index - parseInt(url) in sh)
                             return void window.getWebNavigation().gotoIndex(sh.index - parseInt(url));
 
-                        for (let [i, ent] in Iterator(sh.slice(0, sh.index).reverse()))
+                        for (let [i, ent] of iter(sh.slice(0, sh.index).reverse()))
                             if (ent.URI.spec == url)
                                 return void window.getWebNavigation().gotoIndex(i);
                         dactyl.echoerr(_("history.noURL"));
@@ -229,7 +229,7 @@ var History = Module("history", {
                         if (/^\d+(:|$)/.test(url) && sh.index + parseInt(url) in sh)
                             return void window.getWebNavigation().gotoIndex(sh.index + parseInt(url));
 
-                        for (let [i, ent] in Iterator(sh.slice(sh.index + 1)))
+                        for (let [i, ent] of iter(sh.slice(sh.index + 1)))
                             if (ent.URI.spec == url)
                                 return void window.getWebNavigation().gotoIndex(i);
                         dactyl.echoerr(_("history.noURL"));
@@ -333,7 +333,7 @@ var History = Module("history", {
             // FIXME: Schema-specific
             context.generate = () => [
                 Array.slice(row.rev_host).reverse().join("").slice(1)
-                for (row in iter(services.history.DBConnection
+                for (row of iter(services.history.DBConnection
                                          .createStatement("SELECT DISTINCT rev_host FROM moz_places WHERE rev_host IS NOT NULL;")))
             ].slice(2);
         };

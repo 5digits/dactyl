@@ -181,7 +181,7 @@ var Marks = Module("marks", {
 
             let tab = mark.tab && mark.tab.get();
             if (!tab || !tab.linkedBrowser || tabs.allTabs.indexOf(tab) == -1)
-                for ([, tab] in iter(tabs.visibleTabs, tabs.allTabs)) {
+                for ([, tab] of iter(tabs.visibleTabs, tabs.allTabs)) {
                     if (tab.linkedBrowser.contentDocument.documentURI.replace(/#.*/, "") === mark.location)
                         break;
                     tab = null;
@@ -205,7 +205,7 @@ var Marks = Module("marks", {
                     a.length = b.length = Math.max(a.length, b.length);
                     items = array(a).zip(b).flatten().compact();
 
-                    for (let i in items.iterValues()) {
+                    for (let i of items.iterValues()) {
                         let entry = sh.getEntryAtIndex(i, false);
                         if (entry.URI.spec.replace(/#.*/, "") == mark.location)
                             return void tab.linkedBrowser.webNavigation.gotoIndex(i);
@@ -234,7 +234,7 @@ var Marks = Module("marks", {
         if (!mark.path)
             var node = buffer.findScrollable(0, (mark.offset || mark.position).x);
         else
-            for (node in DOM.XPath(mark.path, buffer.focusedFrame.document))
+            for (node of DOM.XPath(mark.path, buffer.focusedFrame.document))
                 break;
 
         util.assert(node);
@@ -260,7 +260,7 @@ var Marks = Module("marks", {
         if (filter.length > 0) {
             let pattern = util.charListToRegexp(filter, "a-zA-Z");
             marks = marks.filter(([k]) => (pattern.test(k)));
-            dactyl.assert(marks.length > 0, _("mark.noMatching", filter.quote()));
+            dactyl.assert(marks.length > 0, _("mark.noMatching", JSON.stringify(filter)));
         }
 
         commandline.commandOutput(
@@ -273,7 +273,7 @@ var Marks = Module("marks", {
                   mark.offset ? Math.round(mark.offset.y)
                               : Math.round(mark.position.y * 100) + "%",
                   mark.location]
-                  for ([, [name, mark]] in Iterator(marks)))));
+                  for ([name, mark] of marks))));
     },
 
     _onPageLoad: function _onPageLoad(event) {
@@ -388,18 +388,20 @@ var Marks = Module("marks", {
             contains: ["history"],
             action: function (timespan, host) {
                 function matchhost(url) !host || util.isDomainURL(url, host);
-                function match(marks) (k for ([k, v] in Iterator(marks)) if (timespan.contains(v.timestamp) && matchhost(v.location)));
+                function match(marks) (k
+                                       for ([k, v] in iter(marks))
+                                       if (timespan.contains(v.timestamp) && matchhost(v.location)));
 
-                for (let [url, local] in marks._localMarks)
+                for (let [url, local] of marks._localMarks)
                     if (matchhost(url)) {
-                        for (let key in match(local))
+                        for (let key of match(local))
                             delete local[key];
                         if (!Object.keys(local).length)
                             marks._localMarks.remove(url);
                     }
                 marks._localMarks.changed();
 
-                for (let key in match(marks._urlMarks))
+                for (let key of match(marks._urlMarks))
                     marks._urlMarks.remove(key);
             }
         });

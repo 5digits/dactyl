@@ -69,24 +69,24 @@ var JavaScript = Module("javascript", {
         return undefined;
     },
 
-    iter: function iter_(obj, toplevel) {
+    iter: function* iter_(obj, toplevel) {
         if (obj == null)
             return;
 
-        let seen = RealSet(isinstance(obj, ["Sandbox"]) ? JavaScript.magicalNames : []);
+        let seen = new RealSet(isinstance(obj, ["Sandbox"]) ? JavaScript.magicalNames : []);
         let globals = values(toplevel && this.window === obj ? this.globalNames : []);
 
         if (toplevel && isObject(obj) && "wrappedJSObject" in obj)
             if (!seen.add("wrappedJSObject"))
                 yield "wrappedJSObject";
 
-        for (let key in iter(globals, properties(obj, !toplevel)))
+        for (let key of iter(globals, properties(obj, !toplevel)))
             if (!seen.add(key))
                 yield key;
 
         // Properties aren't visible in an XPCNativeWrapper until
         // they're accessed.
-        for (let key in properties(this.getKey(obj, "wrappedJSObject"),
+        for (let key of properties(this.getKey(obj, "wrappedJSObject"),
                                    !toplevel))
             try {
                 if (key in obj && !seen.has(key))
@@ -104,9 +104,9 @@ var JavaScript = Module("javascript", {
         if (isPrototypeOf.call(this.toplevel, obj) && !toplevel)
             return [];
 
-        let completions = [k for (k in this.iter(obj, toplevel))];
+        let completions = [k for (k of this.iter(obj, toplevel))];
         if (obj === this.modules) // Hack.
-            completions = array.uniq(completions.concat([k for (k in this.iter(this.modules.jsmodules, toplevel))]));
+            completions = array.uniq(completions.concat([k for (k of this.iter(this.modules.jsmodules, toplevel))]));
         return completions;
     },
 
@@ -294,7 +294,7 @@ var JavaScript = Module("javascript", {
         let prev = statement;
         let obj = this.window;
         let cacheKey;
-        for (let [, dot] in Iterator(this._get(frame).dots.concat(stop))) {
+        for (let dot of this._get(frame).dots.concat(stop)) {
             if (dot < statement)
                 continue;
             if (dot > stop || dot <= prev)
@@ -308,7 +308,7 @@ var JavaScript = Module("javascript", {
             if (this._checkFunction(prev, dot, cacheKey))
                 return [];
             if (prev != statement && obj == null) {
-                this.context.message = /*L*/"Error: " + cacheKey.quote() + " is " + String(obj);
+                this.context.message = /*L*/"Error: " + JSON.stringify(cacheKey) + " is " + String(obj);
                 return [];
             }
 
@@ -471,7 +471,7 @@ var JavaScript = Module("javascript", {
         // This allows for things like:
         //   let doc = content.document; let elem = doc.createEle<Tab> ...
         let prev = 0;
-        for (let [, v] in Iterator(this._get(0).fullStatements)) {
+        for (let v of this._get(0).fullStatements) {
             let key = this._str.substring(prev, v + 1);
             if (this._checkFunction(prev, v, key))
                 return null;
@@ -560,7 +560,7 @@ var JavaScript = Module("javascript", {
                 // Split up the arguments
                 let prev = this._get(-2).offset;
                 let args = [];
-                for (let [i, idx] in Iterator(this._get(-2).comma)) {
+                for (let [i, idx] of iter(this._get(-2).comma)) {
                     let arg = this._str.substring(prev + 1, idx);
                     prev = idx;
                     memoize(args, i, () => self.evalled(arg));
@@ -622,26 +622,28 @@ var JavaScript = Module("javascript", {
      * A list of properties of the global object which are not
      * enumerable by any standard method.
      */
-    globalNames: Class.Memoize(function () let (self = this) array.uniq([
-        "Array", "ArrayBuffer", "AttributeName", "Audio", "Boolean", "Components",
-        "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
-        "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date", "Error",
-        "EvalError", "File", "Float32Array", "Float64Array", "Function",
-        "HTMLDelElement", "HTMLInsElement", "HTMLSpanElement", "Infinity",
-        "InnerModalContentWindow", "InnerWindow", "Int16Array", "Int32Array",
-        "Int8Array", "InternalError", "Iterator", "JSON", "KeyboardEvent",
-        "Math", "NaN", "Namespace", "Number", "Object", "Proxy", "QName",
-        "ROCSSPrimitiveValue", "RangeError", "ReferenceError", "RegExp",
-        "StopIteration", "String", "SyntaxError", "TypeError", "URIError",
-        "Uint16Array", "Uint32Array", "Uint8Array", "XML", "XMLHttpProgressEvent",
-        "XMLList", "XMLSerializer", "XPCNativeWrapper",
-        "XULControllers", "constructor", "decodeURI", "decodeURIComponent",
-        "encodeURI", "encodeURIComponent", "escape", "eval", "isFinite", "isNaN",
-        "isXMLName", "parseFloat", "parseInt", "undefined", "unescape", "uneval"
-    ].concat([k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))])
-     .concat([k.substr(3) for (k in keys(Ci)) if (/^nsI/.test(k))])
-     .concat(this.magicalNames)
-     .filter(k => k in self.window))),
+    globalNames: Class.Memoize(function () {
+        return array.uniq([
+            "Array", "ArrayBuffer", "AttributeName", "Audio", "Boolean", "Components",
+            "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
+            "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date", "Error",
+            "EvalError", "File", "Float32Array", "Float64Array", "Function",
+            "HTMLDelElement", "HTMLInsElement", "HTMLSpanElement", "Infinity",
+            "InnerModalContentWindow", "InnerWindow", "Int16Array", "Int32Array",
+            "Int8Array", "InternalError", "Iterator", "JSON", "KeyboardEvent",
+            "Math", "NaN", "Namespace", "Number", "Object", "Proxy", "QName",
+            "ROCSSPrimitiveValue", "RangeError", "ReferenceError", "RegExp",
+            "StopIteration", "String", "SyntaxError", "TypeError", "URIError",
+            "Uint16Array", "Uint32Array", "Uint8Array", "XML", "XMLHttpProgressEvent",
+            "XMLList", "XMLSerializer", "XPCNativeWrapper",
+            "XULControllers", "constructor", "decodeURI", "decodeURIComponent",
+            "encodeURI", "encodeURIComponent", "escape", "eval", "isFinite", "isNaN",
+            "isXMLName", "parseFloat", "parseInt", "undefined", "unescape", "uneval"
+        ].concat([k.substr(6) for (k of keys(Ci)) if (/^nsIDOM/.test(k))])
+         .concat([k.substr(3) for (k of keys(Ci)) if (/^nsI/.test(k))])
+         .concat(this.magicalNames)
+         .filter(k => k in this.window));
+    }),
 
 }, {
     EVAL_TMP: "__dactyl_eval_tmp",
@@ -675,7 +677,7 @@ var JavaScript = Module("javascript", {
      */
     setCompleter: function (funcs, completers) {
         funcs = Array.concat(funcs);
-        for (let [, func] in Iterator(funcs)) {
+        for (let func of funcs) {
             func.dactylCompleter = function (context, func, obj, args) {
                 let completer = completers[args.length - 1];
                 if (!completer)

@@ -54,7 +54,7 @@ var updateAddons = Class("UpgradeListener", AddonListener, {
         this.remaining = addons;
         this.upgrade = [];
         this.dactyl.echomsg(_("addon.check", addons.map(a => a.name).join(", ")));
-        for (let addon in values(addons))
+        for (let addon of values(addons))
             addon.findUpdates(this, AddonManager.UPDATE_WHEN_USER_REQUESTED, null, null);
 
     },
@@ -226,7 +226,7 @@ var Addon = Class("Addon", {
         this.nodes.description.textContent = this.description;
         DOM(this.nodes.row).attr("active", this.isActive || null);
 
-        for (let node in values(this.nodes))
+        for (let node of values(this.nodes))
             if (node.update && node.update !== callee)
                 node.update();
 
@@ -394,7 +394,7 @@ var Addons = Module("addons", {
                 else if (file.isReadable() && file.isFile())
                     AddonManager.getInstallForFile(file.file, install, "application/x-xpinstall");
                 else if (file.isDirectory())
-                    dactyl.echoerr(_("addon.cantInstallDir", file.path.quote()));
+                    dactyl.echoerr(_("addon.cantInstallDir", JSON.stringify(file.path)));
                 else
                     dactyl.echoerr(_("io.notReadable", file.path));
             }, {

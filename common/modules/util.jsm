@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -137,7 +137,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let cleanup = ["dactyl-cleanup-modules", "quit-application"];
 
         function register(meth) {
-            for (let target of RealSet(cleanup.concat(Object.keys(obj.observers))))
+            for (let target of new RealSet(cleanup.concat(Object.keys(obj.observers))))
                 try {
                     services.observer[meth](obj, target, true);
                 }
@@ -208,10 +208,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         // check for chars not in the accepted range
         this.assert(RegExp("^[" + accepted + "-]+$").test(list),
-                    _("error.charactersOutsideRange", accepted.quote()));
+                    _("error.charactersOutsideRange", JSON.stringify(accepted)));
 
         // check for illegal ranges
-        for (let [match] in this.regexp.iterate(/.-./g, list))
+        for (let [match] of this.regexp.iterate(/.-./g, list))
             this.assert(match.charCodeAt(0) <= match.charCodeAt(2),
                         _("error.invalidCharacterRange", list.slice(list.indexOf(match))));
 
@@ -228,7 +228,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (isArray(obj))
             return obj.slice();
         let newObj = {};
-        for (let [k, v] in Iterator(obj))
+        for (let [k, v] of iter(obj))
             newObj[k] = v;
         return newObj;
     },
@@ -272,7 +272,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             });
 
         let end = 0;
-        for (let match in util.regexp.iterate(/(.*?)%(.)/gy, format)) {
+        for (let match of util.regexp.iterate(/(.*?)%(.)/gy, format)) {
 
             let [, prefix, char] = match;
             end += match[0].length;
@@ -301,7 +301,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                                                      : "",
                     { test: function test(obj) obj[char] != null }));
 
-                for (let elem in array.iterValues(stack))
+                for (let elem of array.iterValues(stack))
                     elem.seen[char] = true;
             }
         }
@@ -353,7 +353,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     : "",
             {
                 elements: [],
-                seen: RealSet(),
+                seen: new RealSet,
                 valid: function valid(obj) this.elements.every(e => (!e.test || e.test(obj)))
             });
 
@@ -369,7 +369,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         */$), "gixy");
         macro = String(macro);
         let end = 0;
-        for (let match in re.iterate(macro)) {
+        for (let match of re.iterate(macro)) {
             let [, prefix, open, full, macro, idx, close] = match;
             end += match[0].length;
 
@@ -386,7 +386,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             else {
                 let [, flags, name] = /^((?:[a-z]-)*)(.*)/.exec(macro);
-                flags = RealSet(flags);
+                flags = new RealSet(flags);
 
                 let quote = util.identity;
                 if (flags.has("q"))
@@ -420,7 +420,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                             }));
                     }
 
-                    for (let elem in array.iterValues(stack))
+                    for (let elem of array.iterValues(stack))
                         elem.seen.add(name);
                 }
             }
@@ -474,7 +474,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                         if (acc.length == pattern.length)
                             this.res.push(acc.join(""));
                         else
-                            for (let val in values(vals))
+                            for (let val of values(vals))
                                 this.rec(acc.concat(val));
                     }
                 });
@@ -510,7 +510,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 if (acc.length == patterns.length)
                     res.push(array(substrings).zip(acc).flatten().join(""));
                 else
-                    for (let [, pattern] in Iterator(patterns[acc.length]))
+                    for (let [, pattern] of Iterator(patterns[acc.length]))
                         rec(acc.concat(pattern));
             };
             rec([]);
@@ -766,7 +766,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             if (isObject(params.params)) {
                 let data = [encodeURIComponent(k) + "=" + encodeURIComponent(v)
-                            for ([k, v] in iter(params.params))];
+                            for ([k, v] of iter(params.params))];
                 let uri = util.newURI(url);
                 uri.query += (uri.query ? "&" : "") + data.join("&");
 
@@ -775,7 +775,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             if (isObject(params.data) && !(params.data instanceof Ci.nsISupports)) {
                 let data = services.FormData();
-                for (let [k, v] in iter(params.data))
+                for (let [k, v] of iter(params.data))
                     data.append(k, v);
                 params.data = data;
             }
@@ -801,7 +801,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 args.push(prams.pass);
             xmlhttp.open.apply(xmlhttp, args);
 
-            for (let [header, val] in Iterator(params.headers || {}))
+            for (let [header, val] of iter(params.headers || {}))
                 xmlhttp.setRequestHeader(header, val);
 
             if (params.responseType)
@@ -899,7 +899,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * Iterates over all currently open documents, including all
      * top-level window and sub-frames thereof.
      */
-    iterDocuments: function iterDocuments(types) {
+    iterDocuments: function* iterDocuments(types) {
         types = types ? types.map(s => "type" + util.capitalize(s))
                       : ["typeChrome", "typeContent"];
 
@@ -909,11 +909,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             for (let type of types) {
                 let docShells = window.docShell.getDocShellEnumerator(Ci.nsIDocShellTreeItem[type],
                                                                       Ci.nsIDocShell.ENUMERATE_FORWARDS);
-                while (docShells.hasMoreElements())
-                    let (viewer = docShells.getNext().QueryInterface(Ci.nsIDocShell).contentViewer) {
-                        if (viewer)
-                            yield viewer.DOMDocument;
-                    };
+                while (docShells.hasMoreElements()) {
+                    let viewer = docShells.getNext().QueryInterface(Ci.nsIDocShell).contentViewer;
+                    if (viewer)
+                        yield viewer.DOMDocument;
+                }
             }
         }
     },
@@ -956,22 +956,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {string} The DTD fragment containing entity declaration
      *      for *obj*.
      */
-    makeDTD: let (map = { "'": "&apos;", '"': "&quot;", "%": "&#x25;", "&": "&amp;", "<": "&lt;", ">": "&gt;" })
-        function makeDTD(obj) {
-            function escape(val) {
-               let isDOM = DOM.isJSONXML(val);
-               return String.replace(val == null ? "null" :
-                                     isDOM       ? DOM.toXML(val)
-                                                 : val,
-                                     isDOM ? /['%]/g
-                                           : /['"%&<>]/g,
-                                     m => map[m]);
-            }
+    makeDTD: function makeDTD(obj) {
+        let map = { "'": "&apos;", '"': "&quot;", "%": "&#x25;", "&": "&amp;", "<": "&lt;", ">": "&gt;" };
 
-            return iter(obj).map(([k, v]) =>
-                                 ["<!ENTITY ", k, " '", escape(v), "'>"].join(""))
-                            .join("\n");
-        },
+        return iter(obj)
+          .map(([k, v]) => ["<!ENTITY ", k, " '", String.replace(v == null ? "null" : typeof v == "xml" ? v.toXMLString() : v,
+                                                                 typeof v == "xml" ? /['%]/g : /['"%&<>]/g,
+                                                                 function (m) map[m]),
+                            "'>"].join(""))
+          .join("\n");
+    },
 
     /**
      * Converts a URI string into a URI object.
@@ -1014,7 +1008,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (!isObject(object))
             return String(object);
 
-        if (object instanceof Ci.nsIDOMElement) {
+        if (object instanceof Ci.nsIDOMElement || object instanceof DOM) {
             let elem = object;
             if (elem.nodeType == elem.TEXT_NODE)
                 return elem.data;
@@ -1039,26 +1033,22 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         else
             head = util.clip(obj, 150).replace(/\n/g, "^J") + "::\n";
 
-        let keys = [];
+        let keys_ = [];
 
         // window.content often does not want to be queried with "var i in object"
         try {
-            let hasValue = !("__iterator__" in object || isinstance(object, ["Generator", "Iterator"]));
+            if (isArray(object))
+                object = iter(object);
+
+            let hasValue = !(Symbol.iterator in object || isinstance(object, ["Generator", "Iterator", Iter]));
+            let keyIter = hasValue ? keys(object) : object;
 
             if (object.dactyl && object.modules && object.modules.modules == object.modules) {
                 object = Iterator(object);
                 hasValue = false;
             }
 
-            let keyIter = object;
-            if (iter.iteratorProp in object) {
-                keyIter = (k for (k of object));
-                hasValue = false;
-            }
-            else if ("__iterator__" in object && !callable(object.__iterator__))
-                keyIter = keys(object);
-
-            for (let i in keyIter) {
+            for (let i of keyIter) {
                 let value = Magic("<no value>");
                 try {
                     value = object[i];
@@ -1094,7 +1084,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 else
                     val = key + ": " + value;
 
-                keys.push([i, val]);
+                keys_.push([i, val]);
             }
         }
         catch (e) {
@@ -1108,7 +1098,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                                         String(b[0]));
         }
 
-        let vals = template.map(keys.sort(compare), f => f[1],
+        let vals = template.map(keys_.sort(compare), f => f[1],
                                 "\n");
 
         if (color) {
@@ -1122,7 +1112,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         function rec(data, level, seen) {
             if (isObject(data)) {
-                seen = RealSet(seen);
+                seen = new RealSet(seen);
                 if (seen.add(data))
                     throw Error("Recursive object passed");
             }
@@ -1141,7 +1131,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     res.push("[]");
                 else {
                     res.push("[\n");
-                    for (let [i, val] in Iterator(data)) {
+                    for (let [i, val] of iter(data)) {
                         if (i)
                             res.push(",\n");
                         res.push(prefix);
@@ -1154,7 +1144,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 res.push("{\n");
 
                 let i = 0;
-                for (let [key, val] in Iterator(data)) {
+                for (let [key, val] of iter(data)) {
                     if (i++)
                         res.push(",\n");
                     res.push(prefix, JSON.stringify(key), ": ");
@@ -1172,7 +1162,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
 
         let res = [];
-        rec(data, "", RealSet());
+        rec(data, "", new RealSet);
         return res.join("");
     },
 
@@ -1180,7 +1170,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         "dactyl-cleanup-modules": function cleanupModules(subject, reason) {
             defineModule.loadLog.push("dactyl: util: observe: dactyl-cleanup-modules " + reason);
 
-            for (let module in values(defineModule.modules))
+            for (let module of values(defineModule.modules))
                 if (module.cleanup) {
                     util.dump("cleanup: " + module.constructor.className);
                     util.trapErrors(module.cleanup, module, reason);
@@ -1198,7 +1188,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *     negative. @default 1
      * @returns {Iterator(Object)}
      */
-    range: function range(start, end, step) {
+    range: function* range(start, end, step) {
         if (!step)
             step = 1;
         if (step > 0) {
@@ -1220,7 +1210,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {number} time The time in milliseconds between thread yields.
      * @returns {Iterator(Object)}
      */
-    interruptibleRange: function interruptibleRange(start, end, time) {
+    interruptibleRange: function* interruptibleRange(start, end, time) {
         let endTime = Date.now() + time;
         while (start < end) {
             if (Date.now() > endTime) {
@@ -1249,7 +1239,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {RegExp} A custom regexp object.
      */
     regexp: update(function (expr, flags, tokens) {
-        flags = flags || [k for ([k, v] in Iterator({ g: "global", i: "ignorecase", m: "multiline", y: "sticky" }))
+        flags = flags || [k for ([k, v] of iter({ g: "global", i: "ignorecase", m: "multiline", y: "sticky" }))
                           if (expr[v])].join("");
 
         if (isinstance(expr, ["RegExp"]))
@@ -1302,8 +1292,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         // have them.
         if (struct)
             update(res, {
-                exec: function exec() let (match = exec.superapply(this, arguments)) match && struct.fromArray(match),
-                dactylSource: source, struct: struct
+                exec: function exec() {
+                    let match = exec.superapply(this, arguments);
+
+                    return match && struct.fromArray(match);
+                },
+                dactylSource: source,
+                struct: struct
             });
         return res;
     }, {
@@ -1333,17 +1328,19 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
          * @param {string} string The string to search.
          * @param {number} lastIndex The index at which to begin searching. @optional
          */
-        iterate: function iterate(regexp, string, lastIndex) iter(function () {
-            regexp.lastIndex = lastIndex = lastIndex || 0;
-            let match;
-            while (match = regexp.exec(string)) {
-                lastIndex = regexp.lastIndex;
-                yield match;
-                regexp.lastIndex = lastIndex;
-                if (match[0].length == 0 || !regexp.global)
-                    break;
-            }
-        }())
+        iterate: function iterate(regexp, string, lastIndex) {
+            return iter(new function* () {
+                regexp.lastIndex = lastIndex = lastIndex || 0;
+                let match;
+                while (match = regexp.exec(string)) {
+                    lastIndex = regexp.lastIndex;
+                    yield match;
+                    regexp.lastIndex = lastIndex;
+                    if (match[0].length == 0 || !regexp.global)
+                        break;
+                }
+            });
+        }
     }),
 
     /**
@@ -1400,7 +1397,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             this.errors.push([new Date, obj + "\n" + obj.stack]);
             this.errors = this.errors.slice(-this.maxErrors);
-            this.errors.toString = function () [k + "\n" + v for ([k, v] in array.iterValues(this))].join("\n\n");
+            this.errors.toString = function () [k + "\n" + v for ([k, v] of array.iterValues(this))].join("\n\n");
 
             this.dump(String(error));
             this.dump(obj);
@@ -1437,7 +1434,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         catch (e) {}
 
         let ary = host.split(".");
-        ary = [ary.slice(i).join(".") for (i in util.range(ary.length, 0, -1))];
+        ary = [ary.slice(i).join(".") for (i of util.range(ary.length, 0, -1))];
         return ary.filter(h => h.length >= base.length);
     },
 
@@ -1658,11 +1655,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {function} func The function to call
      * @param {object} self The 'this' object for the function.
      */
-    trapErrors: function trapErrors(func, self, ...args) {
+    trapErrors: function trapErrors(func, self) {
         try {
             if (!callable(func))
                 func = self[func];
-            return func.apply(self || this, args);
+            return func.apply(self || this, Array.slice(arguments, 2));
         }
         catch (e) {
             this.reportError(e);
@@ -1697,7 +1694,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     visibleHosts: function visibleHosts(win) {
         let res = [],
-            seen = RealSet();
+            seen = new RealSet;
         (function rec(frame) {
             try {
                 if (frame.location.hostname)
@@ -1718,7 +1715,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     visibleURIs: function visibleURIs(win) {
         let res = [],
-            seen = RealSet();
+            seen = new RealSet;
         (function rec(frame) {
             try {
                 res = res.concat(util.newURI(frame.location.href));

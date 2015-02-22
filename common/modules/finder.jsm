@@ -50,7 +50,7 @@ var RangeFinder = Module("rangefinder", {
     },
 
     cleanup: function cleanup() {
-        for (let doc in util.iterDocuments()) {
+        for (let doc of util.iterDocuments()) {
             let find = overlay.getData(doc, "range-find", null);
             if (find)
                 find.highlight(true);
@@ -436,9 +436,9 @@ var RangeFind = Class("RangeFind", {
         return ranges[0];
     },
 
-    findSubRanges: function findSubRanges(range) {
+    findSubRanges: function* findSubRanges(range) {
         let doc = range.startContainer.ownerDocument;
-        for (let elem in this.elementPath(doc)) {
+        for (let elem of this.elementPath(doc)) {
             let r = RangeFind.nodeRange(elem);
             if (RangeFind.contains(range, r))
                 yield r;
@@ -475,7 +475,7 @@ var RangeFind = Class("RangeFind", {
         else {
             this.selections = [];
             let string = this.lastString;
-            for (let r in this.iter(string)) {
+            for (let r of this.iter(string)) {
                 let controller = this.range.selectionController;
                 for (let node = r.startContainer; node; node = node.parentNode)
                     if (node instanceof Ci.nsIDOMNSEditableElement) {
@@ -495,25 +495,25 @@ var RangeFind = Class("RangeFind", {
         }
     },
 
-    indexIter: function indexIter(private_) {
+    indexIter: function* indexIter(private_) {
         let idx = this.range.index;
         if (this.backward)
             var groups = [util.range(idx + 1, 0, -1), util.range(this.ranges.length, idx, -1)];
         else
             var groups = [util.range(idx, this.ranges.length), util.range(0, idx + 1)];
 
-        for (let i in groups[0])
+        for (let i of groups[0])
             yield i;
 
         if (!private_) {
             this.wrapped = true;
             this.lastRange = null;
-            for (let i in groups[1])
+            for (let i of groups[1])
                 yield i;
         }
     },
 
-    iter: function iter(word) {
+    iter: function* iter(word) {
         let saved = ["lastRange", "lastString", "range", "regexp"].map(s => [s, this[s]]);
         let res;
         try {
@@ -522,8 +522,8 @@ var RangeFind = Class("RangeFind", {
             this.regexp = false;
             if (regexp) {
                 let re = RegExp(word, "gm" + this.flags);
-                for (this.range in array.iterValues(this.ranges)) {
-                    for (let match in util.regexp.iterate(re, DOM.stringify(this.range.range, true))) {
+                for (this.range of array.iterValues(this.ranges)) {
+                    for (let match of util.regexp.iterate(re, DOM.stringify(this.range.range, true))) {
                         let lastRange = this.lastRange;
                         if (res = this.find(null, this.reverse, true))
                             yield res;
@@ -565,7 +565,7 @@ var RangeFind = Class("RangeFind", {
             if (!self.elementPath)
                 push(range);
             else
-                for (let r in self.findSubRanges(range))
+                for (let r of self.findSubRanges(range))
                     push(r);
         }
         function rec(win) {
@@ -575,7 +575,7 @@ var RangeFind = Class("RangeFind", {
             let pageStart = RangeFind.endpoint(pageRange, true);
             let pageEnd = RangeFind.endpoint(pageRange, false);
 
-            for (let frame in array.iterValues(win.frames)) {
+            for (let frame of array.iterValues(win.frames)) {
                 let range = doc.createRange();
                 if (DOM(frame.frameElement).style.visibility == "visible") {
                     range.selectNode(frame.frameElement);
@@ -588,7 +588,7 @@ var RangeFind = Class("RangeFind", {
 
             let anonNodes = doc.getAnonymousNodes(doc.documentElement);
             if (anonNodes) {
-                for (let [, elem] in iter(anonNodes)) {
+                for (let [, elem] of iter(anonNodes)) {
                     let range = RangeFind.nodeContents(elem);
                     pushRange(RangeFind.endpoint(range, true), RangeFind.endpoint(range, false));
                 }
@@ -649,7 +649,7 @@ var RangeFind = Class("RangeFind", {
         if (pattern == "")
             var range = this.startRange;
         else
-            for (let i in this.indexIter(private_)) {
+            for (let i of this.indexIter(private_)) {
                 if (!private_ && this.range.window != this.ranges[i].window && this.range.window != this.ranges[i].window.parent) {
                     this.range.descroll();
                     this.range.deselect();
@@ -706,11 +706,11 @@ var RangeFind = Class("RangeFind", {
     set stale(val) this._stale = val,
 
     addListeners: function addListeners() {
-        for (let range in array.iterValues(this.ranges))
+        for (let range of array.iterValues(this.ranges))
             range.window.addEventListener("unload", this.bound.onUnload, true);
     },
     purgeListeners: function purgeListeners() {
-        for (let range in array.iterValues(this.ranges))
+        for (let range of array.iterValues(this.ranges))
             try {
                 range.window.removeEventListener("unload", this.bound.onUnload, true);
             }

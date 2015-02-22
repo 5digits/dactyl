@@ -55,16 +55,16 @@ var Messages = Module("messages", {
                  }
              })),
 
-    iterate: function () {
-        let seen = RealSet();
-        for (let bundle in values(this.bundles))
-            for (let { key, value } in iter(bundle.getSimpleEnumeration(), Ci.nsIPropertyElement))
+    iterate: function* () {
+        let seen = new RealSet;
+        for (let bundle of this.bundles)
+            for (let { key, value } of iter(bundle.getSimpleEnumeration(), Ci.nsIPropertyElement))
                 if (!seen.add(key))
                     yield [key, value];
     },
 
     get: function get(value, default_) {
-        for (let bundle in values(this.bundles))
+        for (let bundle of this.bundles)
             try {
                 let res = bundle.GetStringFromName(value);
                 if (res.slice(0, 2) == "+ ")
@@ -80,7 +80,7 @@ var Messages = Module("messages", {
     },
 
     format: function format(value, args, default_) {
-        for (let bundle in values(this.bundles))
+        for (let bundle of this.bundles)
             try {
                 let res = bundle.formatStringFromName(value, args, args.length);
                 if (res.slice(0, 2) == "+ ")
@@ -105,18 +105,22 @@ var Messages = Module("messages", {
         let { Buffer, commands, hints, io, mappings, modes, options, sanitizer } = overlay.activeModules;
         file = io.File(file);
 
-        function properties(base, iter_, prop="description") iter(function _properties() {
+        function properties(base, iter_, prop="description") iter(function* _properties() {
             function key(...args) [base, obj.identifier || obj.name].concat(args).join(".").replace(/[\\:=]/g, "\\$&");
 
-            for (var obj in iter_) {
+            for (var obj of iter_) {
                 if (!obj.hive || obj.hive.name !== "user") {
                     yield key(prop) + " = " + obj[prop];
 
-                    if (iter_.values)
-                        for (let [k, v] in isArray(obj.values) ? array.iterValues(obj.values) : iter(obj.values))
-                            yield key("values", k) + " = " + v;
+                    if (iter_.values) {
+                        let iter_ = isArray(obj.values) ? array.iterValues(obj.values)
+                                                        : iter(obj.values);
 
-                    for (let opt in values(obj.options))
+                        for (let [k, v] of iter_)
+                            yield key("values", k) + " = " + v;
+                    }
+
+                    for (let opt of values(obj.options))
                         yield key("options", opt.names[0]) + " = " + opt.description;
 
                     if (obj.deprecated)
@@ -148,7 +152,7 @@ var Messages = Module("messages", {
                 */
 
                 if (!hasOwnProperty(obj, "localizedProperties"))
-                    obj.localizedProperties = RealSet(obj.localizedProperties);
+                    obj.localizedProperties = new RealSet(obj.localizedProperties);
                 obj.localizedProperties.add(prop);
 
                 obj[_prop] = this.default;

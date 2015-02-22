@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -33,7 +33,7 @@ var StoreBase = Class("StoreBase", {
 
         this.__defineGetter__("store", () => store);
         this.__defineGetter__("name", () => name);
-        for (let [k, v] in Iterator(options))
+        for (let [k, v] of iter(options))
             if (this.OPTIONS.indexOf(k) >= 0)
                 this[k] = v;
         this.reload();
@@ -70,7 +70,7 @@ var StoreBase = Class("StoreBase", {
 
     save: function () { (self.storage || storage)._saveData(this); },
 
-    __iterator__: function () Iterator(this._object)
+    "@@iterator": function () iter(this._object)
 });
 
 var ArrayStore = Class("ArrayStore", StoreBase, {
@@ -200,12 +200,14 @@ var Storage = Module("Storage", {
     },
 
     cleanup: function () {
-        this.saveAll();
+        if (this.keys) {
+            this.saveAll();
 
-        for (let key in keys(this.keys)) {
-            if (this[key].timer)
-                this[key].timer.flush();
-            delete this[key];
+            for (let key of keys(this.keys)) {
+                if (this[key].timer)
+                    this[key].timer.flush();
+                delete this[key];
+            }
         }
 
         this.keys = {};
@@ -227,7 +229,7 @@ var Storage = Module("Storage", {
         }
     },
 
-    _saveData: promises.task(function saveData(obj) {
+    _saveData: promises.task(function* saveData(obj) {
         if (obj.privateData && storage.privateMode)
             return;
         if (obj.store && storage.infoPath) {
@@ -302,9 +304,12 @@ var Storage = Module("Storage", {
     },
 
     get observerMaps() {
-        yield this.observers;
-        for (let window of overlay.windows)
-            yield overlay.getData(window, "storage-observers", Object);
+        return function *() {
+            /* FIXME: Symbols */
+            yield this.observers;
+            for (let window of overlay.windows)
+                yield overlay.getData(window, "storage-observers", Object);
+        }.call(this);
     },
 
     addObserver: function addObserver(key, callback, window) {
@@ -313,19 +318,19 @@ var Storage = Module("Storage", {
             observers = overlay.getData(window, "storage-observers", Object);
 
         if (!hasOwnProperty(observers, key))
-            observers[key] = RealSet();
+            observers[key] = new RealSet;
 
         observers[key].add(callback);
     },
 
     removeObserver: function (key, callback) {
-        for (let observers in this.observerMaps)
+        for (let observers of this.observerMaps)
             if (key in observers)
                 observers[key].remove(callback);
     },
 
     fireEvent: function fireEvent(key, event, arg) {
-        for (let observers in this.observerMaps)
+        for (let observers of this.observerMaps)
             for (let observer of observers[key] || [])
                 observer(key, event, arg);
 
@@ -343,8 +348,8 @@ var Storage = Module("Storage", {
             this._saveData(this.keys[key]);
     },
 
-    saveAll: function storeAll() {
-        for each (let obj in this.keys)
+    saveAll: function saveAll() {
+        for (let obj of values(this.keys))
             this._saveData(obj);
     },
 
@@ -361,7 +366,7 @@ var Storage = Module("Storage", {
             else {
                 let { keys } = this;
                 this.keys = {};
-                for (let [k, v] in Iterator(keys))
+                for (let [k, v] of iter(keys))
                     this.keys[k] = this._privatize(v);
             }
         }
@@ -439,12 +444,12 @@ var File = Class("File", {
     /**
      * Iterates over the objects in this directory.
      */
-    iterDirectory: function iterDirectory() {
+    iterDirectory: function* iterDirectory() {
         if (!this.exists())
             throw Error(_("io.noSuchFile"));
         if (!this.isDirectory())
             throw Error(_("io.eNotDir"));
-        for (let file in iter(this.directoryEntries))
+        for (let file of iter(this.directoryEntries))
             yield File(file);
     },
 
@@ -490,7 +495,7 @@ var File = Class("File", {
         if (!this.isDirectory())
             throw Error(_("io.eNotDir"));
 
-        let array = [e for (e in this.iterDirectory())];
+        let array = [e for (e of this.iterDirectory())];
         if (sort)
             array.sort((a, b) => (b.isDirectory() - a.isDirectory() ||
                                   String.localeCompare(a.path, b.path)));
@@ -742,7 +747,7 @@ var File = Class("File", {
         }
     },
 
-    readLines: function readLines(ifstream, encoding) {
+    readLines: function* readLines(ifstream, encoding) {
         try {
             var icstream = services.CharsetStream(
                     ifstream, encoding || File.defaultEncoding, 4096, // buffer size
@@ -783,7 +788,8 @@ var File = Class("File", {
     replacePathSep: function (path) path.replace("/", File.PATH_SEP, "g")
 });
 
-let (file = services.directory.get("ProfD", Ci.nsIFile)) {
+{
+    let file = services.directory.get("ProfD", Ci.nsIFile);
     Object.keys(file).forEach(function (prop) {
         if (!(prop in File.prototype)) {
             let isFunction;

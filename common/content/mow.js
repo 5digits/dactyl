@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -69,6 +69,7 @@ var MOW = Module("mow", {
     __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.body].concat(args)),
 
     get widget() this.widgets.multilineOutput,
+
     widgets: Class.Memoize(function widgets() commandline.widgets),
 
     body: Class.Memoize(function body() this.widget.contentDocument.documentElement),
@@ -94,7 +95,7 @@ var MOW = Module("mow", {
 
                 leave: stack => {
                     if (stack.pop)
-                        for (let message in values(this.messages))
+                        for (let message of values(this.messages))
                             if (message.leave)
                                 message.leave(stack);
                 },
@@ -198,7 +199,7 @@ var MOW = Module("mow", {
                 selection: !window.document.commandDispatcher.focusedWindow.getSelection().isCollapsed
             };
 
-            for (let node in array.iterValues(menu.children)) {
+            for (let node of array.iterValues(menu.children)) {
                 let group = node.getAttributeNS(NS, "group");
                 node.hidden = group && !group.split(/\s+/).every(g => enabled[g]);
             }
@@ -228,7 +229,7 @@ var MOW = Module("mow", {
         if (!(open || this.visible))
             return;
 
-        let doc = this.widget.contentDocument;
+        let doc = this.document;
 
         let trim = this.spaceNeeded;
         let availableHeight = config.outputHeight - trim;
@@ -270,7 +271,7 @@ var MOW = Module("mow", {
         if (!this.visible || !isinstance(modes.main, modes.OUTPUT_MULTILINE))
             return this.widgets.message = null;
 
-        let elem = this.widget.contentDocument.documentElement;
+        let elem = this.document.documentElement;
 
         if (showHelp)
             this.widgets.message = ["MoreMsg", _("mow.moreHelp")];

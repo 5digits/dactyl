@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -47,7 +47,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     cleanup: function () {
-        for (let cleanup in values(this.cleanups))
+        for (let cleanup of values(this.cleanups))
             cleanup.call(this);
 
         delete window.dactyl;
@@ -73,7 +73,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     // has :set go= or something similar in his config
     hideGUI: function () {
         let guioptions = config.guioptions;
-        for (let option in guioptions) {
+        for (let option of guioptions) {
             guioptions[option].forEach(function (elem) {
                 try {
                     document.getElementById(elem).collapsed = true;
@@ -87,7 +87,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         "dactyl-cleanup": function dactyl_cleanup(subject, reason) {
             let modules = dactyl.modules;
 
-            for (let mod in values(modules.moduleList.reverse())) {
+            for (let mod of values(modules.moduleList.reverse())) {
                 mod.stale = true;
                 if ("cleanup" in mod)
                     this.trapErrors("cleanup", mod, reason);
@@ -97,7 +97,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             modules.moduleManager.initDependencies("cleanup");
 
-            for (let name in values(Object.getOwnPropertyNames(modules).reverse()))
+            for (let name of values(Object.getOwnPropertyNames(modules).reverse()))
                 try {
                     delete modules[name];
                 }
@@ -131,7 +131,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             if (~["menu", "menupopup"].indexOf(node.localName) && node.children.length)
                 DOM(node).popupshowing({ bubbles: false });
 
-            for (let [, item] in Iterator(node.childNodes)) {
+            for (let item of node.childNodes) {
                 if (item.childNodes.length == 0 && item.localName == "menuitem"
                     && !item.hidden
                     && !/rdf:http:/.test(item.getAttribute("label"))) { // FIXME
@@ -169,7 +169,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     get forceOpen() ({ background: this.forceBackground,
                        target: this.forceTarget }),
     set forceOpen(val) {
-        for (let [k, v] in Iterator({ background: "forceBackground", target: "forceTarget" }))
+        for (let [k, v] of iter({ background: "forceBackground", target: "forceTarget" }))
             if (k in val)
                 this[v] = val[k];
     },
@@ -205,7 +205,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     registerObservers: function registerObservers(obj, prop) {
-        for (let [signal, func] in Iterator(obj[prop || "signals"]))
+        for (let [signal, func] of iter(obj[prop || "signals"]))
             this.registerObserver(signal, func.bind(obj), false);
     },
 
@@ -238,8 +238,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let results = array(params.iterate(args))
                     .sort((a, b) => String.localeCompare(a.name, b.name));
 
-                let filters = args.map(arg => let (re = util.regexp.escape(arg))
-                                        util.regexp("\\b" + re + "\\b|(?:^|[()\\s])" + re + "(?:$|[()\\s])", "i"));
+                let filters = args.map(arg => {
+                    let re = util.regexp.escape(arg);
+                    return util.regexp("\\b" + re + "\\b|(?:^|[()\\s])" + re + "(?:$|[()\\s])", "i");
+                });
+
                 if (filters.length)
                     results = results.filter(item => filters.every(re => keys(item).some(re.bound.test)));
 
@@ -254,7 +257,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     context.ignoreCase = true;
                     let seen = {};
                     context.completions = array(keys(item).join(" ").toLowerCase().split(/[()\s]+/)
-                                                for (item in params.iterate(args)))
+                                                for (item of params.iterate(args)))
                         .flatten()
                         .map(function (k) {
                             seen[k] = (seen[k] || 0) + 1;
@@ -265,11 +268,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             });
 
         if (params.index)
-            this.indices[params.index] = function () {
+            this.indices[params.index] = function* () {
                 let results = array((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
                         .array.sort((a, b) => String.localeCompare(a.name, b.name));
 
-                for (let obj in values(results)) {
+                for (let obj of values(results)) {
                     let res = dactyl.generateHelp(obj, null, null, true);
                     if (!hasOwnProperty(help.tags, obj.helpTag))
                         res[0][1].tag = obj.helpTag;
@@ -536,7 +539,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (!silent)
             commands.lastCommand = str.replace(/^\s*:\s*/, "");
         let res = true;
-        for (let [command, args] in commands.parseCommands(str.replace(/^'(.*)'$/, "$1"))) {
+        for (let [command, args] of commands.parseCommands(str.replace(/^'(.*)'$/, "$1"))) {
             if (command === null)
                 throw FailedAssertion(_("dactyl.notCommand", config.appName, args.commandString));
 
@@ -667,10 +670,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         else if (obj instanceof Map) {
             spec = map => (obj.count ? [["oa", {}, "count"], map]
                                      : DOM.DOMString(map));
-            tag = map => [
-                let (c = obj.modes[0].char) c ? c + "_" : "",
-                map
-            ];
+            tag = map => {
+                let c = obj.modes[0].char;
+                return [c ? c + "_" : "",
+                        map];
+            };
+
             link = map => {
                 let [, mode, name, extra] = /^(?:(.)_)?(?:<([^>]+)>)?(.*)$/.exec(map);
                 let k = ["k", {}, extra];
@@ -700,17 +705,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             extraHelp ? extraHelp : "",
             !(extraHelp || obj.description) ? ["p", {}, /*L*/ "Sorry, no help available."] : ""];
 
+        let name = (obj.specs || obj.names)[0];
         res.push(
             ["item", {},
                 ["tags", {}, template.map(obj.names.slice().reverse(),
                                           tag,
                                           " ").join("")],
-                ["spec", {},
-                    let (name = (obj.specs || obj.names)[0])
-                          spec(template.highlightRegexp(tag(name),
-                               /\[(.*?)\]/g,
-                               (m, n0) => ["oa", {}, n0]),
-                               name)],
+                ["spec", {}, spec(template.highlightRegexp(tag(name),
+                                                           /\[(.*?)\]/g,
+                                                           (m, n0) => ["oa", {}, n0]),
+                                  name)],
                 !obj.type ? "" : [
                     ["type", {}, obj.type],
                     ["default", {}, obj.stringDefaultValue]],
@@ -790,13 +794,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.echomsg(
             _("plugin.searchingForIn",
-                ("plugins/**/*.{js," + config.fileExtension + "}").quote(),
-                [dir.path.replace(/.plugins$/, "") for ([, dir] in Iterator(dirs))]
-                    .join(",").quote()),
+                JSON.stringify("plugins/**/*.{js," + config.fileExtension + "}"),
+                JSON.stringify([dir.path.replace(/.plugins$/, "")
+                               for (dir of dirs)]
+                                   .join(","))),
             2);
 
         dirs.forEach(function (dir) {
-            dactyl.echomsg(_("plugin.searchingFor", (dir.path + "/**/*.{js," + config.fileExtension + "}").quote()), 3);
+            dactyl.echomsg(_("plugin.searchingFor", JSON.stringify(dir.path + "/**/*.{js," + config.fileExtension + "}")), 3);
             sourceDirectory(dir);
         });
     },
@@ -909,7 +914,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             params = { where: params };
 
         let flags = 0;
-        for (let [opt, flag] in Iterator({ replace: "REPLACE_HISTORY", hide: "BYPASS_HISTORY" }))
+        for (let [opt, flag] of iter({ replace: "REPLACE_HISTORY", hide: "BYPASS_HISTORY" }))
             flags |= params[opt] && Ci.nsIWebNavigation["LOAD_FLAGS_" + flag];
 
         let where = params.where || dactyl.CURRENT_TAB;
@@ -1220,7 +1225,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             // Process plugin help entries.
 
             let body = [];
-            for (let [, context] in Iterator(plugins.contexts))
+            for (let context of values(plugins.contexts))
                 try {
                     let info = contexts.getDocs(context);
                     if (DOM.isJSONXML(info)) {
@@ -1371,7 +1376,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     N: ["Tab number over icon", highlight.selector("TabIconNumber")]
                 },
                 setter: function (opts) {
-                    let classes = [v[1] for ([k, v] in Iterator(this.opts)) if (opts.indexOf(k) < 0)];
+                    let classes = [v[1] for ([k, v] of iter(this.opts)) if (opts.indexOf(k) < 0)];
 
                     styles.system.add("taboptions", "chrome://*",
                                       classes.length ? classes.join(",") + "{ display: none; }" : "");
@@ -1392,14 +1397,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 // FIXME: cleanup
                 cleanupValue: config.cleanups.guioptions ||
-                    "rb" + [k for ([k, v] in iter(groups[1].opts))
+                    "rb" + [k for ([k, v] of iter(groups[1].opts))
                             if (!Dactyl.toolbarHidden(document.getElementById(v[1][0])))].join(""),
 
-                values: array(groups).map(g => [[k, v[0]] for ([k, v] in Iterator(g.opts))])
+                values: array(groups).map(g => [[k, v[0]] for ([k, v] of iter(g.opts))])
                                      .flatten(),
 
                 setter: function (value) {
-                    for (let group in values(groups))
+                    for (let group of values(groups))
                         group.setter(value);
                     events.checkFocus();
                     return value;
@@ -1494,7 +1499,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     config.dialogs[dialog][1]();
                 }
                 catch (e) {
-                    dactyl.echoerr(_("error.cantOpen", dialog.quote(), e.message || e));
+                    dactyl.echoerr(_("error.cantOpen", JSON.stringify(dialog), e.message || e));
                 }
             }, {
                 argCount: "1",
@@ -1513,7 +1518,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 dactyl.assert(items.some(i => i.dactylPath == arg),
                               _("emenu.notFound", arg));
 
-                for (let [, item] in Iterator(items)) {
+                for (let item of items) {
                     if (item.dactylPath == arg) {
                         dactyl.assert(!item.disabled, _("error.disabled", item.dactylPath));
                         item.doCommand();
@@ -1716,7 +1721,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         let each, eachUnits, totalUnits;
                         let total = 0;
 
-                        for (let i in util.interruptibleRange(0, count, 500)) {
+                        for (let i of util.interruptibleRange(0, count, 500)) {
                             let now = Date.now();
                             func();
                             total += Date.now() - now;
@@ -1843,7 +1848,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         completion.dialog = function dialog(context) {
             context.title = ["Dialog"];
             context.filters.push(({ item }) => !item[2] || item[2]());
-            context.completions = [[k, v[0], v[2]] for ([k, v] in Iterator(config.dialogs))];
+            context.completions = [[k, v[0], v[2]] for ([k, v] of iter(config.dialogs))];
         };
 
         completion.menuItem = function menuItem(context) {
@@ -1988,7 +1993,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             // after sourcing the initialization files, this function will set
             // all gui options to their default values, if they have not been
             // set before by any RC file
-            for (let option in values(options.needInit))
+            for (let option of values(options.needInit))
                 option.initValue();
 
             if (dactyl.commandLineOptions.postCommands)

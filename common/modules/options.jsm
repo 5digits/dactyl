@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -65,7 +65,7 @@ var Option = Class("Option", {
             this.globalValue = this.defaultValue;
     },
 
-    magicalProperties: RealSet(["cleanupValue"]),
+    magicalProperties: new RealSet(["cleanupValue"]),
 
     /**
      * @property {string} This option's description, as shown in :listoptions.
@@ -489,7 +489,7 @@ var Option = Class("Option", {
         get charlist() this.stringlist,
 
         regexplist: function regexplist(k, default_=null) {
-            for (let re in values(this.value))
+            for (let re of values(this.value))
                 if ((re.test || re).call(re, k))
                     return re.result;
             return default_;
@@ -509,7 +509,7 @@ var Option = Class("Option", {
 
         stringlist:  function (vals) vals.map(Option.quote).join(","),
 
-        stringmap:   function (vals) [Option.quote(k, /:/) + ":" + Option.quote(v, /:/) for ([k, v] in Iterator(vals))].join(","),
+        stringmap:   function (vals) [Option.quote(k, /:/) + ":" + Option.quote(v, /:/) for ([k, v] of iter(vals))].join(","),
 
         regexplist:  function (vals) vals.join(","),
         get regexpmap() this.regexplist,
@@ -518,8 +518,12 @@ var Option = Class("Option", {
     },
 
     parse: {
-        number:     function (value) let (val = Option.dequote(value))
-                            Option.validIf(Number(val) % 1 == 0, _("option.intRequired")) && parseInt(val),
+        number:     function (value) {
+            let val = Option.dequote(value);
+            return (Option.validIf(Number(val) % 1 == 0,
+                                  _("option.intRequired")) &&
+                    parseInt(val));
+        },
 
         boolean:    function boolean(value) Option.dequote(value) == "true" || value == true ? true : false,
 
@@ -549,8 +553,10 @@ var Option = Class("Option", {
 
         sitemap: function sitemap(value) Option.parse.list.call(this, value, Option.parseSite),
 
-        list: function list(value, parse) let (prev = null)
-            array.compact(Option.splitList(value, true).map(function (v) {
+        list: function list(value, parse) {
+            let prev = null;
+            return array.compact(Option.splitList(value, true)
+                                       .map(function (v) {
                 let [count, filter, quote] = Commands.parseArg(v, /:/, true);
 
                 let val = v.substr(count + 1);
@@ -563,7 +569,8 @@ var Option = Class("Option", {
                     util.assert(prev, _("error.syntaxError"), false);
                     prev.result += "," + v;
                 }
-            }, this))
+            }, this));
+        },
     },
 
     parseKey: {
@@ -662,13 +669,13 @@ var Option = Class("Option", {
             case "^":
                 return update(res, values);
             case "-":
-                for (let [k, v] in Iterator(values))
+                for (let [k, v] of iter(values))
                     if (v === res[k])
                         delete res[k];
                 return res;
             case "=":
                 if (invert) {
-                    for (let [k, v] in Iterator(values))
+                    for (let [k, v] of iter(values))
                         if (v === res[k])
                             delete res[k];
                         else
@@ -684,7 +691,7 @@ var Option = Class("Option", {
             values = Array.concat(values);
 
             function uniq(ary) {
-                let seen = RealSet();
+                let seen = new RealSet;
                 return ary.filter(elem => !seen.add(elem));
             }
 
@@ -695,11 +702,11 @@ var Option = Class("Option", {
                 // NOTE: Vim doesn't prepend if there's a match in the current value
                 return uniq(Array.concat(values, this.value), true);
             case "-":
-                return this.value.filter(function (item) !this.has(item), RealSet(values));
+                return this.value.filter(function (item) !this.has(item), new RealSet(values));
             case "=":
                 if (invert) {
-                    let keepValues = this.value.filter(function (item) !this.has(item), RealSet(values));
-                    let addValues  = values.filter(function (item) !this.has(item), RealSet(this.value));
+                    let keepValues = this.value.filter(function (item) !this.has(item), new RealSet(values));
+                    let addValues  = values.filter(function (item) !this.has(item), new RealSet(this.value));
                     return addValues.concat(keepValues);
                 }
                 return values;
@@ -747,10 +754,10 @@ var Option = Class("Option", {
             acceptable = completions.call(this);
 
         if (isArray(acceptable))
-            acceptable = RealSet(acceptable.map(([k]) => k));
+            acceptable = new RealSet(acceptable.map(([k]) => k));
         else
-            acceptable = RealSet(this.parseKey(k)
-                                 for (k of Object.keys(acceptable)));
+            acceptable = new RealSet(this.parseKey(k)
+                                     for (k of Object.keys(acceptable)));
 
         if (this.type === "regexpmap" || this.type === "sitemap")
             return Array.concat(vals).every(re => acceptable.has(re.result));
@@ -803,7 +810,7 @@ var Option = Class("Option", {
 
 update(BooleanOption.prototype, {
     names: Class.Memoize(function ()
-                array.flatten([[name, "no" + name] for (name in values(this.realNames))]))
+                array.flatten([[name, "no" + name] for (name of values(this.realNames))]))
 });
 
 var OptionHive = Class("OptionHive", Contexts.Hive, {
@@ -822,157 +829,160 @@ var OptionHive = Class("OptionHive", Contexts.Hive, {
  * @instance options
  */
 var Options = Module("options", {
-    Local: function Local(dactyl, modules, window) let ({ contexts } = modules) ({
-        init: function init() {
-            const self = this;
+    Local: function Local(dactyl, modules, window) {
+        let { contexts } = modules;
+        return {
+            init: function init() {
+                const self = this;
 
-            update(this, {
-                hives: contexts.Hives("options", Class("OptionHive", OptionHive, { modules: modules })),
-                user: contexts.hives.options.user
-            });
+                update(this, {
+                    hives: contexts.Hives("options", Class("OptionHive", OptionHive, { modules: modules })),
+                    user: contexts.hives.options.user
+                });
 
-            this.needInit = [];
-            this._options = [];
-            this._optionMap = {};
+                this.needInit = [];
+                this._options = [];
+                this._optionMap = {};
 
-            storage.newMap("options", { store: false });
-            storage.addObserver("options", function optionObserver(key, event, option) {
-                // Trigger any setters.
-                let opt = self.get(option);
-                if (event == "change" && opt)
-                    opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
-            }, window);
+                storage.newMap("options", { store: false });
+                storage.addObserver("options", function optionObserver(key, event, option) {
+                    // Trigger any setters.
+                    let opt = self.get(option);
+                    if (event == "change" && opt)
+                        opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
+                }, window);
 
-            modules.cache.register("options.dtd",
-                () => util.makeDTD(
-                        iter(([["option", o.name, "default"].join("."),
-                               o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
-                               o.defaultValue === true  ? "on"  :
-                               o.defaultValue === false ? "off" : o.stringDefaultValue]
-                              for (o in self)),
+                modules.cache.register("options.dtd",
+                    () => util.makeDTD(
+                            iter(([["option", o.name, "default"].join("."),
+                                   o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
+                                   o.defaultValue === true  ? "on"  :
+                                   o.defaultValue === false ? "off" : o.stringDefaultValue]
+                                  for (o of self)),
 
-                             ([["option", o.name, "type"].join("."), o.type] for (o in self)),
+                                 ([["option", o.name, "type"].join("."), o.type] for (o in self)),
 
-                             config.dtd)),
-                true);
-        },
+                                 config.dtd)),
+                    true);
+            },
 
-        signals: {
-            "io.source": function ioSource(context, file, modTime) {
-                cache.flushEntry("options.dtd", modTime);
-            }
-        },
-
-        dactyl: dactyl,
-
-        /**
-         * Lists all options in *scope* or only those with changed values if
-         * *onlyNonDefault* is specified.
-         *
-         * @param {function(Option)} filter Limit the list
-         * @param {number} scope Only list options in this scope (see
-         *     {@link Option#scope}).
-         */
-        list: function list(filter, scope) {
-            if (!scope)
-                scope = Option.SCOPE_BOTH;
-
-            function opts(opt) {
-                for (let opt in Iterator(this)) {
-                    if (filter && !filter(opt))
-                        continue;
-                    if (!(opt.scope & scope))
-                        continue;
-
-                    let option = {
-                        __proto__: opt,
-                        isDefault: opt.isDefault,
-                        default:   opt.stringDefaultValue,
-                        pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
-                        value:     []
-                    };
-
-                    if (opt.type == "boolean") {
-                        if (!opt.value)
-                            option.pre = "no";
-                        option.default = (opt.defaultValue ? "" : "no") + opt.name;
-                    }
-                    else if (isArray(opt.value) && opt.type != "charlist")
-                        option.value = ["", "=",
-                                        template.map(opt.value,
-                                                     v => template.highlight(String(v)),
-                                                     ["", ",",
-                                                      ["span", { style: "width: 0; display: inline-block" }, " "]])];
-                    else
-                        option.value = ["", "=", template.highlight(opt.stringValue)];
-                    yield option;
+            signals: {
+                "io.source": function ioSource(context, file, modTime) {
+                    cache.flushEntry("options.dtd", modTime);
                 }
-            };
+            },
 
-            modules.commandline.commandOutput(
-                template.options("Options", opts.call(this), this["verbose"] > 0));
-        },
+            dactyl: dactyl,
 
-        cleanup: function cleanup() {
-            for (let opt in this)
-                if (opt.cleanupValue != null)
-                    opt.stringValue = opt.cleanupValue;
-        },
+            /**
+             * Lists all options in *scope* or only those with changed values if
+             * *onlyNonDefault* is specified.
+             *
+             * @param {function(Option)} filter Limit the list
+             * @param {number} scope Only list options in this scope (see
+             *     {@link Option#scope}).
+             */
+            list: function list(filter, scope) {
+                if (!scope)
+                    scope = Option.SCOPE_BOTH;
 
-        /**
-         * Adds a new option.
-         *
-         * @param {[string]} names All names for the option.
-         * @param {string} description A description of the option.
-         * @param {string} type The option type (see {@link Option#type}).
-         * @param {value} defaultValue The option's default value.
-         * @param {Object} extra An optional extra configuration hash (see
-         *     {@link Map#extraInfo}).
-         * @optional
-         */
-        add: function add(names, description, type, defaultValue, extraInfo) {
-            if (!util.isDactyl(Components.stack.caller))
-                deprecated.warn(add, "options.add", "group.options.add");
+                function* opts(opt) {
+                    for (let opt of this) {
+                        if (filter && !filter(opt))
+                            continue;
+                        if (!(opt.scope & scope))
+                            continue;
 
-            util.assert(type in Option.types, _("option.noSuchType", type),
-                        false);
+                        let option = {
+                            __proto__: opt,
+                            isDefault: opt.isDefault,
+                            default:   opt.stringDefaultValue,
+                            pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
+                            value:     []
+                        };
 
-            if (!extraInfo)
-                extraInfo = {};
+                        if (opt.type == "boolean") {
+                            if (!opt.value)
+                                option.pre = "no";
+                            option.default = (opt.defaultValue ? "" : "no") + opt.name;
+                        }
+                        else if (isArray(opt.value) && opt.type != "charlist")
+                            option.value = ["", "=",
+                                            template.map(opt.value,
+                                                         v => template.highlight(String(v)),
+                                                         ["", ",",
+                                                          ["span", { style: "width: 0; display: inline-block" }, " "]])];
+                        else
+                            option.value = ["", "=", template.highlight(opt.stringValue)];
+                        yield option;
+                    }
+                };
 
-            extraInfo.definedAt = contexts.getCaller(Components.stack.caller);
+                modules.commandline.commandOutput(
+                    template.options("Options", opts.call(this), this["verbose"] > 0));
+            },
 
-            let name = names[0];
-            if (name in this._optionMap) {
-                this.dactyl.log(_("option.replaceExisting", name.quote()), 1);
-                this.remove(name);
+            cleanup: function cleanup() {
+                for (let opt of this)
+                    if (opt.cleanupValue != null)
+                        opt.stringValue = opt.cleanupValue;
+            },
+
+            /**
+             * Adds a new option.
+             *
+             * @param {[string]} names All names for the option.
+             * @param {string} description A description of the option.
+             * @param {string} type The option type (see {@link Option#type}).
+             * @param {value} defaultValue The option's default value.
+             * @param {Object} extra An optional extra configuration hash (see
+             *     {@link Map#extraInfo}).
+             * @optional
+             */
+            add: function add(names, description, type, defaultValue, extraInfo) {
+                if (!util.isDactyl(Components.stack.caller))
+                    deprecated.warn(add, "options.add", "group.options.add");
+
+                util.assert(type in Option.types, _("option.noSuchType", type),
+                            false);
+
+                if (!extraInfo)
+                    extraInfo = {};
+
+                extraInfo.definedAt = contexts.getCaller(Components.stack.caller);
+
+                let name = names[0];
+                if (name in this._optionMap) {
+                    this.dactyl.log(_("option.replaceExisting", JSON.stringify(name)), 1);
+                    this.remove(name);
+                }
+
+                let closure = () => this._optionMap[name];
+
+                memoize(this._optionMap, name,
+                        function () Option.types[type](modules, names, description, defaultValue, extraInfo));
+
+                for (let alias of values(names.slice(1)))
+                    memoize(this._optionMap, alias, closure);
+
+                if (extraInfo.setter && (!extraInfo.scope || extraInfo.scope & Option.SCOPE_GLOBAL))
+                    if (this.dactyl.initialized)
+                        closure().initValue();
+                    else
+                        memoize(this.needInit, this.needInit.length, closure);
+
+                this._floptions = (this._floptions || []).concat(name);
+                memoize(this._options, this._options.length, closure);
+
+                // quickly access options with options["wildmode"]:
+                this.__defineGetter__(name, function () this._optionMap[name].value);
+                this.__defineSetter__(name, function (value) { this._optionMap[name].value = value; });
             }
-
-            let closure = () => this._optionMap[name];
-
-            memoize(this._optionMap, name,
-                    function () Option.types[type](modules, names, description, defaultValue, extraInfo));
-
-            for (let alias in values(names.slice(1)))
-                memoize(this._optionMap, alias, closure);
-
-            if (extraInfo.setter && (!extraInfo.scope || extraInfo.scope & Option.SCOPE_GLOBAL))
-                if (this.dactyl.initialized)
-                    closure().initValue();
-                else
-                    memoize(this.needInit, this.needInit.length, closure);
-
-            this._floptions = (this._floptions || []).concat(name);
-            memoize(this._options, this._options.length, closure);
-
-            // quickly access options with options["wildmode"]:
-            this.__defineGetter__(name, function () this._optionMap[name].value);
-            this.__defineSetter__(name, function (value) { this._optionMap[name].value = value; });
-        }
-    }),
+        };
+    },
 
     /** @property {Iterator(Option)} @private */
-    __iterator__: function __iterator__()
+    "@@iterator": function __iterator__()
         values(this._options.sort((a, b) => String.localeCompare(a.name, b.name))),
 
     allPrefs: deprecated("prefs.getNames", function allPrefs() prefs.getNames.apply(prefs, arguments)),
@@ -1085,7 +1095,7 @@ var Options = Module("options", {
     remove: function remove(name) {
         let opt = this.get(name);
         this._options = this._options.filter(o => o != opt);
-        for (let name in values(opt.names))
+        for (let name of values(opt.names))
             delete this._optionMap[name];
     },
 
@@ -1120,7 +1130,7 @@ var Options = Module("options", {
 
             let list = [];
             function flushList() {
-                let names = RealSet(list.map(opt => opt.option ? opt.option.name : ""));
+                let names = new RealSet(list.map(opt => opt.option ? opt.option.name : ""));
                 if (list.length)
                     if (list.some(opt => opt.all))
                         options.list(opt => !(list[0].onlyNonDefault && opt.isDefault),
@@ -1131,7 +1141,7 @@ var Options = Module("options", {
                 list = [];
             }
 
-            for (let [, arg] in args) {
+            for (let arg of args) {
                 if (bang) {
                     let onlyNonDefault = false;
                     let reset = false;
@@ -1153,7 +1163,7 @@ var Options = Module("options", {
                         modules.commandline.input(_("pref.prompt.resetAll", config.host) + " ",
                             function (resp) {
                                 if (resp == "yes")
-                                    for (let pref in values(prefs.getNames()))
+                                    for (let pref of values(prefs.getNames()))
                                         prefs.reset(pref);
                             },
                             { promptHighlight: "WarningMsg" });
@@ -1195,7 +1205,7 @@ var Options = Module("options", {
                 if (opt.reset) {
                     flushList();
                     if (opt.all) {
-                        for (let option in modules.options)
+                        for (let option of modules.options)
                             option.reset();
                     }
                     else {
@@ -1301,7 +1311,7 @@ var Options = Module("options", {
 
             // Fill in the current values if we're removing
             if (opt.operator == "-" && isArray(opt.values)) {
-                let have = RealSet((i.text for (i in values(context.allItems.items))));
+                let have = new RealSet(i.text for (i of values(context.allItems.items)));
                 context = context.fork("current-values", 0);
                 context.anchored = optcontext.anchored;
                 context.maxItems = optcontext.maxItems;
@@ -1392,7 +1402,7 @@ var Options = Module("options", {
                             literalArg: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
                                                                : opt.name + "=" + opt.stringValue]
                         }
-                        for (opt in modules.options)
+                        for (opt of modules.options)
                         if (!opt.getter && !opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
                     ]
                 }
@@ -1431,7 +1441,7 @@ var Options = Module("options", {
         commands.add(["unl[et]"],
             "Delete a variable",
             function (args) {
-                for (let [, name] in args) {
+                for (let name of args) {
                     name = name.replace(/^g:/, ""); // throw away the scope prefix
                     if (!hasOwnProperty(dactyl._globalVariables, name)) {
                         if (!args.bang)
@@ -1559,7 +1569,7 @@ var Options = Module("options", {
     },
     javascript: function initJavascript(dactyl, modules, window) {
         const { options, JavaScript } = modules;
-        JavaScript.setCompleter(Options.prototype.get, [() => ([o.name, o.description] for (o in options))]);
+        JavaScript.setCompleter(Options.prototype.get, [() => ([o.name, o.description] for (o of options))]);
     },
     sanitizer: function initSanitizer(dactyl, modules, window) {
         const { sanitizer } = modules;
@@ -1568,7 +1578,7 @@ var Options = Module("options", {
             description: "Options containing hostname data",
             action: function sanitize_action(timespan, host) {
                 if (host)
-                    for (let opt in values(modules.options._options))
+                    for (let opt of values(modules.options._options))
                         if (timespan.contains(opt.lastSet * 1000) && opt.domains)
                             try {
                                 opt.value = opt.filterDomain(host, opt.value);
@@ -1578,12 +1588,12 @@ var Options = Module("options", {
                             }
             },
             privateEnter: function privateEnter() {
-                for (let opt in values(modules.options._options))
+                for (let opt of values(modules.options._options))
                     if (opt.privateData && (!callable(opt.privateData) || opt.privateData(opt.value)))
                         opt.oldValue = opt.value;
             },
             privateLeave: function privateLeave() {
-                for (let opt in values(modules.options._options))
+                for (let opt of values(modules.options._options))
                     if (opt.oldValue != null) {
                         opt.value = opt.oldValue;
                         opt.oldValue = null;

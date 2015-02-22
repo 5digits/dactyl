@@ -116,7 +116,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
         if (!(abbr instanceof Abbreviation))
             abbr = Abbreviation.apply(null, arguments);
 
-        for (let [, mode] in Iterator(abbr.modes)) {
+        for (let mode of abbr.modes) {
             if (!this._store[mode])
                 this._store[mode] = {};
             this._store[mode][abbr.lhs] = abbr;
@@ -156,7 +156,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
      */
     remove: function (modes, lhs) {
         let result = false;
-        for (let [, mode] in Iterator(modes)) {
+        for (let mode of modes) {
             if ((mode in this._store) && (lhs in this._store[mode])) {
                 result = true;
                 this._store[mode][lhs].removeMode(mode);
@@ -172,8 +172,8 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
      * @param {Array} modes List of modes.
      */
     clear: function (modes) {
-        for (let mode in values(modes)) {
-            for (let abbr in values(this._store[mode]))
+        for (let mode of values(modes)) {
+            for (let abbr of values(this._store[mode]))
                 abbr.removeMode(mode);
             delete this._store[mode];
         }
@@ -276,15 +276,18 @@ var Abbreviations = Module("abbreviations", {
                     ["td", { style: "padding-right: 1em;" }, _("title.Abbrev")],
                     ["td", { style: "padding-right: 1em;" }, _("title.Replacement")]],
                 ["col", { style: "min-width: 6em; padding-right: 1em;" }],
-                hives.map(hive => let (i = 0) [
-                    ["tr", { style: "height: .5ex;" }],
-                    abbrevs(hive).map(abbrev =>
-                        ["tr", {},
-                            ["td", { highlight: "Title" }, !i++ ? String(hive.name) : ""],
-                            ["td", {}, abbrev.modeChar],
-                            ["td", {}, abbrev.lhs],
-                            ["td", {}, abbrev.rhs]]),
-                    ["tr", { style: "height: .5ex;" }]])];
+                hives.map(hive => {
+                    let i = 0;
+                    return [
+                        ["tr", { style: "height: .5ex;" }],
+                        abbrevs(hive).map(abbrev =>
+                            ["tr", {},
+                                ["td", { highlight: "Title" }, !i++ ? String(hive.name) : ""],
+                                ["td", {}, abbrev.modeChar],
+                                ["td", {}, abbrev.lhs],
+                                ["td", {}, abbrev.rhs]]),
+                        ["tr", { style: "height: .5ex;" }]];
+                })];
 
         // FIXME?
         // // TODO: Move this to an ItemList to show this automatically
@@ -361,7 +364,7 @@ var Abbreviations = Module("abbreviations", {
                                     "-javascript": callable(abbr.rhs) ? null : undefined
                                 }
                             }
-                            for ([, abbr] in Iterator(hive.merged))
+                            for (abbr of hive.merged)
                             if (abbr.modesEqual(modes))
                         ]).
                         flatten().array

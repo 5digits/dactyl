@@ -245,7 +245,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                                           range[container]);
 
             let delta = 0;
-            for (let node in Editor.TextsIterator(range)) {
+            for (let node of Editor.TextsIterator(range)) {
                 let text = node.textContent;
                 let start = 0, end = text.length;
                 if (node == range.startContainer)
@@ -427,7 +427,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         column = 1 + pre.replace(/[^]*\n/, "").length;
 
         let origGroup = DOM(textBox).highlight.toString();
-        let cleanup = promises.task(function cleanup(error) {
+        let cleanup = promises.task(function* cleanup(error) {
             if (timer)
                 timer.cancel();
 
@@ -447,7 +447,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 if (!keepFocus)
                     dactyl.focus(textBox);
 
-                for (let group in values(blink.concat(blink, ""))) {
+                for (let group of values(blink.concat(blink, ""))) {
                     highlight.highlightNode(textBox, origGroup + " " + group);
 
                     yield promises.sleep(100);
@@ -548,7 +548,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             this.range = range;
         },
 
-        __iterator__: function __iterator__() {
+        "@@iterator": function* __iterator__() {
             while (this.nextNode())
                 yield this.context;
         },
@@ -1122,14 +1122,15 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         bind(["<C-t>"], "Edit text field in Text Edit mode",
              function () {
                  dactyl.assert(!editor.isTextEdit && editor.editor);
-                 dactyl.assert(dactyl.focusedElement ||
-                               // Sites like Google like to use a
-                               // hidden, editable window for keyboard
-                               // focus and use their own WYSIWYG editor
-                               // implementations for the visible area,
-                               // which we can't handle.
-                               let (f = document.commandDispatcher.focusedWindow.frameElement)
-                                    f && Hints.isVisible(f, true));
+                 if (!dactyl.focusedElement) {
+                     // Sites like Google like to use a
+                     // hidden, editable window for keyboard
+                     // focus and use their own WYSIWYG editor
+                     // implementations for the visible area,
+                     // which we can't handle.
+                     let f = document.commandDispatcher.focusedWindow.frameElement;
+                     dactyl.assert(f && Hints.isVisible(f, true));
+                 }
 
                  modes.push(modes.TEXT_EDIT);
              });
@@ -1371,7 +1372,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 has: function (key) util.compileMacro(this.value).seen.has(key),
                 validator: function (value) {
                     this.format({}, value);
-                    let allowed = RealSet(["column", "file", "line"]);
+                    let allowed = new RealSet(["column", "file", "line"]);
                     return [k for (k of util.compileMacro(value).seen)]
                                 .every(k => allowed.has(k));
                 }
@@ -1409,7 +1410,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             persistent: true,
             action: function (timespan, host) {
                 if (!host) {
-                    for (let [k, v] in editor.registers)
+                    for (let [k, v] of editor.registers)
                         if (timespan.contains(v.timestamp))
                             editor.registers.remove(k);
                     editor.registerRing.truncate(0);

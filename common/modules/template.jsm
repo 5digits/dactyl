@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -20,7 +20,7 @@ var Binding = Class("Binding", {
 
         Object.defineProperties(node, this.constructor.properties);
 
-        for (let [event, handler] in values(this.constructor.events))
+        for (let [event, handler] of values(this.constructor.events))
             node.addEventListener(event, util.wrapCallback(handler, true), false);
     },
 
@@ -41,9 +41,12 @@ var Binding = Class("Binding", {
     })
 }, {
     get bindings() {
-        let bindingProto = Object.getPrototypeOf(Binding.prototype);
-        for (let obj = this.prototype; obj !== bindingProto; obj = Object.getPrototypeOf(obj))
-            yield obj;
+        return function* () {
+            let bindingProto = Object.getPrototypeOf(Binding.prototype);
+            for (let obj = this.prototype; obj !== bindingProto; obj = Object.getPrototypeOf(obj))
+                /* FIXME: Symbols */
+                yield obj;
+        }.call(this);
     },
 
     bind: function bind(func) function bound() {
@@ -58,20 +61,20 @@ var Binding = Class("Binding", {
 
     events: Class.Memoize(function () {
         let res = [];
-        for (let obj in this.bindings)
+        for (let obj of this.bindings)
             if (Object.getOwnPropertyDescriptor(obj, "events"))
-                for (let [event, handler] in Iterator(obj.events))
+                for (let [event, handler] of iter(obj.events))
                     res.push([event, this.bind(handler)]);
         return res;
     }),
 
     properties: Class.Memoize(function () {
         let res = {};
-        for (let obj in this.bindings)
-            for (let prop in properties(obj)) {
+        for (let obj of this.bindings)
+            for (let prop of properties(obj)) {
                 let desc = Object.getOwnPropertyDescriptor(obj, prop);
                 if (desc.enumerable) {
-                    for (let k in values(["get", "set", "value"]))
+                    for (let k of values(["get", "set", "value"]))
                         if (typeof desc[k] === "function")
                             desc[k] = this.bind(desc[k]);
                     res[prop] = desc;
@@ -143,19 +146,19 @@ var Template = Module("Template", {
                 if (hasOwnProperty(events, "input"))
                     events["dactyl-input"] = events["input"];
 
-                for (let [event, handler] in Iterator(events))
+                for (let [event, handler] of iter(events))
                     node.addEventListener(event, util.wrapCallback(handler.bind(obj), true), false);
             }
         })
     },
 
-    map: function map(iter, func, sep, interruptable) {
-        if (typeof iter.length == "number") // FIXME: Kludge?
-            iter = array.iterValues(iter);
+    map: function map(iter_, func, sep, interruptable) {
+        if (typeof iter_.length == "number") // FIXME: Kludge?
+            iter_ = array.iterValues(iter_);
 
         let res = [];
         let n = 0;
-        for (let i in Iterator(iter)) {
+        for (let i of iter_) {
             let val = func(i, n);
             if (val == undefined)
                 continue;
@@ -257,8 +260,8 @@ var Template = Module("Template", {
             (?P<tag> '[\w-]+' | :(?:[\w-]+!?|!) | (?:._)?<[\w-]+>\w* | \b[a-zA-Z]_(?:[\w[\]]+|.) | \[[\w-;]+\] | E\d{3} )
             (?=      [[\)!,:;./\s]|$)
         */$), "gx");
-        return this.highlightSubstrings(str, (function () {
-            for (let res in re.iterate(str))
+        return this.highlightSubstrings(str, (function* () {
+            for (let res of re.iterate(str))
                 yield [res.index + res.pre.length, res.tag.length];
         })(), this[help ? "HelpLink" : "helpLink"]);
     },
@@ -276,7 +279,7 @@ var Template = Module("Template", {
                 return ["span", { highlight: "Number" }, str];
             case "string":
                 if (processStrings)
-                    str = str.quote();
+                    str = JSON.stringify(str);
                 return ["span", { highlight: "String" }, str];
             case "boolean":
                 return ["span", { highlight: "Boolean" }, str];
@@ -318,7 +321,7 @@ var Template = Module("Template", {
         if (isURI)
             str = util.losslessDecodeURI(str);
 
-        return this.highlightSubstrings(str, (function () {
+        return this.highlightSubstrings(str, (function* () {
             if (filter.length == 0)
                 return;
 
@@ -333,13 +336,13 @@ var Template = Module("Template", {
     },
 
     highlightRegexp: function highlightRegexp(str, re, highlight) {
-        return this.highlightSubstrings(str, (function () {
-            for (let res in util.regexp.iterate(re, str))
+        return this.highlightSubstrings(str, (function* () {
+            for (let res of util.regexp.iterate(re, str))
                 yield [res.index, res[0].length, res.wholeMatch ? [res] : res];
         })(), highlight || template.filter);
     },
 
-    highlightSubstrings: function highlightSubstrings(str, iter, highlight) {
+    highlightSubstrings: function highlightSubstrings(str, iter_, highlight) {
         if (!isString(str))
             return str;
 
@@ -349,7 +352,7 @@ var Template = Module("Template", {
         let s = [""];
         let start = 0;
         let n = 0, _i;
-        for (let [i, length, args] in iter) {
+        for (let [i, length, args] of iter_) {
             if (i == _i || i < _i)
                 break;
             _i = i;
@@ -468,19 +471,22 @@ var Template = Module("Template", {
                     this.map(format.columns, (c) => ["col", { style: c }])] :
                 [],
             ["tbody", { highlight: "UsageBody" },
-                this.map(iter, (item) =>
+                this.map(iter, (item) => {
                     // Urgh.
-                    let (name = item.name || item.names[0], frame = item.definedAt)
-                        ["tr", { highlight: "UsageItem" },
-                            ["td", { style: "padding-right: 2em;" },
-                                ["span", { highlight: "Usage Link" },
-                                    !frame ? name :
-                                        [this.helpLink(help(item), name, "Title"),
-                                         ["span", { highlight: "LinkInfo" },
-                                            _("io.definedAt"), " ",
-                                            sourceLink(frame)]]]],
-                            item.columns ? this.map(item.columns, (c) => ["td", {}, c]) : [],
-                            ["td", {}, desc(item)]])]];
+                    let name = item.name || item.names[0];
+                    let frame = item.definedAt;
+
+                    return ["tr", { highlight: "UsageItem" },
+                               ["td", { style: "padding-right: 2em;" },
+                                   ["span", { highlight: "Usage Link" },
+                                       !frame ? name :
+                                           [this.helpLink(help(item), name, "Title"),
+                                            ["span", { highlight: "LinkInfo" },
+                                               _("io.definedAt"), " ",
+                                               sourceLink(frame)]]]],
+                               item.columns ? this.map(item.columns, (c) => ["td", {}, c]) : [],
+                               ["td", {}, desc(item)]];
+                })]];
     }
 });
 

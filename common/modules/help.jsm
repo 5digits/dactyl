@@ -28,7 +28,7 @@ var HelpBuilder = Class("HelpBuilder", {
             // Scrape the list of help files from all.xml
             this.tags["all"] = this.tags["all.xml"] = "all";
             let files = this.findHelpFile("all").map(doc =>
-                    [f.value for (f in DOM.XPath("//dactyl:include/@href", doc))]);
+                    [f.value for (f of DOM.XPath("//dactyl:include/@href", doc))]);
 
             // Scrape the tags from the rest of the help files.
             array.flatten(files).forEach(function (file) {
@@ -51,8 +51,8 @@ var HelpBuilder = Class("HelpBuilder", {
 
     // Find the tags in the document.
     addTags: function addTags(file, doc) {
-        for (let elem in DOM.XPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
-                for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
+        for (let elem of DOM.XPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
+                for (let tag of values((elem.value || elem.textContent).split(/\s+/)))
             this.tags[tag] = file;
     },
 
@@ -61,7 +61,7 @@ var HelpBuilder = Class("HelpBuilder", {
     // Find help and overlay files with the given name.
     findHelpFile: function findHelpFile(file) {
         let result = [];
-        for (let base in values(this.bases)) {
+        for (let base of values(this.bases)) {
             let url = [base, file, ".xml"].join("");
             let res = util.httpGet(url, { quiet: true });
             if (res) {
@@ -135,7 +135,7 @@ var Help = Module("Help", {
                 let res = [];
                 let list, space, i = 0;
 
-                for (let match in re.iterate(text)) {
+                for (let match of re.iterate(text)) {
                     if (match.comment)
                         continue;
                     else if (match.char) {
@@ -211,7 +211,7 @@ var Help = Module("Help", {
     flush: function flush(entries, time) {
         cache.flushEntry("help.json", time);
 
-        for (let entry in values(Array.concat(entries || [])))
+        for (let entry of values(Array.concat(entries || [])))
             cache.flushEntry(entry, time);
     },
 
@@ -244,7 +244,7 @@ var Help = Module("Help", {
 
             function format(item) item.description + "#" + encodeURIComponent(item.text);
 
-            for (let [i, item] in Iterator(items)) {
+            for (let item of items) {
                 if (item.text == topic)
                     return format(item);
                 else if (!partialMatch && topic)
@@ -271,7 +271,7 @@ var Help = Module("Help", {
                 if (hasOwnProperty(help.files, helpFile))
                     dactyl.open("dactyl://help/" + helpFile, { from: "help" });
                 else
-                    dactyl.echomsg(_("help.noFile", helpFile.quote()));
+                    dactyl.echomsg(_("help.noFile", JSON.stringify(helpFile)));
                 return;
             }
 
@@ -304,8 +304,8 @@ var Help = Module("Help", {
                     addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
             }
 
-            let empty = RealSet("area base basefont br col frame hr img input isindex link meta param"
-                                .split(" "));
+            let empty = new RealSet("area base basefont br col frame hr img input isindex link meta param"
+                                    .split(" "));
             function fix(node) {
                 switch (node.nodeType) {
                 case Ci.nsIDOMNode.ELEMENT_NODE:
@@ -314,10 +314,10 @@ var Help = Module("Help", {
 
                     data.push("<", node.localName);
                     if (node instanceof Ci.nsIDOMHTMLHtmlElement)
-                        data.push(" xmlns=" + XHTML.quote(),
-                                  " xmlns:dactyl=" + NS.quote());
+                        data.push(" xmlns=" + JSON.stringify(XHTML),
+                                  " xmlns:dactyl=" + JSON.stringify(NS));
 
-                    for (let { name, value } in array.iterValues(node.attributes)) {
+                    for (let { name, value } of array.iterValues(node.attributes)) {
                         if (name == "dactyl:highlight") {
                             styles.add(value);
                             name = "class";
@@ -362,9 +362,9 @@ var Help = Module("Help", {
 
             let { buffer, content, events } = modules;
             let chromeFiles = {};
-            let styles = RealSet();
+            let styles = new RealSet;
 
-            for (let [file, ] in Iterator(help.files)) {
+            for (let [file, ] of iter(help.files)) {
                 let url = "dactyl://help/" + file;
                 dactyl.open(url);
                 util.waitFor(() => (content.location.href == url && buffer.loaded &&
@@ -380,7 +380,8 @@ var Help = Module("Help", {
                 addDataEntry(file + ".xhtml", data.join(""));
             }
 
-            data = [h for (h in highlight) if (styles.has(h.class) || /^Help/.test(h.class))]
+            data = [h for (h of highlight)
+                    if (styles.has(h.class) || /^Help/.test(h.class))]
                 .map(h => h.selector
                            .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
                            .replace(/html\|/g, "") + "\t" + "{" + h.cssText + "}")
@@ -393,7 +394,7 @@ var Help = Module("Help", {
             while ((m = re.exec(data)))
                 chromeFiles[m[0]] = m[2];
 
-            for (let [uri, leaf] in Iterator(chromeFiles))
+            for (let [uri, leaf] of iter(chromeFiles))
                 addURIEntry(leaf, uri);
 
             if (zip)

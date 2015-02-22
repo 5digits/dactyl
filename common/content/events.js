@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -49,7 +49,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
     listen: function (target, event, callback, capture, allowUntrusted) {
         var [self, events] = this._events(event, callback);
 
-        for (let [event, callback] in Iterator(events)) {
+        for (let [event, callback] of iter(events)) {
             let args = [util.weakReference(target),
                         util.weakReference(self),
                         event,
@@ -119,7 +119,7 @@ var Events = Module("events", {
 
         this._macros = storage.newMap("registers", { privateData: true, store: true });
         if (storage.exists("macros")) {
-            for (let [k, m] in storage.newMap("macros", { store: true }))
+            for (let [k, m] of storage.newMap("macros", { store: true }))
                 this._macros.set(k, { text: m.keys, timestamp: m.timeRecorded * 1000 });
             storage.remove("macros");
         }
@@ -308,7 +308,7 @@ var Events = Module("events", {
      */
     getMacros: function (filter) {
         let re = RegExp(filter || "");
-        return ([k, m.text] for ([k, m] in editor.registers) if (re.test(k)));
+        return ([k, m.text] for ([k, m] of editor.registers) if (re.test(k)));
     },
 
     /**
@@ -319,7 +319,7 @@ var Events = Module("events", {
      */
     deleteMacros: function (filter) {
         let re = RegExp(filter || "");
-        for (let [item, ] in editor.registers) {
+        for (let [item, ] of editor.registers) {
             if (!filter || re.test(item))
                 editor.registers.remove(item);
         }
@@ -373,10 +373,10 @@ var Events = Module("events", {
             if (quiet)
                 commandline.quiet = quiet;
 
-            for (let [, evt_obj] in Iterator(DOM.Event.parse(keys))) {
+            for (let evt_obj of DOM.Event.parse(keys)) {
                 let now = Date.now();
                 let key = DOM.Event.stringify(evt_obj);
-                for (let type in values(["keydown", "keypress", "keyup"])) {
+                for (let type of values(["keydown", "keypress", "keyup"])) {
                     let evt = update({}, evt_obj, { type: type });
                     if (type !== "keypress" && !evt.keyCode)
                         evt.keyCode = evt._keyCode || 0;
@@ -475,13 +475,13 @@ var Events = Module("events", {
                         .toObject();
 
     outer:
-        for (let [, key] in iter(elements))
+        for (let [, key] of iter(elements))
             if (filters.some(([k, v]) => key.getAttribute(k) == v)) {
                 let keys = { ctrlKey: false, altKey: false, shiftKey: false, metaKey: false };
                 let needed = { ctrlKey: event.ctrlKey, altKey: event.altKey, shiftKey: event.shiftKey, metaKey: event.metaKey };
 
                 let modifiers = (key.getAttribute("modifiers") || "").trim().split(/[\s,]+/);
-                for (let modifier in values(modifiers))
+                for (let modifier of values(modifiers))
                     switch (modifier) {
                     case "access": update(keys, access); break;
                     case "accel":  keys[accel] = true; break;
@@ -489,7 +489,7 @@ var Events = Module("events", {
                     case "any":
                         if (!iter.some(keys, ([k, v]) => v && needed[k]))
                             continue outer;
-                        for (let [k, v] in iter(keys)) {
+                        for (let [k, v] of iter(keys)) {
                             if (v)
                                 needed[k] = false;
                             keys[k] = false;
@@ -677,7 +677,7 @@ var Events = Module("events", {
                 let ourEvent = DOM.Event.feedingEvent;
                 DOM.Event.feedingEvent = null;
                 if (ourEvent)
-                    for (let [k, v] in Iterator(ourEvent))
+                    for (let [k, v] of iter(ourEvent))
                         if (!(k in event))
                             event[k] = v;
 
@@ -781,7 +781,7 @@ var Events = Module("events", {
                 if (this.feedingKeys)
                     this.duringFeed = this.duringFeed.concat(duringFeed);
                 else
-                    for (let event in values(duringFeed))
+                    for (let event of values(duringFeed))
                         try {
                             DOM.Event.dispatch(event.originalTarget, event, event);
                         }
@@ -797,6 +797,8 @@ var Events = Module("events", {
             else if (!this.processor)
                 this.keyEvents = [];
 
+            let key = DOM.Event.stringify(event);
+
             let pass = this.passing && !event.isMacro ||
                     DOM.Event.feedingEvent && DOM.Event.feedingEvent.isReplay ||
                     event.isReplay ||
@@ -807,14 +809,13 @@ var Events = Module("events", {
                     !modes.passThrough && this.shouldPass(event) ||
                     !this.processor && event.type === "keydown"
                         && options.get("passunknown").getKey(modes.main.allBases)
-                        && let (key = DOM.Event.stringify(event))
-                            !(modes.main.count && /^\d$/.test(key) ||
-                              modes.main.allBases.some(
-                                mode => mappings.hives
-                                                .some(hive => hive.get(mode, key)
-                                                           || hive.getCandidates(mode, key))));
+                        && !(modes.main.count && /^\d$/.test(key) ||
+                             modes.main.allBases.some(
+                               mode => mappings.hives
+                                               .some(hive => hive.get(mode, key)
+                                                          || hive.getCandidates(mode, key))));
 
-            events.dbg("ON " + event.type.toUpperCase() + " " + DOM.Event.stringify(event) +
+            events.dbg("ON " + event.type.toUpperCase() + " " + key +
                        " passing: " + this.passing + " " +
                        " pass: " + pass +
                        " replay: " + event.isReplay +
@@ -924,12 +925,18 @@ var Events = Module("events", {
             if (elem == null && urlbar && urlbar.inputField == this._lastFocus.get())
                 util.threadYield(true); // Why? --Kris
 
-            while (modes.main.ownsFocus
-                    && let ({ ownsFocus } = modes.topOfStack.params)
-                         (!ownsFocus ||
-                             ownsFocus.get() != elem &&
-                             ownsFocus.get() != win)
-                    && !modes.topOfStack.params.holdFocus)
+            let ownsFocus = () => {
+                if (!modes.main.ownsFocus)
+                    return false;
+
+                let { ownsFocus } = modes.topOfStack.params;
+                if (ownsFocus && ~[elem, win].indexOf(ownsFocus.get()))
+                    return false;
+
+                return !modes.topOfStack.params.holdFocus;
+            };
+
+            while (ownsFocus())
                  modes.pop(null, { fromFocus: true });
         }
         finally {
@@ -966,9 +973,10 @@ var Events = Module("events", {
     PASS_THROUGH: {},
     WAIT: null,
 
-    isEscape: function isEscape(event)
-        let (key = isString(event) ? event : DOM.Event.stringify(event))
-            key === "<Esc>" || key === "<C-[>",
+    isEscape: function isEscape(event) {
+        let key = isString(event) ? event : DOM.Event.stringify(event);
+        return key === "<Esc>" || key === "<C-[>";
+    },
 
     isHidden: function isHidden(elem, aggressive) {
         if (DOM(elem).style.visibility !== "visible")
@@ -1033,7 +1041,7 @@ var Events = Module("events", {
     completion: function initCompletion() {
         completion.macro = function macro(context) {
             context.title = ["Macro", "Keys"];
-            context.completions = [item for (item in events.getMacros())];
+            context.completions = [item for (item of events.getMacros())];
         };
     },
     mappings: function initMappings() {
@@ -1140,7 +1148,7 @@ var Events = Module("events", {
             "sitemap", "", {
                 flush: function flush() {
                     memoize(this, "filters", function () this.value.filter(function (f) f(buffer.documentURI)));
-                    memoize(this, "pass", function () RealSet(array.flatten(this.filters.map(function (f) f.keys))));
+                    memoize(this, "pass", function () new RealSet(array.flatten(this.filters.map(function (f) f.keys))));
                     memoize(this, "commandHive", function hive() Hive(this.filters, "command"));
                     memoize(this, "inputHive", function hive() Hive(this.filters, "input"));
                 },

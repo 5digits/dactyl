@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -231,13 +231,13 @@ var CommandWidgets = Class("CommandWidgets", {
 
     updateVisibility: function updateVisibility() {
         let changed = 0;
-        for (let elem in values(this.elements))
+        for (let elem of values(this.elements))
             if (elem.getGroup) {
                 let value = elem.getValue ? elem.getValue.call(this)
                           : elem.noValue || this[elem.name];
 
                 let activeGroup = this.getGroup(elem.name, value);
-                for (let group in values([this.commandbar, this.statusbar])) {
+                for (let group of [this.commandbar, this.statusbar]) {
                     let meth, node = group[elem.name];
                     let visible = (value && group === activeGroup);
                     if (node && !node.collapsed == !visible) {
@@ -277,7 +277,7 @@ var CommandWidgets = Class("CommandWidgets", {
                ["viewable", "complete"].indexOf(elem.contentDocument.readyState) >= 0;
     },
 
-    _whenReady: function _whenReady(id, init) {
+    _whenReady: function* _whenReady(id, init) {
         let elem = document.getElementById(id);
         while (!this._ready(elem))
             yield 10;
@@ -502,11 +502,11 @@ var CommandLine = Module("commandline", {
 
         memoize(this, "_store", function () storage.newMap("command-history", { store: true, privateData: true }));
 
-        for (let name in values(["command", "search"]))
+        for (let name of ["command", "search"])
             if (storage.exists("history-" + name)) {
                 let ary = storage.newArray("history-" + name, { store: true, privateData: true });
 
-                this._store.set(name, [v for ([k, v] in ary)]);
+                this._store.set(name, [v for ([k, v] of ary)]);
                 ary.delete();
                 this._store.changed();
             }
@@ -632,7 +632,7 @@ var CommandLine = Module("commandline", {
     },
 
     hideCompletions: function hideCompletions() {
-        for (let nodeSet in values([this.widgets.statusbar, this.widgets.commandbar]))
+        for (let nodeSet of values([this.widgets.statusbar, this.widgets.commandbar]))
             if (nodeSet.commandline.completionList)
                 nodeSet.commandline.completionList.visible = false;
     },
@@ -1882,7 +1882,7 @@ var CommandLine = Module("commandline", {
             persistent: true,
             action: function (timespan, host) {
                 let store = commandline._store;
-                for (let [k, v] in store) {
+                for (let [k, v] of store) {
                     if (k == "command")
                         store.set(k, v.filter(item =>
                             !(timespan.contains(item.timestamp) && (!host || commands.hasDomain(item.value, host)))));
@@ -1974,8 +1974,11 @@ var ItemList = Class("ItemList", {
                            .filter(c => c.items.length || c.message || c.incomplete)
                            .map(this.getGroup, this),
 
-    get selected() let (g = this.selectedGroup) g && g.selectedIdx != null
-        ? [g.context, g.selectedIdx] : null,
+    get selected() {
+        let g = this.selectedGroup;
+        return g && g.selectedIdx != null ? [g.context, g.selectedIdx]
+                                           : null;
+    },
 
     getRelativeItem: function getRelativeItem(offset, tuple, noWrap) {
         let groups = this.activeGroups;
@@ -2021,7 +2024,11 @@ var ItemList = Class("ItemList", {
         if (start < 0 || start >= this.itemCount)
             return null;
 
-        group = groups.find(g => let (i = start - g.offsets.start) i >= 0 && i < g.itemCount);
+        group = groups.find(g => {
+            let i = start - g.offsets.start;
+            return i >= 0 && i < g.itemCount;
+        });
+
         return [group.context, start - group.offsets.start];
     },
 
@@ -2075,7 +2082,7 @@ var ItemList = Class("ItemList", {
     updateOffsets: function updateOffsets() {
         let total = this.itemCount;
         let count = 0;
-        for (let group in values(this.activeGroups)) {
+        for (let group of values(this.activeGroups)) {
             group.offsets = { start: count, end: total - count - group.itemCount };
             count += group.itemCount;
         }
@@ -2090,7 +2097,7 @@ var ItemList = Class("ItemList", {
 
         let container = DOM(this.nodes.completions);
         let groups = this.activeGroups;
-        for (let group in values(groups)) {
+        for (let group of values(groups)) {
             group.reset();
             container.append(group.nodes.root);
         }
@@ -2133,7 +2140,7 @@ var ItemList = Class("ItemList", {
      * @private
      */
     draw: function draw() {
-        for (let group in values(this.activeGroups))
+        for (let group of values(this.activeGroups))
             group.draw();
 
         // We need to collect all of the rescrolling functions in
@@ -2244,7 +2251,7 @@ var ItemList = Class("ItemList", {
             }
 
             let count = this.maxItems;
-            for (let group in values(groups)) {
+            for (let group of groups) {
                 let off = Math.max(0, start - group.offsets.start);
 
                 group.count = Math.constrain(group.itemCount - off, 0, count);
@@ -2379,7 +2386,7 @@ var ItemList = Class("ItemList", {
 
             if (!this.generatedRange.contains(this.range)) {
                 if (this.generatedRange.end == 0)
-                    var [start, end] = this.range;
+                    var [start, end] = Array.slice(this.range);
                 else {
                     start = this.range.start - (this.range.start <= this.generatedRange.start
                                                     ? this.maxItems / 2 : 0);
@@ -2391,19 +2398,20 @@ var ItemList = Class("ItemList", {
                                            Math.min(this.itemCount, end));
 
                 let first;
-                for (let [i, row] in this.context.getRows(this.generatedRange.start,
+                for (let [i, row] of this.context.getRows(this.generatedRange.start,
                                                           this.generatedRange.end,
-                                                          this.doc))
+                                                          this.doc)) {
                     if (!range.contains(i))
                         DOM(row).remove();
                     else if (!first)
                         first = row;
+                }
 
                 let container = DOM(this.nodes.items);
                 let before    = first ? DOM(first).bound.before
                                       : DOM(this.nodes.items).bound.append;
 
-                for (let [i, row] in this.context.getRows(range.start, range.end,
+                for (let [i, row] of this.context.getRows(range.start, range.end,
                                                           this.doc)) {
                     if (i < this.generatedRange.start)
                         before(row);

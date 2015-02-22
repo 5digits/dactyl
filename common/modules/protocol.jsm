@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -19,11 +19,15 @@ function Channel(url, orig, noErrorChannel, unprivileged) {
         if (url instanceof Ci.nsIChannel)
             return url;
 
-        if (typeof url === "function")
-            return let ([type, data] = url(orig)) StringChannel(data, type, orig);
+        if (typeof url === "function") {
+            let [type, data] = url(orig);
+            return StringChannel(data, type, orig);
+        }
 
-        if (isArray(url))
-            return let ([type, data] = url) StringChannel(data, type, orig);
+        if (isArray(url)) {
+            let [type, data] = url;
+            return StringChannel(data, type, orig);
+        }
 
         let uri = services.io.newURI(url, null, null);
         return (new XMLChannel(uri, null, noErrorChannel)).channel;
@@ -101,7 +105,7 @@ ProtocolBase.prototype = {
     QueryInterface:         XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
 
     purge: function purge() {
-        for (let doc in util.iterDocuments())
+        for (let doc of util.iterDocuments())
             try {
                 if (doc.documentURIObject.scheme == this.scheme)
                     doc.defaultView.close();
@@ -208,7 +212,7 @@ function XMLChannel(uri, contentType, noErrorChannel, unprivileged) {
             if (!open)
                 this.writes.push("\n]");
 
-            for (let [, pre, url] in util.regexp.iterate(/([^]*?)(?:%include\s+"([^"]*)";|$)/gy, post)) {
+            for (let [, pre, url] of util.regexp.iterate(/([^]*?)(?:%include\s+"([^"]*)";|$)/gy, post)) {
                 this.writes.push(pre);
                 if (url)
                     this.addChannel(url);

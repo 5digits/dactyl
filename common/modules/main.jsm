@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -136,6 +136,8 @@ var Modules = function Modules(window) {
     const create = bind("create", jsmodules.Object);
 
     const modules = update(create(jsmodules), {
+        Symbol: Symbol,
+
         yes_i_know_i_should_not_report_errors_in_these_branches_thanks: [],
 
         jsmodules: jsmodules,
@@ -143,7 +145,7 @@ var Modules = function Modules(window) {
         Module: Module,
 
         load: function load(script) {
-            for (let [i, base] in Iterator(BASES)) {
+            for (let base of BASES) {
                 try {
                     JSMLoader.loadSubScript(base + script + ".js", modules, "UTF-8");
                     return;
@@ -212,8 +214,8 @@ overlay.overlayWindow(Object.keys(config.overlays),
 
         this.startTime = Date.now();
         this.deferredInit = { load: {} };
-        this.seen = RealSet();
-        this.loaded = RealSet();
+        this.seen = new RealSet;
+        this.loaded = new RealSet;
         modules.loaded = this.loaded;
 
         this.modules = modules;
@@ -286,7 +288,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
             if (seen.add(module.className))
                 throw Error("Module dependency loop.");
 
-            for (let dep in values(module.requires))
+            for (let dep of values(module.requires))
                 this.loadModule(Module.constructors[dep], module.className);
 
             defineModule.loadLog.push(
@@ -346,7 +348,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
         let { Module, modules } = this.modules;
 
         defineModule.modules.forEach((mod) => {
-            let names = RealSet(Object.keys(mod.INIT));
+            let names = new RealSet(Object.keys(mod.INIT));
             if ("init" in mod.INIT)
                 names.add("init");
 
@@ -368,7 +370,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
     },
 
     initDependencies: function initDependencies(name, parents) {
-        for (let [k, v] in Iterator(this.deferredInit[name] || {}))
+        for (let [k, v] of iter(this.deferredInit[name] || {}))
             if (!parents || ~parents.indexOf(k))
                 util.trapErrors(v);
     }

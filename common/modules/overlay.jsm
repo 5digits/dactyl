@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -37,7 +37,7 @@ var Overlay = Class("Overlay", {
     $: function $(sel, node) DOM(sel, node || this.doc),
 
     cleanup: function cleanup(window, reason) {
-        for (let fn in values(this.cleanups))
+        for (let fn of this.cleanups)
             util.trapErrors(fn, this, window, reason);
     }
 });
@@ -46,8 +46,8 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
     init: function init() {
         util.addObserver(this);
         this.overlays = {};
-
-        this.weakMap = WeakMap();
+        this.overlayMatchers = [];
+        this.weakMap = new WeakMap;
 
         this.onWindowVisible = [];
     },
@@ -75,8 +75,8 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         else
             [self, events] = [event, event[callback || "events"]];
 
-        for (let [event, callback] in Iterator(events)) {
-            let args = [util.weakReference(target),
+        for (let [event, callback] of iter(events)) {
+            let args = [Cu.getWeakReference(target),
                         event,
                         util.wrapCallback(callback, self),
                         capture,
@@ -113,15 +113,15 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
     },
 
     cleanup: function cleanup(reason) {
-        for (let doc in util.iterDocuments()) {
-            for (let callback in values(this.getData(doc, "cleanup")))
+        for (let doc of util.iterDocuments()) {
+            for (let callback of this.getData(doc, "cleanup"))
                 util.trapErrors(callback, doc, reason);
 
-            for (let elem in values(this.getData(doc, "overlayElements")))
+            for (let elem of this.getData(doc, "overlayElements"))
                 if (elem.parentNode)
                     elem.parentNode.removeChild(elem);
 
-            for (let [elem, ns, name, orig, value] in values(this.getData(doc, "overlayAttributes")))
+            for (let [elem, ns, name, orig, value] of this.getData(doc, "overlayAttributes"))
                 if (getAttr(elem, ns, name) === value)
                     setAttr(elem, ns, name, orig);
 
@@ -192,17 +192,65 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         delete data[key];
     },
 
+    /**
+     * A curried function which determines which host names match a
+     * given stylesheet filter. When presented with one argument,
+     * returns a matcher function which, given one nsIURI argument,
+     * returns true if that argument matches the given filter. When
+     * given two arguments, returns true if the second argument matches
+     * the given filter.
+     *
+     * @param {string|function(nsIURI):boolean} filter The URI filter to match against.
+     * @param {nsIURI} uri The location to test.
+     * @returns {nsIURI -> boolean}
+     */
+    matchFilter: function matchFilter(filter) {
+        if (typeof filter == "function")
+            var test = filter;
+        else {
+            filter = filter.trim();
+
+            if (filter === "*")
+                var test = function test(uri) true;
+            else if (!/^(?:[a-z-]+:|[a-z-.]+$)/.test(filter)) {
+                let re = util.regexp(filter);
+                test = function test(uri) re.test(uri.spec);
+            }
+            else if (/[*]$/.test(filter)) {
+                let re = RegExp("^" + util.regexp.escape(filter.substr(0, filter.length - 1)));
+                test = function test(uri) re.test(uri.spec);
+                test.re = re;
+            }
+            else if (/[\/:]/.test(filter)) {
+                test = function test(uri) uri.spec === filter;
+                test.exact = true;
+            }
+            else
+                test = function test(uri) { try { return util.isSubdomain(uri.host, filter); } catch (e) { return false; } };
+            test.toString = function toString() filter;
+            test.key = filter;
+        }
+        if (arguments.length < 2)
+            return test;
+        return test(arguments[1]);
+    },
+
     overlayWindow: function overlayWindow(url, fn) {
         if (url instanceof Ci.nsIDOMWindow)
             overlay._loadOverlay(url, fn);
         else {
             Array.concat(url).forEach(function (url) {
-                if (!this.overlays[url])
-                    this.overlays[url] = [];
-                this.overlays[url].push(fn);
+                let matcher = this.matchFilter(url);
+                if (!matcher.exact)
+                    this.overlayMatchers.push([matcher, fn]);
+                else {
+                    if (!this.overlays[url])
+                        this.overlays[url] = [];
+                    this.overlays[url].push(fn);
+                }
             }, this);
 
-            for (let doc in util.iterDocuments())
+            for (let doc of util.iterDocuments())
                 if (~["interactive", "complete"].indexOf(doc.readyState)) {
                     this.observe(doc.defaultView, "xul-window-visible");
                     this._loadOverlays(doc.defaultView);
@@ -215,10 +263,18 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         }
     },
 
-    _loadOverlays: function _loadOverlays(window) {
-        let overlays = this.getData(window, "overlays");
+    getOverlays: function* getOverlays(window) {
+        for (let overlay of this.overlays[window.document.documentURI] || [])
+            yield overlay;
+        for (let [matcher, overlay] of this.overlayMatchers)
+            if (matcher(window.document.documentURIObject))
+                yield overlay;
+    },
 
-        for (let obj of overlay.overlays[window.document.documentURI] || []) {
+    _loadOverlays: function _loadOverlays(window) {
+        let overlays = this.getData(window.document, "overlays");
+
+        for (let obj of this.getOverlays(window)) {
             if (~overlays.indexOf(obj))
                 continue;
             overlays.push(obj);
@@ -233,19 +289,19 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
         function insert(key, fn) {
             if (obj[key]) {
-                let iterator = Iterator(obj[key]);
+                let iterator = iter(obj[key]);
                 if (isArray(obj[key])) {
                     iterator = ([elem[1].id, elem.slice(2), elem[1]]
-                                for each (elem in obj[key]));
+                                for (elem of obj[key]));
                 }
 
-                for (let [elem, xml, attrs] in iterator) {
+                for (let [elem, xml, attrs] of iterator) {
                     if (elem = doc.getElementById(String(elem))) {
                         // Urgh. Hack.
                         let namespaces;
                         if (attrs)
                             namespaces = iter([k.slice(6), DOM.fromJSON.namespaces[v] || v]
-                                              for ([k, v] in Iterator(attrs))
+                                              for ([k, v] of iter(attrs))
                                               if (/^xmlns(?:$|:)/.test(k))).toObject();
 
                         let node = DOM.fromJSON(xml, doc, obj.objects, namespaces);
@@ -253,15 +309,14 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                         if (!(node instanceof Ci.nsIDOMDocumentFragment))
                             savedElems.push(node);
                         else
-                            for (let n in array.iterValues(node.childNodes))
+                            for (let n of array.iterValues(node.childNodes))
                                 savedElems.push(n);
 
                         fn(elem, node);
 
-                        for (let attr in attrs || []) {
+                        for (let [attr, val] of iter(attrs || {})) {
                             let [ns, localName] = DOM.parseNamespace(attr);
                             let name = attr;
-                            let val = attrs[attr];
 
                             savedAttrs.push([elem, ns, name, getAttr(elem, ns, name), val]);
                             if (name === "highlight")
@@ -425,7 +480,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
     /**
      * A list of extant dactyl windows.
      */
-    windows: Class.Memoize(() => RealSet())
+    windows: Class.Memoize(() => new RealSet)
 });
 
 endModule();

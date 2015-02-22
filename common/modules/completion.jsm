@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -304,7 +304,7 @@ var CompletionContext = Class("CompletionContext", {
             items = items.array;
         // Accept a generator
         if (!isArray(items))
-            items = [x for (x in Iterator(items || []))];
+            items = [x for (x of iter(items || []))];
         if (this._completions !== items) {
             delete this.cache.filtered;
             delete this.cache.filter;
@@ -360,14 +360,14 @@ var CompletionContext = Class("CompletionContext", {
         let self = this;
         let res = { highlight: "" };
 
-        function result(quote) {
+        function* result(quote) {
             yield ["context", function p_context() self];
             yield ["result", quote ? function p_result() quote[0] + util.trapErrors(1, quote, this.text) + quote[2]
                                    : function p_result() this.text];
             yield ["texts", function p_texts() Array.concat(this.text)];
         };
 
-        for (let i in iter(this.keys, result(this.quote))) {
+        for (let i of iter(this.keys, result(this.quote))) {
             let [k, v] = i;
             if (typeof v == "string" && /^[.[]/.test(v))
                 // This is only allowed to be a simple accessor, and shouldn't
@@ -622,7 +622,7 @@ var CompletionContext = Class("CompletionContext", {
      * sub-contexts.
      */
     cancelAll: function cancelAll() {
-        for (let [, context] in Iterator(this.contextList)) {
+        for (let context of this.contextList) {
             if (context.cancel)
                 context.cancel();
         }
@@ -670,7 +670,7 @@ var CompletionContext = Class("CompletionContext", {
         }
     },
 
-    getRows: function getRows(start, end, doc) {
+    getRows: function* getRows(start, end, doc) {
         let items = this.items;
         let cache = this.cache.rows;
         let step = start > end ? -1 : 1;
@@ -679,7 +679,7 @@ var CompletionContext = Class("CompletionContext", {
         end = Math.min(items.length, end != null ? end : items.length);
 
         this.doc = doc;
-        for (let i in util.range(start, end, step))
+        for (let i of util.range(start, end, step))
             yield [i, this.getRow(i)];
     },
 
@@ -717,8 +717,10 @@ var CompletionContext = Class("CompletionContext", {
             context.waitingForTab = true;
         else if (completer) {
             let res = completer.apply(self || this, [context].concat(args));
+
             if (res && !isArray(res) && !isArray(res.__proto__))
-                res = [k for (k in res)];
+                res = [k for (k of res)];
+
             if (res)
                 context.completions = res;
             return res;
@@ -766,6 +768,7 @@ var CompletionContext = Class("CompletionContext", {
         if (arguments.length == 0) {
             for (let type in this.selectionTypes)
                 this.highlight(0, 0, type);
+
             this.selectionTypes = {};
         }
         try {
@@ -837,7 +840,7 @@ var CompletionContext = Class("CompletionContext", {
         }
         //for (let key in (k for ([k, v] in Iterator(this.contexts)) if (v.offset > this.caret)))
         //    delete this.contexts[key];
-        for each (let context in this.contexts) {
+        for (let context of values(this.contexts)) {
             context.hasItems = false;
             context.incomplete = false;
         }
@@ -870,7 +873,7 @@ var CompletionContext = Class("CompletionContext", {
     Filter: {
         text: function F_text(item) {
             let text = item.texts;
-            for (let [i, str] in Iterator(text)) {
+            for (let [i, str] of iter(text)) {
                 if (this.match(String(str))) {
                     item.text = String(text[i]);
                     return true;
@@ -1042,7 +1045,7 @@ var Completion = Module("completion", {
                     context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
                     context.completions = [
                         { url: result.getValueAt(i), title: result.getCommentAt(i), icon: result.getImageAt(i) }
-                        for (i in util.range(0, result.matchCount))
+                        for (i of util.range(0, result.matchCount))
                     ];
                 }),
                 get onUpdateSearchResult() this.onSearchResult
@@ -1126,7 +1129,7 @@ var Completion = Module("completion", {
                 completer: function (context) {
                     let PREFIX = "/ex/contexts";
                     context.fork("ex", 0, completion, "ex");
-                    completion.contextList = [[k.substr(PREFIX.length), v.title[0]] for ([k, v] in iter(context.contexts)) if (k.substr(0, PREFIX.length) == PREFIX)];
+                    completion.contextList = [[k.substr(PREFIX.length), v.title[0]] for ([k, v] of iter(context.contexts)) if (k.substr(0, PREFIX.length) == PREFIX)];
                 },
                 literal: 0
             });
@@ -1176,11 +1179,16 @@ var Completion = Module("completion", {
                     s: "search"
                 },
 
-                get values() values(completion.urlCompleters).toArray()
-                                .concat([let (name = k.substr(services.AUTOCOMPLETE.length))
-                                            ["native:" + name, _("autocomplete.description", name)]
-                                         for (k in Cc)
-                                         if (k.startsWith(services.AUTOCOMPLETE))]),
+                get values() {
+                    let builtin = Object.keys(Cc)
+                                        .filter(k => k.startsWith(services.AUTOCOMPLETE))
+                                        .map(key => {
+                        let name = key.substr(services.AUTOCOMPLETE.length)
+                        return ["native:" + name, _("autocomplete.description", name)];
+                    });
+
+                    return values(completion.urlCompleters).toArray().concat(builtin);
+                },
 
                 setter: function setter(values) {
                     if (values.length == 1 && !hasOwnProperty(values[0], this.values)

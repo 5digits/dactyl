@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2013 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -39,7 +39,7 @@ var QuickMarks = Module("quickmarks", {
      */
     find: function find(url) {
         let res = [];
-        for (let [k, v] in this._qmarks)
+        for (let [k, v] of this._qmarks)
             if (dactyl.parseURLs(v).some(u => String.replace(u, /#.*/, "") == url))
                 res.push(k);
         return res;
@@ -63,7 +63,7 @@ var QuickMarks = Module("quickmarks", {
     remove: function remove(filter) {
         let pattern = util.charListToRegexp(filter, "a-zA-Z0-9");
 
-        for (let [qmark, ] in this._qmarks) {
+        for (let [qmark, ] of this._qmarks) {
             if (pattern.test(qmark))
                 this._qmarks.remove(qmark);
         }
@@ -98,7 +98,7 @@ var QuickMarks = Module("quickmarks", {
      * @param {string} filter The list of quickmarks to display, e.g. "a-c i O-X".
      */
     list: function list(filter) {
-        let marks = [k for ([k, v] in this._qmarks)];
+        let marks = [k for ([k, v] of this._qmarks)];
         let lowercaseMarks = marks.filter(bind("test", /[a-z]/)).sort();
         let uppercaseMarks = marks.filter(bind("test", /[A-Z]/)).sort();
         let numberMarks    = marks.filter(bind("test", /[0-9]/)).sort();
@@ -110,11 +110,11 @@ var QuickMarks = Module("quickmarks", {
         if (filter.length > 0) {
             let pattern = util.charListToRegexp(filter, "a-zA-Z0-9");
             marks = marks.filter(qmark => pattern.test(qmark));
-            dactyl.assert(marks.length >= 0, _("quickmark.noMatching", filter.quote()));
+            dactyl.assert(marks.length >= 0, _("quickmark.noMatching", JSON.stringify(filter)));
         }
 
         commandline.commandOutput(template.tabular(["QuickMark", "URL"], [],
-            ([mark, quickmarks._qmarks.get(mark)] for ([k, mark] in Iterator(marks)))));
+            ([mark, quickmarks._qmarks.get(mark)] for (mark of marks))));
     }
 }, {
 }, {

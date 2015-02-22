@@ -93,7 +93,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             description: "Cookies",
             persistent: true,
             action: function (range, host) {
-                for (let c in Sanitizer.iterCookies(host))
+                for (let c of Sanitizer.iterCookies(host))
                     if (range.contains(c.creationTime) || timespan.isSession && c.isSession)
                         services.cookies.remove(c.host, c.name, c.path, false);
             },
@@ -140,11 +140,11 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 if (range.isSession)
                     return;
                 if (host) {
-                    for (let p in Sanitizer.iterPermissions(host)) {
+                    for (let p of Sanitizer.iterPermissions(host)) {
                         services.permissions.remove(util.createURI(p.host), p.type);
                         services.permissions.add(util.createURI(p.host), p.type, 0);
                     }
-                    for (let p in iter(services.contentPrefs.getPrefs(util.createURI(host))))
+                    for (let p of iter(services.contentPrefs.getPrefs(util.createURI(host))))
                         services.contentPrefs.removePref(util.createURI(host), p.QueryInterface(Ci.nsIProperty).name);
                 }
                 else {
@@ -163,7 +163,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         });
 
         function ourItems(persistent) [
-            item for (item in values(self.itemMap))
+            item for (item of values(self.itemMap))
             if (!item.builtin && (!persistent || item.persistent) && item.name !== "all")
         ];
 
@@ -176,7 +176,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             ],
             init: function init(win) {
                 let pane = win.document.getElementById("SanitizeDialogPane");
-                for (let [, pref] in iter(pane.preferences))
+                for (let [, pref] of iter(pane.preferences))
                     pref.updateElements();
                 init.superapply(this, arguments);
             }
@@ -184,27 +184,35 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
 
         util.timeout(function () { // Load order issue...
 
-            let (branch = Item.PREFIX + Item.SHUTDOWN_BRANCH) {
+            {
+                let branch = Item.PREFIX + Item.SHUTDOWN_BRANCH;
+
                 overlay.overlayWindow("chrome://browser/content/preferences/sanitize.xul",
-                                      function (win) prefOverlay(branch, true, {
-                    append: {
-                        SanitizeDialogPane:
-                            ["groupbox", { orient: "horizontal", xmlns: "xul" },
-                              ["caption", { label: config.appName + /*L*/" (see :help privacy)" }],
-                              ["grid", { flex: "1" },
-                                ["columns", {},
-                                    ["column", { flex: "1" }],
-                                    ["column", { flex: "1" }]],
-                                ["rows", {},
-                                  let (items = ourItems(true))
-                                     template.map(util.range(0, Math.ceil(items.length / 2)), i =>
-                                         ["row", {},
-                                             template.map(items.slice(i * 2, i * 2 + 2), item =>
-                                                ["checkbox", { xmlns: XUL, label: item.description, preference: branch + item.name }])])]]]
-                    }
-                }));
+                                      function (win) {
+                    let items = ourItems(true);
+
+                    return prefOverlay(branch, true, {
+                        append: {
+                            SanitizeDialogPane:
+                                ["groupbox", { orient: "horizontal", xmlns: "xul" },
+                                  ["caption", { label: config.appName + /*L*/" (see :help privacy)" }],
+                                  ["grid", { flex: "1" },
+                                    ["columns", {},
+                                        ["column", { flex: "1" }],
+                                        ["column", { flex: "1" }]],
+                                    ["rows", {},
+                                         template.map(util.range(0, Math.ceil(items.length / 2)), i =>
+                                             ["row", {},
+                                                 template.map(items.slice(i * 2, i * 2 + 2), item =>
+                                                    ["checkbox", { xmlns: XUL, label: item.description, preference: branch + item.name }])])]]]
+                        }
+                    });
+                });
             }
-            let (branch = Item.PREFIX + Item.BRANCH) {
+
+            {
+                let branch = Item.PREFIX + Item.BRANCH;
+
                 overlay.overlayWindow("chrome://browser/content/sanitize.xul",
                                    function (win) prefOverlay(branch, false, {
                     append: {
@@ -225,7 +233,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                 self.withSavedValues(["sanitizing"], function () {
                                     self.sanitizing = true;
                                     sanitize.superapply(this, arguments);
-                                    sanitizer.sanitizeItems([item.name for (item in values(self.itemMap))
+                                    sanitizer.sanitizeItems([item.name for (item of values(self.itemMap))
                                                              if (item.shouldSanitize(false))],
                                                             Range.fromArray(this.range || []));
                                 }, this);
@@ -243,7 +251,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         let item = this.itemMap[name] || Item(name, params);
         this.itemMap[name] = item;
 
-        for (let [k, prop] in iterOwnProperties(params))
+        for (let [k, prop] of iterOwnProperties(params))
             if (!("value" in prop) || !callable(prop.value) && !(k in item))
                 Object.defineProperty(item, k, prop);
 
@@ -252,7 +260,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             return obj.window || obj;
         }
 
-        let names = RealSet([name].concat(params.contains || []).map(e => "clear-" + e));
+        let names = new RealSet([name].concat(params.contains || []).map(e => "clear-" + e));
         if (params.action)
             storage.addObserver("sanitizer",
                 function (key, event, arg) {
@@ -328,7 +336,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             this.sanitizing = true;
             let errors = this.sanitizeItems(items, range, null);
 
-            for (let itemName in values(items)) {
+            for (let itemName of values(items)) {
                 try {
                     let item = this.items[Sanitizer.argToPref(itemName)];
                     if (item && !this.itemMap[itemName].override) {
@@ -354,7 +362,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 items = Object.keys(this.itemMap);
 
             let errors;
-            for (let itemName in values(items))
+            for (let itemName of values(items))
                 try {
                     if (!key || this.itemMap[itemName][key])
                         storage.fireEvent("sanitizer", "clear-" + itemName, [range, host]);
@@ -395,16 +403,16 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     argToPref: function (arg) Sanitizer.argPrefMap[arg] || arg,
     prefToArg: function (pref) pref.replace(/.*\./, "").toLowerCase(),
 
-    iterCookies: function iterCookies(host) {
-        for (let c in iter(services.cookies, Ci.nsICookie2))
+    iterCookies: function* iterCookies(host) {
+        for (let c of iter(services.cookies, Ci.nsICookie2))
             if (!host || util.isSubdomain(c.rawHost, host) ||
                     c.host[0] == "." && c.host.length < host.length
                         && host.endsWith(c.host))
                 yield c;
 
     },
-    iterPermissions: function iterPermissions(host) {
-        for (let p in iter(services.permissions, Ci.nsIPermission))
+    iterPermissions: function* iterPermissions(host) {
+        for (let p of iter(services.permissions, Ci.nsIPermission))
             if (!host || util.isSubdomain(p.host, host))
                 yield p;
     }
@@ -543,16 +551,16 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     if (!args.length)
                         args = modules.options["cookies"];
 
-                    for (let [, cmd] in Iterator(args))
+                    for (let cmd of args)
                         switch (cmd) {
                         case "clear":
-                            for (let c in Sanitizer.iterCookies(host))
+                            for (let c of Sanitizer.iterCookies(host))
                                 services.cookies.remove(c.host, c.name, c.path, false);
                             break;
                         case "clear-persistent":
                             session = false;
                         case "clear-session":
-                            for (let c in Sanitizer.iterCookies(host))
+                            for (let c of Sanitizer.iterCookies(host))
                                 if (c.isSession == session)
                                     services.cookies.remove(c.host, c.name, c.path, false);
                             return;
@@ -567,7 +575,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                   c.path,
                                   c.name,
                                   c.value]
-                                  for (c in Sanitizer.iterCookies(host)))));
+                                  for (c of Sanitizer.iterCookies(host)))));
                             return;
                         default:
                             util.assert(cmd in Sanitizer.PERMS, _("error.invalidArgument"));
@@ -582,7 +590,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                             context.title[1] = "Current Permissions";
                             context.keys.description = function desc(host) {
                                 let count = [0, 0];
-                                for (let c in Sanitizer.iterCookies(host))
+                                for (let c of Sanitizer.iterCookies(host))
                                     count[c.isSession + 0]++;
                                 return [Sanitizer.COMMANDS[getPerms(host)], " (session: ", count[1], " persistent: ", count[0], ")"].join("");
                             };
@@ -622,9 +630,11 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     return completer.superapply(this, arguments);
                 },
 
-                has: function has(val)
-                    let (res = this.value.find(v => (v == "all" || v.replace(/^!/, "") == val)))
-                        res && !/^!/.test(res),
+                has: function has(val) {
+                    let res = this.value.find(v => (v == "all" || v.replace(/^!/, "") == val));
+
+                    return res && !/^!/.test(res);
+                },
 
                 validator: function (values) values.length &&
                     values.every(val => (val === "all" || hasOwnProperty(sanitizer.itemMap, val.replace(/^!/, ""))))
@@ -635,9 +645,9 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             "stringlist", "",
             {
                 initialValue: true,
-                get values() [i for (i in values(sanitizer.itemMap)) if (i.persistent || i.builtin)],
+                get values() [i for (i of values(sanitizer.itemMap)) if (i.persistent || i.builtin)],
                 getter: function () !sanitizer.runAtShutdown ? [] : [
-                    item.name for (item in values(sanitizer.itemMap))
+                    item.name for (item of values(sanitizer.itemMap))
                     if (item.shouldSanitize(true))
                 ],
                 setter: function (value) {
@@ -645,8 +655,8 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         sanitizer.runAtShutdown = false;
                     else {
                         sanitizer.runAtShutdown = true;
-                        let have = RealSet(value);
-                        for (let item in values(sanitizer.itemMap))
+                        let have = new RealSet(value);
+                        for (let item of values(sanitizer.itemMap))
                             prefs.set(item.shutdownPref,
                                       Boolean(have.has(item.name) ^ have.has("all")));
                     }

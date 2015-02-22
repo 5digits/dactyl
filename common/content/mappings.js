@@ -197,11 +197,11 @@ var MapHive = Class("MapHive", Contexts.Hive, {
         map.hive = this;
 
         if (this.name !== "builtin")
-            for (let [, name] in Iterator(map.names))
-                for (let [, mode] in Iterator(map.modes))
+            for (let name of map.names)
+                for (let mode of map.modes)
                     this.remove(mode, name);
 
-        for (let mode in values(map.modes))
+        for (let mode of values(map.modes))
             this.getStack(mode).add(map);
         return map;
     },
@@ -255,13 +255,13 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      */
     remove: function (mode, cmd) {
         let stack = this.getStack(mode);
-        for (let [i, map] in array.iterItems(stack)) {
+        for (let map of stack) {
             let j = map.names.indexOf(cmd);
             if (j >= 0) {
                 delete stack.states;
                 map.names.splice(j, 1);
                 if (map.names.length == 0) // FIX ME.
-                    for (let [mode, stack] in Iterator(this.stacks))
+                    for (let [mode, stack] of iter(this.stacks))
                         this.stacks[mode] = MapHive.Stack(stack.filter(m => m != map));
                 return;
             }
@@ -284,7 +284,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
             return self;
         },
 
-        __iterator__: function () array.iterValues(this),
+        "@@iterator": function () array.iterValues(this),
 
         get candidates() this.states.candidates,
         get mappings() this.states.mappings,
@@ -300,11 +300,11 @@ var MapHive = Class("MapHive", Contexts.Hive, {
                 mappings: {}
             };
 
-            for (let map in this)
-                for (let name in values(map.keys)) {
+            for (let map of this)
+                for (let name of values(map.keys)) {
                     states.mappings[name] = map;
                     let state = "";
-                    for (let key in DOM.Event.iterKeys(name)) {
+                    for (let key of DOM.Event.iterKeys(name)) {
                         state += key;
                         if (state !== name)
                             states.candidates[state] = (states.candidates[state] || 0) + 1;
@@ -379,17 +379,17 @@ var Mappings = Module("mappings", {
         return keys;
     },
 
-    iterate: function (mode) {
-        let seen = RealSet();
-        for (let hive in this.hives.iterValues())
-            for (let map in array(hive.getStack(mode)).iterValues())
+    iterate: function* (mode) {
+        let seen = new RealSet;
+        for (let hive of this.hives.iterValues())
+            for (let map of array(hive.getStack(mode)).iterValues())
                 if (!seen.add(map.name))
                     yield map;
     },
 
     // NOTE: just normal mode for now
     /** @property {Iterator(Map)} */
-    __iterator__: function () this.iterate(modes.NORMAL),
+    "@@iterator": function () this.iterate(modes.NORMAL),
 
     getDefault: deprecated("mappings.builtin.get", function getDefault(mode, cmd) this.builtin.get(mode, cmd)),
     getUserIterator: deprecated("mappings.user.iterator", function getUserIterator(modes) this.user.iterator(modes)),
@@ -488,16 +488,19 @@ var Mappings = Module("mappings", {
                     ["td", { style: "padding-right: 1em;" }, _("title.Command")],
                     ["td", { style: "padding-right: 1em;" }, _("title.Action")]],
                 ["col", { style: "min-width: 6em; padding-right: 1em;" }],
-                hives.map(([hive, maps]) => let (i = 0) [
-                    ["tr", { style: "height: .5ex;" }],
-                    maps.map(map =>
-                        map.names.map(name =>
-                        ["tr", {},
-                            ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
-                            ["td", {}, modeSign],
-                            ["td", {}, name],
-                            ["td", {}, map.rhs || map.action.toSource()]])),
-                    ["tr", { style: "height: .5ex;" }]])];
+                hives.map(([hive, maps]) => {
+                    let i = 0;
+                    return [
+                        ["tr", { style: "height: .5ex;" }],
+                        maps.map(map =>
+                            map.names.map(name =>
+                            ["tr", {},
+                                ["td", { highlight: "Title" }, !i++ ? hive.name : ""],
+                                ["td", {}, modeSign],
+                                ["td", {}, name],
+                                ["td", {}, map.rhs || map.action.toSource()]])),
+                        ["tr", { style: "height: .5ex;" }]];
+                })];
 
         // E4X-FIXME
         // // TODO: Move this to an ItemList to show this automatically
@@ -631,16 +634,16 @@ var Mappings = Module("mappings", {
                                     literalArg: map.rhs,
                                     ignoreDefaults: true
                                 }
-                                for (map in userMappings(hive))
+                                for (map of userMappings(hive))
                                 if (map.persist)
                             ])
                             .flatten().array;
                 }
             };
-            function userMappings(hive) {
-                let seen = RealSet();
-                for (let stack in values(hive.stacks))
-                    for (let map in array.iterValues(stack))
+            function* userMappings(hive) {
+                let seen = new RealSet;
+                for (let stack of values(hive.stacks))
+                    for (let map of array.iterValues(stack))
                         if (!seen.add(map.id))
                             yield map;
             }
@@ -666,7 +669,7 @@ var Mappings = Module("mappings", {
                     let mapmodes = array.uniq(args["-modes"].map(findMode));
 
                     let found = 0;
-                    for (let mode in values(mapmodes))
+                    for (let mode of values(mapmodes))
                         if (args.bang)
                             args["-group"].clear(mode);
                         else if (args["-group"].has(mode, args[0])) {
@@ -699,20 +702,20 @@ var Mappings = Module("mappings", {
             type: CommandOption.STRING,
             validator: function (value) Array.concat(value).every(findMode),
             completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.description]
-                                    for (mode in values(modes.all))
+                                    for (mode of values(modes.all))
                                     if (!mode.hidden)]
         };
 
         function findMode(name) {
             if (name)
-                for (let mode in values(modes.all))
+                for (let mode of values(modes.all))
                     if (name == mode || name == mode.char
                         || String.toLowerCase(name).replace(/-/g, "_") == mode.name.toLowerCase())
                         return mode;
             return null;
         }
         function uniqueModes(modes) {
-            let chars = [k for ([k, v] in Iterator(modules.modes.modeChars))
+            let chars = [k for ([k, v] of iter(modules.modes.modeChars))
                          if (v.every(mode => modes.indexOf(mode) >= 0))];
 
             return array.uniq(modes.filter(m => chars.indexOf(m.char) < 0)
@@ -736,25 +739,25 @@ var Mappings = Module("mappings", {
 
         addMapCommands("", [modes.NORMAL, modes.VISUAL], "");
 
-        for (let mode in modes.mainModes)
+        for (let mode of modes.mainModes)
             if (mode.char && !commands.get(mode.char + "map", true))
                 addMapCommands(mode.char,
-                               [m.mask for (m in modes.mainModes) if (m.char == mode.char)],
+                               [m.mask for (m of modes.mainModes) if (m.char == mode.char)],
                                mode.displayName);
 
         let args = {
             getMode: function (args) findMode(args["-mode"]),
-            iterate: function (args, mainOnly) {
+            iterate: function* (args, mainOnly) {
                 let modes = [this.getMode(args)];
                 if (!mainOnly)
                     modes = modes[0].allBases;
 
-                let seen = RealSet();
+                let seen = new RealSet;
                 // Bloody hell. --Kris
-                for (let [i, mode] in Iterator(modes))
-                    for (let hive in mappings.hives.iterValues())
-                        for (let map in array.iterValues(hive.getStack(mode)))
-                            for (let name in values(map.names))
+                for (let [i, mode] of iter(modes))
+                    for (let hive of mappings.hives.iterValues())
+                        for (let map of array.iterValues(hive.getStack(mode)))
+                            for (let name of values(map.names))
                                 if (!seen.add(name))
                                     yield {
                                         name: name,
@@ -775,8 +778,10 @@ var Mappings = Module("mappings", {
                             : [],
                         template.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))
                 ],
-                help: function (map) let (char = array.compact(map.modes.map(m => m.char))[0])
-                    char === "n" ? map.name : char ? char + "_" + map.name : "",
+                help: function (map) {
+                    let char = array.compact(map.modes.map(m => m.char))[0];
+                    return char === "n" ? map.name : char ? char + "_" + map.name : "";
+                },
                 headings: ["Command", "Mode", "Group", "Description"]
             }
         };
@@ -798,12 +803,15 @@ var Mappings = Module("mappings", {
                 dactyl.addUsageCommand({
                     __proto__: args,
                     name: [mode.char + "listk[eys]", mode.char + "lk"],
-                    iterateIndex: function (args)
-                            let (self = this, prefix = /^[bCmn]$/.test(mode.char) ? "" : mode.char + "_",
-                                 haveTag = k => hasOwnProperty(help.tags, k))
-                                    ({ helpTag: prefix + map.name, __proto__: map }
-                                     for (map in self.iterate(args, true))
-                                     if (map.hive === mappings.builtin || haveTag(prefix + map.name))),
+                    iterateIndex: function (args) {
+                        let self = this;
+                        let prefix = /^[bCmn]$/.test(mode.char) ? "" : mode.char + "_";
+                        let haveTag = k => hasOwnProperty(help.tags, k);
+
+                        return ({ helpTag: prefix + map.name, __proto__: map }
+                                for (map of self.iterate(args, true))
+                                if (map.hive === mappings.builtin || haveTag(prefix + map.name)));
+                    },
                     description: "List all " + mode.displayName + " mode mappings along with their short descriptions",
                     index: mode.char + "-map",
                     getMode: function (args) mode,
@@ -823,7 +831,7 @@ var Mappings = Module("mappings", {
             [
                 null,
                 function (context, obj, args) [[m.names, m.description]
-                                               for (m in this.iterate(args[0]))]
+                                               for (m of this.iterate(args[0]))]
             ]);
     },
     mappings: function initMappings(dactyl, modules, window) {

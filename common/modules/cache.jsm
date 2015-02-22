@@ -18,8 +18,8 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         this.storage = storage.newMap("cache", { store: true });
         this.providers = {};
         this.globalProviders = this.providers;
-        this.providing = RealSet();
-        this.localProviders = RealSet();
+        this.providing = new RealSet;
+        this.localProviders = new RealSet;
 
         if (JSMLoader.cacheFlush)
             this.flush();

@@ -1,4 +1,4 @@
-// Copyright ©2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright ©2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -83,11 +83,13 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         services.bookmarks.removeObserver(this);
     },
 
-    __iterator__: function () (val for ([, val] in Iterator(bookmarkcache.bookmarks))),
+    "@@iterator": function () values(bookmarkcache.bookmarks),
 
     bookmarks: Class.Memoize(function () this.load()),
 
-    keywords: Class.Memoize(function () array.toObject([[b.keyword, b] for (b in this) if (b.keyword)])),
+    keywords: Class.Memoize(function () array.toObject([[b.keyword, b]
+                                                        for (b of this)
+                                                        if (b.keyword)])),
 
     rootFolders: ["toolbarFolder", "bookmarksMenuFolder", "unfiledBookmarksFolder"]
         .map(s => services.bookmarks[s]),
@@ -123,7 +125,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
 
     get: function (url) {
         let ids = services.bookmarks.getBookmarkIdsForURI(newURI(url), {});
-        for (let id in values(ids))
+        for (let id of values(ids))
             if (id in this.bookmarks)
                 return this.bookmarks[id];
         return null;

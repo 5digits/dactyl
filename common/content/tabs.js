@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -42,7 +42,7 @@ var Tabs = Module("tabs", {
             false, true);
 
         this.timeout(function () {
-            for (let { linkedBrowser: { contentDocument } } in values(this.allTabs))
+            for (let { linkedBrowser: { contentDocument } } of this.allTabs)
                 if (contentDocument.readyState === "complete")
                     dactyl.initDocument(contentDocument);
         }, 1000);
@@ -61,9 +61,9 @@ var Tabs = Module("tabs", {
     _alternates: Class.Memoize(() => [config.tabbrowser.mCurrentTab, null]),
 
     cleanup: function cleanup() {
-        for (let [i, tab] in Iterator(this.allTabs)) {
+        for (let tab of this.allTabs) {
             let node = function node(class_) document.getAnonymousElementByAttribute(tab, "class", class_);
-            for (let elem in values(["dactyl-tab-icon-number", "dactyl-tab-number"].map(node)))
+            for (let elem of values(["dactyl-tab-icon-number", "dactyl-tab-number"].map(node)))
                 if (elem)
                     elem.parentNode.parentNode.removeChild(elem.parentNode);
 
@@ -73,7 +73,7 @@ var Tabs = Module("tabs", {
     },
 
     updateTabCount: function updateTabCount() {
-        for (let [i, tab] in Iterator(this.visibleTabs)) {
+        for (let [i, tab] of iter(this.visibleTabs)) {
             let node = function node(class_) document.getAnonymousElementByAttribute(tab, "class", class_);
             if (!node("dactyl-tab-number")) {
                 let img = node("tab-icon-image");
@@ -101,7 +101,7 @@ var Tabs = Module("tabs", {
         statusline.updateTabCount(true);
     },
 
-    _onTabSelect: function _onTabSelect() {
+    _onTabSelect: function* _onTabSelect() {
         // TODO: is all of that necessary?
         //       I vote no. --Kris
         modes.reset();
@@ -214,7 +214,7 @@ var Tabs = Module("tabs", {
      */
     // FIXME: Only called once...necessary?
     getContentIndex: function getContentIndex(content) {
-        for (let [i, browser] in this.browsers) {
+        for (let browser of this.browsers) {
             if (browser.contentWindow == content || browser.contentDocument == content)
                 return i;
         }
@@ -353,7 +353,7 @@ var Tabs = Module("tabs", {
      * @param {boolean} all If true, match against all tabs. If
      *      false, match only tabs in the current tab group.
      */
-    match: function match(filter, count, regexp, all) {
+    match: function* match(filter, count, regexp, all) {
         if (!filter && count == null)
             yield tabs.getTab();
         else if (!filter)
@@ -369,7 +369,7 @@ var Tabs = Module("tabs", {
                 else
                     var matcher = Styles.matchFilter(filter);
 
-                for (let tab in values(tabs[all ? "allTabs" : "visibleTabs"])) {
+                for (let tab of values(tabs[all ? "allTabs" : "visibleTabs"])) {
                     let browser = tab.linkedBrowser;
                     let uri = browser.currentURI;
                     let title;
@@ -510,7 +510,7 @@ var Tabs = Module("tabs", {
      * Stops loading all tabs.
      */
     stopAll: function stopAll() {
-        for (let [, browser] in this.browsers)
+        for (let browser of this.browsers)
             browser.stop();
     },
 
@@ -620,7 +620,7 @@ var Tabs = Module("tabs", {
             commands.add(params.name, params.description,
                 function (args) {
                     let removed = 0;
-                    for (let tab in tabs.match(args[0], args.count, args.bang, !params.visible)) {
+                    for (let tab of tabs.match(args[0], args.count, args.bang, !params.visible)) {
                         config.removeTab(tab);
                         removed++;
                     }
@@ -643,7 +643,7 @@ var Tabs = Module("tabs", {
         commands.add(["pin[tab]"],
             "Pin tab as an application tab",
             function (args) {
-                for (let tab in tabs.match(args[0], args.count))
+                for (let tab of tabs.match(args[0], args.count))
                     config.browser[!args.bang || !tab.pinned ? "pinTab" : "unpinTab"](tab);
             },
             {
@@ -660,7 +660,7 @@ var Tabs = Module("tabs", {
         commands.add(["unpin[tab]"],
             "Unpin tab as an application tab",
             function (args) {
-                for (let tab in tabs.match(args[0], args.count))
+                for (let tab of tabs.match(args[0], args.count))
                     config.browser.unpinTab(tab);
             },
             {
@@ -719,7 +719,7 @@ var Tabs = Module("tabs", {
         commands.add(["tabd[o]", "bufd[o]"],
             "Execute a command in each tab",
             function (args) {
-                for (let tab in values(tabs.visibleTabs)) {
+                for (let tab of values(tabs.visibleTabs)) {
                     tabs.select(tab);
                     dactyl.execute(args[0], null, true);
                 }
@@ -841,7 +841,7 @@ var Tabs = Module("tabs", {
                     let arg = args[0];
 
                     if (tabs.indexFromSpec(arg) == -1) {
-                        let list = [tab for (tab in tabs.match(args[0], args.count, true))];
+                        let list = [tab for (tab of tabs.match(args[0], args.count, true))];
                         dactyl.assert(list.length, _("error.invalidArgument", arg));
                         dactyl.assert(list.length == 1, _("buffer.multipleMatching", arg));
                         arg = list[0];
@@ -886,7 +886,7 @@ var Tabs = Module("tabs", {
                     if (options.get("activate").has("tabopen"))
                         activate = !activate;
 
-                    for (let i in util.range(0, Math.max(1, args.count)))
+                    for (let i of util.range(0, Math.max(1, args.count)))
                         tabs.cloneTab(tab, activate);
                 }, {
                     argCount: "0",
@@ -982,7 +982,7 @@ var Tabs = Module("tabs", {
                     if (m)
                         window.undoCloseTab(Number(m[1]) - 1);
                     else if (args) {
-                        for (let [i, item] in Iterator(tabs.closedTabs))
+                        for (let [i, item] of iter(tabs.closedTabs))
                             if (item.state.entries[item.state.index - 1].url == args) {
                                 window.undoCloseTab(i);
                                 return;
@@ -1009,7 +1009,7 @@ var Tabs = Module("tabs", {
             commands.add(["undoa[ll]"],
                 "Undo closing of all closed tabs",
                 function (args) {
-                    for (let i in Iterator(tabs.closedTabs))
+                    for (let i of iter(tabs.closedTabs))
                         window.undoCloseTab(0);
 
                 },
@@ -1064,7 +1064,7 @@ var Tabs = Module("tabs", {
             context.compare = CompletionContext.Sort.number;
             context.filters[0] = CompletionContext.Filter.textDescription;
 
-            for (let [id, vals] in Iterator(tabGroups))
+            for (let [id, vals] of iter(tabGroups))
                 context.fork(id, 0, this, function (context, [name, browsers]) {
                     context.title = [name || "Buffers"];
                     context.generate = () =>
@@ -1111,7 +1111,7 @@ var Tabs = Module("tabs", {
         function callback() {
             tabs.timeout(function () { this.updateTabCount(); });
         }
-        for (let event in values(["TabMove", "TabOpen", "TabClose"]))
+        for (let event of ["TabMove", "TabOpen", "TabClose"])
             events.listen(tabContainer, event, callback, false);
         events.listen(tabContainer, "TabSelect", tabs.bound._onTabSelect, false);
     },
@@ -1257,13 +1257,13 @@ var Tabs = Module("tabs", {
             ];
             options.add(["activate", "act"],
                 "Define when newly created tabs are automatically activated",
-                "stringlist", [g[0] for (g in values(activateGroups.slice(1))) if (!g[2] || !prefs.get("browser.tabs." + g[2]))].join(","),
+                "stringlist", [g[0] for (g of values(activateGroups.slice(1))) if (!g[2] || !prefs.get("browser.tabs." + g[2]))].join(","),
                 {
                     values: activateGroups,
                     has: Option.has.toggleAll,
                     setter: function (newValues) {
-                        let valueSet = RealSet(newValues);
-                        for (let group in values(activateGroups))
+                        let valueSet = new RealSet(newValues);
+                        for (let group of values(activateGroups))
                             if (group[2])
                                 prefs.safeSet("browser.tabs." + group[2],
                                               !(valueSet.has("all") ^ valueSet.has(group[0])),
@@ -1292,7 +1292,7 @@ var Tabs = Module("tabs", {
                 {
                     setter: function (values) {
                         let open = 1, restriction = 0;
-                        for (let [, opt] in Iterator(values)) {
+                        for (let opt of values) {
                             if (opt == "tab")
                                 open = 3;
                             else if (opt == "window")

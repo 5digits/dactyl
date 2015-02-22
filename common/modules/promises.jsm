@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -25,10 +25,10 @@ function withCallbacks(fn) {
 }
 
 var Promises = Module("Promises", {
-    _cancel: WeakMap(),
+    _cancel: new WeakMap,
 
     /**
-     * Allows promises to be canceled..
+     * Allows promises to be canceled.
      *
      * @param {Promise} promise The promise to cancel.
      * @param {*} arg Argument to be passed to the cancellation
