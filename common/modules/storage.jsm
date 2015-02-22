@@ -134,7 +134,7 @@ var ArrayStore = Class("ArrayStore", StoreBase, {
     mutate: function mutate(funcName) {
         var _funcName = funcName;
         arguments[0] = this._object;
-        this._object = Array[_funcName].apply(Array, arguments)
+        this._object = apply(Array, _funcName, arguments)
                                        .map(this.makeOwn.bind(this));
         this.fireEvent("change", null);
     },
@@ -271,7 +271,7 @@ var Storage = Module("Storage", {
             throw Error("Invalid argument type");
 
         if (this.isLocalModule) {
-            this.globalInstance.newObject.apply(this.globalInstance, arguments);
+            apply(this.globalInstance, "newObject", arguments);
 
             if (!(key in this.keys) && this.privateMode && key in this.globalInstance.keys) {
                 let obj = this.globalInstance.keys[key];
@@ -799,7 +799,7 @@ var File = Class("File", {
             catch (e) {}
 
             if (isFunction)
-                File.prototype[prop] = util.wrapCallback(function wrapper() this.file[prop].apply(this.file, arguments));
+                File.prototype[prop] = util.wrapCallback(function wrapper() apply(this.file, prop, arguments));
             else
                 Object.defineProperty(File.prototype, prop, {
                     configurable: true,

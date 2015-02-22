@@ -450,7 +450,7 @@ var Modes = Module("modes", {
             for (let mode of array.iterValues(queue))
                 if (!seen.add(mode)) {
                     res.push(mode);
-                    queue.push.apply(queue, mode.bases);
+                    apply(queue, "push", mode.bases);
                 }
             return res;
         }),
@@ -649,7 +649,7 @@ var Modes = Module("modes", {
     },
     prefs: function initPrefs() {
         prefs.watch("accessibility.browsewithcaret",
-                    function () { modes.onCaretChange.apply(modes, arguments); });
+                    function () { apply(modes, "onCaretChange", arguments); });
     }
 });
 

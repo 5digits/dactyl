@@ -241,7 +241,7 @@ var CompletionContext = Class("CompletionContext", {
                 return this.cache.allItemsResult;
             this.cache.allItems = allItems;
 
-            let minStart = Math.min.apply(Math, this.activeContexts.map(function m(c) c.offset));
+            let minStart = apply(Math, "min", this.activeContexts.map(function m(c) c.offset));
             if (minStart == Infinity)
                 minStart = 0;
 
@@ -271,7 +271,7 @@ var CompletionContext = Class("CompletionContext", {
     // Temporary
     get allSubstrings() {
         let contexts = this.activeContexts;
-        let minStart = Math.min.apply(Math, contexts.map(function m(c) c.offset));
+        let minStart = apply(Math, "min", contexts.map(function m(c) c.offset));
         let lists = contexts.map(function m(context) {
             let prefix = context.value.substring(minStart, context.offset);
             return context.substrings.map(function m(s) prefix + s);
@@ -906,7 +906,7 @@ var Completion = Module("completion", {
         _runCompleter: function _runCompleter(name, filter, maxItems, ...args) {
             let context = modules.CompletionContext(filter);
             context.maxItems = maxItems;
-            let res = context.fork.apply(context, ["run", 0, this, name].concat(args));
+            let res = apply(context, "fork", ["run", 0, this, name].concat(args));
             if (res) {
                 if (Components.stack.caller.name === "runCompleter") // FIXME
                     return { items: res.map(function m(i) ({ item: i })) };
@@ -917,14 +917,14 @@ var Completion = Module("completion", {
         },
 
         runCompleter: function runCompleter(name, filter, maxItems) {
-            return this._runCompleter.apply(this, arguments)
+            return apply(this, "_runCompleter", arguments)
                        .items.map(function m(i) i.item);
         },
 
         listCompleter: function listCompleter(name, filter, maxItems, ...args) {
             let context = modules.CompletionContext(filter || "");
             context.maxItems = maxItems;
-            context.fork.apply(context, ["list", 0, this, name].concat(args));
+            apply(context, "fork", ["list", 0, this, name].concat(args));
             context = context.contexts["/list"];
             context.wait(null, true);
 

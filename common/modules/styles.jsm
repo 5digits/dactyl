@@ -299,7 +299,7 @@ var Styles = Module("Styles", {
     _proxy: function (name, args) {
         let obj = this[args[0] ? "system" : "user"];
 
-        return obj[name].apply(obj, Array.slice(args, 1));
+        return apply(obj, name, Array.slice(args, 1));
     },
 
     addSheet: deprecated("Styles#{user,system}.add", function addSheet() this._proxy("add", arguments)),
@@ -720,7 +720,7 @@ var Styles = Module("Styles", {
                 get sites() this.hive.sites,
 
                 __noSuchMethod__: function __noSuchMethod__(meth, args) {
-                    return this.hive[meth].apply(this.hive, args);
+                    return apply(this.hive, meth, args);
                 },
 
                 destroy: function () {

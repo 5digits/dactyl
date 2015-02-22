@@ -414,7 +414,7 @@ var Mappings = Module("mappings", {
             group = this.user;
         }
 
-        let map = group.add.apply(group, arguments);
+        let map = apply(group, "add", arguments);
         map.definedAt = contexts.getCaller(Components.stack.caller);
         return map;
     },
@@ -431,7 +431,7 @@ var Mappings = Module("mappings", {
      * @optional
      */
     addUserMap: deprecated("group.mappings.add", function addUserMap() {
-        let map = this.user.add.apply(this.user, arguments);
+        let map = apply(this.user, "add", arguments);
         map.definedAt = contexts.getCaller(Components.stack.caller);
         return map;
     }),

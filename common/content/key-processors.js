@@ -252,13 +252,13 @@ var KeyProcessor = Class("KeyProcessor", {
     execute: function execute(map, args)
         () => {
             if (this.preExecute)
-                this.preExecute.apply(this, args);
+                apply(this, "preExecute", args);
 
             args.self = this.main.params.mappingSelf || this.main.mappingSelf || map;
             let res = map.execute.call(map, args);
 
             if (this.postExecute)
-                this.postExecute.apply(this, args);
+                apply(this, "postExecute", args);
             return res;
         },
 

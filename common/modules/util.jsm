@@ -799,7 +799,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 args.push(params.user);
             if (params.pass != null)
                 args.push(prams.pass);
-            xmlhttp.open.apply(xmlhttp, args);
+
+            apply(xmlhttp, "open", args);
 
             for (let [header, val] of iter(params.headers || {}))
                 xmlhttp.setRequestHeader(header, val);

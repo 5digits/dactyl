@@ -760,7 +760,7 @@ var JavaScript = Module("javascript", {
                 return this.rootNode;
             }),
 
-            __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.rootNode].concat(args))
+            __noSuchMethod__: function (meth, args) apply(Buffer, meth, [this.rootNode].concat(args))
         });
 
         modules.CommandREPLMode = Class("CommandREPLMode", modules.CommandMode, {
@@ -859,7 +859,7 @@ var JavaScript = Module("javascript", {
     mappings: function initMappings(dactyl, modules, window) {
         const { mappings, modes } = modules;
 
-        function bind(...args) mappings.add.apply(mappings, [[modes.REPL]].concat(args))
+        function bind(...args) apply(mappings, "add", [[modes.REPL]].concat(args))
 
         bind(["<Return>"], "Accept the current input",
              function ({ self }) { self.accept(); });

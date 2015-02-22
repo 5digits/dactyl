@@ -204,7 +204,7 @@ var Buffer = Module("Buffer", {
     /**
      * @property {number} True when the buffer is fully loaded.
      */
-    get loaded() Math.min.apply(null,
+    get loaded() apply(Math, "min",
         this.allFrames()
             .map(frame => ["loading", "interactive", "complete"]
                               .indexOf(frame.document.readyState))),

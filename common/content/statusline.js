@@ -237,7 +237,7 @@ var StatusLine = Module("statusline", {
     },
 
     unsafeURI: deprecated("util.unsafeURI", { get: function unsafeURI() util.unsafeURI }),
-    losslessDecodeURI: deprecated("util.losslessDecodeURI", function losslessDecodeURI() util.losslessDecodeURI.apply(util, arguments)),
+    losslessDecodeURI: deprecated("util.losslessDecodeURI", function losslessDecodeURI() apply(util, "losslessDecodeURI", arguments)),
 
     /**
      * Update the URL displayed in the status line. Also displays status

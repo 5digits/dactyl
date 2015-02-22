@@ -36,7 +36,7 @@ var Binding = Class("Binding", {
         configurable: true,
         writeable: true,
         value: function __noSuchMethod__(meth, args) {
-            return this.node[meth].apply(this.node, args);
+            return apply(this.node, meth, args);
         }
     })
 }, {
@@ -88,7 +88,7 @@ var Binding = Class("Binding", {
     Object.defineProperty(Binding.prototype, key, {
         configurable: true,
         enumerable: false,
-        value: function () this.node[key].apply(this.node, arguments),
+        value: function () apply(this.node, key, arguments),
         writable: true
     });
 });

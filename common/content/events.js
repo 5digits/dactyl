@@ -57,7 +57,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
                         capture,
                         allowUntrusted];
 
-            target.addEventListener.apply(target, args.slice(2));
+            apply(target, "addEventListener", args.slice(2));
             this.sessionListeners.push(args);
         }
     },
@@ -83,7 +83,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
                                && args[3].wrapped == events[args[2]]
                                && args[4] == capture) {
 
-                elem.removeEventListener.apply(elem, args.slice(2));
+                apply(elem, "removeEventListener", args.slice(2));
                 return false;
             }
             return elem;
@@ -426,7 +426,7 @@ var Events = Module("events", {
 
     canonicalKeys: deprecated("DOM.Event.canonicalKeys", { get: function canonicalKeys() DOM.Event.bound.canonicalKeys }),
     create:        deprecated("DOM.Event", function create() DOM.Event.apply(null, arguments)),
-    dispatch:      deprecated("DOM.Event.dispatch", function dispatch() DOM.Event.dispatch.apply(DOM.Event, arguments)),
+    dispatch:      deprecated("DOM.Event.dispatch", function dispatch() apply(DOM.Event, "dispatch", arguments)),
     fromString:    deprecated("DOM.Event.parse", { get: function fromString() DOM.Event.bound.parse }),
     iterKeys:      deprecated("DOM.Event.iterKeys", { get: function iterKeys() DOM.Event.bound.iterKeys }),
 
@@ -435,7 +435,7 @@ var Events = Module("events", {
             return toString.supercall(this);
 
         deprecated.warn(toString, "toString", "DOM.Event.stringify");
-        return DOM.Event.stringify.apply(DOM.Event, arguments);
+        return apply(DOM.Event, "stringify", arguments);
     },
 
     get defaultTarget() dactyl.focusedElement || content.document.body || document.documentElement,

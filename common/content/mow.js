@@ -66,7 +66,7 @@ var MOW = Module("mow", {
         });
     },
 
-    __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.body].concat(args)),
+    __noSuchMethod__: function (meth, args) apply(Buffer, meth, [this.body].concat(args)),
 
     get widget() this.widgets.multilineOutput,
 

@@ -265,7 +265,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             storage.addObserver("sanitizer",
                 function (key, event, arg) {
                     if (names.has(event))
-                        params.action.apply(params, arg);
+                        apply(params, "action", arg);
                 },
                 getWindow(params.action));
 

@@ -270,7 +270,7 @@ function literal(comment) {
 function apply(obj, meth, args) {
     // The function's own apply method breaks in strange ways
     // when using CPOWs.
-    Function.prototype.apply.call(obj[meth], obj, args);
+    return Function.prototype.apply.call(obj[meth], obj, args);
 }
 
 /**
@@ -354,7 +354,7 @@ function deprecated(alternative, fn) {
 
     let name,
         func = callable(fn) ? fn
-                            : function () this[fn].apply(this, arguments);
+                            : function () apply(this, fn, arguments);
 
     function deprecatedMethod() {
         let obj = !this                      ? "" :
@@ -561,7 +561,7 @@ function set() {
 Object.keys(Set).forEach(function (meth) {
     set[meth] = function proxy() {
         deprecated.warn(proxy, "set." + meth, "Set." + meth);
-        return Set[meth].apply(Set, arguments);
+        return apply(Set, meth, arguments);
     };
 });
 
@@ -617,7 +617,7 @@ function curry(fn, length, self, acc) {
 var bind = function bind(meth, self, ...args) {
     let func = callable(meth) ? meth : self[meth];
 
-    return func.bind.apply(func, [self].concat(args));
+    return apply(func, "bind", [self].concat(args));
 }
 
 /**
@@ -1728,12 +1728,12 @@ const Iter = Class("Iter", {
             this.iter = iter.__iterator__();
 
         if (this.iter.finalize)
-            this.finalize = function finalize() this.iter.finalize.apply(this.iter, arguments);
+            this.finalize = function finalize() apply(this.iter, "finalize", arguments);
     },
 
     next: function next() this.iter.next(),
 
-    send: function send() this.iter.send.apply(this.iter, arguments),
+    send: function send() apply(this.iter, "send", arguments),
 
     "@@iterator": function () this.iter,
 });
@@ -1915,7 +1915,7 @@ var array = Class("array", Array, {
 let iterProto = Iter.prototype;
 Object.keys(iter).forEach(function (k) {
     iterProto[k] = function (...args) {
-        let res = iter[k].apply(iter, [this].concat(args));
+        let res = apply(iter, k, [this].concat(args));
         if (isinstance(res, ["Iterator", "Generator"]))
             return Iter(res);
         return res;
@@ -1925,7 +1925,7 @@ Object.keys(iter).forEach(function (k) {
 Object.keys(array).forEach(function (k) {
     if (!(k in iterProto))
         iterProto[k] = function (...args) {
-            let res = array[k].apply(array, [this.toArray()].concat(args));
+            let res = apply(array, k, [this.toArray()].concat(args));
             if (isinstance(res, ["Iterator", "Generator"]))
                 return Iter(res);
             if (isArray(res))
@@ -1938,7 +1938,7 @@ Object.getOwnPropertyNames(Array.prototype).forEach(function (k) {
     if (!(k in iterProto) && callable(Array.prototype[k]))
         iterProto[k] = function () {
             let ary = iter(this).toArray();
-            let res = ary[k].apply(ary, arguments);
+            let res = apply(ary, k, arguments);
             if (isArray(res))
                 return array(res);
             return res;

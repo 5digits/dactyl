@@ -1002,12 +1002,7 @@ var DOM = Class("DOM", {
                                  for (k in opts)
                                  if (k in params)));
 
-            // Because security boundaries :/
-            let ary = new doc.defaultView.Array;
-            for (let arg of args)
-                ary.push(params[arg]);
-
-            evt["init" + t + "Event"].apply(evt, ary);
+            apply(evt, "init" + t + "Event", args.map(arg => params[arg]));
             return evt;
         }
     }, {

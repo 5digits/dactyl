@@ -596,7 +596,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
     _add: function _add(names, description, action, extra={}, replace=false) {
         const { contexts } = this.modules;
         extra.definedAt = contexts.getCaller(Components.stack.caller.caller);
-        return this.add.apply(this, arguments);
+        return apply(this, "add", arguments);
     },
 
     /**
@@ -837,7 +837,7 @@ var Commands = Module("commands", {
             group = this.user;
         }
 
-        return group._add.apply(group, arguments);
+        return apply(group, "_add", arguments);
     },
     addUserCommand: deprecated("group.commands.add", { get: function addUserCommand() this.user.bound._add }),
     getUserCommands: deprecated("iter(group.commands)", function getUserCommands() iter(this.user).toArray()),

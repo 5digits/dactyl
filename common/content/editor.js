@@ -1334,7 +1334,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             },
             { count: true });
 
-        bind = function bind(...args) mappings.add.apply(mappings, [[modes.AUTOCOMPLETE]].concat(args));
+        bind = function bind(...args) apply(mappings, "add", [[modes.AUTOCOMPLETE]].concat(args));
 
         bind(["<Esc>"], "Return to Insert mode",
              () => Events.PASS_THROUGH);

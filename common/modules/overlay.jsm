@@ -82,7 +82,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                         capture,
                         allowUntrusted];
 
-            target.addEventListener.apply(target, args.slice(1));
+            apply(target, "addEventListener", args.slice(1));
             listeners.push(args);
         }
     },
@@ -105,7 +105,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         this.setData(doc, "listeners", listeners.filter(function (args) {
             let elem = args[0].get();
             if (target == null || elem == target && args[1] == event && args[2].wrapped == callback && args[3] == capture) {
-                elem.removeEventListener.apply(elem, args.slice(1));
+                apply(elem, "removeEventListener", args.slice(1));
                 return false;
             }
             return elem;

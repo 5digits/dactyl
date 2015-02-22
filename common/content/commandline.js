@@ -957,7 +957,7 @@ var CommandLine = Module("commandline", {
         }
 
         this.savingOutput = true;
-        dactyl.trapErrors.apply(dactyl, [fn, self].concat(args));
+        apply(dactyl, "trapErrors", [fn, self].concat(args));
         this.savingOutput = false;
         return output.map(elem => elem instanceof Node ? DOM.stringify(elem) : elem)
                      .join("\n");
@@ -1755,7 +1755,7 @@ var CommandLine = Module("commandline", {
                 return Events.PASS;
             });
 
-        let bind = function bind(...args) mappings.add.apply(mappings, [[modes.COMMAND_LINE]].concat(args));
+        let bind = function bind(...args) apply(mappings, "add", [[modes.COMMAND_LINE]].concat(args));
 
         bind(["<Esc>", "<C-[>"], "Stop waiting for completions or exit Command Line mode",
              function ({ self }) {

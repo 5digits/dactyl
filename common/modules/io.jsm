@@ -306,7 +306,7 @@ var IO = Module("io", {
      */
     sourcing: null,
 
-    expandPath: deprecated("File.expandPath", function expandPath() File.expandPath.apply(File, arguments)),
+    expandPath: deprecated("File.expandPath", function expandPath() apply(File, "expandPath", arguments)),
 
     /**
      * Returns the first user RC file found in *dir*.
@@ -523,7 +523,7 @@ var IO = Module("io", {
                 stdin.write(input);
 
             function result(status, output) ({
-                __noSuchMethod__: function (meth, args) this.output[meth].apply(this.output, args),
+                __noSuchMethod__: function (meth, args) apply(this.output, meth, args),
                 valueOf: function () this.output,
                 output: output.replace(/^(.*)\n$/, "$1"),
                 returnValue: status,

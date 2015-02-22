@@ -130,7 +130,7 @@ var Services = Module("Services", {
 
             if (service.init && args.length) {
                 if (service.callable)
-                    res[service.init].apply(res, args);
+                    apply(res, service.init, args);
                 else
                     res[service.init] = args[0];
             }
