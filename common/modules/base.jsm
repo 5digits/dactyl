@@ -1742,10 +1742,10 @@ const Iter = Class("Iter", {
             "Dear sir or madam,\n" +
             "You are attempting to use this iterator object as a\n" +
             "deprecated, pre-ES6 iterator, which is known to cause\n" +
-            "major problems. Please use it in a for-of loop instead.\n" +
+            "major problems. Please use it in a for-of loop instead.\n\n" +
             "Since I don't know how far back in the call chain you\n" +
             "originate, I'm just going to give you an entire stack.\n" +
-            "Here you go:\n" + Error().stack);
+            "Here you go:\n\n" + Error().stack);
 
         throw Error("Iter object used as a pre-ES6 iterator");
     },

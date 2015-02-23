@@ -1486,7 +1486,7 @@ var DOM = Class("DOM", {
                         yield elem;
 
                 if (matcher.css)
-                    for (let [, elem] of iter(util.withProperErrors("querySelectorAll", node, matcher.css)))
+                    for (let elem of util.withProperErrors("querySelectorAll", node, matcher.css))
                         yield elem;
             }, {
                 css: css.join(", "),
