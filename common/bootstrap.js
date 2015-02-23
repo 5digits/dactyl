@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2014 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2010-2015 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -113,7 +113,7 @@ let JSMLoader = {
         if (typeof arg !== "string")
             this._atexit.push(arguments);
         else
-            for each (let [fn, self] in this._atexit)
+            for (let [fn, self] of this._atexit)
                 try {
                     fn.call(self, arg);
                 }
@@ -127,7 +127,7 @@ let JSMLoader = {
         if (name.indexOf(":") === -1)
             urls = this.config["module-paths"].map(path => path + name + ".jsm");
 
-        for each (let url in urls)
+        for (let url of urls)
             try {
                 var uri = this.getTarget(url);
                 if (uri in this.globals)
@@ -171,7 +171,7 @@ let JSMLoader = {
 
         let module = this.modules[name];
         if (target)
-            for each (let symbol in module.EXPORTED_SYMBOLS)
+            for (let symbol of module.EXPORTED_SYMBOLS)
                 try {
                     Object.defineProperty(target, symbol, {
                         configurable: true,
@@ -293,8 +293,8 @@ function init() {
 
     Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader = !Cu.unload && JSMLoader;
 
-    for each (let component in components)
-        component.register();
+    for (let key in components)
+        components[key].register();
 
     updateVersion();
 
@@ -419,7 +419,7 @@ function shutdown(data, reason) {
         JSMLoader.atexit(strReason);
         JSMLoader.cleanup(strReason);
 
-        for each (let [category, entry] in JSMLoader.config.categories)
+        for (let [category, entry] of JSMLoader.config.categories)
             categoryManager.deleteCategoryEntry(category, entry, false);
         for (let resource in JSMLoader.config.resources)
             resourceProto.setSubstitution(resource, null);
@@ -449,9 +449,9 @@ function uninstall(data, reason) {
 }
 
 function reasonToString(reason) {
-    for each (let name in ["disable", "downgrade", "enable",
-                           "install", "shutdown", "startup",
-                           "uninstall", "upgrade"])
+    for (let name of ["disable", "downgrade", "enable",
+                      "install", "shutdown", "startup",
+                      "uninstall", "upgrade"])
         if (reason == global["ADDON_" + name.toUpperCase()] ||
             reason == global["APP_" + name.toUpperCase()])
             return name;
