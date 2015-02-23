@@ -1736,6 +1736,19 @@ const Iter = Class("Iter", {
     send: function send() apply(this.iter, "send", arguments),
 
     "@@iterator": function () this.iter,
+
+    __iterator__: function () {
+        Cu.reportError(
+            "Dear sir or madam,\n" +
+            "You are attempting to use this iterator object as a\n" +
+            "deprecated, pre-ES6 iterator, which is known to cause\n" +
+            "major problems. Please use it in a for-of loop instead.\n" +
+            "Since I don't know how far back in the call chain you\n" +
+            "originate, I'm just going to give you an entire stack.\n" +
+            "Here you go:\n" + Error().stack);
+
+        throw Error("Iter object used as a pre-ES6 iterator");
+    },
 });
 iter.Iter = Iter;
 
