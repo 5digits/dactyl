@@ -63,6 +63,8 @@ let components = {};
 let getURI = null;
 
 let JSMLoader = {
+    DEBUG_HANGS: false,
+
     SANDBOX: Cu.nukeSandbox,
 
     get addon() addon,
@@ -250,7 +252,13 @@ function init() {
     JSMLoader.config = manifest;
 
     bootstrap_jsm = module(BOOTSTRAP);
-    if (!JSMLoader.SANDBOX)
+    if (JSMLoader.DEBUG_HANGS) {
+        bootstrap = Services.ww.openWindow(
+            null, "chrome://dactyl/content/blank.xul",
+            "dactyl-parent", "chrome,dialog,titlebar", null);
+        Services.scriptloader.loadSubScript(BOOTSTRAP, bootstrap);
+    }
+    else if (!JSMLoader.SANDBOX)
         bootstrap = bootstrap_jsm;
     else {
         bootstrap = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance(),

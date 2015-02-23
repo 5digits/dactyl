@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE window>
+
+<?xml-stylesheet href="chrome://global/skin/"?>
+
+<window id="dactyl-blank-window" title="Dactyl">
+  <description>Hello, there.</description>
+</window>
+
+<!-- vim: set sw=2 sts=2 et: -->
