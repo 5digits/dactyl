@@ -201,9 +201,11 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                         ["column", { flex: "1" }],
                                         ["column", { flex: "1" }]],
                                     ["rows", {},
-                                         template.map(util.range(0, Math.ceil(items.length / 2)), i =>
+                                         template.map(util.range(0, Math.ceil(items.length / 2)),
+                                                      i =>
                                              ["row", {},
-                                                 template.map(items.slice(i * 2, i * 2 + 2), item =>
+                                                 template.map(items.slice(i * 2, i * 2 + 2),
+                                                              item =>
                                                     ["checkbox", { xmlns: XUL, label: item.description, preference: branch + item.name }])])]]]
                         }
                     });

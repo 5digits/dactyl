@@ -723,8 +723,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         function add(ary) {
             description.push(
                 ["dl", {}, template.map(ary,
-                                        function ([a, b]) [["dt", {}, a], " ",
-                                                           ["dd", {}, b]])]);
+                                        ([a, b]) => [["dt", {}, a], " ",
+                                                     ["dd", {}, b]])]);
         }
 
         if (obj.completer && false)
@@ -1270,7 +1270,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         cache.register("help/index.xml", function () {
             return '<?xml version="1.0"?>\n' +
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
-                       template.map(dactyl.indices, ([name, iter]) =>
+                       template.map(iter(dactyl.indices),
+                                    ([name, iter]) =>
                            ["dl", { insertafter: name + "-index" },
                                template.map(iter(), util.identity)],
                            "\n\n")]);
@@ -1280,7 +1281,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return '<?xml version="1.0"?>\n' +
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
                        ["dl", { insertafter: "dialog-list" },
-                           template.map(config.dialogs, ([name, val]) =>
+                           template.map(iter(config.dialogs),
+                                        ([name, val]) =>
                                (!val[2] || val[2]())
                                    ? [["dt", {}, name],
                                       ["dd", {}, val[0]]]
@@ -1293,8 +1295,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
                        ["dl", { insertafter: "sanitize-items" },
                            template.map(options.get("sanitizeitems").values
-                                                .sort((a, b) => String.localeCompare(a.name,
-                                                                                     b.name)),
+                                               .sort((a, b) => String.localeCompare(a.name,
+                                                                                    b.name)),
                                ({ name, description }) =>
                                [["dt", {}, name],
                                 ["dd", {}, template.linkifyHelp(description, true)]],

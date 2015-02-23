@@ -598,7 +598,7 @@ var DOM = Class("DOM", {
                     res.push(["span", { highlight: "HelpXML" },
                         ["span", { highlight: "HelpXMLTagStart" },
                             "<", namespaced(elem), " ",
-                            template.map(array.iterValues(elem.attributes),
+                            template.map(elem.attributes,
                                 attr => [
                                     ["span", { highlight: "HelpXMLAttribute" }, namespaced(attr)],
                                     ["span", { highlight: "HelpXMLString" }, attr.value]

@@ -490,7 +490,7 @@ var JavaScript = Module("javascript", {
                     if (callable(func)) {
                         let [, prefix, args] = /^(function .*?)\((.*?)\)/.exec(Function.prototype.toString.call(func));
                         let n = this._get(i).comma.length;
-                        args = template.map(Iterator(args.split(", ")),
+                        args = template.map(args.split(", ").entries(),
                             ([i, arg]) => ["span", { highlight: i == n ? "Filter" : "" }, arg],
                             ",\u00a0");
                         this.context.message = ["", prefix + "(", args, ")"];
