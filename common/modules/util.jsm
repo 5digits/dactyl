@@ -798,7 +798,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (params.user != null || params.pass != null)
                 args.push(params.user);
             if (params.pass != null)
-                args.push(prams.pass);
+                args.push(params.pass);
 
             apply(xmlhttp, "open", args);
 

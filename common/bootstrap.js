@@ -263,6 +263,7 @@ function init() {
     else {
         bootstrap = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance(),
                                { sandboxName: BOOTSTRAP,
+                                 addonId: addon.id,
                                  metadata: { addonID: addon.id } });
         Services.scriptloader.loadSubScript(BOOTSTRAP, bootstrap);
     }
@@ -407,8 +408,8 @@ FactoryProxy.prototype = {
         return this.module;
     },
     createInstance: function (iids) {
-        return let (factory = this.module.NSGetFactory(this.classID))
-            factory.createInstance.apply(factory, arguments);
+        let factory = this.module.NSGetFactory(this.classID);
+        return factory.createInstance.apply(factory, arguments);
     }
 }
 
