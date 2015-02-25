@@ -88,11 +88,13 @@ var DOM = Class("DOM", {
 
     nodes: Class.Memoize(function () ({})),
 
-    get items() (function* () {
-        for (let i = 0; i < this.length; i++)
-            /* FIXME: Symbols */
-            yield this.eq(i);
-    })(),
+    get items() {
+        return function* () {
+            for (let i = 0; i < this.length; i++)
+                /* FIXME: Symbols */
+                yield this.eq(i);
+        }.call(this);
+    },
 
     get document() this._document || this[0] && (this[0].ownerDocument || this[0].document || this[0]),
     set document(val) this._document = val,
