@@ -1380,7 +1380,7 @@ var StructBase = Class("StructBase", Array, {
     // Iterator over our named members
     "@@iterator": function* struct__iterator__() {
         for (let k of keys(this.members))
-            yield [k, this[k]];
+            yield this[k];
     }
 }, {
     fromArray: function fromArray(ary) {
