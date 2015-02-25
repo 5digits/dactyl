@@ -256,7 +256,7 @@ var Buffer = Module("Buffer", {
     /**
      * @property {nsIURI} The current top-level document's URI.
      */
-    get uri()  util.newURI(this.win.location.href),
+    get uri() util.newURI(this.win.location.href),
 
     /**
      * @property {nsIURI} The current top-level document's URI, sans

@@ -510,7 +510,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 if (acc.length == patterns.length)
                     res.push(array(substrings).zip(acc).flatten().join(""));
                 else
-                    for (let [, pattern] of Iterator(patterns[acc.length]))
+                    for (let pattern of patterns[acc.length])
                         rec(acc.concat(pattern));
             };
             rec([]);

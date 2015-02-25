@@ -278,7 +278,7 @@ var Marks = Module("marks", {
 
     _onPageLoad: function _onPageLoad(event) {
         let win = event.originalTarget.defaultView;
-        for (let [i, mark] in Iterator(this._pendingJumps)) {
+        for (let [i, mark] of this._pendingJumps.entries()) {
             if (win && win.location.href == mark.location) {
                 this._scrollTo(mark);
                 this._pendingJumps.splice(i, 1);

@@ -178,7 +178,7 @@ var QuickMarks = Module("quickmarks", {
     completion: function initCompletion() {
         completion.quickmark = function (context) {
             context.title = ["QuickMark", "URL"];
-            context.generate = () => Iterator(quickmarks._qmarks);
+            context.generate = () => iter(quickmarks._qmarks);
         };
     },
     mappings: function initMappings() {

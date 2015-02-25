@@ -449,9 +449,9 @@ var Highlights = Module("Highlight", {
     },
     javascript: function initJavascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter(["get", "set"].map(m => highlight[m]),
-            [ (context, obj, args) => Iterator(highlight.highlight) ]);
+            [ (context, obj, args) => iter(highlight.highlight) ]);
         modules.JavaScript.setCompleter(["highlightNode"].map(m => highlight[m]),
-            [ null, (context, obj, args) => Iterator(highlight.highlight) ]);
+            [ null, (context, obj, args) => iter(highlight.highlight) ]);
     }
 });
 

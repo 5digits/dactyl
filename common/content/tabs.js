@@ -999,7 +999,7 @@ var Tabs = Module("tabs", {
                         context.keys = { text: function ([i, { state: s }]) (i + 1) + ": " + s.entries[s.index - 1].url,
                                          description: "[1].title",
                                          icon: "[1].image" };
-                        context.completions = Iterator(tabs.closedTabs);
+                        context.completions = tabs.closedTabs.entries();
                     },
                     count: true,
                     literal: 0,

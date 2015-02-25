@@ -588,7 +588,7 @@ var RangeFind = Class("RangeFind", {
 
             let anonNodes = doc.getAnonymousNodes(doc.documentElement);
             if (anonNodes) {
-                for (let [, elem] of iter(anonNodes)) {
+                for (let elem of anonNodes) {
                     let range = RangeFind.nodeContents(elem);
                     pushRange(RangeFind.endpoint(range, true), RangeFind.endpoint(range, false));
                 }

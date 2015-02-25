@@ -275,11 +275,11 @@ var AutoCommands = Module("autocommands", {
     },
     completion: function initCompletion() {
         completion.autocmdEvent = function autocmdEvent(context) {
-            context.completions = Iterator(config.autocommands);
+            context.completions = iter(config.autocommands);
         };
     },
     javascript: function initJavascript() {
-        JavaScript.setCompleter(AutoCmdHive.prototype.get, [() => Iterator(config.autocommands)]);
+        JavaScript.setCompleter(AutoCmdHive.prototype.get, [() => iter(config.autocommands)]);
     },
     options: function initOptions() {
         options.add(["eventignore", "ei"],

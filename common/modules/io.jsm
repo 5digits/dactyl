@@ -98,7 +98,7 @@ var IO = Module("io", {
 
             outer:
                 for (let dir of values(dirs)) {
-                    for (let [, path] of iter(paths)) {
+                    for (let path of paths) {
                         let file = dir.child(path);
 
                         dactyl.echomsg(_("io.searchingFor", JSON.stringify(file.path)), 3);

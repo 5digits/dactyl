@@ -1339,8 +1339,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 opts: update({
                     s: ["Status bar", [statusline.statusBar.id]]
                 }, config.guioptions),
+
                 setter: function (opts) {
-                    for (let [opt, [, ids]] in Iterator(this.opts)) {
+                    for (let [opt, [, ids]] of iter(this.opts)) {
                         ids.map(id => document.getElementById(id))
                            .forEach(function (elem) {
                             if (elem)

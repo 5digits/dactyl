@@ -167,20 +167,23 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             if (!item.builtin && (!persistent || item.persistent) && item.name !== "all")
         ];
 
-        function prefOverlay(branch, persistent, local) update(Object.create(local), {
-            before: [
-                ["preferences", { id: branch.substr(Item.PREFIX.length) + "history",
-                                  xmlns: "xul" },
-                  template.map(ourItems(persistent), item =>
-                      ["preference", { type: "bool", id: branch + item.name, name: branch + item.name }])]
-            ],
-            init: function init(win) {
-                let pane = win.document.getElementById("SanitizeDialogPane");
-                for (let [, pref] of iter(pane.preferences))
-                    pref.updateElements();
-                init.superapply(this, arguments);
-            }
-        });
+        function prefOverlay(branch, persistent, local) {
+            return update(Object.create(local),
+                          {
+                before: [
+                    ["preferences", { id: branch.substr(Item.PREFIX.length) + "history",
+                                      xmlns: "xul" },
+                      template.map(ourItems(persistent), item =>
+                          ["preference", { type: "bool", id: branch + item.name, name: branch + item.name }])]
+                ],
+                init: function init(win) {
+                    let pane = win.document.getElementById("SanitizeDialogPane");
+                    for (let pref of pane.preferences)
+                        pref.updateElements();
+                    init.superapply(this, arguments);
+                }
+            });
+        }
 
         util.timeout(function () { // Load order issue...
 
