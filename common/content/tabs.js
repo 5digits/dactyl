@@ -101,7 +101,7 @@ var Tabs = Module("tabs", {
         statusline.updateTabCount(true);
     },
 
-    _onTabSelect: function* _onTabSelect() {
+    _onTabSelect: function _onTabSelect() {
         // TODO: is all of that necessary?
         //       I vote no. --Kris
         modes.reset();
