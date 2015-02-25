@@ -754,7 +754,7 @@ var Option = Class("Option", {
             acceptable = completions.call(this);
 
         if (isArray(acceptable))
-            acceptable = new RealSet(acceptable.map(([k]) => k));
+            acceptable = new RealSet(acceptable.map((v) => v[0]));
         else
             acceptable = new RealSet(this.parseKey(k)
                                      for (k of Object.keys(acceptable)));

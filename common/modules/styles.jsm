@@ -612,7 +612,7 @@ var Styles = Module("Styles", {
                     let sheet = args["-group"].get(args["-name"]);
                     if (args.completeArg == 0) {
                         if (sheet)
-                            context.completions = [[sheet.sites.join(","), "Current Value"]];
+                            context.completions = [[sheet.sites.join(","), _("option.currentValue")]];
                         context.fork("sites", 0, Styles, "completeSite", window.content, args["-group"]);
                     }
                     else if (args.completeArg == 1) {

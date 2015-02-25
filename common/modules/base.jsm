@@ -1724,7 +1724,7 @@ update(iter, {
 const Iter = Class("Iter", {
     init: function init(iter) {
         this.iter = iter;
-        if ("__iterator__" in iter)
+        if (!(Symbol.iterator in iter) && "__iterator__" in iter)
             this.iter = iter.__iterator__();
 
         if (this.iter.finalize)

@@ -492,8 +492,11 @@ var CompletionContext = Class("CompletionContext", {
         // Item formatters
         this.processor = Array.slice(this.process);
         if (!this.anchored)
-            this.processor[0] = function processor_0(item, text) self.process[0].call(self, item,
+            this.processor[0] = function processor_0(item, text) {
+                return self.process[0].call(
+                    self, item,
                     template.highlightFilter(item.text, self.filter, null, item.isURI));
+            };
 
         try {
             // Item prototypes
@@ -659,7 +662,10 @@ var CompletionContext = Class("CompletionContext", {
                 }
                 catch (e) {
                     util.reportError(e);
-                    util.dump(util.prettifyJSON(this.createRow(this.items[idx]), null, true));
+                    try {
+                        util.dump(util.prettifyJSON(this.createRow(this.items[idx]), null, true));
+                    }
+                    catch (e) {}
                     cache[idx] = DOM.fromJSON(
                         ["div", { highlight: "CompItem", style: "white-space: nowrap" },
                             ["li", { highlight: "CompResult" }, this.text + "\u00a0"],
