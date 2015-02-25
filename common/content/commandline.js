@@ -959,7 +959,7 @@ var CommandLine = Module("commandline", {
         this.savingOutput = true;
         apply(dactyl, "trapErrors", [fn, self].concat(args));
         this.savingOutput = false;
-        return output.map(elem => elem instanceof Node ? DOM.stringify(elem) : elem)
+        return output.map(elem => elem instanceof Ci.nsIDOMNode ? DOM.stringify(elem) : elem)
                      .join("\n");
     }
 }, {

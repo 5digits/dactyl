@@ -139,9 +139,11 @@ var MOW = Module("mow", {
 
         body.append(output);
 
-        let str = typeof data !== "xml" && data.message || data;
-        if (!silent)
-            dactyl.triggerObserver("echoMultiline", data, highlightGroup, output[0]);
+        if (!silent) {
+            let str = data.message || data;
+            let msg = isString(str) ? str : output[0];
+            dactyl.triggerObserver("echoMultiline", data, highlightGroup, msg);
+        }
 
         this._timer.tell();
         if (!this.visible)
