@@ -1406,9 +1406,15 @@ var Commands = Module("commands", {
 
         // Fix me.
         if (isString(sep))
-            sep = RegExp(sep || "(?:)");
+            sep = RegExp(sep);
+
         sep = sep != null ? sep : /\s/;
-        let re1 = RegExp("^" + (sep.source === "(?:)" ? "(?!)" : sep.source));
+
+        if (sep.source == "" || sep.source == "(?:)")
+            var re1 = /^(?!)/;
+        else
+            re1 = RegExp("^" + sep.source);
+
         let re2 = RegExp(/^()((?:[^\\S"']|\\.)+)((?:\\$)?)/.source.replace("S", sep.source));
 
         while (str.length && !re1.test(str)) {
