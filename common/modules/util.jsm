@@ -828,14 +828,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} url The URL to fetch.
      * @param {object} params Parameter object, as in #httpGet.
      */
-    fetchUrl: promises.withCallbacks(function fetchUrl([accept, reject, deferred], url, params) {
-        params = update({}, params);
-        params.onload = accept;
-        params.onerror = reject;
+    fetchUrl: function fetchUrl(url, params) {
+        return new CancelablePromise((accept, reject, canceled) => {
+            params = update({}, params);
+            params.onload = accept;
+            params.onerror = reject;
 
-        let req = this.httpGet(url, params);
-        promises.oncancel(deferred, req.cancel);
-    }),
+            let req = this.httpGet(url, params);
+            canceled.then(req.cancel);
+        });
+    },
 
     /**
      * The identity function.

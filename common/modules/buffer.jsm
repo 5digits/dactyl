@@ -86,26 +86,28 @@ var Buffer = Module("Buffer", {
              * @param {string} pref The name of the preference to return.
              * @returns {Promise<*>}
              */
-            get: promises.withCallbacks(function get([resolve, reject], pref) {
-                let val = services.contentPrefs.getCachedByDomainAndName(
-                    self.uri.spec, pref, self.loadContext);
+            get: function get(pref) {
+                return new Promise((resolve, reject) => {
+                    let val = services.contentPrefs.getCachedByDomainAndName(
+                        self.uri.spec, pref, self.loadContext);
 
-                let found = false;
-                if (val)
-                    resolve(val.value);
-                else
-                    services.contentPrefs.getByDomainAndName(
-                        self.uri.spec, pref, self.loadContext,
-                        { handleCompletion: () => {
-                              if (!found)
-                                  resolve(undefined);
-                          },
-                          handleResult: (pref) => {
-                              found = true;
-                              resolve(pref.value);
-                          },
-                          handleError: reject });
-            }),
+                    let found = false;
+                    if (val)
+                        resolve(val.value);
+                    else
+                        services.contentPrefs.getByDomainAndName(
+                            self.uri.spec, pref, self.loadContext,
+                            { handleCompletion: () => {
+                                  if (!found)
+                                      resolve(undefined);
+                              },
+                              handleResult: (pref) => {
+                                  found = true;
+                                  resolve(pref.value);
+                              },
+                              handleError: reject });
+                });
+            },
 
             /**
              * Sets a content preference for the given buffer.
@@ -113,26 +115,30 @@ var Buffer = Module("Buffer", {
              * @param {string} pref The preference to set.
              * @param {string} value The value to store.
              */
-            set: promises.withCallbacks(function set([resolve, reject], pref, value) {
-                services.contentPrefs.set(
-                    self.uri.spec, pref, value, self.loadContext,
-                    { handleCompletion: () => {},
-                      handleResult: resolve,
-                      handleError: reject });
-            }),
+            set: function set(pref, value) {
+                return new Promise((resolve, reject) => {
+                    services.contentPrefs.set(
+                        self.uri.spec, pref, value, self.loadContext,
+                        { handleCompletion: () => {},
+                          handleResult: resolve,
+                          handleError: reject });
+                });
+            },
 
             /**
              * Clear a content preference for the given buffer.
              *
              * @param {string} pref The preference to clear.
              */
-            clear: promises.withCallbacks(function clear([resolve, reject], pref) {
-                services.contentPrefs.removeByDomainAndName(
-                    self.uri.spec, pref, self.loadContext,
-                    { handleCompletion: () => {},
-                      handleResult: resolve,
-                      handleError: reject });
-            })
+            clear: function clear(pref) {
+                return new Promise((resolve, reject) => {
+                    services.contentPrefs.removeByDomainAndName(
+                        self.uri.spec, pref, self.loadContext,
+                        { handleCompletion: () => {},
+                          handleResult: resolve,
+                          handleError: reject });
+                });
+            }
         };
     }),
 

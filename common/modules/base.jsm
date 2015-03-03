@@ -182,7 +182,6 @@ defineModule("base", {
         "Cr",
         "Cs",
         "Cu",
-        "DOMPromise",
         "ErrorBase",
         "Finished",
         "JSMLoader",
@@ -761,12 +760,6 @@ function memoize(obj, key, getter) {
         obj[key] = getter.call(obj, key);
     }
 }
-
-let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance(),
-                         { wantGlobalProperties: ["TextDecoder", "TextEncoder"],
-                           sandboxPrototype: this });
-
-var { TextEncoder, TextDecoder, Promise: DOMPromise } = sandbox;
 
 /**
  * Updates an object with the properties of another object. Getters

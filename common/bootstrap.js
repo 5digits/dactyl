@@ -264,6 +264,7 @@ function init() {
         bootstrap = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance(),
                                { sandboxName: BOOTSTRAP,
                                  addonId: addon.id,
+                                 wantGlobalProperties: ["TextDecoder", "TextEncoder"],
                                  metadata: { addonID: addon.id } });
         Services.scriptloader.loadSubScript(BOOTSTRAP, bootstrap);
     }

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -302,23 +302,22 @@ var Bookmarks = Module("bookmarks", {
      * @returns {Promise<Array>}
      */
     makeSuggestions: function makeSuggestions(url, parser) {
-        let deferred = Promise.defer();
+        return new CancelablePromise((resolve, reject, canceled) => {
+            let req = util.fetchUrl(url);
+            req.then(function process(req) {
+                let results = [];
+                try {
+                    results = parser(req);
+                }
+                catch (e) {
+                    reject(e);
+                    return;
+                }
+                resolve(results);
+            });
 
-        let req = util.fetchUrl(url);
-        req.then(function process(req) {
-            let results = [];
-            try {
-                results = parser(req);
-            }
-            catch (e) {
-                deferred.reject(e);
-                return;
-            }
-            deferred.resolve(results);
+            canceled.then(req.cancel);
         });
-
-        promises.oncancel(deferred, reason => promises.cancel(req, reason));
-        return deferred.promise;
     },
 
     suggestionProviders: {},

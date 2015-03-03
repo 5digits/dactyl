@@ -5,7 +5,7 @@
 "use strict";
 
 defineModule("promises", {
-    exports: ["Promise", "Task", "promises"],
+    exports: ["CancelablePromise", "Promise", "Task", "promises"],
     require: []
 });
 
@@ -24,6 +24,26 @@ function withCallbacks(fn) {
     }
 }
 
+function CancelablePromise(executor, oncancel) {
+    let deferred = Promise.defer();
+    let canceled = new Promise((accept, reject) => {
+        promises.oncancel(deferred, accept);
+    });
+
+    try {
+        executor(deferred.resolve, deferred.reject, canceled);
+    }
+    catch (e) {
+        deferred.reject(e);
+    }
+
+    return Object.freeze(Object.create(deferred.promise, {
+        cancel: {
+            value: thing => promises.cancel(deferred.promise, thing)
+        }
+    }));
+}
+
 var Promises = Module("Promises", {
     _cancel: new WeakMap,
 
@@ -38,7 +58,7 @@ var Promises = Module("Promises", {
         let cleanup = this._cancel.get(promise);
         if (cleanup) {
             cleanup[0](promise);
-            cleanup[1].reject(reason);
+            cleanup[1](reason);
         }
         this._cancel.delete(promise);
     },
@@ -50,16 +70,18 @@ var Promises = Module("Promises", {
      * @param {function} fn The cleanup function.
      */
     oncancel: function oncancel(deferred, fn) {
-        this._cancel.set(deferred.promise, [fn, deferred]);
+        this._cancel.set(deferred.promise, [fn, deferred.reject]);
     },
 
     /**
      * Returns a promise which resolves after a brief delay.
      */
-    delay: withCallbacks(function delay([accept]) {
-        let { mainThread } = services.threading;
-        mainThread.dispatch(accept, mainThread.DISPATCH_NORMAL);
-    }),
+    delay: function delay([accept]) {
+        return new Promise(resolve => {
+            let { mainThread } = services.threading;
+            mainThread.dispatch(resolve, mainThread.DISPATCH_NORMAL);
+        });
+    },
 
     /**
      * Returns a promise which resolves after the given number of
@@ -67,9 +89,11 @@ var Promises = Module("Promises", {
      *
      * @param {number} delay The number of milliseconds to wait.
      */
-    sleep: withCallbacks(function sleep([callback], delay) {
-        this.timeout(callback, delay);
-    }),
+    sleep: function sleep(delay) {
+        return new Promise(resolve => {
+            this.timeout(resolve, delay);
+        });
+    },
 
     /**
      * Wraps the given function so that each call spawns a Task.
@@ -94,25 +118,27 @@ var Promises = Module("Promises", {
      * @param {number} pollInterval The poll interval, in milliseconds.
      *      @default 10
      */
-    waitFor: withCallbacks(function waitFor([accept, reject], test, timeout=null, pollInterval=10) {
-        let end = timeout && Date.now() + timeout, result;
+    waitFor: function waitFor(test, timeout=null, pollInterval=10) {
+        return new Promise((resolve, reject) => {
+            let end = timeout && Date.now() + timeout, result;
 
-        let timer = services.Timer(
-            () => {
-                try {
-                    var result = test();
-                }
-                catch (e) {
-                    timer.cancel();
-                    reject(e);
-                }
-                if (result) {
-                    timer.cancel();
-                    accept(result);
-                }
-            },
-            pollInterval, services.Timer.TYPE_REPEATING_SLACK);
-    }),
+            let timer = services.Timer(
+                () => {
+                    try {
+                        var result = test();
+                    }
+                    catch (e) {
+                        timer.cancel();
+                        reject(e);
+                    }
+                    if (result) {
+                        timer.cancel();
+                        resolve(result);
+                    }
+                },
+                pollInterval, services.Timer.TYPE_REPEATING_SLACK);
+        });
+    },
 
     /**
      * Wraps the given function so that its first argument is an array

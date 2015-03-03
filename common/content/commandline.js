@@ -855,13 +855,15 @@ var CommandLine = Module("commandline", {
      * @... {string} default - The initial value that will be returned
      *     if the user presses <CR> straightaway. @default ""
      */
-    input: promises.withCallbacks(function _input([callback, reject], prompt, extra={}, thing={}) {
-        if (callable(extra))
-            // Deprecated.
-            [callback, extra] = [extra, thing];
+    input: function _input(prompt, extra={}, thing={}) {
+        return new Promise((resolve, reject) => {
+            if (callable(extra))
+                // Deprecated.
+                [resolve, extra] = [extra, thing];
 
-        CommandPromptMode(prompt, update({ onSubmit: callback, onCancel: reject }, extra)).open();
-    }),
+            CommandPromptMode(prompt, update({ onSubmit: resolve, onCancel: reject }, extra)).open();
+        });
+    },
 
     readHeredoc: function readHeredoc(end) {
         return util.waitFor(commandline.inputMultiline(end));
@@ -876,33 +878,35 @@ var CommandLine = Module("commandline", {
      * @returns {Promise<string>}
      */
     // FIXME: Buggy, especially when pasting.
-    inputMultiline: promises.withCallbacks(function inputMultiline([callback], end) {
-        let cmd = this.command;
-        let self = {
-            end: "\n" + end + "\n",
-            callback: callback
-        };
+    inputMultiline: function inputMultiline(end) {
+        return new Promise((resolve, reject) => {
+            let cmd = this.command;
+            let self = {
+                end: "\n" + end + "\n",
+                callback: resolve
+            };
 
-        modes.push(modes.INPUT_MULTILINE, null, {
-            holdFocus: true,
-            leave: function leave() {
-                if (!self.done)
-                    self.callback(null);
-            },
-            mappingSelf: self
+            modes.push(modes.INPUT_MULTILINE, null, {
+                holdFocus: true,
+                leave: function leave() {
+                    if (!self.done)
+                        self.callback(null);
+                },
+                mappingSelf: self
+            });
+
+            if (cmd != false)
+                this._echoLine(cmd, this.HL_NORMAL);
+
+            // save the arguments, they are needed in the event handler onKeyPress
+
+            this.multilineInputVisible = true;
+            this.widgets.multilineInput.value = "";
+            this._autosizeMultilineInputWidget();
+
+            this.timeout(function () { dactyl.focus(this.widgets.multilineInput); }, 10);
         });
-
-        if (cmd != false)
-            this._echoLine(cmd, this.HL_NORMAL);
-
-        // save the arguments, they are needed in the event handler onKeyPress
-
-        this.multilineInputVisible = true;
-        this.widgets.multilineInput.value = "";
-        this._autosizeMultilineInputWidget();
-
-        this.timeout(function () { dactyl.focus(this.widgets.multilineInput); }, 10);
-    }),
+    },
 
     get commandMode() this.commandSession && isinstance(modes.main, modes.COMMAND_LINE),
 

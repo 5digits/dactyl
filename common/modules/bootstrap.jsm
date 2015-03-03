@@ -15,6 +15,9 @@ this["import"] = function import_(obj) {
     return res;
 }
 
+if (typeof TextEncoder == "undefined")
+    Components.utils.importGlobalProperties(["TextEncoder", "TextDecoder"]);
+
 // Deal with subScriptLoader prepending crap to loaded URLs
 Components.utils.import("resource://gre/modules/Services.jsm");
 function loadSubScript() Services.scriptloader.loadSubScript.apply(null, arguments);
