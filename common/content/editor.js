@@ -373,7 +373,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
 
         dactyl.assert(args.length >= 1, _("option.notSet", "editor"));
 
-        io.run(args.shift(), args, blocking);
+        return io.run(args.shift(), args, blocking);
     },
 
     // TODO: clean up with 2 functions for textboxes and currentEditor?

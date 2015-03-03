@@ -807,8 +807,7 @@ var Buffer = Module("Buffer", {
     /**
      * Saves the contents of a URI to disk.
      *
-     * @param {nsIURI} uri The URI to save
-     * @param {nsIFile} file The file into which to write the result.
+     * @returns {Promise}
      */
     saveURI: function saveURI(params) {
         if (params instanceof Ci.nsIURI)
@@ -816,42 +815,34 @@ var Buffer = Module("Buffer", {
             params = { uri: arguments[0], file: arguments[1],
                        callback: arguments[2], self: arguments[3] };
 
-        var persist = services.Persist();
-        persist.persistFlags = persist.PERSIST_FLAGS_FROM_CACHE
-                             | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+        let promise = new CancelablePromise(promises.task(function* (resolve, reject, canceled) {
+            if (params.isPrivate === undefined) {
+                let privacy = sanitizer.getContext(params.context || this.win);
+                params.isPrivate = privacy.usePrivateBrowsing;
+            }
 
-        let window = this.topWindow;
-        let privacy = sanitizer.getContext(params.context || this.win);
-        let file = File(params.file);
-        if (!file.exists())
-            file.create(Ci.nsIFile.NORMAL_FILE_TYPE, 0o666);
-
-        let downloadListener = new window.DownloadListener(window,
-                services.Transfer(params.uri, file.URI, "", null, null, null,
-                                  persist, privacy && privacy.usePrivateBrowsing));
-
-        var { callback, self } = params;
-        if (callback)
-            persist.progressListener = update(Object.create(downloadListener), {
-                onStateChange: util.wrapCallback(function onStateChange(progress, request, flags, status) {
-                    if (callback && (flags & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
-                        util.trapErrors(callback, self, params.uri, file.file,
-                                        progress, request, flags, status);
-
-                    return onStateChange.superapply(this, arguments);
-                })
+            let download = Downloads.createDownload({
+                source: {
+                    url: params.uri.spec,
+                    isPrivate: params.isPrivate,
+                    referrer: params.referrer,
+                },
+                target: params.file,
             });
-        else
-            persist.progressListener = downloadListener;
+            canceled.then(download.cancel);
 
-        if (persist.saveURI.length <= 7)
-            persist.saveURI(params.uri, null, null, null, null,
-                            file.file, privacy);
-        else
-            // Let's add an extra null to the middle of the arguments
-            // list, because why not.
-            persist.saveURI(params.uri, null, null, null, null, null,
-                            file.file, privacy);
+            let list = yield Downloads.getList(Downloads.ALL);
+            list.add(download);
+
+            return download.start();
+        }));
+
+        // Deprecated.
+        if (params.callback)
+            promise.then(() => {
+                params.callback.call(params.self, params.uri, params.file);
+            });
+        return promise;
     },
 
     /**
@@ -1235,25 +1226,22 @@ var Buffer = Module("Buffer", {
      * immediately.
      *
      * @param {Document} doc The document to view.
-     * @param {function|object} callback If a function, the callback to be
-     *      called with two arguments: the nsIFile of the file, and temp, a
-     *      boolean which is true if the file is temporary. Otherwise, an object
-     *      with line and column properties used to determine where to open the
-     *      source.
-     *      @optional
+     * @returns {Promise}
      */
-    viewSourceExternally: Class("viewSourceExternally",
-        XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
-        init: function init(doc, callback) {
-            this.callback = callable(callback) ? callback :
-                function (file, temp) {
-                    let { editor } = overlay.activeModules;
+    viewSourceExternally: function viewSourceExternally(doc, loc) {
+        return this.fetchSourceExternally(doc).then(([file, isTemp]) => {
+            let { editor } = overlay.activeModules;
 
-                    editor.editFileExternally(update({ file: file.path }, callback || {}),
-                                              function () { temp && file.remove(false); });
-                    return true;
-                };
+            editor.editFileExternally(update({ file: file.path }, loc))
+                  .then(() => {
+                      if (isTemp)
+                          file.remove(false);
+                  });
+        });
+    },
 
+    fetchSourceExternally: function fetchSourceExternally(doc) {
+        return new Promise((resolve, reject) => {
             if (isString(doc)) {
                 var privacyContext = null;
                 var uri = util.newURI(doc);
@@ -1270,41 +1258,28 @@ var Buffer = Module("Buffer", {
                 }
                 catch (e) {}
 
-            if (!isString(doc))
-                return io.withTempFiles(function (temp) {
-                    let encoder = services.HtmlEncoder();
-                    encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
-                    temp.write(encoder.encodeToString(), ">");
-                    return this.callback(temp, true);
-                }, this, true, ext);
+            if (!isString(doc)) {
+                let file = io.createTempFile();
+                let encoder = services.HtmlEncoder();
+                encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
 
-            let file = util.getFile(uri);
-            if (file)
-                this.callback(file, false);
+                OS.File.writeAtomic(file.path, encoder.encodeToString())
+                  .then(() => { resolve([file, true]) })
+                  .catch(reject);
+            }
             else {
-                this.file = io.createTempFile();
-                var persist = services.Persist();
-                persist.persistFlags = persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
-                persist.progressListener = this;
-                persist.saveURI(uri, null, null, null, null, this.file,
-                                privacyContext);
-            }
-            return null;
-        },
-
-        onStateChange: function onStateChange(progress, request, flags, status) {
-            if ((flags & this.STATE_STOP) && status == 0) {
-                try {
-                    var ok = this.callback(this.file, true);
-                }
-                finally {
-                    if (ok !== true)
-                        this.file.remove(false);
+                let file = util.getFile(uri);
+                if (file)
+                    resolve([file, false]);
+                else {
+                    let file = io.createTempFile();
+                    Downloads.fetch(uri, file.file).then(() => {
+                        resolve([file, true]);
+                    }).catch(reject);
                 }
             }
-            return 0;
-        }
-    }),
+        });
+    },
 
     /**
      * Increases the zoom level of the current buffer.
@@ -1956,27 +1931,32 @@ var Buffer = Module("Buffer", {
                 let command = commandline.command;
                 if (filename) {
                     if (filename[0] == "!")
-                        return buffer.viewSourceExternally(buffer.focusedFrame.document,
-                            function (file) {
-                                let output = io.system(filename.substr(1), file);
-                                commandline.command = command;
-                                commandline.commandOutput(["span", { highlight: "CmdOutput" }, output]);
-                            });
+                        return buffer.fetchSourceExternally(buffer.focusedFrame.document)
+                                     .then(([file, isTemp]) => {
+                            let output = io.system(filename.substr(1), file);
+                            if (isTemp)
+                                file.remove(false);
+
+                            commandline.command = command;
+                            commandline.commandOutput(["span", { highlight: "CmdOutput" }, output]);
+                        });
 
                     if (/^>>/.test(filename)) {
                         let file = io.File(filename.replace(/^>>\s*/, ""));
                         dactyl.assert(args.bang || file.exists() && file.isWritable(),
                                       _("io.notWriteable", JSON.stringify(file.path)));
 
-                        return buffer.viewSourceExternally(buffer.focusedFrame.document,
-                            function (tmpFile) {
-                                try {
-                                    file.write(tmpFile, ">>");
-                                }
-                                catch (e) {
-                                    dactyl.echoerr(_("io.notWriteable", JSON.stringify(file.path)));
-                                }
-                            });
+                        return buffer.fetchSourceExternally(buffer.focusedFrame.document)
+                                     .then(([tmpFile, isTemp]) => {
+                            try {
+                                file.write(tmpFile, ">>");
+                            }
+                            catch (e) {
+                                dactyl.echoerr(_("io.notWriteable", JSON.stringify(file.path)));
+                            }
+                            if (isTemp)
+                                tmpFile.remove();
+                        });
                     }
 
                     let file = io.File(filename);
