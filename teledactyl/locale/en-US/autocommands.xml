@@ -15,6 +15,7 @@
     <dt>LocationChange</dt>    <dd>Triggered when changing tabs or when navigating to a new location</dd>
     <dt>PageLoadPre</dt>       <dd>Triggered after a page load is initiated</dd>
     <dt>PageLoad</dt>          <dd>Triggered when a page gets (re)loaded/opened</dd>
+    <dt>Resize</dt>            <dd>Triggered after the window has been resized</dd>
     <dt>ShellCmdPost</dt>      <dd>Triggered after executing a shell command with <ex>:!</ex><a>cmd</a></dd>
     <dt>Enter</dt>             <dd>Triggered after &dactyl.host; starts</dd>
     <dt>LeavePre</dt>          <dd>Triggered before exiting &dactyl.host;, just before destroying each module</dd>

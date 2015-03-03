@@ -19,6 +19,7 @@
     <dt>PageLoadPre</dt>       <dd>Triggered after a page load is initiated</dd>
     <dt>PageLoad</dt>          <dd>Triggered when a page gets (re)loaded/opened</dd>
     <dt>PrivateMode</dt>       <dd>Triggered when private browsing mode is activated or deactivated</dd>
+    <dt>Resize</dt>            <dd>Triggered after the window has been resized</dd>
     <dt>Sanitize</dt>          <dd>Triggered when private data are sanitized</dd>
     <dt>ShellCmdPost</dt>      <dd>Triggered after executing a shell command with <ex>:!</ex><a>cmd</a></dd>
     <dt>Enter</dt>             <dd>Triggered after &dactyl.host; starts</dd>
