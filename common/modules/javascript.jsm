@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -684,6 +684,7 @@ var JavaScript = Module("javascript", {
                     return [];
                 return completer.call(obj, context, obj, args);
             };
+            func.dactylCompleter.completers = completers;
         }
         return arguments[0];
     }

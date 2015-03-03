@@ -838,8 +838,14 @@ var Buffer = Module("Buffer", {
         else
             persist.progressListener = downloadListener;
 
-        persist.saveURI(params.uri, null, null, null, null,
-                        file.file, privacy);
+        if (persist.saveURI.length <= 7)
+            persist.saveURI(params.uri, null, null, null, null,
+                            file.file, privacy);
+        else
+            // Let's add an extra null to the middle of the arguments
+            // list, because why not.
+            persist.saveURI(params.uri, null, null, null, null, null,
+                            file.file, privacy);
     },
 
     /**
