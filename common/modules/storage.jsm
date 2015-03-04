@@ -5,7 +5,7 @@
 "use strict";
 
 defineModule("storage", {
-    exports: ["File", "Storage", "storage"],
+    exports: ["AsyncFile", "File", "Storage", "storage"],
     require: ["promises", "services", "util"]
 });
 
@@ -398,36 +398,62 @@ var Storage = Module("Storage", {
  * @param {string} charset The charset of the file. @default File.defaultEncoding
  */
 var File = Class("File", {
-    init: function (path, checkPWD, charset) {
-        let file = services.File();
-
+    init: function init(path, checkPWD, charset) {
         if (charset)
             this.charset = charset;
+
+        if (isString(path))
+            path = File.expandPath(path);
+
+        this._path = path;
+        this._checkPWD = checkPWD;
+        return this;
+    },
+
+    get path() {
+        if (!this.fileified && isString(this._path) && File.isAbsolutePath(this._path))
+            return this._path;
+
+        return this.file.path;
+    },
+
+    set path(path) {
+        return this.file.path = path;
+    },
+
+    file: Class.Memoize(function () {
+        let path = this._path;
+        let file = services.File();
 
         if (path instanceof Ci.nsIFileURL)
             path = path.file;
 
         if (path instanceof Ci.nsIFile || path instanceof File)
             file = path.clone();
-        else if (/file:\/\//.test(path))
+        else if (path.startsWith("file://"))
             file = services["file:"].getFileFromURLSpec(path);
         else {
             try {
-                let expandedPath = File.expandPath(path);
+                let checkPWD = this._checkPWD;
+                if (!File.isAbsolutePath(path) && !(checkPWD instanceof Ci.nsIFile))
+                    checkPWD = File(services.directory.get("CurWorkD", Ci.nsIFile));
 
-                if (!File.isAbsolutePath(expandedPath) && checkPWD)
-                    file = checkPWD.child(expandedPath);
+                if (!File.isAbsolutePath(path))
+                    file = checkPWD.child(path);
                 else
-                    file.initWithPath(expandedPath);
+                    file.initWithPath(path);
             }
             catch (e) {
                 util.reportError(e);
                 return File.DoesNotExist(path, e);
             }
         }
-        this.file = file.QueryInterface(Ci.nsILocalFile);
-        return this;
-    },
+
+        this.fileified = true;
+        return file.QueryInterface(Ci.nsILocalFile);
+    }),
+
+    get async() AsyncFile(this),
 
     charset: Class.Memoize(() => File.defaultEncoding),
 
@@ -450,19 +476,27 @@ var File = Class("File", {
         if (!this.isDirectory())
             throw Error(_("io.eNotDir"));
         for (let file of iter(this.directoryEntries))
-            yield File(file);
+            yield this.constructor(file);
     },
 
     /**
      * Returns a new file for the given child of this directory entry.
      */
     child: function child(...args) {
-        let f = this.constructor(this);
-        for (let name of args)
-            for (let elem of name.split(File.pathSplit))
-                f.append(elem);
-        return f;
+        let path = this.path;
+
+        args = args.map(p => p.replace(File.pathSplit, File.PATH_SEP));
+        util.assert(!args.some(File.isAbsolutePath),
+                    "Absolute paths not allowed", false);
+
+        let newPath = OS.Path.join.apply(OS.Path, [this.path].concat(args));
+
+        return this.constructor(newPath, null, this.charset);
     },
+
+    get fileName() OS.Path.basename(this.path),
+
+    get parent() this.constructor(OS.Path.dirname(this.path), null, this.charset),
 
     /**
      * Returns an iterator for all lines in a file.
@@ -507,7 +541,7 @@ var File = Class("File", {
      *
      * @returns {nsIFileURL}
      */
-    toURI: function toURI() services.io.newFileURI(this.file),
+    toURI: deprecated("#URI", function toURI() services.io.newFileURI(this.file)),
 
     /**
      * Writes the string *buf* to this file.
@@ -657,15 +691,12 @@ var File = Class("File", {
     /**
      * @property {string} The current platform's path separator.
      */
-    PATH_SEP: Class.Memoize(function () {
-        let f = services.directory.get("CurProcD", Ci.nsIFile);
-        f.append("foo");
-        return f.path.substr(f.parent.path.length, 1);
-    }),
+    PATH_SEP: Class.Memoize(function () /foo(.)bar/.exec(OS.Path.join("foo", "bar"))[1]),
 
-    pathSplit: Class.Memoize(function () util.regexp("(?:/|" + util.regexp.escape(this.PATH_SEP) + ")", "g")),
+    pathSplit: Class.Memoize(function () util.regexp("[/" + util.regexp.escape(this.PATH_SEP) + "]", "g")),
 
     DoesNotExist: function DoesNotExist(path, error) ({
+        __proto__: DoesNotExist.prototype,
         path: path,
         exists: function () false,
         __noSuchMethod__: function () { throw error || Error("Does not exist"); }
@@ -695,6 +726,7 @@ var File = Class("File", {
         // TODO: Vim does not expand variables set to an empty string (and documents it).
         // Kris reckons we shouldn't replicate this 'bug'. --djk
         // TODO: should we be doing this for all paths?
+        // No.
         function expand(path) path.replace(
             win32 ? /\$(\w+)\b|\${(\w+)}|%(\w+)%/g
                   : /\$(\w+)\b|\${(\w+)}/g,
@@ -702,23 +734,11 @@ var File = Class("File", {
         path = expand(path);
 
         // expand ~
-        // Yuck.
-        if (!relative && RegExp("~(?:$|[/" + util.regexp.escape(File.PATH_SEP) + "])").test(path)) {
-            // Try $HOME first, on all systems
-            let home = getenv("HOME");
+        if (!relative && RegExp("~(?:$|[/" + util.regexp.escape(File.PATH_SEP) + "])").test(path))
+            path = OS.Path.join(OS.Constants.Path.homeDir,
+                                path.substr(2));
 
-            // Windows has its own idiosyncratic $HOME variables.
-            if (win32 && (!home || !File(home).exists()))
-                home = getenv("USERPROFILE") ||
-                       getenv("HOMEDRIVE") + getenv("HOMEPATH");
-
-            path = home + path.substr(1);
-        }
-
-        // TODO: Vim expands paths twice, once before checking for ~, once
-        // after, but doesn't document it. Is this just a bug? --Kris
-        path = expand(path);
-        return path.replace("/", File.PATH_SEP, "g");
+        return OS.Path.normalize(path.replace("/", File.PATH_SEP, "g"));
     },
 
     expandPathList: function (list) list.map(this.expandPath),
@@ -765,13 +785,14 @@ var File = Class("File", {
 
     isAbsolutePath: function isAbsolutePath(path) {
         try {
-            services.File().initWithPath(path);
-            return true;
+            return OS.Path.split(path).absolute;
         }
         catch (e) {
             return false;
         }
     },
+
+    replacePathSep: function replacePathSep(path) path.split("/").join(File.PATH_SEP),
 
     joinPaths: function joinPaths(head, tail, cwd) {
         let path = this(head, cwd);
@@ -784,12 +805,10 @@ var File = Class("File", {
         }
         return path;
     },
-
-    replacePathSep: function (path) path.replace("/", File.PATH_SEP, "g")
 });
 
 {
-    let file = services.directory.get("ProfD", Ci.nsIFile);
+    let file = services.File();
     Object.keys(file).forEach(function (prop) {
         if (!(prop in File.prototype)) {
             let isFunction;
@@ -809,6 +828,119 @@ var File = Class("File", {
         }
     });
     file = null;
+}
+
+var AsyncFile = Class("AsyncFile", File, {
+    get async() this,
+
+    /*
+     * Creates a new directory, along with any parent directories which
+     * do not currently exist.
+     *
+     * @param {string} path The path of the directory to create.
+     * @param {object} options Options for directory creation. As in
+     *      `OS.File.makeDir`
+     * @returns {Promise}
+     */
+    mkdir: promises.task(function* mkdir(path, options) {
+        let split = OS.Path.split(path);
+        util.assert(split.absolute);
+
+        let file = File(split.winDrive ? split.winDrive + File.PATH_SEP
+                                       : File.PATH_SEP);
+
+        for (let component of split.components) {
+            let f = file.child(component);
+            try {
+                var stat = yield OS.File.stat(f.path);
+            }
+            catch (e) {
+                // Does not exist, or other error.
+                break;
+            }
+            if (!stat.isDir)
+                throw new Error("Component in path is not a directory");
+            file = f;
+        }
+
+        options = update({},
+                         options || {},
+                         { ignoreExisting: true,
+                           from: file.path });
+
+        yield OS.File.makeDir(path, options);
+    }),
+
+    /**
+     * Iterates over the objects in this directory.
+     */
+    iterDirectory: function* iterDirectory() {
+        if (!this.exists())
+            throw Error(_("io.noSuchFile"));
+        if (!this.isDirectory())
+            throw Error(_("io.eNotDir"));
+        for (let file of iter(this.directoryEntries))
+            yield File(file);
+    },
+
+    /**
+     * Returns an iterator for all lines in a file.
+     */
+    get lines() File.readLines(services.FileInStream(this.file, -1, 0, 0),
+                               this.charset),
+
+    _setEncoding: function _setEncoding(options) {
+        if (this.encoding != null && !("encoding" in options))
+            options = update({}, options,
+                             { encoding: this.encoding });
+
+        return options;
+    },
+
+    /**
+     * Reads this file's entire contents in "text" mode and returns the
+     * content as a string.
+     */
+    read: function read(options={}) {
+        return OS.File.read(this.path, this._setEncoding(options));
+    },
+
+    /**
+     * Returns the list of files in this directory.
+     */
+    readDirectory: function readDirectory(callback) {
+        let iter = new OS.File.DirectoryIterator(dir);
+        let close = () => { iter.close() };
+
+        return iter.forEach(callback)
+                   .then(close, close);
+    },
+
+    /**
+     * Writes the string *buf* to this file.
+     */
+    write: function write(buf, options={}) {
+        return OS.File.writeAtomic(this.path, this._setEncoding(options));
+    },
+
+    copyTo: function copyTo(path, options) {
+        return OS.File.copy(this.path, path, options);
+    },
+
+    moveTo: function moveTo(path, options) {
+        return OS.File.move(this.path, path, options);
+    },
+});
+
+for (let m of ["makeDir",
+               "stat",
+               "remove",
+               "removeDir",
+               "removeEmptyDir"]) {
+    let method = m;
+    AsyncFile.prototype[method] = function (options) {
+        return OS.File[method](this.path, options);
+    };
 }
 
 endModule();
