@@ -119,9 +119,9 @@ var Hive = Class("Hive", {
 
     "@@iterator": function () iter(this.sheets),
 
-    get sites() array(this.sheets).map(s => s.sites)
-                                  .flatten()
-                                  .uniq().array,
+    get sites() Ary(this.sheets).map(s => s.sites)
+                                .flatten()
+                                .uniq().array,
 
     /**
      * Add a new style sheet.
@@ -411,7 +411,7 @@ var Styles = Module("Styles", {
 
         context.keys.text = util.identity;
         context.keys.description = function (site) this.sheets.length + /*L*/" sheet" + (this.sheets.length == 1 ? "" : "s") + ": " +
-            array.compact(this.sheets.map(s => s.name)).join(", ");
+            Ary.compact(this.sheets.map(s => s.name)).join(", ");
         context.keys.sheets = site => group.sheets.filter(s => s.sites.indexOf(site) >= 0);
         context.keys.active = site => uris.some(Styles.matchFilter(site));
 
@@ -596,7 +596,7 @@ var Styles = Module("Styles", {
                     if (args["-append"]) {
                         let sheet = args["-group"].get(args["-name"]);
                         if (sheet) {
-                            filter = array(sheet.sites).concat(filter).uniq().join(",");
+                            filter = Ary(sheet.sites).concat(filter).uniq().join(",");
                             css = sheet.css + " " + css;
                         }
                     }
@@ -633,7 +633,7 @@ var Styles = Module("Styles", {
                     { names: ["-nopersist", "-N"], description: "Do not save this style to an auto-generated RC file" }
                 ],
                 serialize: function ()
-                    array(styles.hives)
+                    Ary(styles.hives)
                         .filter(hive => hive.persist)
                         .map(hive =>
                              hive.sheets.filter(style => style.persist)

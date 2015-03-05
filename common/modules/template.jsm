@@ -154,7 +154,7 @@ var Template = Module("Template", {
 
     map: function map(iter_, func, sep, interruptable) {
         if (typeof iter_.length == "number") // FIXME: Kludge?
-            iter_ = array.iterValues(iter_);
+            iter_ = Ary.iterValues(iter_);
 
         let res = [];
         let n = 0;

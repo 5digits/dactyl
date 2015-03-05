@@ -23,7 +23,7 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
         this._store = [];
     },
 
-    "@@iterator": function () array.iterValues(this._store),
+    "@@iterator": function () this._store[Symbol.iterator](),
 
     /**
      * Adds a new autocommand. *cmd* will be executed when one of the specified

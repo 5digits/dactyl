@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -107,7 +107,7 @@ var Map = Class("Map", {
      */
     hasName: function (name) this.keys.indexOf(name) >= 0,
 
-    get keys() array.flatten(this.names.map(mappings.bound.expand)),
+    get keys() Ary.flatten(this.names.map(mappings.bound.expand)),
 
     /**
      * Execute the action for this mapping.
@@ -284,7 +284,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
             return self;
         },
 
-        "@@iterator": function () array.iterValues(this),
+        "@@iterator": function () Ary.iterValues(this),
 
         get candidates() this.states.candidates,
         get mappings() this.states.mappings,
@@ -367,12 +367,16 @@ var Mappings = Module("mappings", {
     expand: function expand(keys) {
         if (!/<\*-/.test(keys))
             var res = keys;
-        else
-            res = util.debrace(DOM.Event.iterKeys(keys).map(function (key) {
+        else {
+            let globbed = DOM.Event.iterKeys(keys)
+                             .map(key => {
                 if (/^<\*-/.test(key))
                     return ["<", this.prefixes, key.slice(3)];
                 return key;
-            }, this).flatten().array).map(k => DOM.Event.canonicalKeys(k));
+            }).flatten().array;
+
+            res = util.debrace(globbed).map(k => DOM.Event.canonicalKeys(k));
+        }
 
         if (keys != arguments[0])
             return [arguments[0]].concat(keys);
@@ -382,7 +386,7 @@ var Mappings = Module("mappings", {
     iterate: function* (mode) {
         let seen = new RealSet;
         for (let hive of this.hives.iterValues())
-            for (let map of array(hive.getStack(mode)).iterValues())
+            for (let map of Ary.iterValues(hive.getStack(mode)))
                 if (!seen.add(map.name))
                     yield map;
     },
@@ -521,7 +525,7 @@ var Mappings = Module("mappings", {
     commands: function initCommands(dactyl, modules, window) {
         function addMapCommands(ch, mapmodes, modeDescription) {
             function map(args, noremap) {
-                let mapmodes = array.uniq(args["-modes"].map(findMode));
+                let mapmodes = Ary.uniq(args["-modes"].map(findMode));
                 let hives = args.explicitOpts["-group"] ? [args["-group"]] : null;
 
                 if (!args.length) {
@@ -561,7 +565,7 @@ var Mappings = Module("mappings", {
             const opts = {
                 identifier: "map",
                 completer: function (context, args) {
-                    let mapmodes = array.uniq(args["-modes"].map(findMode));
+                    let mapmodes = Ary.uniq(args["-modes"].map(findMode));
                     if (args.length == 1)
                         return completion.userMapping(context, mapmodes, args["-group"]);
                     if (args.length == 2) {
@@ -618,7 +622,7 @@ var Mappings = Module("mappings", {
                 ],
                 serialize: function () {
                     return this.name != "map" ? [] :
-                        array(mappings.userHives)
+                        Ary(mappings.userHives)
                             .filter(h => h.persist)
                             .map(hive => [
                                 {
@@ -643,7 +647,7 @@ var Mappings = Module("mappings", {
             function* userMappings(hive) {
                 let seen = new RealSet;
                 for (let stack of values(hive.stacks))
-                    for (let map of array.iterValues(stack))
+                    for (let map of Ary.iterValues(stack))
                         if (!seen.add(map.id))
                             yield map;
             }
@@ -666,7 +670,7 @@ var Mappings = Module("mappings", {
 
                     util.assert(args.bang ^ !!args[0], _("error.argumentOrBang"));
 
-                    let mapmodes = array.uniq(args["-modes"].map(findMode));
+                    let mapmodes = Ary.uniq(args["-modes"].map(findMode));
 
                     let found = 0;
                     for (let mode of values(mapmodes))
@@ -701,7 +705,7 @@ var Mappings = Module("mappings", {
             names: ["-mode", "-m"],
             type: CommandOption.STRING,
             validator: function (value) Array.concat(value).every(findMode),
-            completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.description]
+            completer: function () [[Ary.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.description]
                                     for (mode of values(modes.all))
                                     if (!mode.hidden)]
         };
@@ -718,9 +722,9 @@ var Mappings = Module("mappings", {
             let chars = [k for ([k, v] of iter(modules.modes.modeChars))
                          if (v.every(mode => modes.indexOf(mode) >= 0))];
 
-            return array.uniq(modes.filter(m => chars.indexOf(m.char) < 0)
-                                   .map(m => m.name.toLowerCase())
-                                   .concat(chars));
+            return Ary.uniq(modes.filter(m => chars.indexOf(m.char) < 0)
+                                 .map(m => m.name.toLowerCase())
+                                 .concat(chars));
         }
 
         commands.add(["feedkeys", "fk"],
@@ -756,7 +760,7 @@ var Mappings = Module("mappings", {
                 // Bloody hell. --Kris
                 for (let [i, mode] of iter(modes))
                     for (let hive of mappings.hives.iterValues())
-                        for (let map of array.iterValues(hive.getStack(mode)))
+                        for (let map of Ary.iterValues(hive.getStack(mode)))
                             for (let name of values(map.names))
                                 if (!seen.add(name))
                                     yield {
@@ -779,7 +783,7 @@ var Mappings = Module("mappings", {
                         template.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))
                 ],
                 help: function (map) {
-                    let char = array.compact(map.modes.map(m => m.char))[0];
+                    let char = Ary.compact(map.modes.map(m => m.char))[0];
                     return char === "n" ? map.name : char ? char + "_" + map.name : "";
                 },
                 headings: ["Command", "Mode", "Group", "Description"]

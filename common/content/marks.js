@@ -198,12 +198,12 @@ var Marks = Module("marks", {
                     this._pendingJumps.push(mark);
 
                     let sh = tab.linkedBrowser.sessionHistory;
-                    let items = array(util.range(0, sh.count));
+                    let items = Ary(util.range(0, sh.count));
 
                     let a = items.slice(0, sh.index).reverse();
                     let b = items.slice(sh.index);
                     a.length = b.length = Math.max(a.length, b.length);
-                    items = array(a).zip(b).flatten().compact();
+                    items = Ary(a).zip(b).flatten().compact();
 
                     for (let i of items.iterValues()) {
                         let entry = sh.getEntryAtIndex(i, false);

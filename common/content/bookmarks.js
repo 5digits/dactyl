@@ -437,9 +437,9 @@ var Bookmarks = Module("bookmarks", {
             names: ["-tags", "-T"],
             description: "A comma-separated list of tags",
             completer: function tags(context, args) {
-                context.generate = function () array(b.tags
-                                                     for (b in bookmarkcache)
-                                                     if (b.tags))
+                context.generate = function () Ary(b.tags
+                                                   for (b in bookmarkcache)
+                                                   if (b.tags))
                                                   .flatten().uniq().array;
                 context.keys = { text: util.identity, description: util.identity };
             },
@@ -593,7 +593,7 @@ var Bookmarks = Module("bookmarks", {
                 bang: true,
                 completer: function completer(context, args)
                     completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] }),
-                domains: function (args) array.compact(args.map(util.getHost)),
+                domains: function (args) Ary.compact(args.map(util.getHost)),
                 literal: 0,
                 options: [tags, title, keyword],
                 privateData: true
@@ -758,8 +758,8 @@ var Bookmarks = Module("bookmarks", {
                 ctxt.cache.request = bookmarks.getSuggestions(name, ctxt.filter);
                 ctxt.cache.request.then(function (compl) {
                     ctxt.incomplete = false;
-                    ctxt.completions = array.uniq(ctxt.completions.filter(c => ~compl.indexOf(c))
-                                                      .concat(compl), true);
+                    ctxt.completions = Ary.uniq(ctxt.completions.filter(c => ~compl.indexOf(c))
+                                                    .concat(compl), true);
                 }).catch(function (e) {
                     ctxt.incomplete = false;
                     ctxt.completions = [];

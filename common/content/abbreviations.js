@@ -56,7 +56,7 @@ var Abbreviation = Class("Abbreviation", {
      * @param {[Mode]} modes The modes to test.
      * @returns {boolean} The result of the comparison.
      */
-    modesEqual: function (modes) array.equals(this.modes, modes),
+    modesEqual: function (modes) Ary.equals(this.modes, modes),
 
     /**
      * Returns true if this abbreviation is defined for *mode*.
@@ -91,7 +91,7 @@ var Abbreviation = Class("Abbreviation", {
     get modeChar() Abbreviation.modeChar(this.modes)
 }, {
     modeChar: function (_modes) {
-        let result = array.uniq(_modes.map(m => m.char)).join("");
+        let result = Ary.uniq(_modes.map(m => m.char)).join("");
         if (result == "ci")
             result = "!";
         return result;
@@ -352,7 +352,7 @@ var Abbreviations = Module("abbreviations", {
                             description: "Expand this abbreviation by evaluating its right-hand-side as JavaScript"
                         }
                     ],
-                    serialize: function () array(abbreviations.userHives)
+                    serialize: function () Ary(abbreviations.userHives)
                         .filter(h => h.persist)
                         .map(hive => [
                             {

@@ -871,24 +871,6 @@ var AsyncFile = Class("AsyncFile", File, {
         yield OS.File.makeDir(path, options);
     }),
 
-    /**
-     * Iterates over the objects in this directory.
-     */
-    iterDirectory: function* iterDirectory() {
-        if (!this.exists())
-            throw Error(_("io.noSuchFile"));
-        if (!this.isDirectory())
-            throw Error(_("io.eNotDir"));
-        for (let file of iter(this.directoryEntries))
-            yield File(file);
-    },
-
-    /**
-     * Returns an iterator for all lines in a file.
-     */
-    get lines() File.readLines(services.FileInStream(this.file, -1, 0, 0),
-                               this.charset),
-
     _setEncoding: function _setEncoding(options) {
         if (this.encoding != null && !("encoding" in options))
             options = update({}, options,

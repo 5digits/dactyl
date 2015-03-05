@@ -182,7 +182,7 @@ var Contexts = Module("contexts", {
                     return {
                         enumerable: true,
 
-                        get: () => array(contexts.groups[this.name])
+                        get: () => Ary(contexts.groups[this.name])
                     };
 
                 this.Hive = constructor;

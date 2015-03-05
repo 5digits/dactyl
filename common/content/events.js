@@ -24,7 +24,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
 
     _events: function _events(event, callback) {
         if (!isObject(event))
-            var [self, events] = [null, array.toObject([[event, callback]])];
+            var [self, events] = [null, Ary.toObject([[event, callback]])];
         else
             [self, events] = [event, event[callback || "events"]];
 
@@ -1148,7 +1148,7 @@ var Events = Module("events", {
             "sitemap", "", {
                 flush: function flush() {
                     memoize(this, "filters", function () this.value.filter(function (f) f(buffer.documentURI)));
-                    memoize(this, "pass", function () new RealSet(array.flatten(this.filters.map(function (f) f.keys))));
+                    memoize(this, "pass", function () new RealSet(Ary.flatten(this.filters.map(function (f) f.keys))));
                     memoize(this, "commandHive", function hive() Hive(this.filters, "command"));
                     memoize(this, "inputHive", function hive() Hive(this.filters, "input"));
                 },

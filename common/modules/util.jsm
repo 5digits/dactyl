@@ -65,7 +65,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     Magic: Magic,
 
     init: function init() {
-        this.Array = array;
+        this.Array = Ary;
 
         this.addObserver(this);
         this.windows = [];
@@ -301,7 +301,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                                                      : "",
                     { test: function test(obj) obj[char] != null }));
 
-                for (let elem of array.iterValues(stack))
+                for (let elem of stack)
                     elem.seen[char] = true;
             }
         }
@@ -420,7 +420,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                             }));
                     }
 
-                    for (let elem of array.iterValues(stack))
+                    for (let elem of stack)
                         elem.seen.add(name);
                 }
             }
@@ -508,7 +508,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             let rec = function rec(acc) {
                 if (acc.length == patterns.length)
-                    res.push(array(substrings).zip(acc).flatten().join(""));
+                    res.push(Ary(substrings).zip(acc).flatten().join(""));
                 else
                     for (let pattern of patterns[acc.length])
                         rec(acc.concat(pattern));
@@ -1400,7 +1400,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             this.errors.push([new Date, obj + "\n" + obj.stack]);
             this.errors = this.errors.slice(-this.maxErrors);
-            this.errors.toString = function () [k + "\n" + v for ([k, v] of array.iterValues(this))].join("\n\n");
+            this.errors.toString = function () [k + "\n" + v for ([k, v] of this)].join("\n\n");
 
             this.dump(String(error));
             this.dump(obj);
@@ -1755,7 +1755,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     }
 }, {
-    Array: array
+    Array: Ary
 });
 
 /**

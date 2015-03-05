@@ -211,8 +211,8 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             function (args) { dactyl.open(args[0] || "about:blank"); },
             {
                 completer: function (context) completion.url(context),
-                domains: function (args) array.compact(dactyl.parseURLs(args[0] || "")
-                                                             .map(url => util.getHost(url))),
+                domains: function (args) Ary.compact(dactyl.parseURLs(args[0] || "")
+                                                           .map(url => util.getHost(url))),
                 literal: 0,
                 privateData: true
             });
@@ -229,7 +229,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             { argCount: "0" });
     },
     mappings: function initMappings(dactyl, modules, window) {
-        let openModes = array.toObject([
+        let openModes = Ary.toObject([
             [dactyl.CURRENT_TAB, ""],
             [dactyl.NEW_TAB, "tab"],
             [dactyl.NEW_BACKGROUND_TAB, "background tab"],

@@ -286,7 +286,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
         memoize(doc, "dactylLabels", () =>
             iter([l.getAttribute("for"), l]
-                 for (l of array.iterValues(doc.querySelectorAll("label[for]"))))
+                 for (l of doc.querySelectorAll("label[for]")))
              .toObject());
 
         let [offsetX, offsetY] = this.getContainerOffsets(doc);
@@ -1362,7 +1362,7 @@ var Hints = Module("hints", {
                 },
                 validator: function (value) {
                     let values = DOM.Event.parse(value).map(DOM.Event.bound.stringify);
-                    return Option.validIf(array.uniq(values).length === values.length && values.length > 1,
+                    return Option.validIf(Ary.uniq(values).length === values.length && values.length > 1,
                                           _("option.hintkeys.duplicate"));
                 }
             });

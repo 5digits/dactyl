@@ -1219,8 +1219,8 @@ var CommandLine = Module("commandline", {
 
         get selected() this.itemList.selected,
         set selected(tuple) {
-            if (!array.equals(tuple || [],
-                              this.itemList.selected || []))
+            if (!Ary.equals(tuple || [],
+                            this.itemList.selected || []))
                 this.itemList.select(tuple);
 
             if (!tuple)

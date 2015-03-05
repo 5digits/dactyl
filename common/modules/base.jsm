@@ -176,6 +176,7 @@ function require_(obj, name, from, targetName) {
 defineModule("base", {
     // sed -n 's/^(const|var|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
+        "Ary",
         "Cc",
         "Ci",
         "Class",
@@ -269,7 +270,7 @@ function literal(comment) {
 function apply(obj, meth, args) {
     // The function's own apply method breaks in strange ways
     // when using CPOWs.
-    return Function.prototype.apply.call(obj[meth], obj, args);
+    return Function.apply.call(obj[meth], obj, args);
 }
 
 /**
@@ -320,7 +321,8 @@ function* properties(obj, prototypes) {
                     }
                     return false;
                 };
-                return array.uniq([k for (k in obj)].concat(
+
+                return Ary.uniq([k for (k in obj)].concat(
                     Object.getOwnPropertyNames(
                               XPCNativeWrapper.unwrap(obj))
                           .filter(filter)));
@@ -880,7 +882,7 @@ function Class(...args) {
 
     Class.extend(Constructor, superclass, args[0]);
     memoize(Constructor, "bound", Class.makeClosure);
-    if (Iter && array) // Hack. :/
+    if (Iter && Ary) // Hack. :/
         Object.defineProperty(Constructor, "closure",
                               deprecated("bound", { get: function closure() this.bound }));
     update(Constructor, args[1]);
@@ -987,7 +989,10 @@ Class.Memoize = function Memoize(getter, wait)
                         return Class.replaceProperty(obj, key, getter.call(this, key));
                     }
                     catch (e) {
-                        util.reportError(e);
+                        if (loaded.util)
+                            util.reportError(e);
+                        else
+                            defineModule.dump("    " + (e.filename || e.fileName) + ":" + e.lineNumber + ": " + e + "\n" + (e.stack || Error().stack) + "\n");
                     }
                 };
 
@@ -1343,7 +1348,7 @@ function Struct(...args) {
 
     const Struct = Class(className || "Struct", StructBase, {
         length: args.length,
-        members: array.toObject(args.map((v, k) => [v, k]))
+        members: Ary(args).map((v, k) => [v, k]).toObject(),
     });
     args.forEach(function (name, i) {
         Struct.prototype.__defineGetter__(name, function () this[i]);
@@ -1539,12 +1544,12 @@ function iter(obj, iface) {
     else if (Symbol.iterator in obj)
         res = obj[Symbol.iterator]();
     else if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
-        res = array.iterItems(obj);
+        res = Ary.iterItems(obj);
     else if (ctypes && ctypes.CData && obj instanceof ctypes.CData) {
         while (obj.constructor instanceof ctypes.PointerType)
             obj = obj.contents;
         if (obj.constructor instanceof ctypes.ArrayType)
-            res = array.iterItems(obj);
+            res = Ary.iterItems(obj);
         else if (obj.constructor instanceof ctypes.StructType)
             res = (function* () {
                 for (let prop of values(obj.constructor.fields)) {
@@ -1591,9 +1596,9 @@ function iter(obj, iface) {
     return Iter(res);
 }
 update(iter, {
-    toArray: function toArray(iter) array(iter).array,
+    toArray: function toArray(iter) Ary(iter).array,
 
-    // See array.prototype for API docs.
+    // See Ary.prototype for API docs.
     toObject: function toObject(iter) {
         let obj = {};
         for (let [k, v] of iter)
@@ -1688,8 +1693,7 @@ update(iter, {
         return undefined;
     },
 
-    sort: function sort(iter, fn, self)
-        array(this.toArray(iter).sort(fn, self)),
+    sort: function sort(iter, fn, self) Ary(iter).sort(fn, self),
 
     uniq: function* uniq(iter) {
         let seen = new RealSet;
@@ -1749,8 +1753,9 @@ function arrayWrap(fn) {
     function wrapper() {
         let res = fn.apply(this, arguments);
         if (isArray(res))
-            return array(res);
-        if (isinstance(res, ["Iterator", "Generator"]))
+            return Ary(res);
+
+        if (isObject(res) && Symbol.iterator in res)
             return iter(res);
         return res;
     }
@@ -1761,32 +1766,30 @@ function arrayWrap(fn) {
 /**
  * Array utility methods.
  */
-var array = Class("array", Array, {
+var Ary = Class("Ary", Array, {
     init: function (ary) {
-        if (Symbol.iterator in ary)
+        if (Symbol.iterator in ary && !isArray(ary))
             ary = [k for (k of ary)];
-        else if (isinstance(ary, ["Iterator", "Generator"]) || Symbol.iterator in ary)
-            ary = [k for (k of ary)];
-        else if (ary.length)
-            ary = Array.slice(ary);
 
         let self = this;
         return new Proxy(ary, {
             get: function array_get(target, prop) {
-                if (prop in array && callable(array[prop]))
-                    return arrayWrap(array[prop].bind(array, target));
-
                 if (prop == "array")
                     return target;
 
-                let p = target[prop];
-                if (!/^\d+$/.test(prop) &&
-                    prop != "toString" &&
-                    prop != "toSource" &&
-                    callable(p))
-                    return arrayWrap(p);
+                if (prop in Ary && callable(Ary[prop]))
+                    return arrayWrap(Ary[prop].bind(Ary, target));
 
-                return p;
+                let p = target[prop];
+
+                if (typeof prop == "symbol" ||
+                    /^\d+$/.test(prop) ||
+                    prop == "toString" ||
+                    prop == "toSource" ||
+                    !callable(p))
+                    return p;
+
+                return arrayWrap(p);
             }
         });
     }
@@ -1922,20 +1925,27 @@ let iterProto = Iter.prototype;
 Object.keys(iter).forEach(function (k) {
     iterProto[k] = function (...args) {
         let res = apply(iter, k, [this].concat(args));
-        if (isinstance(res, ["Iterator", "Generator"]))
-            return Iter(res);
+
+        if (k == "toArray")
+            return res;
+
+        if (isObject(res) && Symbol.iterator in res)
+            return Iter(res[Symbol.iterator]());
+
         return res;
     };
 });
 
-Object.keys(array).forEach(function (k) {
+Object.keys(Ary).forEach(function (k) {
     if (!(k in iterProto))
         iterProto[k] = function (...args) {
-            let res = apply(array, k, [this.toArray()].concat(args));
-            if (isinstance(res, ["Iterator", "Generator"]))
-                return Iter(res);
+            let res = apply(Ary, k, [this.toArray()].concat(args));
+
             if (isArray(res))
-                return array(res);
+                return Ary(res);
+
+            if (isObject(res) && Symbol.iterator in res)
+                return Iter(res[Symbol.iterator]());
             return res;
         };
 });
@@ -1943,16 +1953,25 @@ Object.keys(array).forEach(function (k) {
 Object.getOwnPropertyNames(Array.prototype).forEach(function (k) {
     if (!(k in iterProto) && callable(Array.prototype[k]))
         iterProto[k] = function () {
-            let ary = iter(this).toArray();
+            let ary = this.toArray();
             let res = apply(ary, k, arguments);
+
             if (isArray(res))
-                return array(res);
+                return Ary(res);
+
             return res;
         };
 });
 
 Object.defineProperty(Class.prototype, "closure",
                       deprecated("bound", { get: function closure() this.bound }));
+
+if (false)
+    var array = Class("array", Ary, {
+        init: deprecated("Ary", function init() { init.superapply(arguments) })
+    });
+else
+    array = Ary;
 
 endModule();
 

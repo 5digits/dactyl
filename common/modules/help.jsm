@@ -31,7 +31,7 @@ var HelpBuilder = Class("HelpBuilder", {
                     [f.value for (f of DOM.XPath("//dactyl:include/@href", doc))]);
 
             // Scrape the tags from the rest of the help files.
-            array.flatten(files).forEach(function (file) {
+            Ary.flatten(files).forEach(function (file) {
                 this.tags[file + ".xml"] = file;
                 this.findHelpFile(file).forEach(function (doc) {
                     this.addTags(file, doc);
@@ -128,7 +128,7 @@ var Help = Module("Help", {
 
             let betas = util.regexp(/\[((?:b|rc)\d)\]/, "gx");
 
-            let beta = array(betas.iterate(NEWS))
+            let beta = Ary(betas.iterate(NEWS))
                         .map(m => m[1]).uniq().slice(-1)[0];
 
             function rec(text, level, li) {
@@ -151,7 +151,7 @@ var Help = Module("Help", {
                     else if (match.par) {
                         let [, par, tags] = /([^]*?)\s*((?:\[[^\]]+\])*)\n*$/.exec(match.par);
                         let t = tags;
-                        tags = array(betas.iterate(tags)).map(m => m[1]);
+                        tags = Ary(betas.iterate(tags)).map(m => m[1]);
 
                         let group = !tags.length               ? "" :
                                     !tags.some(t => t == beta) ? "HelpNewsOld" : "HelpNewsNew";
@@ -317,7 +317,7 @@ var Help = Module("Help", {
                         data.push(" xmlns=" + JSON.stringify(XHTML),
                                   " xmlns:dactyl=" + JSON.stringify(NS));
 
-                    for (let { name, value } of array.iterValues(node.attributes)) {
+                    for (let { name, value } of node.attributes) {
                         if (name == "dactyl:highlight") {
                             styles.add(value);
                             name = "class";

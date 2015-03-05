@@ -106,7 +106,7 @@ var JavaScript = Module("javascript", {
 
         let completions = [k for (k of this.iter(obj, toplevel))];
         if (obj === this.modules) // Hack.
-            completions = array.uniq(completions.concat([k for (k of this.iter(this.modules.jsmodules, toplevel))]));
+            completions = Ary.uniq(completions.concat([k for (k of this.iter(this.modules.jsmodules, toplevel))]));
         return completions;
     },
 
@@ -623,7 +623,7 @@ var JavaScript = Module("javascript", {
      * enumerable by any standard method.
      */
     globalNames: Class.Memoize(function () {
-        return array.uniq([
+        return Ary.uniq([
             "Array", "ArrayBuffer", "AttributeName", "Audio", "Boolean", "Components",
             "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
             "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date", "Error",

@@ -522,7 +522,7 @@ var RangeFind = Class("RangeFind", {
             this.regexp = false;
             if (regexp) {
                 let re = RegExp(word, "gm" + this.flags);
-                for (this.range of array.iterValues(this.ranges)) {
+                for (this.range of this.ranges) {
                     for (let match of util.regexp.iterate(re, DOM.stringify(this.range.range, true))) {
                         let lastRange = this.lastRange;
                         if (res = this.find(null, this.reverse, true))
@@ -575,7 +575,7 @@ var RangeFind = Class("RangeFind", {
             let pageStart = RangeFind.endpoint(pageRange, true);
             let pageEnd = RangeFind.endpoint(pageRange, false);
 
-            for (let frame of array.iterValues(win.frames)) {
+            for (let frame of Ary.iterValues(win.frames)) {
                 let range = doc.createRange();
                 if (DOM(frame.frameElement).style.visibility == "visible") {
                     range.selectNode(frame.frameElement);
@@ -706,11 +706,11 @@ var RangeFind = Class("RangeFind", {
     set stale(val) this._stale = val,
 
     addListeners: function addListeners() {
-        for (let range of array.iterValues(this.ranges))
+        for (let range of this.ranges)
             range.window.addEventListener("unload", this.bound.onUnload, true);
     },
     purgeListeners: function purgeListeners() {
-        for (let range of array.iterValues(this.ranges))
+        for (let range of this.ranges)
             try {
                 range.window.removeEventListener("unload", this.bound.onUnload, true);
             }

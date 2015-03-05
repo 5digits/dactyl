@@ -194,7 +194,7 @@ var Modes = Module("modes", {
 
     NONE: 0,
 
-    "@@iterator": function __iterator__() array.iterValues(this.all),
+    "@@iterator": function __iterator__() Ary.iterValues(this.all),
 
     get all() this._modes.slice(),
 
@@ -238,7 +238,7 @@ var Modes = Module("modes", {
 
     dumpStack: function dumpStack() {
         util.dump("Mode stack:");
-        for (let [i, mode] of array.iterItems(this._modeStack))
+        for (let [i, mode] of Ary.iterItems(this._modeStack))
             util.dump("    " + i + ": " + mode);
     },
 
@@ -285,7 +285,7 @@ var Modes = Module("modes", {
 
     save: function save(id, obj, prop, test) {
         if (!(id in this.boundProperties))
-            for (let elem of array.iterValues(this._modeStack))
+            for (let elem of Ary.iterValues(this._modeStack))
                 elem.saved[id] = { obj: obj, prop: prop, value: obj[prop], test: test };
         this.boundProperties[id] = { obj: util.weakReference(obj), prop: prop, test: test };
     },
@@ -447,7 +447,7 @@ var Modes = Module("modes", {
             let seen = new RealSet,
                 res = [],
                 queue = [this].concat(this.bases);
-            for (let mode of array.iterValues(queue))
+            for (let mode of queue)
                 if (!seen.add(mode)) {
                     res.push(mode);
                     apply(queue, "push", mode.bases);
@@ -633,8 +633,8 @@ var Modes = Module("modes", {
             validator: function validator(vals) vals.map(v => v.replace(/^!/, ""))
                                                     .every(k => hasOwnProperty(this.values, k)),
 
-            get values() array.toObject([[m.name.toLowerCase(), m.description]
-                                         for (m of values(modes._modes)) if (!m.hidden)])
+            get values() Ary.toObject([[m.name.toLowerCase(), m.description]
+                                       for (m of values(modes._modes)) if (!m.hidden)])
         };
 
         options.add(["passunknown", "pu"],

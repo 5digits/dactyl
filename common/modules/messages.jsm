@@ -39,21 +39,21 @@ var Messages = Module("messages", {
     },
 
     bundles: Class.Memoize(function ()
-        array.uniq([JSMLoader.getTarget("dactyl://locale/" + this.name + ".properties"),
-                    JSMLoader.getTarget("dactyl://locale-local/" + this.name + ".properties"),
-                    "resource://dactyl-locale/en-US/" + this.name + ".properties",
-                    "resource://dactyl-locale-local/en-US/" + this.name + ".properties"],
-                   true)
-             .map(services.stringBundle.createBundle)
-             .filter(function (bundle) {
-                 try {
-                     bundle.getSimpleEnumeration();
-                     return true;
-                 }
-                 catch (e) {
-                     return false;
-                 }
-             })),
+        Ary.uniq([JSMLoader.getTarget("dactyl://locale/" + this.name + ".properties"),
+                  JSMLoader.getTarget("dactyl://locale-local/" + this.name + ".properties"),
+                  "resource://dactyl-locale/en-US/" + this.name + ".properties",
+                  "resource://dactyl-locale-local/en-US/" + this.name + ".properties"],
+                 true)
+           .map(services.stringBundle.createBundle)
+           .filter(function (bundle) {
+               try {
+                   bundle.getSimpleEnumeration();
+                   return true;
+               }
+               catch (e) {
+                   return false;
+               }
+           })),
 
     iterate: function* () {
         let seen = new RealSet;
@@ -113,7 +113,7 @@ var Messages = Module("messages", {
                     yield key(prop) + " = " + obj[prop];
 
                     if (iter_.values) {
-                        let iter_ = isArray(obj.values) ? array.iterValues(obj.values)
+                        let iter_ = isArray(obj.values) ? obj.values
                                                         : iter(obj.values);
 
                         for (let [k, v] of iter_)
@@ -130,15 +130,15 @@ var Messages = Module("messages", {
         }()).toArray();
 
         file.write(
-            array(commands.allHives.map(h => properties("command", h)))
-                          .concat(modes.all.map(m =>
-                              properties("map", values(mappings.builtin.getStack(m)
-                                                               .filter(map => map.modes[0] == m)))))
-                          .concat(properties("mode", values(modes.all.filter(m => !m.hidden))))
-                          .concat(properties("option", options))
-                          .concat(properties("hintmode", values(hints.modes), "prompt"))
-                          .concat(properties("pageinfo", values(Buffer.pageInfo), "title"))
-                          .concat(properties("sanitizeitem", values(sanitizer.itemMap)))
+            Ary(commands.allHives.map(h => properties("command", h)))
+                        .concat(modes.all.map(m =>
+                            properties("map", values(mappings.builtin.getStack(m)
+                                                             .filter(map => map.modes[0] == m)))))
+                        .concat(properties("mode", values(modes.all.filter(m => !m.hidden))))
+                        .concat(properties("option", options))
+                        .concat(properties("hintmode", values(hints.modes), "prompt"))
+                        .concat(properties("pageinfo", values(Buffer.pageInfo), "title"))
+                        .concat(properties("sanitizeitem", values(sanitizer.itemMap)))
                 .flatten().uniq().join("\n"));
     }
 }, {

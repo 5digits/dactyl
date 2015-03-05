@@ -235,7 +235,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         let name = commands.add(params.name, params.description,
             function (args) {
-                let results = array(params.iterate(args))
+                let results = Ary(params.iterate(args))
                     .sort((a, b) => String.localeCompare(a.name, b.name));
 
                 let filters = args.map(arg => {
@@ -256,8 +256,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     context.keys.description = function () seen[this.text] + /*L*/" matching items";
                     context.ignoreCase = true;
                     let seen = {};
-                    context.completions = array(keys(item).join(" ").toLowerCase().split(/[()\s]+/)
-                                                for (item of params.iterate(args)))
+                    context.completions = Ary(keys(item).join(" ").toLowerCase().split(/[()\s]+/)
+                                              for (item of params.iterate(args)))
                         .flatten()
                         .map(function (k) {
                             seen[k] = (seen[k] || 0) + 1;
@@ -269,7 +269,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         if (params.index)
             this.indices[params.index] = function* () {
-                let results = array((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
+                let results = Ary((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
                         .array.sort((a, b) => String.localeCompare(a.name, b.name));
 
                 for (let obj of values(results)) {
@@ -1403,8 +1403,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     "rb" + [k for ([k, v] of iter(groups[1].opts))
                             if (!Dactyl.toolbarHidden(document.getElementById(v[1][0])))].join(""),
 
-                values: array(groups).map(g => [[k, v[0]] for ([k, v] of iter(g.opts))])
-                                     .flatten(),
+                values: Ary(groups).map(g => [[k, v[0]] for ([k, v] of iter(g.opts))])
+                                   .flatten(),
 
                 setter: function (value) {
                     for (let group of values(groups))

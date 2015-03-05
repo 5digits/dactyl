@@ -71,7 +71,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         let listeners = this.getData(doc, "listeners");
 
         if (!isObject(event))
-            var [self, events] = [null, array.toObject([[event, callback]])];
+            var [self, events] = [null, Ary.toObject([[event, callback]])];
         else
             [self, events] = [event, event[callback || "events"]];
 
@@ -309,7 +309,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                         if (!(node instanceof Ci.nsIDOMDocumentFragment))
                             savedElems.push(node);
                         else
-                            for (let n of array.iterValues(node.childNodes))
+                            for (let n of node.childNodes)
                                 savedElems.push(n);
 
                         fn(elem, node);

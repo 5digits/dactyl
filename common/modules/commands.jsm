@@ -220,7 +220,7 @@ var Command = Class("Command", {
     parsedSpecs: Class.Memoize(function () Command.parseSpecs(this.specs)),
 
     /** @property {[string]} All of this command's short names, e.g., "com" */
-    shortNames: Class.Memoize(function () array.compact(this.parsedSpecs.map(n => n[1]))),
+    shortNames: Class.Memoize(function () Ary.compact(this.parsedSpecs.map(n => n[1]))),
 
     /**
      * @property {[string]} All of this command's long names, e.g., "command"
@@ -231,7 +231,7 @@ var Command = Class("Command", {
     name: Class.Memoize(function () this.longNames[0]),
 
     /** @property {[string]} All of this command's long and short names. */
-    names: Class.Memoize(function () this.names = array.flatten(this.parsedSpecs)),
+    names: Class.Memoize(function () this.names = Ary.flatten(this.parsedSpecs)),
 
     /** @property {string} This command's description, as shown in :listcommands */
     description: Messages.Localized(""),
@@ -307,7 +307,7 @@ var Command = Class("Command", {
         }, this)),
     _options: [],
 
-    optionMap: Class.Memoize(function () array(this.options)
+    optionMap: Class.Memoize(function () Ary(this.options)
                 .map(opt => opt.names.map(name => [name, opt]))
                 .flatten().toObject()),
 
@@ -455,7 +455,7 @@ var Ex = Module("Ex", {
                     Class.replaceProperty(res, opt.names[0], val);
                     res.explicitOpts[opt.names[0]] = val;
                 }
-        for (let [i, val] of array.iterItems(args))
+        for (let [i, val] of Ary.iterItems(args))
             res[i] = String(val);
         return res;
     },
@@ -535,7 +535,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         if (this.cached)
             this.modules.initDependencies("commands");
         this.cached = false;
-        return array.iterValues(this._list.sort((a, b) => a.name > b.name));
+        return Ary.iterValues(this._list.sort((a, b) => a.name > b.name));
     },
 
     /** @property {string} The last executed Ex command line. */
@@ -565,7 +565,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         extra.hive = this;
         extra.parsedSpecs = Command.parseSpecs(specs);
 
-        let names = array.flatten(extra.parsedSpecs);
+        let names = Ary.flatten(extra.parsedSpecs);
         let name = names[0];
 
         if (this.name != "builtin") {
@@ -855,8 +855,8 @@ var Commands = Module("commands", {
 
         let defaults = {};
         if (args.ignoreDefaults)
-            defaults = array(this.options).map(opt => [opt.names[0], opt.default])
-                                          .toObject();
+            defaults = Ary(this.options).map(opt => [opt.names[0], opt.default])
+                                        .toObject();
 
         for (let [opt, val] of iter(args.options || {})) {
             if (val === undefined)
@@ -1675,7 +1675,7 @@ var Commands = Module("commands", {
                 ],
                 literal: 1,
 
-                serialize: function () array(commands.userHives)
+                serialize: function () Ary(commands.userHives)
                     .filter(h => h.persist)
                     .map(hive => [
                         {

@@ -201,7 +201,7 @@ var MOW = Module("mow", {
                 selection: !window.document.commandDispatcher.focusedWindow.getSelection().isCollapsed
             };
 
-            for (let node of array.iterValues(menu.children)) {
+            for (let node of menu.children) {
                 let group = node.getAttributeNS(NS, "group");
                 node.hidden = group && !group.split(/\s+/).every(g => enabled[g]);
             }

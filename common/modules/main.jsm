@@ -168,7 +168,7 @@ var Modules = function Modules(window) {
 
         newContext: newContext,
 
-        get ownPropertyValues() array.compact(
+        get ownPropertyValues() Ary.compact(
                 Object.getOwnPropertyNames(this)
                       .map(name => Object.getOwnPropertyDescriptor(this, name).value)),
 

@@ -500,7 +500,7 @@ var Option = Class("Option", {
     },
 
     domains: {
-        sitelist: function (vals) array.compact(vals.map(site => util.getHost(site.filter))),
+        sitelist: function (vals) Ary.compact(vals.map(site => util.getHost(site.filter))),
         get sitemap() this.sitelist
     },
 
@@ -543,7 +543,7 @@ var Option = Class("Option", {
             return value.map(Option.parseSite, this);
         },
 
-        stringmap: function stringmap(value) array.toObject(
+        stringmap: function stringmap(value) Ary.toObject(
             Option.splitList(value, true).map(function (v) {
                 let [count, key, quote] = Commands.parseArg(v, /:/);
                 return [key, Option.dequote(v.substr(count + 1))];
@@ -555,7 +555,7 @@ var Option = Class("Option", {
 
         list: function list(value, parse) {
             let prev = null;
-            return array.compact(Option.splitList(value, true)
+            return Ary.compact(Option.splitList(value, true)
                                        .map(function (v) {
                 let [count, filter, quote] = Commands.parseArg(v, /:/, true);
 
@@ -810,7 +810,7 @@ var Option = Class("Option", {
 
 update(BooleanOption.prototype, {
     names: Class.Memoize(function ()
-                array.flatten([[name, "no" + name] for (name of values(this.realNames))]))
+                Ary.flatten([[name, "no" + name] for (name of values(this.realNames))]))
 });
 
 var OptionHive = Class("OptionHive", Contexts.Hive, {
@@ -1415,7 +1415,7 @@ var Options = Module("options", {
                 update({
                     bang: true,
                     completer: setCompleter,
-                    domains: function domains(args) array.flatten(args.map(function (spec) {
+                    domains: function domains(args) Ary.flatten(args.map(function (spec) {
                         try {
                             let opt = modules.options.parseOpt(spec);
                             if (opt.option && opt.option.domains)

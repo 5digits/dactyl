@@ -552,8 +552,8 @@ var IO = Module("io", {
             }
             else {
                 cmd.write("cd " + shellEscape(this.cwd.path) + "\n" +
-                        ["exec", ">" + shellEscape(stdout.path), "2>&1", "<" + shellEscape(stdin.path),
-                         shellEscape(shell.path), shcf, shellEscape(command)].join(" "));
+                          ["exec", ">" + shellEscape(stdout.path), "2>&1", "<" + shellEscape(stdin.path),
+                          shellEscape(shell.path), shcf, shellEscape(command)].join(" "));
                 res = this.run("/bin/sh", ["-e", cmd.path], callback ? async : true);
             }
 
@@ -573,7 +573,7 @@ var IO = Module("io", {
      *     otherwise, the return value of *func*.
      */
     withTempFiles: function withTempFiles(func, self, checked, ext, label) {
-        let args = array(util.range(0, func.length))
+        let args = Ary(util.range(0, func.length))
                     .map(bind("createTempFile", this, ext, label)).array;
         try {
             if (!args.every(util.identity))
@@ -665,7 +665,7 @@ var IO = Module("io", {
                              for (cmd of commands.iterator())
                              if (cmd.serialize)];
 
-                lines = array.flatten(lines);
+                lines = Ary.flatten(lines);
 
                 lines.unshift('"' + config.version + "\n");
                 lines.push("\n\" vim: set ft=" + config.name + ":");
@@ -857,11 +857,11 @@ unlet s:cpo_save
                     autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
                                        keys(config.autocommands)),
                     commands: wrap("syn keyword " + config.name + "Command ",
-                                  array(c.specs for (c of commands.iterator())).flatten()),
+                                  Ary(c.specs for (c of commands.iterator())).flatten()),
                     options: wrap("syn keyword " + config.name + "Option ",
-                                  array(o.names for (o of options) if (o.type != "boolean")).flatten()),
+                                  Ary(o.names for (o of options) if (o.type != "boolean")).flatten()),
                     toggleoptions: wrap("let s:toggleOptions = [",
-                                        array(o.realNames for (o of options) if (o.type == "boolean"))
+                                        Ary(o.realNames for (o of options) if (o.type == "boolean"))
                                             .flatten().map(String.quote),
                                         ", ") + "]"
                 }; //}}}
@@ -1063,7 +1063,7 @@ unlet s:cpo_save
                                        if (file.isFile() && file.isExecutable())]);
                 }
 
-                return array.flatten(commands);
+                return Ary.flatten(commands);
             };
         };
 

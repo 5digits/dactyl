@@ -65,7 +65,7 @@ var History = Module("history", {
         let obj = [];
         obj.__defineGetter__("index", () => sh.index);
         obj.__defineSetter__("index", function (val) { webNav.gotoIndex(val); });
-        obj[Symbol.iterator] = function () array.iterItems(this);
+        obj[Symbol.iterator] = function () this.entries();
 
         for (let item of iter(sh.SHistoryEnumerator, Ci.nsISHEntry))
             obj.push(update(Object.create(item), {
@@ -276,7 +276,7 @@ var History = Module("history", {
                         description: "The sort order of the results",
                         completer: function (context, args) {
                             context.compare = CompletionContext.Sort.unsorted;
-                            return array.flatten([
+                            return Ary.flatten([
                                 "annotation",
                                 "date",
                                 "date added",

@@ -99,8 +99,8 @@ var DOM = Class("DOM", {
     get document() this._document || this[0] && (this[0].ownerDocument || this[0].document || this[0]),
     set document(val) this._document = val,
 
-    attrHooks: array.toObject([
-        ["", {
+    attrHooks: {
+        "": {
             href: { get: elem => elem.href || elem.getAttribute("href") },
             src:  { get: elem => elem.src || elem.getAttribute("src") },
             checked: { get: elem => elem.hasAttribute("checked") ? elem.getAttribute("checked") == "true" : elem.checked,
@@ -109,8 +109,8 @@ var DOM = Class("DOM", {
             disabled: BooleanAttribute("disabled"),
             hidden: BooleanAttribute("hidden"),
             readonly: BooleanAttribute("readonly")
-        }]
-    ]),
+        }
+    },
 
     matcher: function matcher(sel) elem => (elem.mozMatchesSelector && elem.mozMatchesSelector(sel)),
 
@@ -309,7 +309,7 @@ var DOM = Class("DOM", {
             },
 
             set list(val) {
-                let str = array.uniq(val).join(" ").trim();
+                let str = Ary.uniq(val).join(" ").trim();
                 self.attrNS(NS, "highlight", str || null);
             },
 
@@ -457,7 +457,9 @@ var DOM = Class("DOM", {
         try {
             var res = node.ownerDocument.defaultView.getComputedStyle(node, null);
         }
-        catch (e) {}
+        catch (e) {
+            util.reportError(e);
+        }
 
         if (res == null) {
             util.dumpStack(_("error.nullComputedStyle", node));
@@ -615,7 +617,7 @@ var DOM = Class("DOM", {
                 else {
                     let tag = "<" + [namespaced(elem)].concat(
                         [namespaced(a) + '="' + String.replace(a.value, /["<]/, DOM.escapeHTML) + '"'
-                     for ([i, a] of array.iterItems(elem.attributes))]).join(" ");
+                     for (a of elem.attributes)]).join(" ");
 
                     res.push(tag + (!hasChildren ? "/>" : ">...</" + namespaced(elem) + ">"));
                 }
@@ -634,7 +636,7 @@ var DOM = Class("DOM", {
 
     attrNS: function attrNS(ns, key, val) {
         if (val !== undefined)
-            key = array.toObject([[key, val]]);
+            key = Ary.toObject([[key, val]]);
 
         let hooks = this.attrHooks[ns] || {};
 
@@ -667,7 +669,7 @@ var DOM = Class("DOM", {
 
     css: update(function css(key, val) {
         if (val !== undefined)
-            key = array.toObject([[key, val]]);
+            key = Ary.toObject([[key, val]]);
 
         if (isObject(key))
             return this.each(function (elem) {
@@ -830,7 +832,7 @@ var DOM = Class("DOM", {
         if (isObject(event))
             capture = listener;
         else
-            event = array.toObject([[event, listener]]);
+            event = Ary.toObject([[event, listener]]);
 
         for (let [evt, callback] of iter(event))
             event[evt] = util.wrapCallback(callback, true);
@@ -844,7 +846,7 @@ var DOM = Class("DOM", {
         if (isObject(event))
             capture = listener;
         else
-            event = array.toObject([[event, listener]]);
+            event = Ary.toObject([[event, listener]]);
 
         return this.each(function (elem) {
             for (let [k, v] of iter(event))
@@ -855,7 +857,7 @@ var DOM = Class("DOM", {
         if (isObject(event))
             capture = listener;
         else
-            event = array.toObject([[event, listener]]);
+            event = Ary.toObject([[event, listener]]);
 
         for (let pair of iter(event)) {
             let [evt, callback] = pair;
@@ -1146,7 +1148,7 @@ var DOM = Class("DOM", {
          */
         parse: function parse(input, unknownOk=true) {
             if (isArray(input))
-                return array.flatten(input.map(k => this.parse(k, unknownOk)));
+                return Ary.flatten(input.map(k => this.parse(k, unknownOk)));
 
             let out = [];
             for (let match of util.regexp.iterate(/<.*?>?>|[^<]|<(?!.*>)/g, input)) {
@@ -1871,11 +1873,11 @@ var DOM = Class("DOM", {
      * @returns {string}
      */
     makeXPath: function makeXPath(nodes) {
-        return array(nodes).map(util.debrace).flatten()
-                           .map(node => /^[a-z]+:/.test(node) ? node
-                                                              : [node, "xhtml:" + node])
-                           .flatten()
-                           .map(node => "//" + node).join(" | ");
+        return Ary(nodes).map(util.debrace).flatten()
+                         .map(node => /^[a-z]+:/.test(node) ? node
+                                                            : [node, "xhtml:" + node])
+                         .flatten()
+                         .map(node => "//" + node).join(" | ");
     },
 
     namespaces: {

@@ -87,9 +87,9 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
 
     bookmarks: Class.Memoize(function () this.load()),
 
-    keywords: Class.Memoize(function () array.toObject([[b.keyword, b]
-                                                        for (b of this)
-                                                        if (b.keyword)])),
+    keywords: Class.Memoize(function () Ary.toObject([[b.keyword, b]
+                                                      for (b of this)
+                                                      if (b.keyword)])),
 
     rootFolders: ["toolbarFolder", "bookmarksMenuFolder", "unfiledBookmarksFolder"]
         .map(s => services.bookmarks[s]),

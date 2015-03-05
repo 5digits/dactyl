@@ -227,15 +227,15 @@ var ConfigBase = Class("ConfigBase", {
                         .toArray();
         }
         else {
-            res = array(f.leafName
-                        // Fails on FF3: for (f of util.getFile(uri).iterDirectory())
-                        for (f of util.getFile(uri).readDirectory())
-                        if (f.isDirectory())).array;
+            res = Ary(f.leafName
+                      // Fails on FF3: for (f of util.getFile(uri).iterDirectory())
+                      for (f of util.getFile(uri).readDirectory())
+                      if (f.isDirectory())).array;
         }
 
         let exists = function exists(pkg) services["resource:"].hasSubstitution("dactyl-locale-" + pkg);
 
-        return array.uniq([this.appLocale, this.appLocale.replace(/-.*/, "")]
+        return Ary.uniq([this.appLocale, this.appLocale.replace(/-.*/, "")]
                             .filter(exists)
                             .concat(res));
     }),

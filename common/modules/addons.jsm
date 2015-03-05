@@ -346,8 +346,8 @@ var AddonList = Class("AddonList", {
 
 var Addons = Module("addons", {
     errors: Class.Memoize(() =>
-            array(["ERROR_NETWORK_FAILURE", "ERROR_INCORRECT_HASH",
-                   "ERROR_CORRUPT_FILE", "ERROR_FILE_ACCESS"])
+            Ary(["ERROR_NETWORK_FAILURE", "ERROR_INCORRECT_HASH",
+                 "ERROR_CORRUPT_FILE", "ERROR_FILE_ACCESS"])
                 .map(e => [AddonManager[e], _("AddonManager." + e)])
                 .toObject())
 }, {
@@ -466,8 +466,8 @@ var Addons = Module("addons", {
                     context.incomplete = true;
                     AddonManager.getAllAddons(function (addons) {
                         context.incomplete = false;
-                        update(array.uniq(base.concat(addons.map(a => a.type)),
-                                          true));
+                        update(Ary.uniq(base.concat(addons.map(a => a.type)),
+                                        true));
                     });
                 }
             };

@@ -65,7 +65,7 @@ Highlight.defaultValue("value", function () this.defaultValue);
 update(Highlight.prototype, {
     get base() this.baseClass != this.class && highlight.highlight[this.baseClass] || null,
 
-    get bases() array.compact(this.extends.map(name => highlight.get(name))),
+    get bases() Ary.compact(this.extends.map(name => highlight.get(name))),
 
     get inheritedCSS() {
         if (this.gettingCSS)
@@ -178,7 +178,7 @@ var Highlights = Module("Highlight", {
         }
 
         highlight.set("value", newStyle || "");
-        highlight.extends = array.uniq(bases, true);
+        highlight.extends = Ary.uniq(bases, true);
         if (force)
             highlight.style.enabled = true;
         this.highlight[highlight.class] = highlight;
@@ -432,13 +432,13 @@ var Highlights = Module("Highlight", {
             context.keys = { text: f => f.leafName.replace(extRe, ""),
                              description: ".parent.path" };
             context.completions =
-                array.flatten(
-                        io.getRuntimeDirectories("colors").map(
-                            dir => dir.readDirectory()
-                                      .filter(file => extRe.test(file.leafName))))
-                     .concat([
-                        { leafName: "default", parent: { path: /*L*/"Revert to builtin colorscheme" } }
-                     ]);
+                Ary.flatten(
+                      io.getRuntimeDirectories("colors").map(
+                          dir => dir.readDirectory()
+                                    .filter(file => extRe.test(file.leafName))))
+                   .concat([
+                      { leafName: "default", parent: { path: /*L*/"Revert to builtin colorscheme" } }
+                   ]);
 
         };
 

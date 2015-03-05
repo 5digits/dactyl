@@ -237,7 +237,7 @@ var CompletionContext = Class("CompletionContext", {
 
         try {
             let allItems = this.contextList.map(function m(context) context.hasItems && context.items.length);
-            if (this.cache.allItems && array.equals(this.cache.allItems, allItems))
+            if (this.cache.allItems && Ary.equals(this.cache.allItems, allItems))
                 return this.cache.allItemsResult;
             this.cache.allItems = allItems;
 
@@ -250,7 +250,7 @@ var CompletionContext = Class("CompletionContext", {
 
                 get longestSubstring() self.longestAllSubstring,
 
-                get items() array.flatten(self.activeContexts.map(function m(context) {
+                get items() Ary.flatten(self.activeContexts.map(function m(context) {
                     let prefix = self.value.substring(minStart, context.offset);
 
                     return context.items.map(function m(item) ({
@@ -285,7 +285,7 @@ var CompletionContext = Class("CompletionContext", {
                 lists.pop());
         if (!substrings) // FIXME: How is this undefined?
             return [];
-        return array.uniq(Array.slice(substrings));
+        return Ary.uniq(Array.slice(substrings));
     },
     // Temporary
     get longestAllSubstring() {

@@ -61,7 +61,7 @@ var Buffer = Module("Buffer", {
      *     buffer. Only returns style sheets for the 'screen' media type.
      */
     get alternateStyleSheets() {
-        let stylesheets = array.flatten(
+        let stylesheets = Ary.flatten(
             this.allFrames().map(w => Array.slice(w.document.styleSheets)));
 
         return stylesheets.filter(
@@ -985,7 +985,7 @@ var Buffer = Module("Buffer", {
         if (win.scrollMaxX > 0 || win.scrollMaxY > 0)
             return win;
 
-        for (let frame of array.iterValues(win.frames))
+        for (let frame of Ary.iterValues(win.frames))
             if (frame.scrollMaxX > 0 || frame.scrollMaxY > 0)
                 return frame;
 
@@ -2304,8 +2304,8 @@ var Buffer = Module("Buffer", {
 
                     let frames = buffer.allFrames(null, true);
 
-                    let elements = array.flatten(frames.map(win => [m for (m of DOM.XPath(xpath, win.document))]))
-                                        .filter(function (elem) {
+                    let elements = Ary.flatten(frames.map(win => [m for (m of DOM.XPath(xpath, win.document))]))
+                                      .filter(function (elem) {
                         if (isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
                                               Ci.nsIDOMHTMLIFrameElement]))
                             return Editor.getEditor(elem.contentWindow);
@@ -2767,7 +2767,7 @@ Buffer.addPageInfoSection("s", "Security", function* (verbose) {
         return; // For now
 
     // Modified from Firefox
-    function location(data) array.compact([
+    function location(data) Ary.compact([
         data.city, data.state, data.country
     ]).join(", ");
 
