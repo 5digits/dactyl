@@ -13,10 +13,11 @@ defineModule("buffer", {
 
 lazyRequire("bookmarkcache", ["bookmarkcache"]);
 lazyRequire("contexts", ["Group"]);
+lazyRequire("downloads", ["Downloads"]);
 lazyRequire("io", ["io"]);
 lazyRequire("finder", ["RangeFind"]);
 lazyRequire("overlay", ["overlay"]);
-lazyRequire("promises", ["Promise", "promises"]);
+lazyRequire("promises", ["CancelablePromise", "Promise", "promises"]);
 lazyRequire("sanitizer", ["sanitizer"]);
 lazyRequire("storage", ["File", "storage"]);
 lazyRequire("template", ["template"]);
@@ -821,7 +822,7 @@ var Buffer = Module("Buffer", {
                 params.isPrivate = privacy.usePrivateBrowsing;
             }
 
-            let download = Downloads.createDownload({
+            let download = yield Downloads.createDownload({
                 source: {
                     url: params.uri.spec,
                     isPrivate: params.isPrivate,

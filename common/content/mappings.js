@@ -375,7 +375,8 @@ var Mappings = Module("mappings", {
                 return key;
             }).flatten().array;
 
-            res = util.debrace(globbed).map(k => DOM.Event.canonicalKeys(k));
+            res = util.debrace(globbed)
+                      .map(k => DOM.Event.canonicalKeys(k));
         }
 
         if (keys != arguments[0])
