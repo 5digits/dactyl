@@ -214,7 +214,7 @@ var Tabs = Module("tabs", {
      */
     // FIXME: Only called once...necessary?
     getContentIndex: function getContentIndex(content) {
-        for (let browser of this.browsers) {
+        for (let [i, browser] of this.browsers) {
             if (browser.contentWindow == content || browser.contentDocument == content)
                 return i;
         }
@@ -510,7 +510,7 @@ var Tabs = Module("tabs", {
      * Stops loading all tabs.
      */
     stopAll: function stopAll() {
-        for (let browser of this.browsers)
+        for (let [, browser] of this.browsers)
             browser.stop();
     },
 
