@@ -142,7 +142,7 @@ var Config = Module("config", ConfigBase, {
 
                 let menu = document.getElementById("viewSidebarMenu");
 
-                for (let [, panel] in Iterator(menu.childNodes))
+                for (let panel of menu.childNodes)
                     if (compare(panel.getAttribute("label"), args[0])) {
                         let elem = document.getElementById(panel.observes);
                         if (elem)
