@@ -1587,18 +1587,6 @@ var Options = Module("options", {
                                 dactyl.reportError(e);
                             }
             },
-            privateEnter: function privateEnter() {
-                for (let opt of values(modules.options._options))
-                    if (opt.privateData && (!callable(opt.privateData) || opt.privateData(opt.value)))
-                        opt.oldValue = opt.value;
-            },
-            privateLeave: function privateLeave() {
-                for (let opt of values(modules.options._options))
-                    if (opt.oldValue != null) {
-                        opt.value = opt.oldValue;
-                        opt.oldValue = null;
-                    }
-            }
         });
     }
 });

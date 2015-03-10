@@ -68,7 +68,7 @@ var StoreBase = Class("StoreBase", {
             storage.infoPath.child(this.name).path);
     },
 
-    save: function () { (self.storage || storage)._saveData(this); },
+    save: function () { (this.storage || storage)._saveData(this); },
 
     "@@iterator": function () iter(this._object)
 });
@@ -230,8 +230,9 @@ var Storage = Module("Storage", {
     },
 
     _saveData: promises.task(function* saveData(obj) {
-        if (obj.privateData && storage.privateMode)
+        if (obj.privateData && this.privateMode)
             return;
+
         if (obj.store && storage.infoPath) {
             var { path } = storage.infoPath.child(obj.name);
             yield OS.File.makeDir(storage.infoPath.path,

@@ -18,7 +18,6 @@
     <dt>LocationChange</dt>    <dd>Triggered when changing tabs or when navigating to a new location</dd>
     <dt>PageLoadPre</dt>       <dd>Triggered after a page load is initiated</dd>
     <dt>PageLoad</dt>          <dd>Triggered when a page gets (re)loaded/opened</dd>
-    <dt>PrivateMode</dt>       <dd>Triggered when private browsing mode is activated or deactivated</dd>
     <dt>Sanitize</dt>          <dd>Triggered when private data are sanitized</dd>
     <dt>ShellCmdPost</dt>      <dd>Triggered after executing a shell command with <ex>:!</ex><a>cmd</a></dd>
     <dt>Enter</dt>             <dd>Triggered after &dactyl.host; starts</dd>
@@ -35,7 +34,7 @@
     <dt>&lt;keyword></dt>   <dd>The keywords applied to the bookmark. Only for <em>BookmarkChange</em>, <em>BookmarkRemove</em>.</dd>
     <dt>&lt;name></dt>      <dd>The name of the item. Only for <em>ColorScheme</em> and <em>Sanitize</em>.</dd>
     <dt>&lt;size></dt>      <dd>The size of a downloaded file. Only for <em>DownloadPost</em>.</dd>
-    <dt>&lt;state></dt>     <dd>The new state. Only for <em>Fullscreen</em> and <em>PrivateMode</em>.</dd>
+    <dt>&lt;state></dt>     <dd>The new state. Only for <em>Fullscreen</em>.</dd>
     <dt>&lt;tab></dt>       <dd>The tab in which the event occurred. Only for <em>DOMLoad</em>, <em>PageLoad</em> and <em>PageLoadPre</em>.</dd>
     <dt>&lt;tags></dt>      <dd>The tags applied to <em>&lt;url></em>. Only for <em>Bookmark*</em>.</dd>
     <dt>&lt;title></dt>     <dd>The page, bookmark or download title.</dd>

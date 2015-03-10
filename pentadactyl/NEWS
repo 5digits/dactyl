@@ -1,5 +1,6 @@
 1.2pre:
     • Remove 'jsdebugger' option.
+    • Remove defunct 'PrivateMode' autocommand.
 
 1.1:
     • Vim runtime files:
@@ -9,6 +10,7 @@
     • Removed <F1> and <A-F1> mappings.
     • Add :private command.
     • Better per-window private browsing support.
+    • Removed 'private' option.
 
 1.0:
     • Extensive Firefox 4 support, including:

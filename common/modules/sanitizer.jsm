@@ -1,5 +1,5 @@
 // Copyright (c) 2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2009-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2009-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -273,15 +273,6 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         apply(params, "action", arg);
                 },
                 getWindow(params.action));
-
-        if (params.privateEnter || params.privateLeave)
-            storage.addObserver("private-mode",
-                function (key, event, arg) {
-                    let meth = params[arg ? "privateEnter" : "privateLeave"];
-                    if (meth)
-                        meth.call(params);
-                },
-                getWindow(params.privateEnter || params.privateLeave));
     },
 
     observers: {
@@ -302,13 +293,6 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             if (this.runAtShutdown && !this.sanitizeItems(null, Range(), null, "shutdown"))
                 this.ranAtShutdown = true;
         },
-        "private-browsing": function (subject, data) {
-            if (data == "enter")
-                storage.privateMode = true;
-            else if (data == "exit")
-                storage.privateMode = false;
-            storage.fireEvent("private-mode", "change", storage.privateMode);
-        }
     },
 
     /**
@@ -430,10 +414,6 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     autocommands: function initAutocommands(dactyl, modules, window) {
         const { autocommands } = modules;
 
-        storage.addObserver("private-mode",
-            function (key, event, value) {
-                autocommands.trigger("PrivateMode", { state: value });
-            }, window);
         storage.addObserver("sanitizer",
             function (key, event, value) {
                 if (event == "domain")
@@ -447,8 +427,6 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         commands.add(["sa[nitize]"],
             "Clear private data",
             function (args) {
-                dactyl.assert(!modules.options['private'], _("command.sanitize.privateMode"));
-
                 if (args["-host"] && !args.length && !args.bang)
                     args[0] = "all";
 
