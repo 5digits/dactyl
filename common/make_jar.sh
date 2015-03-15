@@ -37,22 +37,23 @@ then
     }
 fi
 
-mungeliterals=$(cat <<'!'
-    local $/;
-    $_ = <>;
-    s{(?<!function )\bliteral\((?:function \(\) )?/\*(.*?)\*/\$?\)}{
-        my $s = $1;
-        $s =~ s/[\\']/\\$&/g;
-        $s =~ s/\n/\\n\\$&/g;
-        "/* Preprocessors FTW. */ '$s'";
-    }ges;
-    print;
+mungeliterals_() {
+    cat <<'!'
+        local $/;
+        $_ = <>;
+        s{(?<!function )\bliteral\((?:function \(\) )?/\*(.*?)\*/\$?\)}{
+            my $s = $1;
+            $s =~ s/[\\']/\\$&/g;
+            $s =~ s/\n/\\n\\$&/g;
+            "/* Preprocessors FTW. */ '$s'";
+        }ges;
+        print;
 !
-)
+}
 
 mungeliterals() {
     if which perl >/dev/null 2>&1
-    then perl -e "$mungeliterals"
+    then perl -e "$(mungeliterals_)"
     else cat
     fi
 }
