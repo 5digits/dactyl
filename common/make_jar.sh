@@ -37,18 +37,17 @@ then
     }
 fi
 
-mungeliterals=$(cat <<'!'
+mungeliterals='
     local $/;
     $_ = <>;
     s{(?<!function )\bliteral\((?:function \(\) )?/\*(.*?)\*/\$?\)}{
         my $s = $1;
-        $s =~ s/[\\']/\\$&/g;
+        $s =~ s/[\\'\'']/\\$&/g;
         $s =~ s/\n/\\n\\$&/g;
-        "/* Preprocessors FTW. */ '$s'";
+        "/* Preprocessors FTW. */ '\''$s'\''";
     }ges;
     print;
-!
-)
+'
 
 mungeliterals() {
     if which perl >/dev/null 2>&1
