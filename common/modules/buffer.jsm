@@ -731,9 +731,14 @@ var Buffer = Module("Buffer", {
         }
 
         let link = DOM("link[href][rev=canonical], \
+                        link[href][rel=shorturl], \
                         link[href][rel=shortlink]", doc)
                        .filter(sane)
                        .attr("href");
+
+        if (!link)
+            link = DOM("link[href][rel=canonical]", doc).filter(sane).attr("href");
+
         if (link)
             return hashify(link);
 
