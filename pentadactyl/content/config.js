@@ -61,10 +61,7 @@ var Config = Module("config", ConfigBase, {
                 searchengines: ["Manage installed search engines",
                     function () { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
                 selectionsource: ["View selection source",
-                    function () { modules.buffer.viewSelectionSource(); }],
-                venkman: ["The JavaScript debugger",
-                    function () { dactyl.assert("start_venkman" in window, "Venkman is not installed"); window.start_venkman() },
-                    () => "start_venkman" in window]
+                    function () { modules.buffer.viewSelectionSource(); }]
             },
 
             removeTab: function removeTab(tab) {

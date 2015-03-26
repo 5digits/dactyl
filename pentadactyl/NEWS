@@ -1,6 +1,7 @@
 1.2pre:
-    • Remove 'jsdebugger' option.
-    • Remove defunct 'PrivateMode' autocommand.
+    • Removed defunct 'PrivateMode' autocommand.
+    • Removed 'jsdebugger' option.
+    • Removed "venkman" from :dialog.
 
 1.1:
     • Vim runtime files:
@@ -8,7 +9,7 @@
         all Vim related files.
       - Vimball packages are no longer available.
     • Removed <F1> and <A-F1> mappings.
-    • Add :private command.
+    • Added :private command.
     • Better per-window private browsing support.
     • Removed 'private' option.
 
