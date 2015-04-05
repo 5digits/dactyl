@@ -133,8 +133,8 @@ var CompletionContext = Class("CompletionContext", {
              */
             this.filterFunc = function filterFunc(items) {
                 return this.filters
-                           .reduce((res, filter)
-                                        => res.filter((item) => filter.call(this, item)),
+                           .reduce((res, filter) =>
+                                       res.filter((item) => filter.call(this, item)),
                                    items);
             };
             /**
