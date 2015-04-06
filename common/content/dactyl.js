@@ -1386,11 +1386,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                     if (config.tabbrowser.tabContainer._positionPinnedTabs)
                         config.tabbrowser.tabContainer._positionPinnedTabs();
-                },
-                /*
-                validator: function (opts) dactyl.has("Gecko2") ||
-                    Option.validIf(!/[nN]/.test(opts), "Tab numbering not available in this " + config.host + " version")
-                 */
+                }
             }
         ].filter(group => !group.feature || dactyl.has(group.feature));
 
