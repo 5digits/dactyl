@@ -235,10 +235,8 @@ var Storage = Module("Storage", {
 
         if (obj.store && storage.infoPath) {
             var { path } = storage.infoPath.child(obj.name);
-            yield OS.File.makeDir(storage.infoPath.path,
-                                  { ignoreExisting: true });
-            yield OS.File.writeAtomic(
-                path, obj.serial,
+            yield AsyncFile(storage.infoPath.path).mkdir();
+            yield AsyncFile(path).write(obj.serial,
                 { tmpPath: path + ".part" });
         }
     }),
@@ -251,7 +249,7 @@ var Storage = Module("Storage", {
     },
 
     infoPath: Class.Memoize(() =>
-        File(IO.runtimePath.replace(/,.*/, ""))
+        File(IO.runtimePath.split(",")[0])
             .child("info").child(config.profileName)),
 
     exists: function exists(key) this.infoPath.child(key).exists(),
@@ -838,13 +836,13 @@ var AsyncFile = Class("AsyncFile", File, {
      * Creates a new directory, along with any parent directories which
      * do not currently exist.
      *
-     * @param {string} path The path of the directory to create.
      * @param {object} options Options for directory creation. As in
      *      `OS.File.makeDir`
      * @returns {Promise}
      */
-    mkdir: promises.task(function* mkdir(path, options) {
-        let split = OS.Path.split(path);
+    // TODO: Is there a reason not to merge this with makeDir?
+    mkdir: promises.task(function* mkdir(options) {
+        let split = OS.Path.split(this.path);
         util.assert(split.absolute);
 
         let file = File(split.winDrive ? split.winDrive + File.PATH_SEP
@@ -869,7 +867,7 @@ var AsyncFile = Class("AsyncFile", File, {
                          { ignoreExisting: true,
                            from: file.path });
 
-        yield OS.File.makeDir(path, options);
+        yield OS.File.makeDir(this.path, options);
     }),
 
     _setEncoding: function _setEncoding(options) {
@@ -903,7 +901,8 @@ var AsyncFile = Class("AsyncFile", File, {
      * Writes the string *buf* to this file.
      */
     write: function write(buf, options={}) {
-        return OS.File.writeAtomic(this.path, this._setEncoding(options));
+        return OS.File.writeAtomic(this.path, buf,
+                                   this._setEncoding(options));
     },
 
     copyTo: function copyTo(path, options) {
