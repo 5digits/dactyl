@@ -8,7 +8,6 @@
 
 var Config = Module("config", ConfigBase, {
     Local: function Local(dactyl, modules, window) {
-        let { config } = modules;
         return {
 
             dialogs: {
@@ -195,7 +194,7 @@ var Config = Module("config", ConfigBase, {
             });
     },
     completion: function initCompletion(dactyl, modules, window) {
-        const { CompletionContext, bookmarkcache, completion } = modules;
+        const { completion } = modules;
         const { document } = window;
 
         completion.location = function location(context) {
