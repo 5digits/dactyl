@@ -711,7 +711,7 @@ var CommandLine = Module("commandline", {
      * @param {boolean} forceSingle If provided, don't let over-long
      *     messages move to the MOW.
      */
-    _echoLine: function echoLine(str, highlightGroup, forceSingle, silent) {
+    _echoLine: function echoLine(str, highlightGroup, forceSingle) {
         this.widgets.message = str ? [highlightGroup, str, forceSingle] : null;
 
         dactyl.triggerObserver("echoLine", str, highlightGroup, null, forceSingle);
