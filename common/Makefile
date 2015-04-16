@@ -18,8 +18,6 @@ TOP           = $(shell pwd)
 OS            = $(shell uname -s)
 BUILD_DATE    = $(shell date "+%Y/%m/%d %H:%M:%S")
 BASE          = $(TOP)/../common
-GOOGLE_PROJ   = dactyl
-GOOGLE	      = https://$(GOOGLE_PROJ).googlecode.com/files
 VERSION	     ?= $(shell $(SED) -n 's/.*em:version(>|=")(.*)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
 UUID   	     := $(shell $(SED) -n 's/.*em:id(>|=")(.*)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
 MANGLE	     := chrome
@@ -81,7 +79,6 @@ help:
 	@echo "  make install    - installs this source tree directly to your $(HOSTAPP) profile"
 	@echo '                    set $$PROFILE to select a profile by name and $$PROFILEPATHS'
 	@echo '                    to change the directory where profiles are searched'
-	@echo "  make dist       - uploads to Google Code (this is not for you)"
 	@echo "  make clean      - clean up"
 	@echo "  make distclean  - clean up more"
 	@echo "  make test       - run functional tests"
