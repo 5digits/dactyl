@@ -1787,6 +1787,8 @@ var CommandLine = Module("commandline", {
                  if (self.completions)
                      self.completions.tabTimer.flush();
 
+                 commandline.command;
+
                  self.accepted = true;
                  return function () { modes.pop(); };
              });
