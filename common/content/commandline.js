@@ -394,11 +394,12 @@ var CommandMode = Class("CommandMode", {
 
             commandline.hideCompletions();
 
+            let result = this.command;
             modes.delay(function () {
                 if (!this.keepCommand || commandline.silent || commandline.quiet)
                     commandline.hide();
                 if (!waiting)
-                    this[this.accepted ? "onSubmit" : "onCancel"](commandline.command);
+                    this[this.accepted ? "onSubmit" : "onCancel"](result);
                 if (commandline.messageCount === this.messageCount)
                     commandline.clearMessage();
             }, this);

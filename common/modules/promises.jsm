@@ -84,6 +84,13 @@ var Promises = Module("Promises", {
     },
 
     /**
+     * Returns true if the passed object is a promise.
+     */
+    isPromise: function isPromise(obj) {
+        return isObject(obj) && typeof obj.then === "function";
+    },
+
+    /**
      * Returns a promise which resolves after the given number of
      * milliseconds.
      *

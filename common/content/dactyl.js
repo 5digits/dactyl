@@ -953,7 +953,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 // decide where to load the first url
                 switch (where) {
-
                 case dactyl.NEW_TAB:
                     if (!dactyl.has("tabs"))
                         return open(loc, dactyl.NEW_WINDOW);

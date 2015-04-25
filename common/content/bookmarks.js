@@ -682,7 +682,6 @@ var Bookmarks = Module("bookmarks", {
                     context.format = history.format;
                     context.title = [/*L*/keyword + " Quick Search"];
                     context.keys = { text: "url", description: "title", icon: "icon" };
-                    // context.background = true;
                     context.compare = CompletionContext.Sort.unsorted;
                     context.generate = function () {
                         let [begin, end] = item.url.split("%s");

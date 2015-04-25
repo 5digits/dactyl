@@ -705,9 +705,13 @@ var Option = Class("Option", {
                 return this.value.filter(function (item) !this.has(item), new RealSet(values));
             case "=":
                 if (invert) {
-                    let keepValues = this.value.filter(function (item) !this.has(item), new RealSet(values));
-                    let addValues  = values.filter(function (item) !this.has(item), new RealSet(this.value));
-                    return addValues.concat(keepValues);
+                    let old = this.value.map(String);
+                    let new_ = values.map(String);
+                    let map = Ary(this.value).concat(values).map(val => [String(val), val]).toObject();
+
+                    let keepValues = old.filter(function (item) !this.has(item), new RealSet(new_));
+                    let addValues  = new_.filter(function (item) !this.has(item), new RealSet(old));
+                    return addValues.concat(keepValues).map(s => map[s]);
                 }
                 return values;
             }
