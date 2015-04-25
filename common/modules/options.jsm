@@ -860,7 +860,7 @@ var Options = Module("options", {
                                    o.defaultValue === false ? "off" : o.stringDefaultValue]
                                   for (o of self)),
 
-                                 ([["option", o.name, "type"].join("."), o.type] for (o in self)),
+                                 ([["option", o.name, "type"].join("."), o.type] for (o of self)),
 
                                  config.dtd)),
                     true);
