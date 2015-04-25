@@ -30,7 +30,8 @@ var Marks = Module("marks", {
      */
     get all() iter(this._localMarks.get(this.localURI) || {},
                    this._urlMarks
-                  ).sort((a, b) => String.localeCompare(a[0], b[0])),
+                  ).sort((a, b) => String.localeCompare(a[0], b[0]))
+                   .toArray(),
 
     get localURI() buffer.focusedFrame.document.documentURI.replace(/#.*/, ""),
 
