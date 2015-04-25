@@ -34,7 +34,7 @@ var IO = Module("io", {
     },
 
     Local: function Local(dactyl, modules, window) {
-        let { io, plugins } = modules;
+        let { io } = modules;
         return {
 
             init: function init() {

@@ -660,7 +660,7 @@ var Commands = Module("commands", {
     lazyDepends: true,
 
     Local: function Local(dactyl, modules, window) {
-        let { Group, contexts } = modules;
+        let { contexts } = modules;
         return {
             init: function init() {
                 this.Command = Class("Command", Command, { modules: modules });
@@ -1550,10 +1550,10 @@ var Commands = Module("commands", {
         const { commands, contexts } = modules;
 
         commands.add(["(", "-("], "",
-            function (args) { dactyl.echoerr(_("dactyl.cheerUp")); },
+            function () { dactyl.echoerr(_("dactyl.cheerUp")); },
             { hidden: true });
         commands.add([")", "-)"], "",
-            function (args) { dactyl.echoerr(_("dactyl.somberDown")); },
+            function () { dactyl.echoerr(_("dactyl.somberDown")); },
             { hidden: true });
 
         commands.add(["com[mand]"],
@@ -1769,7 +1769,7 @@ var Commands = Module("commands", {
             });
     },
     javascript: function initJavascript(dactyl, modules, window) {
-        const { JavaScript, commands } = modules;
+        const { JavaScript } = modules;
 
         JavaScript.setCompleter([CommandHive.prototype.get, CommandHive.prototype.remove],
                                 [function () [[c.names, c.description] for (c of this)]]);

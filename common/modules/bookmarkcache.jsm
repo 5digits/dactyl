@@ -48,7 +48,7 @@ update(Bookmark.prototype, {
         let res = [];
         res.toString = function () this.join("/");
 
-        let id = this.id, parent, title;
+        let id = this.id, title;
         while ((id    = services.bookmarks.getFolderIdForItem(id)) &&
                (title = services.bookmarks.getItemTitle(id)))
             res.push(title);

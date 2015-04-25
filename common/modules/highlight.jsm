@@ -154,8 +154,6 @@ var Highlights = Module("Highlight", {
     get: function get(k) this.highlight[k],
 
     set: function set(key, newStyle, force, append, extend) {
-        let [, class_, selectors] = key.match(/^([a-zA-Z_-]+)(.*)/);
-
         let highlight = this.highlight[key] || this._create(false, [key]);
 
         let bases = extend || highlight.extends;
@@ -316,7 +314,7 @@ var Highlights = Module("Highlight", {
                 if (scheme == "default")
                     highlight.clear();
                 else {
-                    lastScheme = modules.io.sourceFromRuntimePath(["colors/" + scheme + "." + config.fileExtension]);
+                    lastScheme = io.sourceFromRuntimePath(["colors/" + scheme + "." + config.fileExtension]);
                     dactyl.assert(lastScheme, _("command.colorscheme.notFound", scheme));
                 }
                 autocommands.trigger("ColorScheme", { name: scheme });

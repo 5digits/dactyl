@@ -12,7 +12,6 @@ defineModule("styles", {
 lazyRequire("contexts", ["Contexts"]);
 lazyRequire("template", ["template"]);
 
-function cssUri(css) "chrome-data:text/css," + encodeURI(css);
 var namespace = "@namespace html " + JSON.stringify(XHTML) + ";\n" +
                 "@namespace xul " + JSON.stringify(XUL) + ";\n" +
                 "@namespace dactyl " + JSON.stringify(NS) + ";\n";
@@ -608,7 +607,6 @@ var Styles = Module("Styles", {
             },
             {
                 completer: function (context, args) {
-                    let compl = [];
                     let sheet = args["-group"].get(args["-name"]);
                     if (args.completeArg == 0) {
                         if (sheet)
@@ -685,8 +683,6 @@ var Styles = Module("Styles", {
                 }, {
                     bang: true,
                     completer: function (context, args) {
-                        let uris = util.visibleURIs(window.content);
-
                         Styles.completeSite(context, window.content, args["-group"]);
                         if (cmd.filter)
                             context.filters.push(({ sheets }) => sheets.some(cmd.filter));

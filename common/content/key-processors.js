@@ -68,7 +68,6 @@ var ProcessorStack = Class("ProcessorStack", {
         events.dbg("EXECUTE(" + this._result(result) + ", " + force + ") events:" + this.events.length
                    + " processors:" + this.processors.length + " actions:" + this.actions.length);
 
-        let processors = this.processors;
         let length = 1;
 
         if (force)

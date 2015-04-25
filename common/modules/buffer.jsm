@@ -772,7 +772,6 @@ var Buffer = Module("Buffer", {
         let self = this;
         let doc      = elem.ownerDocument;
         let uri      = util.newURI(elem.href || elem.src, null, util.newURI(elem.baseURI));
-        let referrer = util.newURI(doc.documentURI, doc.characterSet);
 
         try {
             services.security.checkLoadURIWithPrincipal(doc.nodePrincipal, uri,
@@ -1186,7 +1185,7 @@ var Buffer = Module("Buffer", {
      * @param {boolean} useExternalEditor View the source in the external editor.
      */
     viewSource: function viewSource(loc, useExternalEditor) {
-        let { dactyl, editor, history, options } = this.modules;
+        let { dactyl, history, options } = this.modules;
 
         let window = this.topWindow;
 
@@ -1315,7 +1314,7 @@ var Buffer = Module("Buffer", {
      *   closed range [Buffer.ZOOM_MIN, Buffer.ZOOM_MAX].
      */
     setZoom: function setZoom(value, fullZoom) {
-        let { dactyl, statusline, storage } = this.modules;
+        let { dactyl, statusline } = this.modules;
         let { ZoomManager } = this;
 
         if (fullZoom === undefined)
@@ -1333,7 +1332,6 @@ var Buffer = Module("Buffer", {
         }
 
         if (prefs.get("browser.zoom.siteSpecific")) {
-            var privacy = sanitizer.getContext(this.win);
             if (value == 1) {
                 this.prefs.clear("browser.content.full-zoom");
                 this.prefs.clear("dactyl.content.full-zoom");
@@ -1829,7 +1827,7 @@ var Buffer = Module("Buffer", {
 
         commands.add(["frameo[nly]"],
             "Show only the current frame's page",
-            function (args) {
+            function () {
                 dactyl.open(buffer.focusedFrame.location.href);
             },
             { argCount: "0" });
@@ -2041,7 +2039,7 @@ var Buffer = Module("Buffer", {
             });
     },
     completion: function initCompletion(dactyl, modules, window) {
-        let { CompletionContext, buffer, completion } = modules;
+        let { buffer, completion } = modules;
 
         completion.alternateStyleSheet = function alternateStylesheet(context) {
             context.title = ["Stylesheet", "Location"];
@@ -2100,7 +2098,7 @@ var Buffer = Module("Buffer", {
         mappings.add([modes.NORMAL],
             ["y", "<yank-location>"], "Yank current location to the clipboard",
             function () {
-                let { doc, uri } = buffer;
+                let { uri } = buffer;
                 if (uri instanceof Ci.nsIURL)
                     uri.query = uri.query.replace(/(?:^|&)utm_[^&]+/g, "")
                                          .replace(/^&/, "");
@@ -2438,7 +2436,7 @@ var Buffer = Module("Buffer", {
             function () { buffer.showPageInfo(true); });
     },
     options: function initOptions(dactyl, modules, window) {
-        let { Option, buffer, completion, config, options } = modules;
+        let { Option, buffer, completion, options } = modules;
 
         options.add(["encoding", "enc"],
             "The current buffer's character encoding",

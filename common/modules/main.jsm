@@ -209,7 +209,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
     load: function onLoad(document) {
         let self = this;
 
-        var { modules, Module } = this.modules;
+        var { modules } = this.modules;
         delete window.dactyl;
 
         this.startTime = Date.now();

@@ -846,7 +846,6 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                     count = count || 1;
 
                     let caret = !dactyl.focusedElement;
-                    let controller = buffer.selectionController;
 
                     while (count-- && modes.main == modes.VISUAL) {
                         if (caret)

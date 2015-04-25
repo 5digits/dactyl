@@ -274,7 +274,7 @@ var History = Module("history", {
                         names: ["-sort", "-s"],
                         type: CommandOption.STRING,
                         description: "The sort order of the results",
-                        completer: function (context, args) {
+                        completer: function (context) {
                             context.compare = CompletionContext.Sort.unsorted;
                             return Ary.flatten([
                                 "annotation",

@@ -769,7 +769,7 @@ var Contexts = Module("contexts", {
             });
         commands.add(["elsei[f]", "elif"],
             "Execute commands until the next :elseif, :else, or :endif only if the argument returns true",
-            function (args) {},
+            function () {},
             {
                 always: function (args) {
                     checkStack("if");
@@ -781,7 +781,7 @@ var Contexts = Module("contexts", {
             });
         commands.add(["el[se]"],
             "Execute commands until the next :endif only if the previous conditionals were not executed",
-            function (args) {},
+            function () {},
             {
                 always: function (args) {
                     checkStack("if");
@@ -792,7 +792,7 @@ var Contexts = Module("contexts", {
             });
         commands.add(["en[dif]", "fi"],
             "End a string of :if/:elseif/:else conditionals",
-            function (args) {},
+            function () {},
             {
                 always: function (args) { args.context.noExecute = pop("if"); },
                 argCount: "0"

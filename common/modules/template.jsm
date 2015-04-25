@@ -351,7 +351,7 @@ var Template = Module("Template", {
 
         let s = [""];
         let start = 0;
-        let n = 0, _i;
+        let _i; // XXX
         for (let [i, length, args] of iter_) {
             if (i == _i || i < _i)
                 break;

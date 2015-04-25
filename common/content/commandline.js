@@ -1351,7 +1351,6 @@ var CommandLine = Module("commandline", {
                 return;
             }
 
-            let value = this.editor.selection.focusNode.textContent;
             this.saveInput();
 
             if (this.itemList.visible)
@@ -1787,8 +1786,6 @@ var CommandLine = Module("commandline", {
              function ({ self }) {
                  if (self.completions)
                      self.completions.tabTimer.flush();
-
-                 let command = commandline.command;
 
                  self.accepted = true;
                  return function () { modes.pop(); };

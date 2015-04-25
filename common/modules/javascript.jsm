@@ -4,8 +4,6 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-let { getOwnPropertyNames } = Object;
-
 try {
 
 defineModule("javascript", {
@@ -694,7 +692,6 @@ var JavaScript = Module("javascript", {
         modules.JavaScript = Class("JavaScript", JavaScript, { modules: modules, window: window });
     },
     completion: function (dactyl, modules, window) {
-        const { completion } = modules;
         update(modules.completion, {
             get javascript() modules.javascript.bound.complete,
             javascriptCompleter: JavaScript // Backwards compatibility

@@ -371,7 +371,7 @@ var Addons = Module("addons", {
                         names: ["-types", "-type", "-t"],
                         description: "The add-on types to list",
                         default: ["extension"],
-                        completer: function (context, args) completion.addonType(context),
+                        completer: function (context) completion.addonType(context),
                         type: CommandOption.LIST
                     }
                 ]
@@ -446,7 +446,7 @@ var Addons = Module("addons", {
                             names: ["-types", "-type", "-t"],
                             description: "The add-on types to operate on",
                             default: ["extension"],
-                            completer: function (context, args) completion.addonType(context),
+                            completer: function (context) completion.addonType(context),
                             type: CommandOption.LIST
                         }
                     ]

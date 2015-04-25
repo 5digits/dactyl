@@ -666,7 +666,7 @@ var Tabs = Module("tabs", {
             {
                 argCount: "?",
                 count: true,
-                completer: function (context, args) {
+                completer: function (context) {
                     context.filters.push(({ item }) => item.tab.pinned);
                     completion.buffer(context);
                 }
@@ -819,7 +819,7 @@ var Tabs = Module("tabs", {
 
             commands.add(["quita[ll]", "qa[ll]"],
                 "Quit this " + config.appName + " window",
-                function (args) { window.close(); },
+                function () { window.close(); },
                 { argCount: "0" });
 
             commands.add(["reloada[ll]"],
@@ -850,7 +850,7 @@ var Tabs = Module("tabs", {
                 }, {
                     argCount: "1",
                     bang: true,
-                    completer: function (context, args) completion.buffer(context, true),
+                    completer: function (context) completion.buffer(context, true),
                     literal: 0
                 });
 
@@ -1008,10 +1008,9 @@ var Tabs = Module("tabs", {
 
             commands.add(["undoa[ll]"],
                 "Undo closing of all closed tabs",
-                function (args) {
+                function () {
                     for (let i of iter(tabs.closedTabs))
                         window.undoCloseTab(0);
-
                 },
                 { argCount: "0" });
 

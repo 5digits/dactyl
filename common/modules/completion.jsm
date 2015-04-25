@@ -1123,7 +1123,7 @@ var Completion = Module("completion", {
         const { commands, completion } = modules;
         commands.add(["contexts"],
             "List the completion contexts used during completion of an Ex command",
-            function (args) {
+            function () {
                 modules.commandline.commandOutput(
                     ["div", { highlight: "Completions" },
                         template.completionRow(["Context", "Title"], "CompTitle"),

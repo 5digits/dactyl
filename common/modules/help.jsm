@@ -133,7 +133,7 @@ var Help = Module("Help", {
 
             function rec(text, level, li) {
                 let res = [];
-                let list, space, i = 0;
+                let list, i = 0;
 
                 for (let match of re.iterate(text)) {
                     if (match.comment)

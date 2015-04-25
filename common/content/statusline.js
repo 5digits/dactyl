@@ -75,7 +75,6 @@ var StatusLine = Module("statusline", {
                 */$));
         }
 
-        let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let prepend = [
             ["button", { id: "appmenu-button", label: "", image: "chrome://branding/content/icon16.png", highlight: "AppmenuButton", xmlns: "xul" }],
             ["toolbarbutton", { id: "appmenu-toolbar-button", label: "", image: "chrome://branding/content/icon16.png" }],
