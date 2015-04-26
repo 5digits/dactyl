@@ -395,6 +395,8 @@ var CommandMode = Class("CommandMode", {
             commandline.hideCompletions();
 
             let result = this.command;
+            commandline.saveCommand();
+
             modes.delay(function () {
                 if (!this.keepCommand || commandline.silent || commandline.quiet)
                     commandline.hide();
@@ -645,9 +647,13 @@ var CommandLine = Module("commandline", {
         set: function set_miwVisible(value) { this.widgets.multilineInput.collapsed = !value; }
     }),
 
-    get command() {
+    saveCommand: function saveCommand() {
         if (this.commandVisible && this.widgets.command)
-            return commands.lastCommand = this.widgets.command[1];
+            commands.lastCommand = this.widgets.command[1];
+    },
+
+    get command() {
+        this.saveCommand();
         return commands.lastCommand;
     },
     set command(val) {
@@ -1787,8 +1793,6 @@ var CommandLine = Module("commandline", {
              function ({ self }) {
                  if (self.completions)
                      self.completions.tabTimer.flush();
-
-                 commandline.command;
 
                  self.accepted = true;
                  return function () { modes.pop(); };
