@@ -390,7 +390,7 @@ var Marks = Module("marks", {
             action: function (timespan, host) {
                 function matchhost(url) !host || util.isDomainURL(url, host);
                 function match(marks) (k
-                                       for ([k, v] in iter(marks))
+                                       for ([k, v] of iter(marks))
                                        if (timespan.contains(v.timestamp) && matchhost(v.location)));
 
                 for (let [url, local] of marks._localMarks)
