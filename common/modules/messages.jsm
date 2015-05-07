@@ -30,7 +30,8 @@ var Messages = Module("messages", {
                 return self.get(message);
             }),
             valueOf: function valueOf() this.message,
-            toString: function toString() this.message
+            toString: function toString() this.message,
+            toJSON: function toJSON() this.message
         });
     },
 

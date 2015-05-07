@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -545,7 +545,7 @@ var HintSession = Class("HintSession", CommandMode, {
      *     hint disappears.
      */
     removeHints: function _removeHints(timeout) {
-        for (let { doc, start, end } of values(this.docs)) {
+        for (let { doc, start, end } of this.docs) {
             DOM(doc.documentElement).highlight.remove("Hinting");
             // Goddamn stupid fucking Gecko 1.x security manager bullshit.
             try { delete doc.dactylLabels; } catch (e) { doc.dactylLabels = undefined; }
@@ -590,7 +590,7 @@ var HintSession = Class("HintSession", CommandMode, {
         let activeHint = this.hintNumber || 1;
         this.validHints = [];
 
-        for (let { doc, start, end } of values(this.docs)) {
+        for (let { doc, start, end } of this.docs) {
             DOM(doc.documentElement).highlight.add("Hinting");
             let [offsetX, offsetY] = this.getContainerOffsets(doc);
 
@@ -649,7 +649,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
         if (options["usermode"]) {
             let css = [];
-            for (let hint of values(this.pageHints)) {
+            for (let hint of this.pageHints) {
                 let selector = highlight.selector("Hint") + "[number=" + JSON.stringify(hint.span.getAttribute("number")) + "]";
                 let imgSpan = "[dactyl|hl=HintImage]";
                 css.push(selector + ":not(" + imgSpan + ") { " + hint.span.style.cssText + " }");
@@ -699,7 +699,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
     updateValidNumbers: function updateValidNumbers(always) {
         let string = this.getHintString(this.hintNumber);
-        for (let hint of values(this.validHints))
+        for (let hint of this.validHints)
             hint.valid = always || hint.span.getAttribute("number").startsWith(string);
     },
 
