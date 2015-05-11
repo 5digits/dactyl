@@ -52,7 +52,7 @@ var HelpBuilder = Class("HelpBuilder", {
     // Find the tags in the document.
     addTags: function addTags(file, doc) {
         for (let elem of DOM.XPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
-                for (let tag of values((elem.value || elem.textContent).split(/\s+/)))
+                for (let tag of (elem.value || elem.textContent).split(/\s+/))
             this.tags[tag] = file;
     },
 
@@ -61,7 +61,7 @@ var HelpBuilder = Class("HelpBuilder", {
     // Find help and overlay files with the given name.
     findHelpFile: function findHelpFile(file) {
         let result = [];
-        for (let base of values(this.bases)) {
+        for (let base of this.bases) {
             let url = [base, file, ".xml"].join("");
             let res = util.httpGet(url, { quiet: true });
             if (res) {
@@ -211,7 +211,7 @@ var Help = Module("Help", {
     flush: function flush(entries, time) {
         cache.flushEntry("help.json", time);
 
-        for (let entry of values(Array.concat(entries || [])))
+        for (let entry of Array.concat(entries || []))
             cache.flushEntry(entry, time);
     },
 

@@ -576,7 +576,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
                         _("command.wontReplace", name));
         }
 
-        for (let name of values(names)) {
+        for (let name of names) {
             ex.__defineGetter__(name, function () this._run(name));
             if (name in this._map && !this._map[name].isPlaceholder)
                 this.remove(name);
@@ -587,7 +587,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         memoize(this._map, name, () => commands.Command(specs, description, action, extra));
         if (!extra.hidden)
             memoize(this._list, this._list.length, closure);
-        for (let alias of values(names.slice(1)))
+        for (let alias of names.slice(1))
             memoize(this._map, alias, closure);
 
         return name;
@@ -647,7 +647,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
 
         let cmd = this.get(name);
         this._list = this._list.filter(c => c !== cmd);
-        for (let name of values(cmd.names))
+        for (let name of cmd.names)
             delete this._map[name];
     }
 });

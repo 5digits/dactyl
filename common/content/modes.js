@@ -150,7 +150,7 @@ var Modes = Module("modes", {
                     dactyl.focusContent(true);
                 if (prev.main == modes.NORMAL) {
                     dactyl.focusContent(true);
-                    for (let frame of values(buffer.allFrames())) {
+                    for (let frame of buffer.allFrames()) {
                         // clear any selection made
                         let selection = frame.getSelection();
                         if (selection && !selection.isCollapsed)
@@ -539,15 +539,15 @@ var Modes = Module("modes", {
 
             let tree = {};
 
-            for (let mode of values(list))
+            for (let mode of list)
                 tree[mode.name] = {};
 
-            for (let mode of values(list))
-                for (let base of values(mode.bases))
+            for (let mode of list)
+                for (let base of mode.bases)
                     tree[base.name][mode.name] = tree[mode.name];
 
             let roots = iter([m.name, tree[m.name]]
-                             for (m of values(list))
+                             for (m of list)
                              if (!m.bases.length)).toObject();
 
             function rec(obj) {
@@ -634,7 +634,7 @@ var Modes = Module("modes", {
                                                     .every(k => hasOwnProperty(this.values, k)),
 
             get values() Ary.toObject([[m.name.toLowerCase(), m.description]
-                                       for (m of values(modes._modes)) if (!m.hidden)])
+                                       for (m of modes._modes) if (!m.hidden)])
         };
 
         options.add(["passunknown", "pu"],

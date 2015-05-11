@@ -288,7 +288,7 @@ overlay.overlayWindow(Object.keys(config.overlays),
             if (seen.add(module.className))
                 throw Error("Module dependency loop.");
 
-            for (let dep of values(module.requires))
+            for (let dep of module.requires)
                 this.loadModule(Module.constructors[dep], module.className);
 
             defineModule.loadLog.push(

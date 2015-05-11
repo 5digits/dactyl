@@ -357,7 +357,7 @@ var DownloadList = Class("DownloadList",
         let active    = downloads.filter(d => d.active);
 
         let self = Object.create(this);
-        for (let prop of values(["currentBytes", "totalBytes", "speed", "timeRemaining"]))
+        for (let prop of ["currentBytes", "totalBytes", "speed", "timeRemaining"])
             this[prop] = active.reduce((acc, dl) => dl[prop] + acc, 0);
 
         this.hasProgress = active.every(d => d.hasProgress);
@@ -368,7 +368,7 @@ var DownloadList = Class("DownloadList",
 
         if (active.length)
             this.nodes.total.textContent = _("download.nActive", active.length);
-        else for (let key of values(["total", "percent", "speed", "time"]))
+        else for (let key of ["total", "percent", "speed", "time"])
             this.nodes[key].textContent = "";
 
         if (this.shouldSort("complete", "size", "speed", "time"))

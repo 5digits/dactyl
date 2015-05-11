@@ -38,7 +38,7 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
         if (!callable(pattern))
             pattern = Group.compileFilter(pattern);
 
-        for (let event of values(events))
+        for (let event of events)
             this._store.push(AutoCommand(event, pattern, cmd));
     },
 
@@ -144,10 +144,10 @@ var AutoCommands = Module("autocommands", {
             var { uri, doc } = buffer;
 
         event = event.toLowerCase();
-        for (let hive of values(this.matchingHives(uri, doc))) {
+        for (let hive of this.matchingHives(uri, doc)) {
             let args = hive.makeArgs(doc, null, arguments[1]);
 
-            for (let autoCmd of values(hive._store))
+            for (let autoCmd of hive._store)
                 if (autoCmd.eventName === event && autoCmd.filter(uri, doc)) {
                     if (!lastPattern || lastPattern !== String(autoCmd.filter))
                         dactyl.echomsg(_("autocmd.executing", event, autoCmd.filter), 8);

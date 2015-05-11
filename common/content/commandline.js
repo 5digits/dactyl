@@ -635,7 +635,7 @@ var CommandLine = Module("commandline", {
     },
 
     hideCompletions: function hideCompletions() {
-        for (let nodeSet of values([this.widgets.statusbar, this.widgets.commandbar]))
+        for (let nodeSet of [this.widgets.statusbar, this.widgets.commandbar])
             if (nodeSet.commandline.completionList)
                 nodeSet.commandline.completionList.visible = false;
     },
@@ -2090,7 +2090,7 @@ var ItemList = Class("ItemList", {
     updateOffsets: function updateOffsets() {
         let total = this.itemCount;
         let count = 0;
-        for (let group of values(this.activeGroups)) {
+        for (let group of this.activeGroups) {
             group.offsets = { start: count, end: total - count - group.itemCount };
             count += group.itemCount;
         }
@@ -2105,7 +2105,8 @@ var ItemList = Class("ItemList", {
 
         let container = DOM(this.nodes.completions);
         let groups = this.activeGroups;
-        for (let group of values(groups)) {
+
+        for (let group of groups) {
             group.reset();
             container.append(group.nodes.root);
         }
@@ -2148,7 +2149,7 @@ var ItemList = Class("ItemList", {
      * @private
      */
     draw: function draw() {
-        for (let group of values(this.activeGroups))
+        for (let group of this.activeGroups)
             group.draw();
 
         // We need to collect all of the rescrolling functions in

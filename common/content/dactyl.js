@@ -47,7 +47,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     cleanup: function () {
-        for (let cleanup of values(this.cleanups))
+        for (let cleanup of this.cleanups)
             cleanup.call(this);
 
         delete window.dactyl;
@@ -87,7 +87,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         "dactyl-cleanup": function dactyl_cleanup(subject, reason) {
             let modules = dactyl.modules;
 
-            for (let mod of values(modules.moduleList.reverse())) {
+            for (let mod of modules.moduleList.reverse()) {
                 mod.stale = true;
                 if ("cleanup" in mod)
                     this.trapErrors("cleanup", mod, reason);
@@ -97,7 +97,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             modules.moduleManager.initDependencies("cleanup");
 
-            for (let name of values(Object.getOwnPropertyNames(modules).reverse()))
+            for (let name of Object.getOwnPropertyNames(modules).reverse())
                 try {
                     delete modules[name];
                 }
@@ -272,7 +272,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let results = Ary((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
                         .array.sort((a, b) => String.localeCompare(a.name, b.name));
 
-                for (let obj of values(results)) {
+                for (let obj of results) {
                     let res = dactyl.generateHelp(obj, null, null, true);
                     if (!hasOwnProperty(help.tags, obj.helpTag))
                         res[0][1].tag = obj.helpTag;
@@ -1402,7 +1402,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                    .flatten(),
 
                 setter: function (value) {
-                    for (let group of values(groups))
+                    for (let group of groups)
                         group.setter(value);
                     events.checkFocus();
                     return value;
@@ -1991,7 +1991,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             // after sourcing the initialization files, this function will set
             // all gui options to their default values, if they have not been
             // set before by any RC file
-            for (let option of values(options.needInit))
+            for (let option of options.needInit)
                 option.initValue();
 
             if (dactyl.commandLineOptions.postCommands)

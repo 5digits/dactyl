@@ -35,7 +35,7 @@ var Group = Class("Group", {
     modifiable: true,
 
     cleanup: function cleanup(reason) {
-        for (let hive of values(this.hives))
+        for (let hive of this.hives)
             util.trapErrors("cleanup", hive);
 
         this.hives = [];
@@ -46,7 +46,7 @@ var Group = Class("Group", {
             this.children.splice(0).forEach(this.contexts.bound.removeGroup);
     },
     destroy: function destroy(reason) {
-        for (let hive of values(this.hives))
+        for (let hive of this.hives)
             util.trapErrors("destroy", hive);
 
         if (reason != "shutdown")
@@ -154,7 +154,7 @@ var Contexts = Module("contexts", {
         },
 
         destroy: function () {
-            for (let hive of values(this.groupList.slice()))
+            for (let hive of this.groupList.slice())
                 util.trapErrors("destroy", hive, "shutdown");
 
             for (let plugin of values(this.modules.plugins.contexts)) {
@@ -706,7 +706,7 @@ var Contexts = Module("contexts", {
                         arguments: [group.name],
                         ignoreDefaults: true
                     }
-                    for (group of values(contexts.initializedGroups()))
+                    for (group of contexts.initializedGroups())
                     if (!group.builtin && group.persist)
                 ].concat([{ command: this.name, arguments: ["user"] }])
             });

@@ -525,13 +525,13 @@ var Buffer = Module("Buffer", {
                                    Hints.isVisible);
 
             for (let test of [a, b])
-                for (let regexp of values(regexps))
+                for (let regexp of regexps)
                     for (let i of util.range(res.length, 0, -1))
                         if (test(regexp, res[i]))
                             yield res[i];
         }
 
-        for (let frame of values(this.allFrames(null, true)))
+        for (let frame of this.allFrames(null, true))
             for (let elem of followFrame(frame))
                 if (count-- === 0) {
                     if (follow)
@@ -2045,7 +2045,7 @@ var Buffer = Module("Buffer", {
             context.title = ["Stylesheet", "Location"];
 
             // unify split style sheets
-            let styles = iter([s.title, []] for (s of values(buffer.alternateStyleSheets))).toObject();
+            let styles = iter([s.title, []] for (s of buffer.alternateStyleSheets)).toObject();
 
             buffer.alternateStyleSheets.forEach(function (style) {
                 styles[style.title].push(style.href || _("style.inline"));
@@ -2506,7 +2506,7 @@ var Buffer = Module("Buffer", {
             {
                 getLine: function getLine(doc, line) {
                     let uri = util.newURI(doc.documentURI);
-                    for (let filter of values(this.value))
+                    for (let filter of this.value)
                         if (filter(uri, doc)) {
                             if (/^func:/.test(filter.result))
                                 var res = dactyl.userEval("(" + Option.dequote(filter.result.substr(5)) + ")")(doc, line);
@@ -2613,7 +2613,7 @@ Buffer.addPageInfoSection("e", "Search Engines", function* (verbose) {
     let n = 1;
     let nEngines = 0;
 
-    for (let { document: doc } of values(this.allFrames())) {
+    for (let { document: doc } of this.allFrames()) {
         let engines = DOM("link[href][rel=search][type='application/opensearchdescription+xml']", doc);
         nEngines += engines.length;
 

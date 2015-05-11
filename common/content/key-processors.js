@@ -81,7 +81,7 @@ var ProcessorStack = Class("ProcessorStack", {
             // those waiting on further arguments. Execute actions as
             // long as they continue to return PASS.
 
-            for (var action of values(this.actions)) {
+            for (var action of this.actions) {
                 while (callable(action)) {
                     length = action.eventLength;
                     action = dactyl.trapErrors(action);
@@ -196,14 +196,14 @@ var ProcessorStack = Class("ProcessorStack", {
         this._actions = actions;
         this.actions = actions.concat(this.actions);
 
-        for (let action of values(actions))
+        for (let action of actions)
             if (!("eventLength" in action))
                 action.eventLength = this.events.length;
 
         if (result === Events.KILL)
             this.actions = [];
         else if (!this.actions.length && !processors.length)
-            for (let input of values(this.processors))
+            for (let input of this.processors)
                 if (input.fallthrough) {
                     if (result === Events.KILL)
                         break;

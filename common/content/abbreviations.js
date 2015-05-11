@@ -172,7 +172,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
      * @param {Array} modes List of modes.
      */
     clear: function (modes) {
-        for (let mode of values(modes)) {
+        for (let mode of modes) {
             for (let abbr of values(this._store[mode]))
                 abbr.removeMode(mode);
             delete this._store[mode];

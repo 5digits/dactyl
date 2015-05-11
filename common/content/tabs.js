@@ -63,7 +63,7 @@ var Tabs = Module("tabs", {
     cleanup: function cleanup() {
         for (let tab of this.allTabs) {
             let node = function node(class_) document.getAnonymousElementByAttribute(tab, "class", class_);
-            for (let elem of values(["dactyl-tab-icon-number", "dactyl-tab-number"].map(node)))
+            for (let elem of ["dactyl-tab-icon-number", "dactyl-tab-number"].map(node))
                 if (elem)
                     elem.parentNode.parentNode.removeChild(elem.parentNode);
 
@@ -369,7 +369,7 @@ var Tabs = Module("tabs", {
                 else
                     var matcher = Styles.matchFilter(filter);
 
-                for (let tab of values(tabs[all ? "allTabs" : "visibleTabs"])) {
+                for (let tab of tabs[all ? "allTabs" : "visibleTabs"]) {
                     let browser = tab.linkedBrowser;
                     let uri = browser.currentURI;
                     let title;
@@ -719,7 +719,7 @@ var Tabs = Module("tabs", {
         commands.add(["tabd[o]", "bufd[o]"],
             "Execute a command in each tab",
             function (args) {
-                for (let tab of values(tabs.visibleTabs)) {
+                for (let tab of tabs.visibleTabs) {
                     tabs.select(tab);
                     dactyl.execute(args[0], null, true);
                 }
@@ -1256,13 +1256,13 @@ var Tabs = Module("tabs", {
             ];
             options.add(["activate", "act"],
                 "Define when newly created tabs are automatically activated",
-                "stringlist", [g[0] for (g of values(activateGroups.slice(1))) if (!g[2] || !prefs.get("browser.tabs." + g[2]))].join(","),
+                "stringlist", [g[0] for (g of activateGroups.slice(1)) if (!g[2] || !prefs.get("browser.tabs." + g[2]))].join(","),
                 {
                     values: activateGroups,
                     has: Option.has.toggleAll,
                     setter: function (newValues) {
                         let valueSet = new RealSet(newValues);
-                        for (let group of values(activateGroups))
+                        for (let group of activateGroups)
                             if (group[2])
                                 prefs.safeSet("browser.tabs." + group[2],
                                               !(valueSet.has("all") ^ valueSet.has(group[0])),

@@ -1048,7 +1048,7 @@ var DOM = Class("DOM", {
             this.code_nativeKey = {};
 
             for (let list of values(this.keyTable))
-                for (let v of values(list)) {
+                for (let v of list) {
                     if (v.length == 1)
                         v = v.toLowerCase();
                     this.key_key[v.toLowerCase()] = v;
@@ -1477,7 +1477,7 @@ var DOM = Class("DOM", {
      */
     compileMatcher: function compileMatcher(list) {
         let xpath = [], css = [];
-        for (let elem of values(list))
+        for (let elem of list)
             if (/^xpath:/.test(elem))
                 xpath.push(elem.substr(6));
             else

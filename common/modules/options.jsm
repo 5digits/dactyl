@@ -489,7 +489,7 @@ var Option = Class("Option", {
         get charlist() this.stringlist,
 
         regexplist: function regexplist(k, default_=null) {
-            for (let re of values(this.value))
+            for (let re of this.value)
                 if ((re.test || re).call(re, k))
                     return re.result;
             return default_;
@@ -814,7 +814,7 @@ var Option = Class("Option", {
 
 update(BooleanOption.prototype, {
     names: Class.Memoize(function ()
-                Ary.flatten([[name, "no" + name] for (name of values(this.realNames))]))
+                Ary.flatten([[name, "no" + name] for (name of this.realNames)]))
 });
 
 var OptionHive = Class("OptionHive", Contexts.Hive, {
@@ -966,7 +966,7 @@ var Options = Module("options", {
                 memoize(this._optionMap, name,
                         function () Option.types[type](modules, names, description, defaultValue, extraInfo));
 
-                for (let alias of values(names.slice(1)))
+                for (let alias of names.slice(1))
                     memoize(this._optionMap, alias, closure);
 
                 if (extraInfo.setter && (!extraInfo.scope || extraInfo.scope & Option.SCOPE_GLOBAL))
@@ -1099,7 +1099,7 @@ var Options = Module("options", {
     remove: function remove(name) {
         let opt = this.get(name);
         this._options = this._options.filter(o => o != opt);
-        for (let name of values(opt.names))
+        for (let name of opt.names)
             delete this._optionMap[name];
     },
 
@@ -1167,7 +1167,7 @@ var Options = Module("options", {
                         modules.commandline.input(_("pref.prompt.resetAll", config.host) + " ",
                             function (resp) {
                                 if (resp == "yes")
-                                    for (let pref of values(prefs.getNames()))
+                                    for (let pref of prefs.getNames())
                                         prefs.reset(pref);
                             },
                             { promptHighlight: "WarningMsg" });
@@ -1315,7 +1315,7 @@ var Options = Module("options", {
 
             // Fill in the current values if we're removing
             if (opt.operator == "-" && isArray(opt.values)) {
-                let have = new RealSet(i.text for (i of values(context.allItems.items)));
+                let have = new RealSet(i.text for (i of context.allItems.items));
                 context = context.fork("current-values", 0);
                 context.anchored = optcontext.anchored;
                 context.maxItems = optcontext.maxItems;
@@ -1582,7 +1582,7 @@ var Options = Module("options", {
             description: "Options containing hostname data",
             action: function sanitize_action(timespan, host) {
                 if (host)
-                    for (let opt of values(modules.options._options))
+                    for (let opt of modules.options._options)
                         if (timespan.contains(opt.lastSet * 1000) && opt.domains)
                             try {
                                 opt.value = opt.filterDomain(host, opt.value);

@@ -1173,7 +1173,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         "dactyl-cleanup-modules": function cleanupModules(subject, reason) {
             defineModule.loadLog.push("dactyl: util: observe: dactyl-cleanup-modules " + reason);
 
-            for (let module of values(defineModule.modules))
+            for (let module of defineModule.modules)
                 if (module.cleanup) {
                     util.dump("cleanup: " + module.constructor.className);
                     util.trapErrors(module.cleanup, module, reason);

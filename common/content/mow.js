@@ -95,7 +95,7 @@ var MOW = Module("mow", {
 
                 leave: stack => {
                     if (stack.pop)
-                        for (let message of values(this.messages))
+                        for (let message of this.messages)
                             if (message.leave)
                                 message.leave(stack);
                 },

@@ -160,7 +160,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                 let oldURI = overlay.getData(win.document)["uri"];
                 if (overlay.getData(win.document)["load-idx"] === webProgress.loadedTransIndex
                     || !oldURI || uri.spec.replace(/#.*/, "") !== oldURI.replace(/#.*/, ""))
-                    for (let frame of values(buffer.allFrames(win)))
+                    for (let frame of buffer.allFrames(win))
                         overlay.setData(frame.document, "focus-allowed", false);
 
                 overlay.setData(win.document, "uri", uri.spec);

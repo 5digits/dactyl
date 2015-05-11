@@ -375,7 +375,7 @@ var Events = Module("events", {
 
             for (let evt_obj of DOM.Event.parse(keys)) {
                 let key = DOM.Event.stringify(evt_obj);
-                for (let type of values(["keydown", "keypress", "keyup"])) {
+                for (let type of ["keydown", "keypress", "keyup"]) {
                     let evt = update({}, evt_obj, { type: type });
                     if (type !== "keypress" && !evt.keyCode)
                         evt.keyCode = evt._keyCode || 0;
@@ -480,7 +480,7 @@ var Events = Module("events", {
                 let needed = { ctrlKey: event.ctrlKey, altKey: event.altKey, shiftKey: event.shiftKey, metaKey: event.metaKey };
 
                 let modifiers = (key.getAttribute("modifiers") || "").trim().split(/[\s,]+/);
-                for (let modifier of values(modifiers))
+                for (let modifier of modifiers)
                     switch (modifier) {
                     case "access": update(keys, access); break;
                     case "accel":  keys[accel] = true; break;
@@ -780,7 +780,7 @@ var Events = Module("events", {
                 if (this.feedingKeys)
                     this.duringFeed = this.duringFeed.concat(duringFeed);
                 else
-                    for (let event of values(duringFeed))
+                    for (let event of duringFeed)
                         try {
                             DOM.Event.dispatch(event.originalTarget, event, event);
                         }

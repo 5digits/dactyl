@@ -447,7 +447,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 if (!keepFocus)
                     dactyl.focus(textBox);
 
-                for (let group of values(blink.concat(blink, ""))) {
+                for (let group of blink.concat(blink, "")) {
                     highlight.highlightNode(textBox, origGroup + " " + group);
 
                     yield promises.sleep(100);

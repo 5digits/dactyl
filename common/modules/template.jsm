@@ -20,7 +20,7 @@ var Binding = Class("Binding", {
 
         Object.defineProperties(node, this.constructor.properties);
 
-        for (let [event, handler] of values(this.constructor.events))
+        for (let [event, handler] of this.constructor.events)
             node.addEventListener(event, util.wrapCallback(handler, true), false);
     },
 
@@ -74,7 +74,7 @@ var Binding = Class("Binding", {
             for (let prop of properties(obj)) {
                 let desc = Object.getOwnPropertyDescriptor(obj, prop);
                 if (desc.enumerable) {
-                    for (let k of values(["get", "set", "value"]))
+                    for (let k of ["get", "set", "value"])
                         if (typeof desc[k] === "function")
                             desc[k] = this.bind(desc[k]);
                     res[prop] = desc;

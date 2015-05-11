@@ -57,7 +57,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         if (this == prefs) {
             if (~["uninstall", "disable"].indexOf(reason)) {
-                for (let name of values(this.branches.saved.getNames()))
+                for (let name of this.branches.saved.getNames())
                     this.safeReset(name, null, true);
 
                 this.branches.original.resetBranch();

@@ -97,7 +97,7 @@ var IO = Module("io", {
                 dactyl.echomsg(_("io.searchingFor", JSON.stringify(paths.join(" ")), modules.options.get("runtimepath").stringValue), 2);
 
             outer:
-                for (let dir of values(dirs)) {
+                for (let dir of dirs) {
                     for (let path of paths) {
                         let file = dir.child(path);
 
@@ -627,7 +627,7 @@ var IO = Module("io", {
                 }
                 else {
                     let dirs = modules.options.get("cdpath").files;
-                    for (let dir of values(dirs)) {
+                    for (let dir of dirs) {
                         dir = dir.child(arg);
 
                         if (dir.exists() && dir.isDirectory() && dir.isReadable()) {

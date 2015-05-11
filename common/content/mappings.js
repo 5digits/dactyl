@@ -201,7 +201,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
                 for (let mode of map.modes)
                     this.remove(mode, name);
 
-        for (let mode of values(map.modes))
+        for (let mode of map.modes)
             this.getStack(mode).add(map);
         return map;
     },
@@ -301,7 +301,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
             };
 
             for (let map of this)
-                for (let name of values(map.keys)) {
+                for (let name of map.keys) {
                     states.mappings[name] = map;
                     let state = "";
                     for (let key of DOM.Event.iterKeys(name)) {
@@ -674,7 +674,7 @@ var Mappings = Module("mappings", {
                     let mapmodes = Ary.uniq(args["-modes"].map(findMode));
 
                     let found = 0;
-                    for (let mode of values(mapmodes))
+                    for (let mode of mapmodes)
                         if (args.bang)
                             args["-group"].clear(mode);
                         else if (args["-group"].has(mode, args[0])) {
@@ -707,13 +707,13 @@ var Mappings = Module("mappings", {
             type: CommandOption.STRING,
             validator: function (value) Array.concat(value).every(findMode),
             completer: function () [[Ary.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.description]
-                                    for (mode of values(modes.all))
+                                    for (mode of modes.all)
                                     if (!mode.hidden)]
         };
 
         function findMode(name) {
             if (name)
-                for (let mode of values(modes.all))
+                for (let mode of modes.all)
                     if (name == mode || name == mode.char
                         || String.toLowerCase(name).replace(/-/g, "_") == mode.name.toLowerCase())
                         return mode;
@@ -762,7 +762,7 @@ var Mappings = Module("mappings", {
                 for (let [i, mode] of iter(modes))
                     for (let hive of mappings.hives.iterValues())
                         for (let map of Ary.iterValues(hive.getStack(mode)))
-                            for (let name of values(map.names))
+                            for (let name of map.names)
                                 if (!seen.add(name))
                                     yield {
                                         name: name,
