@@ -1128,7 +1128,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (~["boolean", "number"].indexOf(typeof data) || data === null)
                 res.push(String(data));
             else if (isinstance(data, ["String", _]))
-                res.push(JSON.stringify(String(data)));
+                res.push(JSON.stringify(data));
             else if (isArray(data)) {
                 if (data.length == 0)
                     res.push("[]");
