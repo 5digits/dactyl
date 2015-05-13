@@ -238,7 +238,13 @@ var IO = Module("io", {
     },
 
     validateCharset: function validateCharset(charset) {
-        new TextDecoder(charset);
+        try {
+            new TextDecoder(charset);
+            return true;
+        }
+        catch (e) {
+            return false;
+        }
     },
 
     // TODO: there seems to be no way, short of a new component, to change
