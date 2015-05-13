@@ -125,8 +125,16 @@ var Modules = function Modules(window) {
             return p;
         },
 
-        set: function window_set(target, prop, val) {
-            return target[prop] = val;
+        set: function window_set(target, prop, val, receiver) {
+            if (receiver !== target)
+                Object.defineProperty(receiver, prop, {
+                    value: val,
+                    enumerable: true, configurable: true, writable: true
+                });
+            else
+                target[prop] = val;
+
+            return true;
         }
     });
 
@@ -249,7 +257,9 @@ overlay.overlayWindow(Object.keys(config.overlays),
     cleanup: function cleanup(window) {
         overlay.windows.delete(window);
 
-        Cu.nukeSandbox(this.jsmodules);
+        JSMLoader.atexit(() => {
+            Cu.nukeSandbox(this.jsmodules);
+        });
     },
 
     unload: function unload(window) {

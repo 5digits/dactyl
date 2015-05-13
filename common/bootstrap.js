@@ -113,7 +113,7 @@ let JSMLoader = {
 
     atexit: function atexit(arg, self) {
         if (typeof arg !== "string")
-            this._atexit.push(arguments);
+            this._atexit.push([arg, self]);
         else
             for (let [fn, self] of this._atexit)
                 try {
