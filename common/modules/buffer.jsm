@@ -2099,7 +2099,7 @@ var Buffer = Module("Buffer", {
             ["y", "<yank-location>"], "Yank current location to the clipboard",
             function () {
                 let { uri } = buffer;
-                if (uri instanceof Ci.nsIURL)
+                if (uri instanceof Ci.nsIURL && uri instanceof Ci.nsIMutable && uri.mutable)
                     uri.query = uri.query.replace(/(?:^|&)utm_[^&]+/g, "")
                                          .replace(/^&/, "");
 

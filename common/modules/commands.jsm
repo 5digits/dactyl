@@ -1408,14 +1408,17 @@ var Commands = Module("commands", {
         if (isString(sep))
             sep = RegExp(sep);
 
-        sep = sep != null ? sep : /\s/;
+        sep = (sep != null ? sep : /\s/).source;
 
-        if (sep.source == "" || sep.source == "(?:)")
+        if (sep == "(?:)")
+            sep = "";
+
+        if (sep == "" || sep == "(?:)")
             var re1 = /^(?!)/;
         else
-            re1 = RegExp("^" + sep.source);
+            re1 = RegExp("^" + sep);
 
-        let re2 = RegExp(/^()((?:[^\\S"']|\\.)+)((?:\\$)?)/.source.replace("S", sep.source));
+        let re2 = RegExp(/^()((?:[^\\S"']|\\.)+)((?:\\$)?)/.source.replace("S", sep));
 
         while (str.length && !re1.test(str)) {
             let res;
