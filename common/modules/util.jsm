@@ -390,7 +390,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
                 let quote = util.identity;
                 if (flags.has("q"))
-                    quote = function quote(obj) typeof obj === "number" ? obj : String.quote(obj);
+                    quote = function quote(obj) typeof obj === "number" ? obj : JSON.stringify(obj);
                 if (flags.has("e"))
                     quote = function quote(obj) "";
 
@@ -596,7 +596,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     /**
      * Escapes quotes, newline and tab characters in *str*. The returned string
      * is delimited by *delimiter* or " if *delimiter* is not specified.
-     * {@see String#quote}.
      *
      * @param {string} str
      * @param {string} delimiter

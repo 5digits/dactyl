@@ -51,7 +51,7 @@ var Map = Class("Map", {
     names: Class.Memoize(function () this._keys.map(k => DOM.Event.canonicalKeys(k))),
 
     get toStringParams() [this.modes.map(m => m.name),
-                          this.names.map(String.quote)],
+                          this.names.map(JSON.stringify)],
 
     get identifier() [this.modes[0].name, this.hive.prefix + this.names[0]].join("."),
 

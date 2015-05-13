@@ -868,7 +868,7 @@ unlet s:cpo_save
                                   Ary(o.names for (o of options) if (o.type != "boolean")).flatten()),
                     toggleoptions: wrap("let s:toggleOptions = [",
                                         Ary(o.realNames for (o of options) if (o.type == "boolean"))
-                                            .flatten().map(String.quote),
+                                            .flatten().map(JSON.stringify),
                                         ", ") + "]"
                 }; //}}}
 

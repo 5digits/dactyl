@@ -141,7 +141,7 @@ function require_(obj, name, from, targetName) {
         return obj;
     }
     catch (e) {
-        defineModule.dump("loading " + String.quote(name + ".jsm") + "\n");
+        defineModule.dump("loading " + JSON.stringify(name + ".jsm") + "\n");
         if (loaded.util)
             util.reportError(e);
         else
@@ -291,9 +291,9 @@ function* properties(obj, prototypes) {
                     }
                     catch (e) {
                         util.reportError("Filtering properties for " +
-                                         String.quote(obj) + ", " +
+                                         JSON.stringify(obj) + ", " +
                                          "error checking presence of " +
-                                         String.quote(prop) + ": " + e);
+                                         JSON.stringify(prop) + ": " + e);
                     }
                     return false;
                 };
