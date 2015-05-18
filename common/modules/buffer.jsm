@@ -1517,7 +1517,12 @@ var Buffer = Module("Buffer", {
             if (type === "text/plain")
                 ext = "." + (currExt || "txt");
             else
-                ext = "." + services.mime.getPrimaryExtension(type, currExt);
+                try {
+                    ext = "." + services.mime.getPrimaryExtension(type, currExt);
+                }
+                catch (e) {
+                    ext = currExt ? "." + curExt : "";
+                }
         }
         else if (currExt)
             ext = "." + currExt;

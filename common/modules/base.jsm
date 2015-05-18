@@ -46,6 +46,18 @@ jsmodules.jsmodules = jsmodules;
 
 function toString() "[module-global " + this.NAME + "]";
 
+function objToString(obj) {
+    try {
+        return objproto.toString.call(obj);
+    }
+    catch (e) {
+        var type_ = typeof obj;
+        if (e == null)
+            type_ = String(e);
+        return "[non-object " + type_ + "]";
+    }
+}
+
 let use = {};
 let loaded = {};
 let currentModule;
@@ -635,7 +647,7 @@ function isinstance(object, interfaces) {
 
     return Array.concat(interfaces).some(function isinstance_some(iface) {
         if (typeof iface === "string") {
-            if (objproto.toString.call(object) === "[object " + iface + "]")
+            if (objToString(object) === "[object " + iface + "]")
                 return true;
         }
         else if (typeof object === "object" && "isinstance" in object && object.isinstance !== isinstance) {
@@ -674,7 +686,7 @@ var isArray =
  * functions containing the 'yield' statement and generator
  * statements such as (x for (x in obj)).
  */
-function isGenerator(val) objproto.toString.call(val) == "[object Generator]";
+function isGenerator(val) objToString(val) == "[object Generator]";
 
 /**
  * Returns true if and only if its sole argument is a String,
@@ -683,7 +695,7 @@ function isGenerator(val) objproto.toString.call(val) == "[object Generator]";
  * namespace, or execution context, which is not the case when
  * using (obj instanceof String) or (typeof obj == "string").
  */
-function isString(val) objproto.toString.call(val) == "[object String]";
+function isString(val) objToString(val) == "[object String]";
 
 /**
  * Returns true if and only if its sole argument may be called
