@@ -165,7 +165,9 @@ var CommandWidgets = Class("CommandWidgets", {
         const self = this;
         this.elements[obj.name] = obj;
 
-        function get(prefix, map, id) (obj.getElement || util.identity)(map[id] || document.getElementById(prefix + id));
+        function get(prefix, map, id) {
+            return (obj.getElement || util.identity)(map[id] || document.getElementById(prefix + id));
+        }
 
         this.active.__defineGetter__(obj.name, () => this.activeGroup[obj.name][obj.name]);
         this.activeGroup.__defineGetter__(obj.name, () => this.getGroup(obj.name));

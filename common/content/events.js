@@ -861,7 +861,10 @@ var Events = Module("events", {
     // access to the real focus target
     // Huh? --djk
     onFocusChange: util.wrapCallback(function onFocusChange(event) {
-        function hasHTMLDocument(win) win && win.document && win.document instanceof Ci.nsIDOMHTMLDocument
+        function hasHTMLDocument(win) {
+            return win && win.document && win.document instanceof Ci.nsIDOMHTMLDocument;
+        }
+
         if (dactyl.ignoreFocus)
             return;
 
@@ -1129,10 +1132,12 @@ var Events = Module("events", {
             init: function init(values, map) {
                 this.name = "passkeys:" + map;
                 this.stack = MapHive.Stack(values.map(v => Map(v[map + "Keys"])));
-                function Map(keys) ({
-                    execute: function () Events.PASS_THROUGH,
-                    keys: keys
-                });
+                function Map(keys) {
+                    return {
+                        execute: function () Events.PASS_THROUGH,
+                        keys: keys
+                    };
+                }
             },
 
             get active() this.stack.length,

@@ -162,10 +162,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             override: true
         });
 
-        function ourItems(persistent) [
-            item for (item of values(self.itemMap))
-            if (!item.builtin && (!persistent || item.persistent) && item.name !== "all")
-        ];
+        function ourItems(persistent) {
+            return [
+                item for (item of values(self.itemMap))
+                if (!item.builtin && (!persistent || item.persistent) && item.name !== "all")
+            ];
+        }
 
         function prefOverlay(branch, persistent, local) {
             return update(Object.create(local),

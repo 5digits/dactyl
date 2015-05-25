@@ -550,7 +550,9 @@ const Player = Module("player", {
                 dactyl.assert(/^[+-]?(\d+[smh]?|(\d+:\d\d:|\d+:)?\d{2})$/.test(arg),
                     _("error.invalidArgument", arg));
 
-                function ms(t, m) Math.abs(parseInt(t, 10) * { s: 1000, m: 60000, h: 3600000 }[m])
+                function ms(t, m) {
+                    return Math.abs(parseInt(t, 10) * { s: 1000, m: 60000, h: 3600000 }[m]);
+                }
 
                 if (/:/.test(arg)) {
                     let [seconds, minutes, hours] = arg.split(":").reverse();

@@ -106,29 +106,33 @@ var Messages = Module("messages", {
         let { Buffer, commands, hints, io, mappings, modes, options, sanitizer } = overlay.activeModules;
         file = io.File(file);
 
-        function properties(base, iter_, prop="description") iter(function* _properties() {
-            function key(...args) [base, obj.identifier || obj.name].concat(args).join(".").replace(/[\\:=]/g, "\\$&");
-
-            for (var obj of iter_) {
-                if (!obj.hive || obj.hive.name !== "user") {
-                    yield key(prop) + " = " + obj[prop];
-
-                    if (iter_.values) {
-                        let iter_ = isArray(obj.values) ? obj.values
-                                                        : iter(obj.values);
-
-                        for (let [k, v] of iter_)
-                            yield key("values", k) + " = " + v;
-                    }
-
-                    for (let opt of values(obj.options))
-                        yield key("options", opt.names[0]) + " = " + opt.description;
-
-                    if (obj.deprecated)
-                        yield key("deprecated") + " = " + obj.deprecated;
+        function properties(base, iter_, prop="description") {
+            return iter(function* _properties() {
+                function key(...args) {
+                    return [base, obj.identifier || obj.name].concat(args).join(".").replace(/[\\:=]/g, "\\$&");
                 }
-            }
-        }()).toArray();
+
+                for (var obj of iter_) {
+                    if (!obj.hive || obj.hive.name !== "user") {
+                        yield key(prop) + " = " + obj[prop];
+
+                        if (iter_.values) {
+                            let iter_ = isArray(obj.values) ? obj.values
+                                                            : iter(obj.values);
+
+                            for (let [k, v] of iter_)
+                                yield key("values", k) + " = " + v;
+                        }
+
+                        for (let opt of values(obj.options))
+                            yield key("options", opt.names[0]) + " = " + opt.description;
+
+                        if (obj.deprecated)
+                            yield key("deprecated") + " = " + obj.deprecated;
+                    }
+                }
+            }()).toArray();
+        }
 
         file.write(
             Ary(commands.allHives.map(h => properties("command", h)))
@@ -161,7 +165,9 @@ var Messages = Module("messages", {
                     get: function get() {
                         let value = this[_prop];
 
-                        function getter(key, default_) function getter() messages.get([name, key].join("."), default_);
+                        function getter(key, default_) {
+                            return function getter() messages.get([name, key].join("."), default_);
+                        }
 
                         if (value != null) {
                             var name = [this.constructor.className.toLowerCase(),

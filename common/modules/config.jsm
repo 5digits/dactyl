@@ -174,10 +174,12 @@ var ConfigBase = Class("ConfigBase", {
 
         let hl = highlight.set("Find", "");
         hl.onChange = function () {
-            function hex(val) ("#" + util.regexp.iterate(/\d+/g, val)
-                                         .map(num => ("0" + Number(num).toString(16)).slice(-2))
-                                         .join("")
-                              ).slice(0, 7);
+            function hex(val) {
+                return ("#" + util.regexp.iterate(/\d+/g, val)
+                                  .map(num => ("0" + Number(num).toString(16)).slice(-2))
+                                  .join("")
+                       ).slice(0, 7);
+            }
 
             let elem = services.appShell.hiddenDOMWindow.document.createElement("div");
             elem.style.cssText = this.cssText;
@@ -216,7 +218,9 @@ var ConfigBase = Class("ConfigBase", {
      */
     locales: Class.Memoize(function () {
         // TODO: Merge with completion.file code.
-        function getDir(str) str.match(/^(?:.*[\/\\])?/)[0];
+        function getDir(str) {
+            return str.match(/^(?:.*[\/\\])?/)[0];
+        }
 
         let uri = "resource://dactyl-locale/";
         let jar = io.isJarURL(uri);

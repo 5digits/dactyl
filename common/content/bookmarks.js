@@ -287,7 +287,9 @@ var Bookmarks = Module("bookmarks", {
         if (!queryURI)
             return Promise.reject();
 
-        function parse(req) JSON.parse(req.responseText)[1].filter(isString);
+        function parse(req) {
+            return JSON.parse(req.responseText)[1].filter(isString);
+        }
         return this.makeSuggestions(queryURI, parse, callback);
     },
 

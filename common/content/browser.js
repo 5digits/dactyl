@@ -243,9 +243,11 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             CommandExMode().open(mode + "open " + (args || ""));
         }
 
-        function decode(uri) util.losslessDecodeURI(uri)
-                                 .replace(/%20(?!(?:%20)*$)/g, " ")
-                                 .replace(RegExp(options["urlseparator"], "g"), encodeURIComponent);
+        function decode(uri) {
+            return util.losslessDecodeURI(uri)
+                       .replace(/%20(?!(?:%20)*$)/g, " ")
+                       .replace(RegExp(options["urlseparator"], "g"), encodeURIComponent);
+        }
 
         mappings.add([modes.NORMAL],
             ["o"], "Open one or more URLs",

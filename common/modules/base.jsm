@@ -44,7 +44,9 @@ function lazyRequire(module, names, target) {
 let jsmodules = { lazyRequire: lazyRequire };
 jsmodules.jsmodules = jsmodules;
 
-function toString() "[module-global " + this.NAME + "]";
+function toString() {
+    return "[module-global " + this.NAME + "]";
+}
 
 function objToString(obj) {
     try {
@@ -406,7 +408,7 @@ function keys(obj) {
  * @param {object} obj The object to inspect.
  * @returns {Iter}
  */
-function values(obj)  {
+function values(obj) {
     if (isinstance(obj, ["Map"]))
         return iter(obj.values());
 
@@ -582,7 +584,9 @@ function curry(fn, length, self, acc) {
         return fn;
 
     // Close over function with 'this'
-    function close(self, fn) (...args) => fn.apply(self, args);
+    function close(self, fn) {
+        return (...args) => fn.apply(self, args);
+    }
 
     if (acc == null)
         acc = [];
@@ -668,7 +672,9 @@ function isinstance(object, interfaces) {
 /**
  * Returns true if obj is a non-null object.
  */
-function isObject(obj) typeof obj === "object" && obj != null || obj instanceof Ci.nsISupports;
+function isObject(obj) {
+    return typeof obj === "object" && obj != null || obj instanceof Ci.nsISupports;
+}
 
 /**
  * Returns true if and only if its sole argument is an
@@ -678,7 +684,9 @@ function isObject(obj) typeof obj === "object" && obj != null || obj instanceof 
  */
 var isArray =
     // This is bloody stupid.
-    function isArray(val) Array.isArray(val) || val && val.constructor && val.constructor.name === "Array";
+    function isArray(val) {
+        return Array.isArray(val) || val && val.constructor && val.constructor.name === "Array";
+    }
 
 /**
  * Returns true if and only if its sole argument is an
@@ -686,7 +694,9 @@ var isArray =
  * functions containing the 'yield' statement and generator
  * statements such as (x for (x in obj)).
  */
-function isGenerator(val) objToString(val) == "[object Generator]";
+function isGenerator(val) {
+    return objToString(val) == "[object Generator]";
+}
 
 /**
  * Returns true if and only if its sole argument is a String,
@@ -695,13 +705,17 @@ function isGenerator(val) objToString(val) == "[object Generator]";
  * namespace, or execution context, which is not the case when
  * using (obj instanceof String) or (typeof obj == "string").
  */
-function isString(val) objToString(val) == "[object String]";
+function isString(val) {
+    return objToString(val) == "[object String]";
+}
 
 /**
  * Returns true if and only if its sole argument may be called
  * as a function. This includes classes and function objects.
  */
-function callable(val) typeof val === "function" && !(val instanceof Ci.nsIDOMElement);
+function callable(val) {
+    return typeof val === "function" && !(val instanceof Ci.nsIDOMElement);
+}
 
 function call(fn, self, ...args) {
     fn.apply(self, args);

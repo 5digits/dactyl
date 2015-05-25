@@ -382,7 +382,10 @@ var JavaScript = Module("javascript", {
         }
 
         // We've already listed anchored matches, so don't list them again here.
-        function unanchored(item) util.compareIgnoreCase(item.text.substr(0, this.filter.length), this.filter);
+        function unanchored(item) {
+            return util.compareIgnoreCase(item.text.substr(0, this.filter.length),
+                                          this.filter);
+        }
 
         objects.forEach(function (obj) {
             let context = base.fork(obj[1]);
@@ -856,7 +859,9 @@ var JavaScript = Module("javascript", {
     mappings: function initMappings(dactyl, modules, window) {
         const { mappings, modes } = modules;
 
-        function bind(...args) apply(mappings, "add", [[modes.REPL]].concat(args))
+        function bind(...args) {
+            return apply(mappings, "add", [[modes.REPL]].concat(args));
+        }
 
         bind(["<Return>"], "Accept the current input",
              function ({ self }) { self.accept(); });

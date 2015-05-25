@@ -528,13 +528,15 @@ var IO = Module("io", {
             else if (input)
                 stdin.write(input);
 
-            function result(status, output) ({
-                __noSuchMethod__: function (meth, args) apply(this.output, meth, args),
-                valueOf: function () this.output,
-                output: output.replace(/^(.*)\n$/, "$1"),
-                returnValue: status,
-                toString: function () this.output
-            });
+            function result(status, output) {
+                return {
+                    __noSuchMethod__: function (meth, args) apply(this.output, meth, args),
+                    valueOf: function () this.output,
+                    output: output.replace(/^(.*)\n$/, "$1"),
+                    returnValue: status,
+                    toString: function () this.output
+                };
+            }
 
             function async(status) {
                 let output = stdout.read();
@@ -1000,7 +1002,9 @@ unlet s:cpo_save
                 context.advance(4);
 
             // dir == "" is expanded inside readDirectory to the current dir
-            function getDir(str) str.match(/^(?:.*[\/\\])?/)[0];
+            function getDir(str) {
+                return str.match(/^(?:.*[\/\\])?/)[0];
+            }
             dir = getDir(dir || context.filter);
 
             let file = util.getFile(dir);

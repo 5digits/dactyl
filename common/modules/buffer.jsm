@@ -515,11 +515,15 @@ var Buffer = Module("Buffer", {
             for (let elem of iter(elems))
                 yield elem;
 
-            function a(regexp, elem) regexp.test(elem.textContent) === regexp.result ||
-                            Array.some(elem.childNodes,
-                                       child => (regexp.test(child.alt) === regexp.result));
+            function a(regexp, elem) {
+                return regexp.test(elem.textContent) === regexp.result ||
+                       Array.some(elem.childNodes,
+                                  child => (regexp.test(child.alt) === regexp.result));
+            }
 
-            function b(regexp, elem) regexp.test(elem.title) === regexp.result;
+            function b(regexp, elem) {
+                return regexp.test(elem.title) === regexp.result;
+            }
 
             let res = Array.filter(frame.document.querySelectorAll(selector),
                                    Hints.isVisible);
@@ -617,7 +621,9 @@ var Buffer = Module("Buffer", {
      * viewport.
      */
     resetCaret: function resetCaret() {
-        function visible(range) util.intersection(DOM(range).rect, viewport);
+        function visible(range) {
+            return util.intersection(DOM(range).rect, viewport);
+        }
 
         function getRanges(rect) {
             let nodes = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
@@ -2771,9 +2777,12 @@ Buffer.addPageInfoSection("s", "Security", function* (verbose) {
         return; // For now
 
     // Modified from Firefox
-    function location(data) Ary.compact([
-        data.city, data.state, data.country
-    ]).join(", ");
+    function location(data) {
+        return Ary.compact([data.city,
+                            data.state,
+                            data.country])
+                  .join(", ");
+    }
 
     switch (statusline.security) {
     case "secure":

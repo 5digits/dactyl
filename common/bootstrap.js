@@ -11,7 +11,9 @@ const global = this;
 
 var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
-function module(uri) Cu.import(uri, {});
+function module(uri) {
+    return Cu.import(uri, {});
+}
 
 const DEBUG = true;
 
@@ -316,7 +318,9 @@ function init() {
  * Performs necessary migrations after a version change.
  */
 function updateVersion() {
-    function isDev(ver) /^hg|pre$/.test(ver);
+    function isDev(ver) {
+        return /^hg|pre$/.test(ver);
+    }
     try {
         if (typeof require === "undefined" || addon === addonData)
             return;

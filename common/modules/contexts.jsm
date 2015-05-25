@@ -499,12 +499,14 @@ var Contexts = Module("contexts", {
     bindMacro: function (args, default_, params) {
         const { dactyl, events, modules } = this.modules;
 
-        function Proxy(obj, key) Class.Property({
-            configurable: true,
-            enumerable: true,
-            get: function Proxy_get() process(obj[key]),
-            set: function Proxy_set(val) obj[key] = val
-        })
+        function Proxy(obj, key) {
+            return Class.Property({
+                configurable: true,
+                enumerable: true,
+                get: function Proxy_get() process(obj[key]),
+                set: function Proxy_set(val) obj[key] = val
+            });
+        }
 
         let process = util.identity;
 

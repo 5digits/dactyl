@@ -354,7 +354,9 @@ var History = Module("history", {
         completion.addUrlCompleter("history", "History", completion.history);
     },
     mappings: function initMappings() {
-        function bind(...args) apply(mappings, "add", [config.browserModes].concat(args));
+        function bind(...args) {
+            return apply(mappings, "add", [config.browserModes].concat(args));
+        }
 
         bind(["<C-o>"], "Go to an older position in the jump list",
              function ({ count }) { history.stepTo(-Math.max(count, 1), true); },

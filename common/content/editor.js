@@ -299,7 +299,9 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         // Find the *count*th occurance of *char* before a non-collapsed
         // \n, ignoring the character at the caret.
         let i = 0;
-        function test(c) (collapse || c != "\n") && !!(!i++ || c != char || --count)
+        function test(c) {
+            return (collapse || c != "\n") && !!(!i++ || c != char || --count);
+        }
 
         Editor.extendRange(range, !backward, { test: test }, true);
         dactyl.assert(count == 0);

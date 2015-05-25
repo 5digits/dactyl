@@ -242,7 +242,9 @@ var Help = Module("Help", {
             let items = modules.completion._runCompleter("help", topic, null, !!consolidated).items;
             let partialMatch = null;
 
-            function format(item) item.description + "#" + encodeURIComponent(item.text);
+            function format(item) {
+                return item.description + "#" + encodeURIComponent(item.text);
+            }
 
             for (let item of items) {
                 if (item.text == topic)

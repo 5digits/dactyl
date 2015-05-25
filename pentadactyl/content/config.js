@@ -119,7 +119,9 @@ var Config = Module("config", ConfigBase, {
         commands.add(["sideb[ar]", "sb[ar]", "sbop[en]"],
             "Open the sidebar window",
             function (args) {
-                function compare(a, b) util.compareIgnoreCase(a, b) == 0
+                function compare(a, b) {
+                    return util.compareIgnoreCase(a, b) == 0;
+                }
                 let title = document.getElementById("sidebar-title");
 
                 dactyl.assert(args.length || title.value || args.bang && config.lastSidebar,

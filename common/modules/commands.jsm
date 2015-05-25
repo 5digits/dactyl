@@ -767,7 +767,9 @@ var Commands = Module("commands", {
                     return "";
                 }
                 // TODO: allow matching of aliases?
-                function cmds(hive) hive._list.filter(cmd => cmd.name.startsWith(filter || ""))
+                function cmds(hive) {
+                    return hive._list.filter(cmd => cmd.name.startsWith(filter || ""));
+                }
 
                 hives = (hives || this.userHives).map(h => [h, cmds(h)])
                                                  .filter(([h, c]) => c.length);
@@ -1401,8 +1403,10 @@ var Commands = Module("commands", {
         let quote = null;
         let len = str.length;
 
-        function fixEscapes(str) str.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4}|(.))/g,
-                                             (m, n1) => n1 || m);
+        function fixEscapes(str) {
+            return str.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4}|(.))/g,
+                               (m, n1) => n1 || m);
+        }
 
         // Fix me.
         if (isString(sep))
@@ -1798,8 +1802,10 @@ var Commands = Module("commands", {
 
 let quote = function quote(q, list, map=Commands.quoteMap) {
     let re = RegExp("[" + list + "]", "g");
-    function quote(str) (q + String.replace(str, re, $0 => ($0 in map ? map[$0] : ("\\" + $0)))
-                           + q);
+    function quote(str) {
+        return (q + String.replace(str, re, $0 => ($0 in map ? map[$0] : ("\\" + $0)))
+                  + q);
+    }
     quote.list = list;
     return quote;
 };

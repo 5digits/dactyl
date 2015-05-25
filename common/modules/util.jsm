@@ -259,17 +259,19 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let stack = [frame()];
         stack.__defineGetter__("top", function () this[this.length - 1]);
 
-        function frame() update(
-            function _frame(obj)
-                _frame === stack.top || _frame.valid(obj)
-                    ? _frame.elements.map(e => callable(e) ? e(obj) : e)
-                                     .join("")
-                    : "",
-            {
-                elements: [],
-                seen: {},
-                valid: function valid(obj) this.elements.every(e => !e.test || e.test(obj))
-            });
+        function frame() {
+            return update(
+                function _frame(obj)
+                    _frame === stack.top || _frame.valid(obj)
+                        ? _frame.elements.map(e => callable(e) ? e(obj) : e)
+                                        .join("")
+                        : "",
+                {
+                    elements: [],
+                    seen: {},
+                    valid: function valid(obj) this.elements.every(e => !e.test || e.test(obj))
+                });
+        }
 
         let end = 0;
         for (let match of util.regexp.iterate(/(.*?)%(.)/gy, format)) {
@@ -345,17 +347,19 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (!keepUnknown)
             unknown = () => "";
 
-        function frame() update(
-            function _frame(obj)
-                _frame === stack.top || _frame.valid(obj)
-                    ? _frame.elements.map(e => callable(e) ? e(obj) : e)
-                            .join("")
-                    : "",
-            {
-                elements: [],
-                seen: new RealSet,
-                valid: function valid(obj) this.elements.every(e => (!e.test || e.test(obj)))
-            });
+        function frame() {
+            return update(
+                function _frame(obj)
+                    _frame === stack.top || _frame.valid(obj)
+                        ? _frame.elements.map(e => callable(e) ? e(obj) : e)
+                                .join("")
+                        : "",
+                {
+                    elements: [],
+                    seen: new RealSet,
+                    valid: function valid(obj) this.elements.every(e => (!e.test || e.test(obj)))
+                });
+        }
 
         let defaults = { lt: "<", gt: ">" };
 
@@ -655,8 +659,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {string}
      */
     formatSeconds: function formatSeconds(seconds) {
-        function pad(n, val) ("0000000" + val).substr(-Math.max(n, String(val).length));
-        function div(num, denom) [Math.floor(num / denom), Math.round(num % denom)];
+        function pad(n, val) {
+            return ("0000000" + val).substr(-Math.max(n, String(val).length));
+        }
+        function div(num, denom) {
+            return [Math.floor(num / denom), Math.round(num % denom)];
+        }
         let days, hours, minutes;
 
         [minutes, seconds] = div(Math.round(seconds), 60);

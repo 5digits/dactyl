@@ -6,7 +6,9 @@
 
 var EXPORTED_SYMBOLS = ["require"];
 
-function create(proto) Object.create(proto);
+function create(proto) {
+    return Object.create(proto);
+}
 
 this["import"] = function import_(obj) {
     let res = {};
@@ -20,6 +22,8 @@ if (typeof TextEncoder == "undefined")
 
 // Deal with subScriptLoader prepending crap to loaded URLs
 Components.utils.import("resource://gre/modules/Services.jsm");
-function loadSubScript() Services.scriptloader.loadSubScript.apply(null, arguments);
+function loadSubScript() {
+    return Services.scriptloader.loadSubScript.apply(null, arguments);
+}
 
 // vim: set fdm=marker sw=4 sts=4 ts=8 et ft=javascript:

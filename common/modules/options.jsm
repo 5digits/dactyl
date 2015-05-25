@@ -1337,9 +1337,11 @@ var Options = Module("options", {
             function (args) {
                 let globalVariables = dactyl._globalVariables;
                 args = (args[0] || "").trim();
-                function fmt(value) (typeof value == "number"   ? "#" :
-                                     typeof value == "function" ? "*" :
-                                                                  " ") + value;
+                function fmt(value) {
+                    return (typeof value == "number"   ? "#" :
+                            typeof value == "function" ? "*" :
+                                                         " ") + value;
+                }
                 util.assert(!(!args || args == "g:"));
 
                 let matches = args.match(/^([a-z]:)?([\w]+)(?:\s*([-+.])?=\s*(.*)?)?$/);

@@ -798,9 +798,11 @@ var Hints = Module("hints", {
         this.addMode("i", "Show image",                           elem => dactyl.open(elem.src));
         this.addMode("I", "Show image in a new tab",              elem => dactyl.open(elem.src, dactyl.NEW_TAB));
 
-        function isScrollable(elem) isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
-                                                      Ci.nsIDOMHTMLIFrameElement]) ||
-            Buffer.isScrollable(elem, 0, true) || Buffer.isScrollable(elem, 0, false);
+        function isScrollable(elem) {
+            return isinstance(elem, [Ci.nsIDOMHTMLFrameElement, Ci.nsIDOMHTMLIFrameElement]) ||
+                   Buffer.isScrollable(elem, 0, true) ||
+                   Buffer.isScrollable(elem, 0, false);
+        }
     },
 
     hintSession: Modes.boundProperty(),
@@ -820,7 +822,9 @@ var Hints = Module("hints", {
      *     @optional
      */
     addMode: function (mode, prompt, action, filter, tags) {
-        function toString(regexp) RegExp.prototype.toString.call(regexp);
+        function toString(regexp) {
+            return RegExp.prototype.toString.call(regexp);
+        }
 
         if (tags != null) {
             let eht = options.get("extendedhinttags");
@@ -912,7 +916,9 @@ var Hints = Module("hints", {
          * @param {string} str The string to split.
          * @returns {Array(string)} The lowercased splits of the splitting.
          */
-        function tokenize(pat, str) str.split(pat).map(String.toLowerCase);
+        function tokenize(pat, str) {
+            return str.split(pat).map(String.toLowerCase);
+        }
 
         /**
          * Get a hint matcher for hintmatching=contains

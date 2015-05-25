@@ -231,7 +231,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     addUsageCommand: function (params) {
-        function keys(item) (item.names || [item.name]).concat(item.description, item.columns || []);
+        function keys(item) {
+            return (item.names || [item.name]).concat(item.description, item.columns || []);
+        }
 
         let name = commands.add(params.name, params.description,
             function (args) {
@@ -1667,10 +1669,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 options: startupOptions
             });
 
-        function findToolbar(name) DOM.XPath(
-            "//*[@toolbarname=" + util.escapeString(name, "'") + " or " +
-                "@toolbarname=" + util.escapeString(name.trim(), "'") + "]",
-            document).snapshotItem(0);
+        function findToolbar(name) {
+            return DOM.XPath(
+                "//*[@toolbarname=" + util.escapeString(name, "'") + " or " +
+                    "@toolbarname=" + util.escapeString(name.trim(), "'") + "]",
+                document).snapshotItem(0);
+        }
 
         var toolbox = document.getElementById("navigator-toolbox");
         if (toolbox) {

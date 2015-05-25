@@ -20,15 +20,17 @@ var XHTML = "http://www.w3.org/1999/xhtml";
 var XUL = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 var NS = "http://vimperator.org/namespaces/liberator";
 
-function BooleanAttribute(attr) ({
-    get: function (elem) elem.getAttribute(attr) == "true",
-    set: function (elem, val) {
-        if (val === "false" || !val)
-            elem.removeAttribute(attr);
-        else
-            elem.setAttribute(attr, true);
-    }
-});
+function BooleanAttribute(attr) {
+    return {
+        get: function (elem) elem.getAttribute(attr) == "true",
+        set: function (elem, val) {
+            if (val === "false" || !val)
+                elem.removeAttribute(attr);
+            else
+                elem.setAttribute(attr, true);
+        }
+    };
+}
 
 /**
  * @class
@@ -549,7 +551,9 @@ var DOM = Class("DOM", {
      * @returns {string}
      */
     get xpath() {
-        function quote(val) "'" + val.replace(/[\\']/g, "\\$&") + "'";
+        function quote(val) {
+            return "'" + val.replace(/[\\']/g, "\\$&") + "'";
+        }
         if (!(this[0] instanceof Ci.nsIDOMElement))
             return null;
 
@@ -1575,7 +1579,9 @@ var DOM = Class("DOM", {
 
             attr = attr || {};
 
-            function parseNamespace(name) DOM.parseNamespace(name, namespaces);
+            function parseNamespace(name) {
+                return DOM.parseNamespace(name, namespaces);
+            }
 
             // FIXME: Surely we can do better.
             for (var key in attr) {
@@ -1652,7 +1658,9 @@ var DOM = Class("DOM", {
             throw Error("No such namespace");
         }
 
-        function isFragment(args) !isString(args[0]) || args.length == 0 || args[0] === "";
+        function isFragment(args) {
+            return !isString(args[0]) || args.length == 0 || args[0] === "";
+        }
 
         function hasString(args) {
             return args.some(a => (isString(a) || isFragment(a) && hasString(a)));

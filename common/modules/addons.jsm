@@ -409,7 +409,9 @@ var Addons = Module("addons", {
         // TODO: handle extension dependencies
         values(actions).forEach(function (command) {
             let perm = command.perm && AddonManager["PERM_CAN_" + command.perm.toUpperCase()];
-            function ok(addon) (!perm || addon.permissions & perm) && (!command.filter || command.filter(addon));
+            function ok(addon) {
+                return (!perm || addon.permissions & perm) && (!command.filter || command.filter(addon));
+            }
 
             commands.add(Array.concat(command.name),
                 command.description,

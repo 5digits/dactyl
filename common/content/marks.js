@@ -373,7 +373,9 @@ var Marks = Module("marks", {
 
     completion: function initCompletion() {
         completion.mark = function mark(context) {
-            function percent(i) Math.round(i * 100);
+            function percent(i) {
+                return Math.round(i * 100);
+            }
 
             context.title = ["Mark", "HPos VPos File"];
             context.keys.description = ([, m]) => (m.offset ? Math.round(m.offset.x) + " " + Math.round(m.offset.y)
@@ -388,10 +390,14 @@ var Marks = Module("marks", {
             persistent: true,
             contains: ["history"],
             action: function (timespan, host) {
-                function matchhost(url) !host || util.isDomainURL(url, host);
-                function match(marks) (k
-                                       for ([k, v] of iter(marks))
-                                       if (timespan.contains(v.timestamp) && matchhost(v.location)));
+                function matchhost(url) {
+                    return !host || util.isDomainURL(url, host);
+                }
+                function match(marks) {
+                    return (k
+                            for ([k, v] of iter(marks))
+                            if (timespan.contains(v.timestamp) && matchhost(v.location)));
+                }
 
                 for (let [url, local] of marks._localMarks)
                     if (matchhost(url)) {

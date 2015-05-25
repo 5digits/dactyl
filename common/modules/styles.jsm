@@ -570,16 +570,18 @@ var Styles = Module("Styles", {
             Styles.splitContext(context);
         }
 
-        function nameFlag(filter) ({
-            names: ["-name", "-n"],
-            description: "The name of this stylesheet",
-            type: modules.CommandOption.STRING,
-            completer: function (context, args) {
-                context.keys.text = sheet => sheet.name;
-                context.filters.unshift(({ item }) => item.name);
-                sheets(context, args, filter);
-            }
-        });
+        function nameFlag(filter) {
+            return {
+                names: ["-name", "-n"],
+                description: "The name of this stylesheet",
+                type: modules.CommandOption.STRING,
+                completer: function (context, args) {
+                    context.keys.text = sheet => sheet.name;
+                    context.filters.unshift(({ item }) => item.name);
+                    sheets(context, args, filter);
+                }
+            };
+        }
 
         commands.add(["sty[le]"],
             "Add or list user styles",

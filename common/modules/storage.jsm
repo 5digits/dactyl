@@ -719,17 +719,21 @@ var File = Class("File", {
      * @returns {string}
      */
     expandPath: function expandPath(path, relative) {
-        function getenv(name) services.environment.get(name);
+        function getenv(name) {
+            return services.environment.get(name);
+        }
 
         // expand any $ENV vars - this is naive but so is Vim and we like to be compatible
         // TODO: Vim does not expand variables set to an empty string (and documents it).
         // Kris reckons we shouldn't replicate this 'bug'. --djk
         // TODO: should we be doing this for all paths?
         // No.
-        function expand(path) path.replace(
-            win32 ? /\$(\w+)\b|\${(\w+)}|%(\w+)%/g
-                  : /\$(\w+)\b|\${(\w+)}/g,
-            (m, n1, n2, n3) => (getenv(n1 || n2 || n3) || m));
+        function expand(path) {
+            return path.replace(
+                win32 ? /\$(\w+)\b|\${(\w+)}|%(\w+)%/g
+                    : /\$(\w+)\b|\${(\w+)}/g,
+                (m, n1, n2, n3) => (getenv(n1 || n2 || n3) || m));
+        }
         path = expand(path);
 
         // expand ~
