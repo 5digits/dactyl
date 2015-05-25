@@ -741,7 +741,7 @@ var File = Class("File", {
             path = OS.Path.join(OS.Constants.Path.homeDir,
                                 path.substr(2));
 
-        return OS.Path.normalize(path.replace("/", File.PATH_SEP, "g"));
+        return OS.Path.normalize(path.replace(/\//g, File.PATH_SEP));
     },
 
     expandPathList: function (list) list.map(this.expandPath),

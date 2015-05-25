@@ -459,7 +459,7 @@ var Modes = Module("modes", {
 
         get count() !this.insert,
 
-        _display: Class.Memoize(function _display() this.name.replace("_", " ", "g")),
+        _display: Class.Memoize(function _display() this.name.replace(/_/g, " ")),
 
         display: function display() this._display,
 

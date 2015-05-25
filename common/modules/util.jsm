@@ -608,7 +608,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     escapeString: function escapeString(str, delimiter) {
         if (delimiter == undefined)
             delimiter = '"';
-        return delimiter + str.replace(/([\\'"])/g, "\\$1").replace("\n", "\\n", "g").replace("\t", "\\t", "g") + delimiter;
+        return delimiter + str.replace(/([\\'"])/g, "\\$1").replace(/\n/g, "\\n").replace(/\t/g, "\\t") + delimiter;
     },
 
     /**

@@ -1431,7 +1431,7 @@ var Commands = Module("commands", {
             else if ((res = /^(")((?:[^\\"]|\\.)*)("?)/.exec(str)))
                 arg += keepQuotes ? res[0] : JSON.parse(fixEscapes(res[0]) + (res[3] ? "" : '"'));
             else if ((res = /^(')((?:[^']|'')*)('?)/.exec(str)))
-                arg += keepQuotes ? res[0] : res[2].replace("''", "'", "g");
+                arg += keepQuotes ? res[0] : res[2].replace(/''/g, "'");
             else
                 break;
 
