@@ -134,7 +134,7 @@ var CompletionContext = Class("CompletionContext", {
             this.filterFunc = function filterFunc(items) {
                 return this.filters
                            .reduce((res, filter) =>
-                                       res.filter((item) => filter.call(this, item)),
+                                       res.filter(item => filter.call(this, item)),
                                    items);
             };
             /**
@@ -738,9 +738,9 @@ var CompletionContext = Class("CompletionContext", {
 
     split: function split(name, obj, fn, ...args) {
         let context = this.fork(name);
-        let alias = (prop) => {
+        let alias = prop => {
             context.__defineGetter__(prop, () => this[prop]);
-            context.__defineSetter__(prop, (val) => this[prop] = val);
+            context.__defineSetter__(prop, val => this[prop] = val);
         };
         alias("_cache");
         alias("_completions");

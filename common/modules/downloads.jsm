@@ -57,7 +57,7 @@ var Download = Class("Download", {
                         this.source.url]]],
             this.list.document, this.nodes);
 
-        this.nodes.launch.addEventListener("click", (event) => {
+        this.nodes.launch.addEventListener("click", event => {
             if (event.button == 0) {
                 event.preventDefault();
                 this.command("launch");
@@ -122,7 +122,7 @@ var Download = Class("Download", {
             let file = io.File(this.targetFile);
             if (file.isExecutable() && prefs.get("browser.download.manager.alertOnEXEOpen", true))
                 this.list.modules.commandline.input(_("download.prompt.launchExecutable") + " ",
-                    (resp) => {
+                    resp => {
                         if (/^a(lways)$/i.test(resp)) {
                             prefs.set("browser.download.manager.alertOnEXEOpen", false);
                             resp = "yes";

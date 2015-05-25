@@ -88,7 +88,7 @@ var DOM = Class("DOM", {
 
     Empty: function Empty() this.constructor(null, this.document),
 
-    nodes: Class.Memoize(function () ({})),
+    nodes: Class.Memoize(() => ({})),
 
     get items() {
         return function* () {
@@ -1567,10 +1567,10 @@ var DOM = Class("DOM", {
 
             if (!isString(name) || args.length == 0 || name === "") {
                 var frag = doc.createDocumentFragment();
-                Array.forEach(args, function (arg) {
+                Array.forEach(args, arg => {
                     if (!isArray(arg[0]))
                         arg = [arg];
-                    arg.forEach(function (arg) {
+                    arg.forEach(arg => {
                         frag.appendChild(tag(arg, namespaces));
                     });
                 });
@@ -1710,12 +1710,12 @@ var DOM = Class("DOM", {
             if (isFragment(args)) {
                 let res = [];
                 let join = isArray(args) && isStrings(args) ? "" : "\n";
-                Array.forEach(args, function (arg) {
+                Array.forEach(args, arg => {
                     if (!isArray(arg[0]))
                         arg = [arg];
 
                     let contents = [];
-                    arg.forEach(function (arg) {
+                    arg.forEach(arg => {
                         let string = tag(arg, namespaces, indent);
                         if (string)
                             contents.push(string);

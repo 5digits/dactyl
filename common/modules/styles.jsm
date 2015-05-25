@@ -394,7 +394,7 @@ var Styles = Module("Styles", {
     completeSite: function (context, content, group=styles.user) {
         context.anchored = false;
         try {
-            context.fork("current", 0, this, function (context) {
+            context.fork("current", 0, this, context => {
                 context.title = ["Current Site"];
                 context.completions = [
                     [content.location.host, /*L*/"Current Host"],
@@ -456,7 +456,7 @@ var Styles = Module("Styles", {
     splitContext: function splitContext(context, title) {
         for (let item of iter({ Active: true, Inactive: false })) {
             let [name, active] = item;
-            context.split(name, null, function (context) {
+            context.split(name, null, context => {
                 context.title[0] = /*L*/name + " " + (title || "Sheets");
                 context.filters.push(item => !!item.active == active);
             });
@@ -728,7 +728,7 @@ var Styles = Module("Styles", {
     },
     completion: function initCompletion(dactyl, modules, window) {
         const names = Array.slice(DOM(["div"], window.document).style);
-        modules.completion.css = function (context) {
+        modules.completion.css = context => {
             context.title = ["CSS Property"];
             context.keys = { text: function (p) p + ":",
                              description: function () "" };
@@ -755,12 +755,12 @@ var Styles = Module("Styles", {
         let patterns = Styles.patterns;
 
         template.highlightCSS = function highlightCSS(css) {
-            return this.highlightRegexp(css, patterns.property, function (match) {
+            return this.highlightRegexp(css, patterns.property, match => {
                 if (!match.length)
                     return [];
                 return ["", match.preSpace, template.filter(match.name), ": ",
 
-                    template.highlightRegexp(match.value, patterns.token, function (match) {
+                    template.highlightRegexp(match.value, patterns.token, match => {
                         if (match.function)
                             return ["", template.filter(match.word),
                                 template.highlightRegexp(match.function, patterns.string,

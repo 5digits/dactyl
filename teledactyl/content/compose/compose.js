@@ -26,14 +26,14 @@ var Compose = Module("compose", {
             NotifyDocumentWillBeDestroyed: function () {}
         };
 
-        events.listen(window.document, "load", function () {
+        events.listen(window.document, "load", () => {
                 if (window.messageWasEditedExternally === undefined) {
                     window.messageWasEditedExternally = false;
                     GetCurrentEditor().addDocumentStateListener(stateListener);
                 }
             }, true);
 
-        events.listen(window, "compose-window-close", function () {
+        events.listen(window, "compose-window-close", () => {
             window.messageWasEditedExternally = false;
         }, true);
     }

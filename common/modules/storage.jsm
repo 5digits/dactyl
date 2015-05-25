@@ -690,7 +690,7 @@ var File = Class("File", {
     /**
      * @property {string} The current platform's path separator.
      */
-    PATH_SEP: Class.Memoize(function () /foo(.)bar/.exec(OS.Path.join("foo", "bar"))[1]),
+    PATH_SEP: Class.Memoize(() => /foo(.)bar/.exec(OS.Path.join("foo", "bar"))[1]),
 
     pathSplit: Class.Memoize(function () util.regexp("[/" + util.regexp.escape(this.PATH_SEP) + "]", "g")),
 

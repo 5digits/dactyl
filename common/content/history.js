@@ -64,7 +64,7 @@ var History = Module("history", {
 
         let obj = [];
         obj.__defineGetter__("index", () => sh.index);
-        obj.__defineSetter__("index", function (val) { webNav.gotoIndex(val); });
+        obj.__defineSetter__("index", val => { webNav.gotoIndex(val); });
         obj[Symbol.iterator] = function () this.entries();
 
         for (let item of iter(sh.SHistoryEnumerator, Ci.nsISHEntry))
@@ -111,7 +111,7 @@ var History = Module("history", {
         var ctxt;
         var filter = item => true;
         if (item == "domain")
-            var filter = function (item) {
+            var filter = item => {
                 let res = item.URI.hostPort != ctxt;
                 ctxt = item.URI.hostPort;
                 return res;
@@ -324,7 +324,7 @@ var History = Module("history", {
 
     },
     completion: function initCompletion() {
-        completion.domain = function (context) {
+        completion.domain = context => {
             context.anchored = false;
             context.compare = (a, b) => String.localeCompare(a.key, b.key);
             context.keys = { text: util.identity, description: util.identity,

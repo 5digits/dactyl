@@ -357,7 +357,7 @@ function startup(data, reason) {
         addonData = data;
         addon = data;
         name = data.id.replace(/@.*/, "");
-        AddonManager.getAddonByID(addon.id, function (a) {
+        AddonManager.getAddonByID(addon.id, a => {
             addon = a;
 
             updateVersion();

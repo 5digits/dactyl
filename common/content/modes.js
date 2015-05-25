@@ -649,7 +649,7 @@ var Modes = Module("modes", {
     },
     prefs: function initPrefs() {
         prefs.watch("accessibility.browsewithcaret",
-                    function () { apply(modes, "onCaretChange", arguments); });
+                    () => { apply(modes, "onCaretChange", arguments); });
     }
 });
 

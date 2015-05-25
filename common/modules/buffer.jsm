@@ -102,7 +102,7 @@ var Buffer = Module("Buffer", {
                                   if (!found)
                                       resolve(undefined);
                               },
-                              handleResult: (pref) => {
+                              handleResult: pref => {
                                   found = true;
                                   resolve(pref.value);
                               },
@@ -1122,7 +1122,7 @@ var Buffer = Module("Buffer", {
 
             let info = template.map(
                 (sections || options["pageinfo"])
-                    .map((opt) => Buffer.pageInfo[opt].action.call(this)),
+                    .map(opt => Buffer.pageInfo[opt].action.call(this)),
                 res => (res && iter(res).join(", ") || undefined),
                 ", ").join("");
 
@@ -1134,7 +1134,7 @@ var Buffer = Module("Buffer", {
             return;
         }
 
-        let list = template.map(sections || options["pageinfo"], (option) => {
+        let list = template.map(sections || options["pageinfo"], option => {
             let { action, title } = Buffer.pageInfo[option];
             return template.table(title, action.call(this, true));
         }, ["br"]);
@@ -1824,7 +1824,7 @@ var Buffer = Module("Buffer", {
     init: function init(dactyl, modules, window) {
         init.superapply(this, arguments);
 
-        dactyl.commands["buffer.viewSource"] = function (event) {
+        dactyl.commands["buffer.viewSource"] = event => {
             let elem = event.originalTarget;
             let obj = { url: elem.getAttribute("href"), line: Number(elem.getAttribute("line")) };
             if (elem.hasAttribute("column"))
@@ -2543,7 +2543,7 @@ var Buffer = Module("Buffer", {
                 },
 
                 validator: function validate(values) {
-                    return this.testValues(values, function (value) {
+                    return this.testValues(values, value => {
                         if (/^func:/.test(value))
                             return callable(dactyl.userEval("(" + Option.dequote(value.substr(5)) + ")"));
                         else

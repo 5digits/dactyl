@@ -483,9 +483,9 @@ var Addons = Module("addons", {
                 description: "description",
                 icon: "iconURL"
             };
-            context.generate = function () {
+            context.generate = () => {
                 context.incomplete = true;
-                AddonManager.getAddonsByTypes(types || ["extension"], function (addons) {
+                AddonManager.getAddonsByTypes(types || ["extension"], addons => {
                     context.incomplete = false;
                     context.completions = addons;
                 });

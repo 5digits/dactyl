@@ -271,8 +271,8 @@ var CommandWidgets = Class("CommandWidgets", {
 
     active: Class.Memoize(Object),
     activeGroup: Class.Memoize(Object),
-    commandbar: Class.Memoize(function () ({ group: "Cmd" })),
-    statusbar: Class.Memoize(function ()  ({ group: "Status" })),
+    commandbar: Class.Memoize(() => ({ group: "Cmd" })),
+    statusbar: Class.Memoize(() =>  ({ group: "Status" })),
 
     _ready: function _ready(elem) {
         return elem.contentDocument.documentURI === elem.getAttribute("src") &&
@@ -505,7 +505,7 @@ var CommandLine = Module("commandline", {
     init: function init() {
         this._callbacks = {};
 
-        memoize(this, "_store", function () storage.newMap("command-history", { store: true, privateData: true }));
+        memoize(this, "_store", () => storage.newMap("command-history", { store: true, privateData: true }));
 
         for (let name of ["command", "search"])
             if (storage.exists("history-" + name)) {
@@ -778,7 +778,7 @@ var CommandLine = Module("commandline", {
 
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
-        let appendToMessages = (data) => {
+        let appendToMessages = data => {
             let message = isObject(data) && !DOM.isJSONXML(data) ? data : { message: data };
 
             // Make sure the memoized message property is an instance property.
@@ -1797,7 +1797,7 @@ var CommandLine = Module("commandline", {
                      self.completions.tabTimer.flush();
 
                  self.accepted = true;
-                 return function () { modes.pop(); };
+                 return () => { modes.pop(); };
              });
 
         [
@@ -2347,7 +2347,7 @@ var ItemList = Class("ItemList", {
                 var scrollY = this.win.scrollY + rect.bottom - this.win.innerHeight;
             }
 
-            return function () {
+            return () => {
                 container.style.height = height + "px";
                 container.scrollTop = scroll;
                 if (scrollY != null)

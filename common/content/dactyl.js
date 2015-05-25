@@ -26,9 +26,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         this._observers = {};
         util.addObserver(this);
 
-        this.commands["dactyl.restart"] = function (event) {
-            dactyl.restart();
-        };
+        this.commands["dactyl.restart"] = event => { dactyl.restart(); };
 
         styles.registerSheet("resource://dactyl-skin/dactyl.css");
 
@@ -852,7 +850,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     event.preventDefault();
 
                     if (dactyl.commands[command])
-                        dactyl.withSavedValues(["forceTarget"], function () {
+                        dactyl.withSavedValues(["forceTarget"], () => {
                             if (event.ctrlKey || event.shiftKey || event.button == 1)
                                 dactyl.forceTarget = dactyl.NEW_TAB;
                             dactyl.commands[command](event);
@@ -1199,7 +1197,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let saved = save.map(p => dactyl[p]);
         return function wrappedCallback() {
             let args = arguments;
-            return dactyl.withSavedValues(save, function () {
+            return dactyl.withSavedValues(save, () => {
                 saved.forEach((p, i) => { dactyl[save[i]] = p; });
                 try {
                     return callback.apply(self, args);
@@ -1222,7 +1220,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                                            elem.getAttribute("collapsed"))
 }, {
     cache: function initCache() {
-        cache.register("help/plugins.xml", function () {
+        cache.register("help/plugins.xml", () => {
             // Process plugin help entries.
 
             let body = [];
@@ -1268,7 +1266,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                            body]);
         }, true);
 
-        cache.register("help/index.xml", function () {
+        cache.register("help/index.xml", () => {
             return '<?xml version="1.0"?>\n' +
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
                        template.map(iter(dactyl.indices),
@@ -1278,7 +1276,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                            "\n\n")]);
         }, true);
 
-        cache.register("help/gui.xml", function () {
+        cache.register("help/gui.xml", () => {
             return '<?xml version="1.0"?>\n' +
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
                        ["dl", { insertafter: "dialog-list" },
@@ -1291,7 +1289,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                "\n")]]);
         }, true);
 
-        cache.register("help/privacy.xml", function () {
+        cache.register("help/privacy.xml", () => {
             return '<?xml version="1.0"?>\n' +
                    DOM.toXML(["overlay", { xmlns: "dactyl" },
                        ["dl", { insertafter: "sanitize-items" },
@@ -1894,7 +1892,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 && root._lightweightTheme._lastScreenWidth == null) {
 
             dactyl.withSavedValues.call(PrivateBrowsingUtils,
-                                        ["isWindowPrivate"], function () {
+                                        ["isWindowPrivate"],
+                                        () => {
                 PrivateBrowsingUtils.isWindowPrivate = () => false;
                 Cu.import("resource://gre/modules/LightweightThemeConsumer.jsm", {})
                   .LightweightThemeConsumer.call(root._lightweightTheme, document);

@@ -746,7 +746,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
 var Hints = Module("hints", {
     init: function init() {
-        this.resizeTimer = Timer(100, 500, function () {
+        this.resizeTimer = Timer(100, 500, () => {
             if (isinstance(modes.main, modes.HINTS))
                 modes.getStack(0).params.onResize();
         });
@@ -789,7 +789,7 @@ var Hints = Module("hints", {
         this.addMode("V", "View hint source in external editor",  (elem, loc) => buffer.viewSource(loc, true));
         this.addMode("y", "Yank hint location",                   (elem, loc) => editor.setRegister(null, cleanLoc(loc), true));
         this.addMode("Y", "Yank hint description",                elem => editor.setRegister(null, elem.textContent || "", true));
-        this.addMode("A", "Yank hint anchor url",                 function (elem) {
+        this.addMode("A", "Yank hint anchor url",                 elem => {
             let uri = elem.ownerDocument.documentURIObject.clone();
             uri.ref = elem.id || elem.name;
             dactyl.clipboardWrite(uri.spec, true);
@@ -934,7 +934,7 @@ var Hints = Module("hints", {
          */
         function containsMatcher(hintString) { //{{{
             let tokens = tokenize(/\s+/, hintString);
-            return function (linkText) {
+            return linkText => {
                 linkText = linkText.toLowerCase();
                 return tokens.every(token => indexOf(linkText, token) >= 0);
             };
@@ -1049,7 +1049,7 @@ var Hints = Module("hints", {
                 return true;
             }
 
-            return function (linkText) {
+            return linkText => {
                 if (hintStrings.length == 1 && hintStrings[0].length == 0)
                     return true;
 

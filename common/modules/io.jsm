@@ -494,7 +494,7 @@ var IO = Module("io", {
         }
 
         let timer = services.Timer(
-            function () {
+            () => {
                 if (!process.isRunning) {
                     timer.cancel();
                     deferred.resolve(process.exitValue);
@@ -974,7 +974,7 @@ unlet s:cpo_save
     completion: function initCompletion(dactyl, modules, window) {
         const { completion, io } = modules;
 
-        completion.charset = function (context) {
+        completion.charset = context => {
             context.anchored = false;
             context.keys = {
                 text: util.identity,
@@ -1062,7 +1062,7 @@ unlet s:cpo_save
 
         completion.shellCommand = function shellCommand(context) {
             context.title = ["Shell Command", "Path"];
-            context.generate = function () {
+            context.generate = () => {
                 let dirNames = services.environment.get("PATH").split(config.OS.pathListSep);
                 let commands = [];
 
@@ -1099,7 +1099,7 @@ unlet s:cpo_save
                 else if (match.scheme === "chrome") {
                     context.key = match.prefix;
                     context.advance(match.prefix.length + 1);
-                    context.generate = function () iter({
+                    context.generate = () => iter({
                         content: /*L*/"Chrome content",
                         locale: /*L*/"Locale-specific content",
                         skin: /*L*/"Theme-specific content"

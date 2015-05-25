@@ -103,7 +103,7 @@ var Help = Module("Help", {
 
         cache.register("help.json", HelpBuilder);
 
-        cache.register("help/versions.xml", function () {
+        cache.register("help/versions.xml", () => {
             let NEWS = util.httpGet(config.addon.getResourceURI("NEWS").spec,
                                     { mimeType: "text/plain;charset=UTF-8" })
                            .responseText;
@@ -223,7 +223,7 @@ var Help = Module("Help", {
 
     Local: function Local(dactyl, modules, window) ({
         init: function init() {
-            dactyl.commands["dactyl.help"] = function (event) {
+            dactyl.commands["dactyl.help"] = event => {
                 let elem = event.originalTarget;
                 modules.help.help(elem.getAttribute("tag") || elem.textContent);
             };

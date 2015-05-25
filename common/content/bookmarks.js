@@ -432,10 +432,10 @@ var Bookmarks = Module("bookmarks", {
             names: ["-tags", "-T"],
             description: "A comma-separated list of tags",
             completer: function tags(context) {
-                context.generate = function () Ary(b.tags
-                                                   for (b of bookmarkcache)
-                                                   if (b.tags))
-                                                  .flatten().uniq().array;
+                context.generate = () => Ary(b.tags
+                                             for (b of bookmarkcache)
+                                             if (b.tags))
+                                            .flatten().uniq().array;
                 context.keys = { text: util.identity, description: util.identity };
             },
             type: CommandOption.LIST
@@ -561,7 +561,7 @@ var Bookmarks = Module("bookmarks", {
             function (args) {
                 if (args.bang)
                     commandline.input(_("bookmark.prompt.deleteAll") + " ").then(
-                        function (resp) {
+                        resp => {
                             if (resp && resp.match(/^y(es)?$/i)) {
                                 bookmarks.remove(Object.keys(bookmarkcache.bookmarks));
                                 dactyl.echomsg(_("bookmark.allDeleted"));
@@ -680,12 +680,12 @@ var Bookmarks = Module("bookmarks", {
 
             let item = keywords[keyword];
             if (item && item.url.contains("%s"))
-                context.fork("keyword/" + keyword, keyword.length + space.length, null, function (context) {
+                context.fork("keyword/" + keyword, keyword.length + space.length, null, context => {
                     context.format = history.format;
                     context.title = [/*L*/keyword + " Quick Search"];
                     context.keys = { text: "url", description: "title", icon: "icon" };
                     context.compare = CompletionContext.Sort.unsorted;
-                    context.generate = function () {
+                    context.generate = () => {
                         let [begin, end] = item.url.split("%s");
 
                         let seen = new RealSet;

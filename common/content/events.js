@@ -1083,7 +1083,7 @@ var Events = Module("events", {
             function ({ keypressEvents: [event] }) {
                 dactyl.assert(event.dactylSavedEvents,
                               _("event.nothingToPass"));
-                return function () {
+                return () => {
                     events.feedevents(null, event.dactylSavedEvents,
                                       { skipmap: true, isMacro: true, isReplay: true });
                 };
@@ -1150,8 +1150,8 @@ var Events = Module("events", {
             "Pass certain keys through directly for the given URLs",
             "sitemap", "", {
                 flush: function flush() {
-                    memoize(this, "filters", function () this.value.filter(function (f) f(buffer.documentURI)));
-                    memoize(this, "pass", function () new RealSet(Ary.flatten(this.filters.map(function (f) f.keys))));
+                    memoize(this, "filters", function () this.value.filter(f => f(buffer.documentURI)));
+                    memoize(this, "pass", function () new RealSet(Ary.flatten(this.filters.map(f => f.keys))));
                     memoize(this, "commandHive", function hive() Hive(this.filters, "command"));
                     memoize(this, "inputHive", function hive() Hive(this.filters, "input"));
                 },

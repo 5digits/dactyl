@@ -14,7 +14,7 @@
 var QuickMarks = Module("quickmarks", {
     init: function () {
         this._qmarks = storage.newMap("quickmarks", { store: true });
-        storage.addObserver("quickmarks", function () {
+        storage.addObserver("quickmarks", () => {
             statusline.updateStatus();
         }, window);
     },
@@ -154,7 +154,7 @@ var QuickMarks = Module("quickmarks", {
                     if (args.length == 1)
                         return completion.quickmark(context);
                     if (args.length == 2) {
-                        context.fork("current", 0, this, function (context) {
+                        context.fork("current", 0, this, context => {
                             context.title = ["Extra Completions"];
                             context.completions = [
                                 [quickmarks.get(args[0]), _("option.currentValue")]
@@ -176,7 +176,7 @@ var QuickMarks = Module("quickmarks", {
             });
     },
     completion: function initCompletion() {
-        completion.quickmark = function (context) {
+        completion.quickmark = context => {
             context.title = ["QuickMark", "URL"];
             context.generate = () => iter(quickmarks._qmarks);
         };

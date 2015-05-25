@@ -193,7 +193,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 let branch = Item.PREFIX + Item.SHUTDOWN_BRANCH;
 
                 overlay.overlayWindow("chrome://browser/content/preferences/sanitize.xul",
-                                      function (win) {
+                                      win => {
                     let items = ourItems(true);
 
                     return prefOverlay(branch, true, {
@@ -472,7 +472,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     && !args["-host"])
 
                     modules.commandline.input(_("sanitize.prompt.deleteAll") + " ",
-                        function (resp) {
+                        resp => {
                             if (resp.match(/^y(es)?$/i)) {
                                 sanitize(items);
                                 dactyl.echomsg(_("command.sanitize.allDeleted"));

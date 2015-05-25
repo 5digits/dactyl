@@ -405,7 +405,7 @@ var JavaScript = Module("javascript", {
 
         // TODO: Make this a generic completion helper function.
         objects.forEach(function (obj) {
-            obj.ctxt_t.split(obj[1] + "/anchored", this, function (context) {
+            obj.ctxt_t.split(obj[1] + "/anchored", this, context => {
                 context.anchored = true;
                 if (compl)
                     compl(context, obj[0]);
@@ -416,14 +416,14 @@ var JavaScript = Module("javascript", {
             return;
 
         objects.forEach(function (obj) {
-            obj.ctxt_p.split(obj[1] + "/anchored", this, function (context) {
+            obj.ctxt_p.split(obj[1] + "/anchored", this, context => {
                 context.anchored = true;
                 context.title[0] += /*L*/" (prototypes)";
             });
         });
 
         objects.forEach(function (obj) {
-            obj.ctxt_t.split(obj[1] + "/unanchored", this, function (context) {
+            obj.ctxt_t.split(obj[1] + "/unanchored", this, context => {
                 context.anchored = false;
                 context.title[0] += /*L*/" (substrings)";
                 context.filters.push(unanchored);
@@ -431,7 +431,7 @@ var JavaScript = Module("javascript", {
         });
 
         objects.forEach(function (obj) {
-            obj.ctxt_p.split(obj[1] + "/unanchored", this, function (context) {
+            obj.ctxt_p.split(obj[1] + "/unanchored", this, context => {
                 context.anchored = false;
                 context.title[0] += /*L*/" (prototype substrings)";
                 context.filters.push(unanchored);

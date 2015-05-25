@@ -16,7 +16,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         if (elem)
             this.element = elem;
         else
-            this.__defineGetter__("element", function () {
+            this.__defineGetter__("element", () => {
                 let elem = dactyl.focusedElement;
                 if (elem)
                     return elem.inputField || elem;
@@ -771,17 +771,17 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
 
             context.match = function (r) !this.filter || this.filter.contains(r);
 
-            context.fork("clipboard", 0, this, function (ctxt) {
+            context.fork("clipboard", 0, this, ctxt => {
                 ctxt.match = context.match;
                 ctxt.title = ["Clipboard Registers"];
                 ctxt.completions = Object.keys(editor.selectionRegisters);
             });
-            context.fork("kill-ring", 0, this, function (ctxt) {
+            context.fork("kill-ring", 0, this, ctxt => {
                 ctxt.match = context.match;
                 ctxt.title = ["Kill Ring Registers"];
                 ctxt.completions = Array.slice("0123456789");
             });
-            context.fork("user", 0, this, function (ctxt) {
+            context.fork("user", 0, this, ctxt => {
                 ctxt.match = context.match;
                 ctxt.title = ["User Defined Registers"];
                 ctxt.completions = editor.registers.keys();
@@ -914,7 +914,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
 
         function clear(forward, re)
             function _clear(editor) {
-                updateRange(editor, forward, re, function (range) {});
+                updateRange(editor, forward, re, range => {});
                 dactyl.assert(!editor.selection.isCollapsed);
                 editor.selection.deleteFromDocument();
                 let parent = DOM(editor.rootElement.parentNode);
@@ -925,13 +925,12 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         function move(forward, re, sameWord)
             function _move(editor) {
                 updateRange(editor, forward, re,
-                            function (range) { range.collapse(!forward); },
+                            range => { range.collapse(!forward); },
                             sameWord);
             }
         function select(forward, re)
             function _select(editor) {
-                updateRange(editor, forward, re,
-                            function (range) {});
+                updateRange(editor, forward, re, range => {});
             }
         function beginLine(editor_) {
             editor.executeCommand("cmd_beginLine");
@@ -1319,7 +1318,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             ["~"], "Switch case of the character under the cursor and move the cursor to the right",
             function ({ count }) {
                 function munger(range)
-                    String(range).replace(/./g, function (c) {
+                    String(range).replace(/./g, c => {
                         let lc = c.toLocaleLowerCase();
                         return c == lc ? c.toLocaleUpperCase() : lc;
                     });

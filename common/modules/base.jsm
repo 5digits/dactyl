@@ -899,7 +899,7 @@ function Class(...args) {
     return Constructor;
 }
 
-Class.objectGlobal = function (object) {
+Class.objectGlobal = object => {
     try {
         return Cu.getGlobalForObject(object);
     }
@@ -920,7 +920,7 @@ Class.objectGlobal = function (object) {
  */
 Class.Property = function Property(desc) update(
     Object.create(Property.prototype), desc || { configurable: true, writable: true });
-Class.Property.prototype.init = function () {};
+Class.Property.prototype.init = () => {};
 /**
  * Extends a subclass with a superclass. The subclass's
  * prototype is replaced with a new object, which inherits
@@ -1059,7 +1059,7 @@ Class.prototype = {
      * @returns {nsITimer} The timer which backs this timeout.
      */
     timeout: function timeout(callback, timeout) {
-        let timeout_notify = (timer) => {
+        let timeout_notify = timer => {
             if (this.stale ||
                     util.rehashing && !isinstance(Cu.getGlobalForObject(callback), ["BackstagePass"]))
                 return;
@@ -1095,7 +1095,7 @@ Class.prototype = {
 
         for (let i = 0; i < arguments.length; i++) {
             let src = arguments[i];
-            Object.getOwnPropertyNames(src || {}).forEach((k) => {
+            Object.getOwnPropertyNames(src || {}).forEach(k => {
                 if (k.startsWith("@@") && k.slice(2) in Symbol)
                     k = Symbol[k.slice(2)];
 

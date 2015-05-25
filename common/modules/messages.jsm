@@ -204,9 +204,8 @@ var Messages = Module("messages", {
     javascript: function initJavascript(dactyl, modules, window) {
         let { JavaScript } = modules;
 
-        JavaScript.setCompleter([this._, this.get, this.format], [
-            context => messages.iterate()
-        ]);
+        JavaScript.setCompleter([this._, this.get, this.format],
+                                [context => messages.iterate()]);
 
         JavaScript.setCompleter([this.export],
             [function (context, obj, args) {

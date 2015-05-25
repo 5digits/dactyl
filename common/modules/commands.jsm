@@ -321,7 +321,7 @@ var Command = Class("Command", {
         let res = update([], {
                 command: this,
 
-                explicitOpts: Class.Memoize(function () ({})),
+                explicitOpts: Class.Memoize(() => ({})),
 
                 has: function AP_has(opt) hasOwnProperty(this.explicitOpts, opt)
                                        || typeof opt === "number" && hasOwnProperty(this, opt),
@@ -1738,7 +1738,7 @@ var Commands = Module("commands", {
             name: ["listc[ommands]", "lc"],
             description: "List all Ex commands along with their short descriptions",
             index: "ex-cmd",
-            iterate: function (args) commands.iterator().map(function (cmd) ({
+            iterate: function (args) commands.iterator().map(cmd => ({
                 __proto__: cmd,
                 columns: [
                     cmd.hive == commands.builtin ? "" : ["span", { highlight: "Object", style: "padding-right: 1em;" },
@@ -1826,7 +1826,7 @@ Commands.complQuote = {
     "":  ["", Commands.quoteArg[""], ""]
 };
 
-Commands.parseBool = function (arg) {
+Commands.parseBool = arg => {
     if (/^(true|1|on)$/i.test(arg))
         return true;
     if (/^(false|0|off)$/i.test(arg))

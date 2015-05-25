@@ -32,7 +32,7 @@ var Tabs = Module("tabs", {
                                               "{ visibility: collapse; }",
                                           false, true);
 
-        dactyl.commands["tabs.select"] = function (event) {
+        dactyl.commands["tabs.select"] = event => {
             tabs.switchTo(event.originalTarget.getAttribute("identifier"));
         };
 
@@ -1096,7 +1096,7 @@ var Tabs = Module("tabs", {
                 description: function (group) group.getTitle() ||
                     group.getChildren().map(t => t.tab.label).join(", ")
             };
-            context.generate = function () {
+            context.generate = () => {
                 context.incomplete = true;
                 tabs.getGroups(function ({ GroupItems }) {
                     context.incomplete = false;
@@ -1120,7 +1120,7 @@ var Tabs = Module("tabs", {
             "Execute the next mapping in a new tab",
             function ({ count }) {
                 dactyl.forceTarget = dactyl.NEW_TAB;
-                mappings.afterCommands((count || 1) + 1, function () {
+                mappings.afterCommands((count || 1) + 1, () => {
                     dactyl.forceTarget = null;
                 });
             },

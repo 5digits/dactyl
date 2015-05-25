@@ -126,7 +126,7 @@ var Contexts = Module("contexts", {
                 init: function (name) {
                     this.name = name;
 
-                    this.type = ArgType("group", function (group) {
+                    this.type = ArgType("group", group => {
                         return isString(group) ? contexts.getGroup(group, name)
                                                : group[name];
                     });
@@ -814,7 +814,7 @@ var Contexts = Module("contexts", {
                                     .slice(0, -1);
 
             iter({ Active: true, Inactive: false }).forEach(function ([name, active]) {
-                context.split(name, null, function (context) {
+                context.split(name, null, context => {
                     context.title[0] = name + " Groups";
                     context.filters.push(({ item }) => !!item.filter(modules.buffer.uri) == active);
                 });

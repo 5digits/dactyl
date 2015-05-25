@@ -758,7 +758,7 @@ var Option = Class("Option", {
             acceptable = completions.call(this);
 
         if (isArray(acceptable))
-            acceptable = new RealSet(acceptable.map((v) => v[0]));
+            acceptable = new RealSet(acceptable.map(v => v[0]));
         else
             acceptable = new RealSet(this.parseKey(k)
                                      for (k of Object.keys(acceptable)));
@@ -964,7 +964,7 @@ var Options = Module("options", {
                 let closure = () => this._optionMap[name];
 
                 memoize(this._optionMap, name,
-                        function () Option.types[type](modules, names, description, defaultValue, extraInfo));
+                        () => Option.types[type](modules, names, description, defaultValue, extraInfo));
 
                 for (let alias of names.slice(1))
                     memoize(this._optionMap, alias, closure);
@@ -1165,7 +1165,7 @@ var Options = Module("options", {
                     name = Option.dequote(name);
                     if (name == "all" && reset)
                         modules.commandline.input(_("pref.prompt.resetAll", config.host) + " ",
-                            function (resp) {
+                            resp => {
                                 if (resp == "yes")
                                     for (let pref of prefs.getNames())
                                         prefs.reset(pref);
@@ -1299,7 +1299,7 @@ var Options = Module("options", {
                 return null;
 
             if (!opt.value && !opt.operator && !opt.invert) {
-                context.fork("default", 0, this, function (context) {
+                context.fork("default", 0, this, context => {
                     context.title = ["Extra Completions"];
                     context.pushProcessor(0, (item, text, next) => next(item, text.substr(0, 100)));
                     context.completions = [
@@ -1322,7 +1322,7 @@ var Options = Module("options", {
 
                 context.filters.push(i => !have.has(i.text));
                 modules.completion.optionValue(context, opt.name, opt.operator, null,
-                                       function (context) {
+                                       context => {
                                            context.generate = () => option.value.map(o => [o, ""]);
                                        });
                 context.title = ["Current values"];
@@ -1539,7 +1539,7 @@ var Options = Module("options", {
             }
 
             if (extra.key && extra.value != null) {
-                context.fork("default", 0, this, function (context) {
+                context.fork("default", 0, this, context => {
                     context.completions = [
                             [val(opt.value), _("option.currentValue")],
                             [val(opt.defaultValue), _("option.defaultValue")]
@@ -1559,7 +1559,7 @@ var Options = Module("options", {
                 if (op == "-")
                     context.filters.push(i => curValues.indexOf(i.text) > -1);
 
-                memoize(extra, "values", function () {
+                memoize(extra, "values", () => {
                     if (op == "+")
                         return curValues.concat(newValues);
                     if (op == "-")

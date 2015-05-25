@@ -173,7 +173,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
     iterate: function (modes) {
         let stacks = Array.concat(modes).map(this.bound.getStack);
         return values(stacks.shift().sort((m1, m2) => String.localeCompare(m1.name, m2.name))
-            .filter((map) => map.rhs &&
+            .filter(map => map.rhs &&
                 stacks.every(stack => stack.some(m => m.rhs && m.rhs === map.rhs && m.name === map.name))));
     },
 
@@ -803,7 +803,7 @@ var Mappings = Module("mappings", {
             ]
         });
 
-        iter.forEach(modes.mainModes, function (mode) {
+        iter.forEach(modes.mainModes, mode => {
             if (mode.char && !commands.get(mode.char + "listkeys", true))
                 dactyl.addUsageCommand({
                     __proto__: args,

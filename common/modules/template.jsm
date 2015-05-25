@@ -303,8 +303,9 @@ var Template = Module("Template", {
 
                 if (processStrings && false)
                     str = template._highlightFilter(str, "\n",
-                                                    function () ["span", { highlight: "NonText" },
-                                                                     "^J"]);
+                                                    () => ["span",
+                                                           { highlight: "NonText" },
+                                                           "^J"]);
                 return ["span", { highlight: "Object" }, str];
             case "xml":
                 return arg;
@@ -446,7 +447,7 @@ var Template = Module("Template", {
             ["tr", { highlight: "Title", align: "left" },
                 this.map(headings, function (h)
                     ["th", {}, h])],
-            this.map(iter, (row) =>
+            this.map(iter, row =>
                 ["tr", {},
                     this.map(Iterator(row), ([i, d]) =>
                         ["td", { style: style[i] || "" }, d])])];
@@ -455,7 +456,7 @@ var Template = Module("Template", {
     usage: function usage(iter, format={}) {
         let desc = format.description || (item => this.linkifyHelp(item.description));
         let help = format.help || (item => item.name);
-        let sourceLink = (frame) => {
+        let sourceLink = frame => {
             let source = this.sourceLink(frame);
             source[1]["dactyl:hint"] = source[2];
             return source;
@@ -464,14 +465,14 @@ var Template = Module("Template", {
             format.headings ?
                 ["thead", { highlight: "UsageHead" },
                     ["tr", { highlight: "Title", align: "left" },
-                        this.map(format.headings, (h) => ["th", {}, h])]] :
+                        this.map(format.headings, h => ["th", {}, h])]] :
                 [],
             format.columns ?
                 ["colgroup", {},
-                    this.map(format.columns, (c) => ["col", { style: c }])] :
+                    this.map(format.columns, c => ["col", { style: c }])] :
                 [],
             ["tbody", { highlight: "UsageBody" },
-                this.map(iter, (item) => {
+                this.map(iter, item => {
                     // Urgh.
                     let name = item.name || item.names[0];
                     let frame = item.definedAt;
@@ -484,7 +485,7 @@ var Template = Module("Template", {
                                             ["span", { highlight: "LinkInfo" },
                                                _("io.definedAt"), " ",
                                                sourceLink(frame)]]]],
-                               item.columns ? this.map(item.columns, (c) => ["td", {}, c]) : [],
+                               item.columns ? this.map(item.columns, c => ["td", {}, c]) : [],
                                ["td", {}, desc(item)]];
                 })]];
     }

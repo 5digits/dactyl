@@ -299,8 +299,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 char = char.toLowerCase();
 
                 stack.top.elements.push(update(
-                    function (obj) obj[char] != null ? quote(obj, char)
-                                                     : "",
+                    obj => obj[char] != null ? quote(obj, char)
+                                             : "",
                     { test: function test(obj) obj[char] != null }));
 
                 for (let elem of stack)
@@ -505,7 +505,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             let patterns = [];
             let substrings = split(pattern, /((?:[^\\{]|\\.)*)\{((?:[^\\}]|\\.)*)\}/gy,
-                function (match) {
+                match => {
                     patterns.push(split(match[2], /((?:[^\\,]|\\.)*),/gy,
                         null, ",{}"));
                 }, "{}");
@@ -972,7 +972,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return iter(obj)
           .map(([k, v]) => ["<!ENTITY ", k, " '", String.replace(v == null ? "null" : typeof v == "xml" ? v.toXMLString() : v,
                                                                  typeof v == "xml" ? /['%]/g : /['"%&<>]/g,
-                                                                 function (m) map[m]),
+                                                                 m => map[m]),
                             "'>"].join(""))
           .join("\n");
     },
@@ -1590,8 +1590,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             let done = false;
             var promise = test,
                 retVal;
-            promise.then((arg) => { retVal = arg; done = true; },
-                         (arg) => { retVal = arg; done = true; });
+            promise.then(arg => { retVal = arg; done = true; },
+                         arg => { retVal = arg; done = true; });
             test = () => done;
         }
 
