@@ -804,7 +804,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                         this.editor.endTransaction();
                     this.editor = null;
                 }
-            },
+            }
         };
         Map.types["operator"] = {
             preExecute: function preExecute(args) {

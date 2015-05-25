@@ -52,12 +52,12 @@ function Controller(controller) {
 
     this._countBeep = () => {
         this.beepCount++;
-    }
+    };
     this.errors = [];
     this._countError = (message, highlight) => {
         if (/\b(Error|Warning)Msg\b/.test(highlight))
             this.errors.push(String(message));
-    }
+    };
     this.modules.dactyl.registerObserver("beep", this._countBeep);
     this.modules.dactyl.registerObserver("echoLine", this._countError);
     this.modules.dactyl.registerObserver("echoMultiline", this._countError);

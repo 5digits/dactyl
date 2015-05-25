@@ -198,7 +198,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
         onLocationChange: util.wrapCallback(function onLocationChange(browser) {
             Buffer(browser.contentWindow).locationChanged();
-        }),
+        })
     }
 }, {
 }, {

@@ -35,7 +35,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             __proto__: this,
             get original() this.constructor(this.ORIGINAL + this.root),
             get restore() this.constructor(this.RESTORE + this.root),
-            get saved() this.constructor(this.SAVED + this.root),
+            get saved() this.constructor(this.SAVED + this.root)
         });
 
         if (!defaults)
@@ -414,10 +414,10 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
                 yield option;
             }
-        };
+        }
 
         return template.options(_("pref.hostPreferences", config.host), prefs.call(this));
-    },
+    }
 }, {
 }, {
     completion: function init_completion(dactyl, modules) {

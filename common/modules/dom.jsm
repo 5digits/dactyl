@@ -329,7 +329,7 @@ var DOM = Class("DOM", {
                 let v = callable(val) ? val.call(thisObj || this, elem, i) : val;
 
                 highlight[(v == null ? highlight.has(hl) : !v) ? "remove" : "add"](hl);
-            }),
+            })
         };
     },
 
@@ -952,7 +952,7 @@ var DOM = Class("DOM", {
 
             fix(DOM(this.document.defaultView));
         });
-    },
+    }
 }, {
     /**
      * Creates an actual event from a pseudo-event object.
@@ -1841,8 +1841,8 @@ var DOM = Class("DOM", {
                     iterateNext: function () result.iterateNext(),
                     get resultType() result.resultType,
                     get snapshotLength() result.snapshotLength,
-                    snapshotItem: function (i) result.snapshotItem(i),
-                }
+                    snapshotItem: function (i) result.snapshotItem(i)
+                };
                 if (asIterator)
                     res[Symbol.iterator] = function* () {
                         let elem;
@@ -1889,7 +1889,7 @@ var DOM = Class("DOM", {
     },
 
     namespaceNames: Class.Memoize(function ()
-        iter(this.namespaces).map(([k, v]) => ([v, k])).toObject()),
+        iter(this.namespaces).map(([k, v]) => ([v, k])).toObject())
 });
 
 Object.keys(DOM.Event.types).forEach(function (event) {

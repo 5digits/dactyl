@@ -59,7 +59,7 @@ var wrapCallback = function wrapCallback(fn, isEvent) {
         };
     fn.wrapper.wrapped = fn;
     return fn.wrapper;
-}
+};
 
 var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     Magic: Magic,

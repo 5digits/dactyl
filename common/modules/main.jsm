@@ -186,7 +186,7 @@ var Modules = function Modules(window) {
     modules.plugins = create(modules);
     modules.modules = modules;
     return modules;
-}
+};
 
 config.loadStyles();
 

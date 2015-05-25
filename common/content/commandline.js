@@ -47,7 +47,7 @@ var CommandWidgets = Class("CommandWidgets", {
                     ["hbox", { id: s + "commandline", hidden: "false", class: "dactyl-container", highlight: "Normal StatusNormal", collapsed: "true" },
                         ["label", { id: s + "commandline-prompt",    class: "dactyl-commandline-prompt  plain", flex: "0", crop: "end", value: "", collapsed: "true" }],
                         ["textbox", { id: s + "commandline-command", class: "dactyl-commandline-command plain", flex: "1", type: "text", timeout: "100",
-                                      highlight: "Events",  }]]]],
+                                      highlight: "Events"  }]]]],
 
             before: [
                 ["toolbar", { id: statusline.statusBar.id, xmlns: "xul" },
@@ -446,7 +446,7 @@ var CommandMode = Class("CommandMode", {
             this.completions.clear();
         if (this.history)
             this.history.reset();
-    },
+    }
 });
 
 var CommandExMode = Class("CommandExMode", CommandMode, {
@@ -783,7 +783,7 @@ var CommandLine = Module("commandline", {
             message.message;
             this._messageHistory.add(update({ highlight: highlightGroup }, message));
             return message.message;
-        }
+        };
 
         if (flags & this.APPEND_TO_MESSAGES)
             data = appendToMessages(data);

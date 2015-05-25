@@ -17,7 +17,7 @@ lazyRequire("template", ["template"]);
 
 var callResult = function callResult(method, ...args) {
     return function (result) { result[method].apply(result, args); };
-}
+};
 
 var listener = function listener(action, event)
     function addonListener(install) {
@@ -218,7 +218,7 @@ var Addon = Class("Addon", {
                 node.removeChild(node.firstChild);
 
             DOM(node).append(isArray(xml) ? xml : DOM.DOMString(xml));
-        }
+        };
 
         update("name", template.icon({ icon: this.iconURL }, this.name));
         this.nodes.version.textContent = this.version;
@@ -431,7 +431,7 @@ var Addons = Module("addons", {
                         if (command.actions)
                             command.actions(list, this.modules);
                         else
-                            list.forEach(addon => { command.action.call(this.modules, addon, args.bang) });
+                            list.forEach(addon => { command.action.call(this.modules, addon, args.bang); });
                     }));
                 }, {
                     argCount: "?", // FIXME: should be "1"

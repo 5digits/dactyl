@@ -146,7 +146,7 @@ var Download = Class("Download", {
     },
 
     _compare: {
-        active:   (a, b) => a.active - b.active,
+        active:    (a, b) => a.active - b.active,
         complete: (a, b) => a.percentComplete - b.percentComplete,
         date:     (a, b) => a.startTime - b.startTime,
         filename: (a, b) => String.localeCompare(a.targetFile.leafName, b.targetFile.leafName),
@@ -388,7 +388,7 @@ var DownloadList = Class("DownloadList",
 
     onDownloadChanged: function onDownloadChanged(download) {
         if (this.downloads.has(download)) {
-            download = this.downloads.get(download)
+            download = this.downloads.get(download);
 
             download.updateStatus();
             download.updateProgress();

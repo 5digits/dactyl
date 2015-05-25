@@ -741,7 +741,7 @@ var HintSession = Class("HintSession", CommandMode, {
     updateStatusline: function _updateStatusline() {
         statusline.inputBuffer = (this.escapeNumbers ? "\\" : "") +
                                  (this.hintNumber ? this.getHintString(this.hintNumber) : "");
-    },
+    }
 });
 
 var Hints = Module("hints", {

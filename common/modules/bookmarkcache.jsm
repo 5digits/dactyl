@@ -55,7 +55,7 @@ update(Bookmark.prototype, {
 
         return res.reverse();
     }
-})
+});
 Bookmark.prototype.members.uri = Bookmark.prototype.members.url;
 Bookmark.setter = function (key, func) this.prototype.__defineSetter__(key, func);
 Bookmark.setter("url", function (val) { this.uri = isString(val) ? newURI(val) : val; });

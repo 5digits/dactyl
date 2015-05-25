@@ -728,7 +728,7 @@ var Buffer = Module("Buffer", {
             return !b
                 || a[0] == b[0] && a[1] == b[1]
                 || a[0] != b[0] && a[1] != b[1];
-        }
+        };
 
         let link = DOM("link[href][rev=canonical], \
                         link[href][rel=shortlink]", doc)
@@ -749,7 +749,7 @@ var Buffer = Module("Buffer", {
              link[href][rel=shortlink]", this.doc)
             .each(elem => {
                 overlay.getData(elem, "link-check",
-                                () => [elem.href, this.pageURI.spec])
+                                () => [elem.href, this.pageURI.spec]);
             });
     },
 
@@ -1264,7 +1264,7 @@ var Buffer = Module("Buffer", {
                 encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
 
                 OS.File.writeAtomic(file.path, encoder.encodeToString())
-                  .then(() => { resolve([file, true]) })
+                  .then(() => { resolve([file, true]); })
                   .catch(reject);
             }
             else {

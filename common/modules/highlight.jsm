@@ -37,7 +37,7 @@ Highlight.liveProperty = function (name, prop) {
         if (this.onChange)
             this.onChange();
     });
-}
+};
 Highlight.liveProperty("agent");
 Highlight.liveProperty("extends", "css");
 Highlight.liveProperty("value", "css");

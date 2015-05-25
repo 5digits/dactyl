@@ -641,8 +641,7 @@ var JavaScript = Module("javascript", {
          .concat([k.substr(3) for (k of keys(Ci)) if (/^nsI/.test(k))])
          .concat(this.magicalNames)
          .filter(k => k in this.window));
-    }),
-
+    })
 }, {
     EVAL_TMP: "__dactyl_eval_tmp",
 

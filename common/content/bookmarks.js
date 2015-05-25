@@ -646,7 +646,7 @@ var Bookmarks = Module("bookmarks", {
         options.add(["suggestengines"],
              "Search engines used for search suggestions",
              "stringlist", "google",
-             { completer: function completer(context) completion.searchEngine(context, true), });
+             { completer: function completer(context) completion.searchEngine(context, true) });
     },
 
     completion: function initCompletion() {

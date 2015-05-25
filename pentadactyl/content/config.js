@@ -78,8 +78,7 @@ var Config = Module("config", ConfigBase, {
                 }
             }
         };
-    },
-
+    }
 }, {
 }, {
     commands: function initCommands(dactyl, modules, window) {

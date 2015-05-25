@@ -13,7 +13,7 @@ this["import"] = function import_(obj) {
     for (let key of Object.getOwnPropertyNames(obj))
         Object.defineProperty(res, key, Object.getOwnPropertyDescriptor(obj, key));
     return res;
-}
+};
 
 if (typeof TextEncoder == "undefined")
     Components.utils.importGlobalProperties(["TextEncoder", "TextDecoder"]);

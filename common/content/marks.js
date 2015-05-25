@@ -286,7 +286,7 @@ var Marks = Module("marks", {
                 return;
             }
         }
-    },
+    }
 }, {
     markToString: function markToString(name, mark) {
         let tab = mark.tab && mark.tab.get();

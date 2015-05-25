@@ -107,7 +107,7 @@ defineModule.dump = function dump_(...args) {
         dump(String.replace(msg, /\n?$/, "\n")
                    .replace(/^./gm, JSMLoader.name + ": $&"));
     }
-}
+};
 defineModule.modules = [];
 defineModule.time = function time(major, minor, func, self, ...args) {
     let time = Date.now();
@@ -123,7 +123,7 @@ defineModule.time = function time(major, minor, func, self, ...args) {
 
     JSMLoader.times.add(major, minor, Date.now() - time);
     return res;
-}
+};
 
 function endModule() {
     defineModule.prefix = defineModule.prefix.slice(0, -2);
@@ -230,7 +230,7 @@ this.lazyRequire("util", ["FailedAssertion", "util"]);
 
 if (typeof Symbol == "undefined")
     this.Symbol = {
-        iterator: "@@iterator",
+        iterator: "@@iterator"
     };
 
 literal.files = {};
@@ -382,7 +382,7 @@ deprecated.warn = function warn(func, name, alternative, frame) {
     if (!func.seenCaller.add(filename))
         util.dactyl(func).warn([util.urlPath(filename), frame.lineNumber, " "].join(":")
                                    + _("warn.deprecated", name, alternative));
-}
+};
 
 /**
  * Iterates over all of the top-level, iterable property names of an
@@ -430,7 +430,7 @@ Object.defineProperty(RealSet.prototype, "add", {
         let res = this.has(val);
         Set_add.apply(this, arguments);
         return res;
-    },
+    }
 });
 
 Object.defineProperty(RealSet.prototype, "difference", {
@@ -438,7 +438,7 @@ Object.defineProperty(RealSet.prototype, "difference", {
     writable: true,
     value: function RealSet_difference(set) {
         return new RealSet(i for (i of this) if (!set.has(i)));
-    },
+    }
 });
 
 Object.defineProperty(RealSet.prototype, "intersection", {
@@ -446,7 +446,7 @@ Object.defineProperty(RealSet.prototype, "intersection", {
     writable: true,
     value: function RealSet_intersection(set) {
         return new RealSet(i for (i of this) if (set.has(i)));
-    },
+    }
 });
 
 Object.defineProperty(RealSet.prototype, "union", {
@@ -457,7 +457,7 @@ Object.defineProperty(RealSet.prototype, "union", {
         for (let item of set)
             res.add(item);
         return res;
-    },
+    }
 });
 
 /**
@@ -598,7 +598,7 @@ function curry(fn, length, self, acc) {
             return fn.apply(self || this, args);
 
         return curry(fn, length, self || this, args);
-    };
+    }
     curried.realName = fn.realName || fn.name;
     return curried;
 }
@@ -607,7 +607,7 @@ var bind = function bind(meth, self, ...args) {
     let func = callable(meth) ? meth : self[meth];
 
     return apply(func, "bind", [self].concat(args));
-}
+};
 
 /**
  * Returns true if both arguments are functions and
@@ -787,11 +787,11 @@ function update(target) {
                         func.superapply = function superapply(self, args) {
                             let meth = Object.getPrototypeOf(target)[k];
                             return meth && meth.apply(self, args);
-                        }
+                        };
 
                         func.supercall = function supercall(self, ...args) {
                             return func.superapply(self, args);
-                        }
+                        };
                     }
                 }
 
@@ -927,7 +927,7 @@ Class.extend = function extend(subclass, superclass, overrides) {
 
     if (superclass.prototype.constructor === objproto.constructor)
         superclass.prototype.constructor = superclass;
-}
+};
 
 /**
  * Memoizes the value of a class property to the value returned by
@@ -1101,7 +1101,7 @@ Class.prototype = {
 
                         func.supercall = function supercall(self, ...args) {
                             return func.superapply(self, args);
-                        }
+                        };
                     }
                 }
 
@@ -1143,7 +1143,7 @@ var closureHooks = {
         if (hasOwnProperty(target._closureCache, prop))
             return target._closureCache[prop];
 
-        let p = target[prop]
+        let p = target[prop];
         if (callable(p))
             return target._closureCache[prop] = p.bind(target);
         return p;
@@ -1213,7 +1213,7 @@ function XPCOMShim(interfaces) {
     });
     return (interfaces || []).reduce((shim, iface) => shim.QueryInterface(Ci[iface]),
                                      ip.data);
-};
+}
 let stub = Class.Property({
     configurable: true,
     enumerable: false,
@@ -1313,7 +1313,7 @@ Module.INIT = {
                 modules.dactyl.registerObservers(module);
         }
     }
-}
+};
 
 /**
  * @class Struct
@@ -1336,7 +1336,7 @@ function Struct(...args) {
 
     const Struct = Class(className || "Struct", StructBase, {
         length: args.length,
-        members: Ary(args).map((v, k) => [v, k]).toObject(),
+        members: Ary(args).map((v, k) => [v, k]).toObject()
     });
     args.forEach(function (name, i) {
         Struct.prototype.__defineGetter__(name, function () this[i]);
@@ -1606,6 +1606,7 @@ update(iter, {
                 return false;
         return true;
     },
+
     some: function every(iter, pred, self) {
         pred = pred || util.identity;
         for (let elem of iter)
@@ -1733,7 +1734,7 @@ const Iter = Class("Iter", {
             "Here you go:\n\n" + Error().stack);
 
         throw Error("Iter object used as a pre-ES6 iterator");
-    },
+    }
 });
 iter.Iter = Iter;
 
@@ -1956,7 +1957,7 @@ Object.defineProperty(Class.prototype, "closure",
 
 if (false)
     var array = Class("array", Ary, {
-        init: deprecated("Ary", function init() { init.superapply(arguments) })
+        init: deprecated("Ary", function init() { init.superapply(arguments); })
     });
 else
     array = Ary;

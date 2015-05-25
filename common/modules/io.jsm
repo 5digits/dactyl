@@ -976,7 +976,7 @@ unlet s:cpo_save
             context.anchored = false;
             context.keys = {
                 text: util.identity,
-                description: charset => io.charsetTitle(charset),
+                description: charset => io.charsetTitle(charset)
             };
             context.completions = io.charsets;
         };
@@ -1034,7 +1034,7 @@ unlet s:cpo_save
                               isDirectory: function () s.substr(-1) == "/",
                               leafName: /([^\/]*)\/?$/.exec(s)[1]
                         }
-                        for (s of io.listJar(uri.JARFile, getDir(uri.JAREntry)))]
+                        for (s of io.listJar(uri.JARFile, getDir(uri.JAREntry)))];
                 };
             else
                 context.generate = function generate_file() {

@@ -63,7 +63,7 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
     remove: function (event, filter) {
         filter = filter && String(Group.compileFilter(filter));
         this._store = this._store.filter(cmd => !cmd.match(event, filter));
-    },
+    }
 });
 
 /**

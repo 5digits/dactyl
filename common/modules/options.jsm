@@ -442,7 +442,7 @@ var Option = Class("Option", {
     SCOPE_BOTH: 3,
 
     has: {
-        toggleAll: function toggleAll() toggleAll.supercall(this, "all") ^ !!toggleAll.superapply(this, arguments),
+        toggleAll: function toggleAll() toggleAll.supercall(this, "all") ^ !!toggleAll.superapply(this, arguments)
     },
 
     parseRegexp: function parseRegexp(value, result, flags) {
@@ -480,7 +480,7 @@ var Option = Class("Option", {
             filter: filter,
             result: result !== undefined ? result : !bang,
             toString: function toString() this.bang + Option.quote(this.filter, /:/) +
-                (typeof this.result === "boolean" ? "" : ":" + quote(this.result)),
+                (typeof this.result === "boolean" ? "" : ":" + quote(this.result))
         });
     },
 
@@ -575,7 +575,7 @@ var Option = Class("Option", {
 
     parseKey: {
         number: Number,
-        boolean: function boolean(value) value == "true" || value == true ? true : false,
+        boolean: function boolean(value) value == "true" || value == true ? true : false
     },
 
     testValues: {

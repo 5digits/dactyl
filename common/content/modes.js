@@ -350,7 +350,7 @@ var Modes = Module("modes", {
         if (stack && stack.pop)
             for (let { obj, prop, value, test } of values(this.topOfStack.saved))
                 if (!test || !test(stack, prev))
-                    dactyl.trapErrors(function () { obj[prop] = value });
+                    dactyl.trapErrors(function () { obj[prop] = value; });
 
         this.show();
 

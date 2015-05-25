@@ -21,7 +21,7 @@ function withCallbacks(fn) {
         function reject(arg)  { deferred.reject(arg); }
         fn.apply(this, [[resolve, reject, deferred]].concat(args));
         return deferred.promise;
-    }
+    };
 }
 
 function CancelablePromise(executor, oncancel) {
@@ -111,7 +111,7 @@ var Promises = Module("Promises", {
     task: function task(fn) {
         return function task_(...args) {
             return Task.spawn(fn.bind.apply(fn, [this].concat(args)));
-        }
+        };
     },
 
     /**
@@ -155,7 +155,7 @@ var Promises = Module("Promises", {
      * @param {function} fn The function to wrap.
      * @returns {Promise}
      */
-    withCallbacks: withCallbacks,
+    withCallbacks: withCallbacks
 });
 
 endModule();

@@ -244,7 +244,7 @@ var Hive = Class("Hive", {
         }
         this.sheets = this.sheets.filter(s => matches.indexOf(s) == -1);
         return matches.length;
-    },
+    }
 });
 
 /**
@@ -374,7 +374,7 @@ var Styles = Module("Styles", {
         let type = services.stylesheet[agent ? "AGENT_SHEET" : "USER_SHEET"];
         if (services.stylesheet.sheetRegistered(uri, type))
             services.stylesheet.unregisterSheet(uri, type);
-    },
+    }
 }, {
     append: function (dest, src, sort) {
         let props = {};
@@ -554,7 +554,7 @@ var Styles = Module("Styles", {
      */
     quote: function quote(str) {
         return '"' + str.replace(/([\\"])/g, "\\$1").replace(/\n/g, "\\00000a") + '"';
-    },
+    }
 }, {
     commands: function initCommands(dactyl, modules, window) {
         const { commands, contexts, styles } = modules;
@@ -670,7 +670,7 @@ var Styles = Module("Styles", {
             {
                 name: ["dels[tyle]"],
                 desc: "Remove a user style sheet",
-                action: function (sheet) sheet.remove(),
+                action: function (sheet) sheet.remove()
             }
         ].forEach(function (cmd) {
             commands.add(cmd.name, cmd.desc,

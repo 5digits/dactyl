@@ -459,7 +459,7 @@ var Template = Module("Template", {
             let source = this.sourceLink(frame);
             source[1]["dactyl:hint"] = source[2];
             return source;
-        }
+        };
         return ["table", {},
             format.headings ?
                 ["thead", { highlight: "UsageHead" },

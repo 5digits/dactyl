@@ -62,8 +62,7 @@ var Group = Class("Group", {
 
     get toStringParams() [this.name],
 
-    get builtin() this.modules.contexts.builtinGroups.indexOf(this) >= 0,
-
+    get builtin() this.modules.contexts.builtinGroups.indexOf(this) >= 0
 }, {
     compileFilter: function (patterns, default_=false) {
         function siteFilter(uri) {

@@ -342,7 +342,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                 if (!event || !overlay.onWindowVisible || window != util.topWindow(window))
                     util.trapErrors("visible", obj, window);
                 else
-                    overlay.onWindowVisible.push(function () { obj.visible(window) });
+                    overlay.onWindowVisible.push(function () { obj.visible(window); });
         }
 
         if (obj.load)

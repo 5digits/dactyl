@@ -1189,7 +1189,7 @@ var Completion = Module("completion", {
                     let builtin = Object.keys(Cc)
                                         .filter(k => k.startsWith(services.AUTOCOMPLETE))
                                         .map(key => {
-                        let name = key.substr(services.AUTOCOMPLETE.length)
+                        let name = key.substr(services.AUTOCOMPLETE.length);
                         return ["native:" + name, _("autocomplete.description", name)];
                     });
 

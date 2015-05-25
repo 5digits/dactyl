@@ -1356,7 +1356,7 @@ var Commands = Module("commands", {
             }
 
             if (complete)
-                var context = complete.fork(command.name).fork("opts", len);;
+                var context = complete.fork(command.name).fork("opts", len);
 
             if (!complete || /(\w|^)[!\s]/.test(str))
                 args = command.parseArgs(args, context, { count: count, bang: bang });
@@ -1641,7 +1641,7 @@ var Commands = Module("commands", {
                         description: "The argument completion function",
                         completer: function (context) [[k, ""] for ([k, v] of iter(config.completers))],
                         type: CommandOption.STRING,
-                        validator: function (arg) arg in config.completers || /^custom,/.test(arg),
+                        validator: function (arg) arg in config.completers || /^custom,/.test(arg)
                     },
                     {
                         names: ["-description", "-desc", "-d"],

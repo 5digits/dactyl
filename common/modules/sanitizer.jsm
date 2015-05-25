@@ -292,7 +292,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         "quit-application-granted": function (subject, data) {
             if (this.runAtShutdown && !this.sanitizeItems(null, Range(), null, "shutdown"))
                 this.ranAtShutdown = true;
-        },
+        }
     },
 
     /**
@@ -582,7 +582,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                             context.completions = Sanitizer.COMMANDS;
                             break;
                         }
-                    },
+                    }
                 });
     },
     completion: function initCompletion(dactyl, modules, window) {

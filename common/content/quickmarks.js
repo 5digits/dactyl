@@ -172,7 +172,7 @@ var QuickMarks = Module("quickmarks", {
                 quickmarks.list(args[0] || "");
             }, {
                 argCount: "?",
-                completer: function (context) completion.quickmark(context),
+                completer: function (context) completion.quickmark(context)
             });
     },
     completion: function initCompletion() {

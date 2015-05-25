@@ -376,7 +376,7 @@ var Storage = Module("Storage", {
         if (obj.privateData && obj.clone)
             return obj.clone(this);
         return obj;
-    },
+    }
 }, {
     Replacer: {
         skipXpcom: function skipXpcom(key, val) val instanceof Ci.nsISupports ? null : val
@@ -803,7 +803,7 @@ var File = Class("File", {
             return File.DoesNotExist(e);
         }
         return path;
-    },
+    }
 });
 
 {
@@ -891,7 +891,7 @@ var AsyncFile = Class("AsyncFile", File, {
      */
     readDirectory: function readDirectory(callback) {
         let iter = new OS.File.DirectoryIterator(dir);
-        let close = () => { iter.close() };
+        let close = () => { iter.close(); };
 
         return iter.forEach(callback)
                    .then(close, close);
@@ -911,7 +911,7 @@ var AsyncFile = Class("AsyncFile", File, {
 
     moveTo: function moveTo(path, options) {
         return OS.File.move(this.path, path, options);
-    },
+    }
 });
 
 for (let m of ["makeDir",
