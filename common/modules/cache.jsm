@@ -97,7 +97,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         return this._cacheReader;
     },
 
-    get inQueue() this._cacheWriter && this._cacheWriter.inQueue,
+    get inQueue() { return this._cacheWriter && this._cacheWriter.inQueue; },
 
     getCacheWriter: function () {
         if (!this._cacheWriter)

@@ -27,10 +27,12 @@ var Group = Class("Group", {
         this.children = [];
     },
 
-    get contexts() this.modules.contexts,
+    get contexts() { return this.modules.contexts; },
 
     set lastDocument(val) { this._lastDocument = util.weakReference(val); },
-    get lastDocument() this._lastDocument && this._lastDocument.get(),
+    get lastDocument() {
+        return this._lastDocument && this._lastDocument.get();
+    },
 
     modifiable: true,
 
@@ -60,9 +62,11 @@ var Group = Class("Group", {
         return update(res, this.argsExtra(res), args);
     },
 
-    get toStringParams() [this.name],
+    get toStringParams() { return [this.name]; },
 
-    get builtin() this.modules.contexts.builtinGroups.indexOf(this) >= 0
+    get builtin() {
+        return this.modules.contexts.builtinGroups.indexOf(this) >= 0;
+    }
 }, {
     compileFilter: function (patterns, default_=false) {
         function siteFilter(uri) {
@@ -132,13 +136,17 @@ var Contexts = Module("contexts", {
                     });
                 },
 
-                get toStringParams() [this.name],
+                get toStringParams() { return [this.name]; },
 
                 names: ["-group", "-g"],
 
                 description: "Group to which to add",
 
-                get default() (contexts.context && contexts.context.group || contexts.user)[this.name],
+                get default() {
+                    return (contexts.context &&
+                            contexts.context.group ||
+                            contexts.user)[this.name];
+                },
 
                 completer: function (context) modules.completion.group(context)
             });
@@ -171,7 +179,9 @@ var Contexts = Module("contexts", {
             }
         },
 
-        Group: Class("Group", Group, { modules: modules, get hiveMap() modules.contexts.hives }),
+        Group: Class("Group", Group,
+                     { modules: modules,
+                       get hiveMap() { return modules.contexts.hives; }}),
 
         Hives: Class("Hives", Class.Property, {
             init: function init(name, constructor) {
@@ -203,7 +213,7 @@ var Contexts = Module("contexts", {
                                      if (hasOwnProperty(group, name))]);
             },
 
-            get toStringParams() [this.name, this.Hive]
+            get toStringParams() { return [this.name, this.Hive]; }
         })
     }),
 
@@ -330,7 +340,7 @@ var Contexts = Module("contexts", {
 
                 CONTEXT: Const(self),
 
-                get isGlobalModule() true,
+                get isGlobalModule() { return true; },
                 set isGlobalModule(val) {
                     util.assert(val, "Loading non-global module as global",
                                 false);
@@ -580,27 +590,27 @@ var Contexts = Module("contexts", {
         cleanup: function cleanup() {},
         destroy: function destroy() {},
 
-        get modifiable() this.group.modifiable,
+        get modifiable() { return this.group.modifiable; },
 
-        get argsExtra() this.group.argsExtra,
-        get makeArgs() this.group.makeArgs,
-        get builtin() this.group.builtin,
+        get argsExtra() { return this.group.argsExtra; },
+        get makeArgs() { return this.group.makeArgs; },
+        get builtin() { return this.group.builtin; },
 
-        get name() this.group.name,
-        set name(val) this.group.name = val,
+        get name() { return this.group.name; },
+        set name(val) { this.group.name = val; },
 
-        get description() this.group.description,
-        set description(val) this.group.description = val,
+        get description() { return this.group.description; },
+        set description(val) { this.group.description = val; },
 
-        get filter() this.group.filter,
-        set filter(val) this.group.filter = val,
+        get filter() { return this.group.filter; },
+        set filter(val) { this.group.filter = val; },
 
-        get persist() this.group.persist,
-        set persist(val) this.group.persist = val,
+        get persist() { return this.group.persist; },
+        set persist(val) { this.group.persist = val; },
 
         prefix: Class.Memoize(function () this.name === "builtin" ? "" : this.name + ":"),
 
-        get toStringParams() [this.name]
+        get toStringParams() { return [this.name]; }
     })
 }, {
     commands: function initCommands(dactyl, modules, window) {

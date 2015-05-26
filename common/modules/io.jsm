@@ -56,7 +56,7 @@ var IO = Module("io", {
 
                 historyKey: "file",
 
-                get mode() modules.modes.FILE_INPUT,
+                get mode() { return modules.modes.FILE_INPUT; },
 
                 complete: function (context) {
                     if (this.completer)
@@ -1161,8 +1161,10 @@ unlet s:cpo_save
             "List of directories searched when executing :cd",
             "stringlist", ["."].concat(services.environment.get("CDPATH").split(/[:;]/).filter(util.identity)).join(","),
             {
-                get files() this.value.map(path => File(path, modules.io.cwd))
-                                .filter(dir => dir.exists()),
+                get files() {
+                    return this.value.map(path => File(path, modules.io.cwd))
+                               .filter(dir => dir.exists());
+                },
                 setter: function (value) File.expandPathList(value)
             });
 
@@ -1170,8 +1172,10 @@ unlet s:cpo_save
             "List of directories searched for runtime files",
             "stringlist", IO.runtimePath,
             {
-                get files() this.value.map(path => File(path, modules.io.cwd))
-                                .filter(dir => dir.exists())
+                get files() {
+                    return this.value.map(path => File(path, modules.io.cwd))
+                               .filter(dir => dir.exists());
+                }
             });
 
         options.add(["shell", "sh"],

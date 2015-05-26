@@ -57,8 +57,12 @@ var Modes = Module("modes", {
             bases: [this.NORMAL]
         }, {
 
-            get pref()    prefs.get("accessibility.browsewithcaret"),
-            set pref(val) prefs.set("accessibility.browsewithcaret", val),
+            get pref() {
+                return prefs.get("accessibility.browsewithcaret");
+            },
+            set pref(val) {
+                prefs.set("accessibility.browsewithcaret", val);
+            },
 
             enter: function (stack) {
                 if (stack.pop && !this.pref)
@@ -196,17 +200,22 @@ var Modes = Module("modes", {
 
     "@@iterator": function __iterator__() Ary.iterValues(this.all),
 
-    get all() this._modes.slice(),
+    get all() { return this._modes.slice(); },
 
-    get mainModes() (mode
-                     for ([k, mode] of iter(modes._modeMap))
-                     if (!mode.extended && mode.name == k)),
+    get mainModes() {
+        return (mode
+                for ([k, mode] of iter(modes._modeMap))
+                if (!mode.extended && mode.name == k));
+    },
 
-    get mainMode() this._modeMap[this._main],
+    get mainMode() { return this._modeMap[this._main]; },
 
-    get passThrough() !!(this.main & (this.PASS_THROUGH|this.QUOTE)) ^ (this.getStack(1).main === this.PASS_THROUGH),
+    get passThrough() {
+        return !!(this.main & (this.PASS_THROUGH|this.QUOTE)) ^
+                 (this.getStack(1).main === this.PASS_THROUGH);
+    },
 
-    get topOfStack() this._modeStack[this._modeStack.length - 1],
+    get topOfStack() { return this._modeStack[this._modeStack.length - 1]; },
 
     addMode: function addMode(name, options, params) {
         let mode = Modes.Mode(name, options, params);
@@ -246,7 +255,7 @@ var Modes = Module("modes", {
 
     getStack: function getStack(idx) this._modeStack[this._modeStack.length - idx - 1] || this._modeStack[0],
 
-    get stack() this._modeStack.slice(),
+    get stack() { return this._modeStack.slice(); },
 
     getCharModes: function getCharModes(chr) (this.modeChars[chr] || []).slice(),
 
@@ -410,16 +419,16 @@ var Modes = Module("modes", {
             this.pop();
     },
 
-    get recording() this._recording,
+    get recording() { return this._recording; },
     set recording(value) { this._recording = value; this.show(); },
 
-    get replaying() this._replaying,
+    get replaying() { return this._replaying; },
     set replaying(value) { this._replaying = value; this.show(); },
 
-    get main() this._main,
+    get main() { return this._main; },
     set main(value) { this.set(value); },
 
-    get extended() this._extended,
+    get extended() { return this._extended; },
     set extended(value) { this.set(null, value); }
 }, {
     Mode: Class("Mode", {
@@ -455,9 +464,9 @@ var Modes = Module("modes", {
             return res;
         }),
 
-        get bases() this.input ? [modes.INPUT] : [modes.MAIN],
+        get bases() { return this.input ? [modes.INPUT] : [modes.MAIN]; },
 
-        get count() !this.insert,
+        get count() { return !this.insert; },
 
         _display: Class.Memoize(function _display() this.name.replace(/_/g, " ")),
 
@@ -477,9 +486,9 @@ var Modes = Module("modes", {
 
         passUnknown: Class.Memoize(function () options.get("passunknown").getKey(this.name)),
 
-        get mask() this,
+        get mask() { return this; },
 
-        get toStringParams() [this.name],
+        get toStringParams() { return [this.name]; },
 
         valueOf: function valueOf() this.id
     }, {
@@ -499,13 +508,15 @@ var Modes = Module("modes", {
         StackElement.defaultValue("params", function () this.main.params);
 
         update(StackElement.prototype, {
-            get toStringParams() !loaded.has("modes") ? [this.main.name] : [
-                this.main.name,
-                ["(", modes.all.filter(m => this.extended & m)
-                               .map(m => m.name)
-                               .join("|"),
-                 ")"].join("")
-            ]
+            get toStringParams() {
+                return !loaded.has("modes") ? [this.main.name] : [
+                    this.main.name,
+                    ["(", modes.all.filter(m => this.extended & m)
+                                .map(m => m.name)
+                                .join("|"),
+                    ")"].join("")
+                ];
+            }
         });
         return StackElement;
     })(),
@@ -633,8 +644,10 @@ var Modes = Module("modes", {
             validator: function validator(vals) vals.map(v => v.replace(/^!/, ""))
                                                     .every(k => hasOwnProperty(this.values, k)),
 
-            get values() Ary.toObject([[m.name.toLowerCase(), m.description]
-                                       for (m of modes._modes) if (!m.hidden)])
+            get values() {
+                return Ary.toObject([[m.name.toLowerCase(), m.description]
+                                     for (m of modes._modes) if (!m.hidden)]);
+            }
         };
 
         options.add(["passunknown", "pu"],

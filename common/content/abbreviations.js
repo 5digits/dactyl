@@ -88,7 +88,7 @@ var Abbreviation = Class("Abbreviation", {
      * @property {string} The mode display characters associated with the
      *     supported mode combination.
      */
-    get modeChar() Abbreviation.modeChar(this.modes)
+    get modeChar() { return Abbreviation.modeChar(this.modes); }
 }, {
     modeChar: function (_modes) {
         let result = Ary.uniq(_modes.map(m => m.char)).join("");
@@ -105,7 +105,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
     },
 
     /** @property {boolean} True if there are no abbreviations. */
-    get empty() !values(this._store).find(util.identity),
+    get empty() { return !values(this._store).find(util.identity); },
 
     /**
      * Adds a new abbreviation.
@@ -229,9 +229,9 @@ var Abbreviations = Module("abbreviations", {
         */$), "x", params);
     },
 
-    get allHives() contexts.allGroups.abbrevs,
+    get allHives() { return contexts.allGroups.abbrevs; },
 
-    get userHives() this.allHives.filter(h => h !== this.builtin),
+    get userHives() { return this.allHives.filter(h => h !== this.builtin); },
 
     get: deprecated("group.abbrevs.get", { get: function get() this.user.bound.get }),
     set: deprecated("group.abbrevs.set", { get: function set() this.user.bound.set }),

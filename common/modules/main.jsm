@@ -176,11 +176,15 @@ var Modules = function Modules(window) {
 
         newContext: newContext,
 
-        get ownPropertyValues() Ary.compact(
+        get ownPropertyValues() {
+            return Ary.compact(
                 Object.getOwnPropertyNames(this)
-                      .map(name => Object.getOwnPropertyDescriptor(this, name).value)),
+                      .map(name => Object.getOwnPropertyDescriptor(this, name).value));
+        },
 
-        get moduleList() this.ownPropertyValues.filter(mod => (mod instanceof this.ModuleBase || mod.isLocalModule))
+        get moduleList() {
+            return this.ownPropertyValues.filter(mod => (mod instanceof this.ModuleBase || mod.isLocalModule));
+        }
     });
 
     modules.plugins = create(modules);

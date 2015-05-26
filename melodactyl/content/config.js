@@ -31,8 +31,8 @@ const Config = Module("config", ConfigBase, {
 
         // FIXME: unless I'm seeing double in in the wee small hours gBrowser is
         // first set from getBrowser which they've deprecated in FF.
-        get browser() window.getBrowser(),
-        get tabbrowser() window.getBrowser(),
+        get browser() { return window.getBrowser(); },
+        get tabbrowser() { return window.getBrowser(); },
 
         dialogs: {
             about: ["About Songbird",
@@ -86,7 +86,10 @@ const Config = Module("config", ConfigBase, {
                     modes.pop();
         },
 
-        get isPlayerWindow() window.SBGetBrowser().mCurrentTab == window.SBGetBrowser().mediaTab,
+        get isPlayerWindow() {
+            let browser = window.SBGetBrowser();
+            return browser.mCurrentTab == browser.mediaTab;
+        },
 
         /**
          * Shows or hides the main service pane.
@@ -138,7 +141,7 @@ const Config = Module("config", ConfigBase, {
     defaults: {
         guioptions: "bCmprs",
         showtabline: 2,
-        get titlestring() config.name
+        get titlestring() { return config.name; }
     },
 
     guioptions: {

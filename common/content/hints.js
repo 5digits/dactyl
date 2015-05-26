@@ -10,7 +10,7 @@
 /** @instance hints */
 
 var HintSession = Class("HintSession", CommandMode, {
-    get extendedMode() modes.HINTS,
+    get extendedMode() { return modes.HINTS; },
 
     init: function init(mode, opts={}) {
         init.supercall(this);
@@ -54,13 +54,16 @@ var HintSession = Class("HintSession", CommandMode, {
             this.checkUnique();
     },
 
-    get docs() this._docs = this._docs.filter(({ doc }) => !Cu.isDeadWrapper(doc)),
+    get docs() {
+        return this._docs = this._docs.filter(({ doc }) =>
+                                              !Cu.isDeadWrapper(doc));
+    },
     set docs(docs) {
         this._docs = docs;
     },
 
     Hint: {
-        get active() this._active,
+        get active() { return this._active; },
         set active(val) {
             this._active = val;
             if (val)
@@ -73,7 +76,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 hints.setClass(this.imgSpan, this.valid ? val : null);
         },
 
-        get ambiguous() this.span.hasAttribute("ambiguous"),
+        get ambiguous() { return this.span.hasAttribute("ambiguous"); },
         set ambiguous(val) {
             let meth = val ? "setAttribute" : "removeAttribute";
             this.elem[meth]("ambiguous", "true");
@@ -82,7 +85,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 this.imgSpan[meth]("ambiguous", "true");
         },
 
-        get valid() this._valid,
+        get valid() { return this._valid; },
         set valid(val) {
             this._valid = val,
 
@@ -93,9 +96,9 @@ var HintSession = Class("HintSession", CommandMode, {
         }
     },
 
-    get mode() modes.HINTS,
+    get mode() { return modes.HINTS; },
 
-    get prompt() ["Question", UTF8(this.hintMode.prompt) + ": "],
+    get prompt() { return ["Question", UTF8(this.hintMode.prompt) + ": "]; },
 
     leave: function leave(stack) {
         leave.superapply(this, arguments);
@@ -142,7 +145,7 @@ var HintSession = Class("HintSession", CommandMode, {
     },
 
     _escapeNumbers: false,
-    get escapeNumbers() this._escapeNumbers,
+    get escapeNumbers() { return this._escapeNumbers; },
     set escapeNumbers(val) {
         this.clearTimeout();
         this._escapeNumbers = !!val;

@@ -98,8 +98,11 @@ var DOM = Class("DOM", {
         }.call(this);
     },
 
-    get document() this._document || this[0] && (this[0].ownerDocument || this[0].document || this[0]),
-    set document(val) this._document = val,
+    get document() {
+        return this._document || this[0] &&
+               (this[0].ownerDocument || this[0].document || this[0]);
+    },
+    set document(val) { this._document = val; },
 
     attrHooks: {
         "": {
@@ -240,34 +243,50 @@ var DOM = Class("DOM", {
         return false;
     },
 
-    get parent() this.map(elem => elem.parentNode, this),
+    get parent() { return this.map(elem => elem.parentNode, this); },
 
-    get offsetParent() this.map(function (elem) {
-        do {
-            var parent = elem.offsetParent;
-            if (parent instanceof Ci.nsIDOMElement && DOM(parent).position != "static")
-                return parent;
-        }
-        while (parent);
-    }, this),
+    get offsetParent() {
+        return this.map(function (elem) {
+            do {
+                var parent = elem.offsetParent;
+                if (parent instanceof Ci.nsIDOMElement && DOM(parent).position != "static")
+                    return parent;
+            }
+            while (parent);
+        }, this);
+    },
 
-    get ancestors() this.all(elem => elem.parentNode),
+    get ancestors() { return this.all(elem => elem.parentNode); },
 
-    get children() this.map(elem => Array.filter(elem.childNodes,
-                                                 e => e instanceof Ci.nsIDOMElement),
-                            this),
+    get children() {
+        return this.map(
+            elem => Array.filter(elem.childNodes,
+                                 e => e instanceof Ci.nsIDOMElement),
+            this);
+    },
 
-    get contents() this.map(elem => elem.childNodes, this),
+    get contents() { return this.map(elem => elem.childNodes, this); },
 
-    get siblings() this.map(elem => Array.filter(elem.parentNode.childNodes,
-                                                 e => e != elem && e instanceof Ci.nsIDOMElement),
-                            this),
+    get siblings() {
+        return this.map(
+            elem => Array.filter(elem.parentNode.childNodes,
+                                 e => e != elem && e instanceof Ci.nsIDOMElement),
+            this);
+    },
 
-    get siblingsBefore() this.all(elem => elem.previousElementSibling),
-    get siblingsAfter() this.all(elem => elem.nextElementSibling),
+    get siblingsBefore() {
+        return this.all(elem => elem.previousElementSibling);
+    },
+    get siblingsAfter() {
+        return this.all(elem => elem.nextElementSibling);
+    },
 
-    get allSiblingsBefore() this.all(elem => elem.previousSibling),
-    get allSiblingsAfter() this.all(elem => elem.nextSibling),
+    get allSiblingsBefore() {
+        return this.all(elem => elem.previousSibling);
+    },
+    get allSiblingsAfter() {
+        return this.all(elem => elem.nextSibling);
+    },
 
     get class() {
         let self = this;
@@ -275,8 +294,8 @@ var DOM = Class("DOM", {
         return {
             toString: function () self[0].className,
 
-            get list() Array.slice(self[0].classList),
-            set list(val) self.attr("class", val.join(" ")),
+            get list() { return Array.slice(self[0].classList); },
+            set list(val) { self.attr("class", val.join(" ")); },
 
             each: function each(meth, arg) {
                 return self.each(function (elem) {
@@ -335,13 +354,15 @@ var DOM = Class("DOM", {
         };
     },
 
-    get rect() this[0] instanceof Ci.nsIDOMWindow ? { width: this[0].scrollMaxX + this[0].innerWidth,
+    get rect() {
+        return this[0] instanceof Ci.nsIDOMWindow ? { width: this[0].scrollMaxX + this[0].innerWidth,
                                                       height: this[0].scrollMaxY + this[0].innerHeight,
                                                       get right() this.width + this.left,
                                                       get bottom() this.height + this.top,
                                                       top: -this[0].scrollY,
                                                       left: -this[0].scrollX } :
-               this[0]                            ? this[0].getBoundingClientRect() : {},
+               this[0]                            ? this[0].getBoundingClientRect() : {};
+    },
 
     get viewport() {
         let node = this[0];
@@ -350,8 +371,8 @@ var DOM = Class("DOM", {
 
         if (node instanceof Ci.nsIDOMWindow)
             return {
-                get width() this.right - this.left,
-                get height() this.bottom - this.top,
+                get width() { return this.right - this.left; },
+                get height() { return this.bottom - this.top; },
                 bottom: node.innerHeight,
                 right: node.innerWidth,
                 top: 0, left: 0
@@ -362,9 +383,9 @@ var DOM = Class("DOM", {
             width: node.clientWidth,
             height: node.clientHeight,
             top: r.top + node.clientTop,
-            get bottom() this.top + this.height,
+            get bottom() { return this.top + this.height; },
             left: r.left + node.clientLeft,
-            get right() this.left + this.width
+            get right() { return this.left + this.width; }
         };
     },
 
@@ -436,12 +457,18 @@ var DOM = Class("DOM", {
         return editor;
     },
 
-    get isEditable() !!this.editor || this[0] instanceof Ci.nsIDOMElement && this.style.MozUserModify == "read-write",
+    get isEditable() {
+        return !!this.editor ||
+                 this[0] instanceof Ci.nsIDOMElement &&
+                 this.style.MozUserModify == "read-write";
+    },
 
-    get isInput() isinstance(this[0], [Ci.nsIDOMHTMLInputElement,
-                                       Ci.nsIDOMHTMLTextAreaElement,
-                                       Ci.nsIDOMXULTextBoxElement])
-                    && this.isEditable,
+    get isInput() {
+         return isinstance(this[0], [Ci.nsIDOMHTMLInputElement,
+                                     Ci.nsIDOMHTMLTextAreaElement,
+                                     Ci.nsIDOMXULTextBoxElement])
+                && this.isEditable;
+    },
 
     /**
      * Returns an object representing a Node's computed CSS style.
@@ -987,10 +1014,14 @@ var DOM = Class("DOM", {
                     bubbles: true, cancelable: true,
                     view: doc.defaultView,
                     detail: 1,
-                    get screenX() this.view.mozInnerScreenX
-                                + Math.max(0, this.clientX + (DOM(target || opts.target).rect.left || 0)),
-                    get screenY() this.view.mozInnerScreenY
-                                + Math.max(0, this.clientY + (DOM(target || opts.target).rect.top || 0)),
+                    get screenX() {
+                        return this.view.mozInnerScreenX
+                             + Math.max(0, this.clientX + (DOM(target || opts.target).rect.left || 0));
+                    },
+                    get screenY() {
+                        return this.view.mozInnerScreenY
+                             + Math.max(0, this.clientY + (DOM(target || opts.target).rect.top || 0));
+                    },
                     clientX: 0,
                     clientY: 0,
                     ctrlKey: false, altKey: false, shiftKey: false, metaKey: false,
@@ -1847,8 +1878,8 @@ var DOM = Class("DOM", {
 
                 let res = {
                     iterateNext: function () result.iterateNext(),
-                    get resultType() result.resultType,
-                    get snapshotLength() result.snapshotLength,
+                    get resultType() { return result.resultType; },
+                    get snapshotLength() { return result.snapshotLength; },
                     snapshotItem: function (i) result.snapshotItem(i)
                 };
                 if (asIterator)

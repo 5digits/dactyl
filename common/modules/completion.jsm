@@ -219,9 +219,11 @@ var CompletionContext = Class("CompletionContext", {
         delete this.__title;
         return this._title = val;
     },
-    get title() this.__title,
+    get title() { return this.__title; },
 
-    get activeContexts() this.contextList.filter(function f(c) c.items.length),
+    get activeContexts() {
+        return this.contextList.filter(function f(c) c.items.length);
+    },
 
     // Temporary
     /**
@@ -248,17 +250,19 @@ var CompletionContext = Class("CompletionContext", {
             this.cache.allItemsResult = memoize({
                 start: minStart,
 
-                get longestSubstring() self.longestAllSubstring,
+                get longestSubstring() { return self.longestAllSubstring; },
 
-                get items() Ary.flatten(self.activeContexts.map(function m(context) {
-                    let prefix = self.value.substring(minStart, context.offset);
+                get items() {
+                    return Ary.flatten(self.activeContexts.map(function m(context) {
+                        let prefix = self.value.substring(minStart, context.offset);
 
-                    return context.items.map(function m(item) ({
-                        text: prefix + item.text,
-                        result: prefix + item.result,
-                        __proto__: item
+                        return context.items.map(function m(item) ({
+                            text: prefix + item.text,
+                            result: prefix + item.result,
+                            __proto__: item
+                        }));
                     }));
-                }))
+                }
             });
 
             return this.cache.allItemsResult;
@@ -292,13 +296,13 @@ var CompletionContext = Class("CompletionContext", {
         return this.allSubstrings.reduce(function r(a, b) a.length > b.length ? a : b, "");
     },
 
-    get caret() this._caret - this.offset,
-    set caret(val) this._caret = val + this.offset,
+    get caret() { return this._caret - this.offset; },
+    set caret(val) { this._caret = val + this.offset; },
 
-    get compare() this._compare || function compare() 0,
-    set compare(val) this._compare = val,
+    get compare() { return this._compare || function compare() 0; },
+    set compare(val) { this._compare = val; },
 
-    get completions() this._completions || [],
+    get completions() { return this._completions || []; },
     set completions(items) {
         if (items && isArray(items.array))
             items = items.array;
@@ -320,24 +324,29 @@ var CompletionContext = Class("CompletionContext", {
             util.trapErrors("onUpdate", this);
     },
 
-    get createRow() this._createRow || template.completionRow, // XXX
-    set createRow(createRow) this._createRow = createRow,
+    get createRow() { return this._createRow || template.completionRow; }, // XXX
+    set createRow(createRow) { return this._createRow = createRow; },
 
-    get filterFunc() this._filterFunc || util.identity,
-    set filterFunc(val) this._filterFunc = val,
+    get filterFunc() { return this._filterFunc || util.identity; },
+    set filterFunc(val) { this._filterFunc = val; },
 
-    get filter() this._filter != null ? this._filter : this.value.substr(this.offset, this.caret),
+    get filter() {
+        return this._filter != null ? this._filter
+                                    : this.value.substr(this.offset, this.caret);
+    },
     set filter(val) {
         delete this.ignoreCase;
         return this._filter = val;
     },
 
-    get format() ({
-        anchored: this.anchored,
-        title: this.title,
-        keys: this.keys,
-        process: this.process
-    }),
+    get format() {
+        return {
+            anchored: this.anchored,
+            title: this.title,
+            keys: this.keys,
+            process: this.process
+        };
+    },
     set format(format) {
         this.anchored = format.anchored,
         this.title = format.title || this.title;
@@ -350,8 +359,8 @@ var CompletionContext = Class("CompletionContext", {
      * The message displayed at the head of the completions for the
      * current context.
      */
-    get message() this._message || (this.waitingForTab && this.hasItems !== false ? _("completion.waitingFor", "<Tab>") : null),
-    set message(val) this._message = val,
+    get message() { return this._message || (this.waitingForTab && this.hasItems !== false ? _("completion.waitingFor", "<Tab>") : null); },
+    set message(val) { this._message = val; },
 
     /**
      * The prototype object for items returned by {@link items}.
@@ -387,7 +396,7 @@ var CompletionContext = Class("CompletionContext", {
      * must be regenerated. May be set to true to invalidate the current
      * completions.
      */
-    get regenerate() this._generate && (!this.completions || !this.itemCache[this.key] || this._cache.offset != this.offset),
+    get regenerate() { return this._generate && (!this.completions || !this.itemCache[this.key] || this._cache.offset != this.offset); },
     set regenerate(val) { if (val) delete this.itemCache[this.key]; },
 
     /**
@@ -396,7 +405,7 @@ var CompletionContext = Class("CompletionContext", {
      * completions are linked to the value in {@link #key} and may be
      * invalidated by setting the {@link #regenerate} property.
      */
-    get generate() this._generate || null,
+    get generate() { return this._generate || null; },
     set generate(arg) {
         this.hasItems = true;
         this._generate = arg;
@@ -900,13 +909,13 @@ var Completion = Module("completion", {
     init: function init() {
     },
 
-    get setFunctionCompleter() JavaScript.setCompleter, // Backward compatibility
+    get setFunctionCompleter() { return JavaScript.setCompleter; }, // Backward compatibility
 
     Local: function Local(dactyl, modules, window) ({
         urlCompleters: {},
 
-        get modules() modules,
-        get options() modules.options,
+        get modules() { return modules; },
+        get options() { return modules.options; },
 
         // FIXME
         _runCompleter: function _runCompleter(name, filter, maxItems, ...args) {
@@ -1054,7 +1063,7 @@ var Completion = Module("completion", {
                         for (i of util.range(0, result.matchCount))
                     ];
                 }),
-                get onUpdateSearchResult() this.onSearchResult
+                get onUpdateSearchResult() { return this.onSearchResult; }
             });
             running[provider] = true;
         }
@@ -1118,7 +1127,7 @@ var Completion = Module("completion", {
                 return init.superapply(this, arguments);
             },
 
-            get options() this.modules.options
+            get options() { return this.modules.options; }
         });
     },
     commands: function initCommands(dactyl, modules, window) {

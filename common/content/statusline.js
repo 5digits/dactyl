@@ -110,7 +110,9 @@ var StatusLine = Module("statusline", {
         })(prepend);
 
         overlay.overlayWindow(window, {
-            objects: this.widgets = { get status() this.container },
+            objects: this.widgets = {
+                get status() { return this.container; }
+            },
             prepend: prepend
         });
 
@@ -125,7 +127,9 @@ var StatusLine = Module("statusline", {
             CustomizableUI.unregisterArea(this.statusBar.id, false);
     },
 
-    get visible() !this.statusBar.collapsed && !this.statusBar.hidden,
+    get visible() {
+        return !this.statusBar.collapsed && !this.statusBar.hidden;
+    },
 
     signals: {
         "browser.locationChange": function (webProgress, request, uri) {
@@ -223,7 +227,7 @@ var StatusLine = Module("statusline", {
 
         highlight.highlightNode(this.statusBar, this.baseGroup + highlightGroup[type]);
     },
-    get security() this._security,
+    get security() { return this._security; },
 
     // update all fields of the statusline
     update: function update() {
@@ -246,7 +250,7 @@ var StatusLine = Module("statusline", {
      *
      * @param {string} url The URL to display.
      */
-    get status() this._uri,
+    get status() { return this._uri; },
     set status(uri) {
         let modified = "";
         let url = uri;
@@ -285,7 +289,7 @@ var StatusLine = Module("statusline", {
         this._status = uri;
     },
 
-    get bookmarked() this._bookmarked,
+    get bookmarked() { return this._bookmarked; },
     set bookmarked(val) {
         this._bookmarked = val;
         if (this.status)
@@ -309,8 +313,10 @@ var StatusLine = Module("statusline", {
      * @param {string} buffer
      * @optional
      */
-    get inputBuffer() this.widgets.inputbuffer.value,
-    set inputBuffer(val) this.widgets.inputbuffer.value = val == null ? "" : val,
+    get inputBuffer() { return this.widgets.inputbuffer.value; },
+    set inputBuffer(val) {
+        this.widgets.inputbuffer.value = val == null ? "" : val;
+    },
     updateInputBuffer: deprecated("statusline.inputBuffer", function updateInputBuffer(val) { this.inputBuffer = val; }),
 
     /**

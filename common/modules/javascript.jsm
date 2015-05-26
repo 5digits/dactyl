@@ -448,7 +448,7 @@ var JavaScript = Module("javascript", {
         return this.evalled(key);
     },
 
-    get cache() this.context.cache,
+    get cache() { return this.context.cache; },
 
     complete: function _complete(context) {
         const self = this;
@@ -695,7 +695,7 @@ var JavaScript = Module("javascript", {
     },
     completion: function (dactyl, modules, window) {
         update(modules.completion, {
-            get javascript() modules.javascript.bound.complete,
+            get javascript() { return modules.javascript.bound.complete; },
             javascriptCompleter: JavaScript // Backwards compatibility
         });
     },
@@ -808,7 +808,7 @@ var JavaScript = Module("javascript", {
 
             mode: modes.REPL,
 
-            get completionList() this.widgets.statusbar.commandline.id,
+            get completionList() { return this.widgets.statusbar.commandline.id; },
 
             accept: function accept() {
                 dactyl.trapErrors(function () { this.repl.addOutput(this.command); }, this);

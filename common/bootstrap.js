@@ -69,15 +69,15 @@ let JSMLoader = {
 
     SANDBOX: Cu.nukeSandbox,
 
-    get addon() addon,
+    get addon() { return addon; },
 
     currentModule: null,
 
     factories: [],
 
-    get name() name,
+    get name() { return name; },
 
-    get module() moduleName,
+    get module() { return moduleName; },
 
     globals: {},
     modules: {},
@@ -192,7 +192,7 @@ let JSMLoader = {
     },
 
     // Cuts down on stupid, fscking url mangling.
-    get loadSubScript() bootstrap_jsm.loadSubScript,
+    get loadSubScript() { return bootstrap_jsm.loadSubScript; },
 
     cleanup: function cleanup() {
         for (let factory of this.factories.splice(0))

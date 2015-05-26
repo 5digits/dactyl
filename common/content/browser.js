@@ -18,7 +18,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         util.addObserver(this);
 
         this._unoverlay = overlay.overlayObject(FullZoom, {
-            get siteSpecific() false,
+            get siteSpecific() { return false; },
             set siteSpecific(val) {}
         });
 

@@ -33,9 +33,13 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         this.branches = memoize({
             __proto__: this,
-            get original() this.constructor(this.ORIGINAL + this.root),
-            get restore() this.constructor(this.RESTORE + this.root),
-            get saved() this.constructor(this.SAVED + this.root)
+            get original() {
+                return this.constructor(this.ORIGINAL + this.root);
+            },
+            get restore() {
+                return this.constructor(this.RESTORE + this.root);
+            },
+            get saved() { return this.constructor(this.SAVED + this.root); }
         });
 
         if (!defaults)
@@ -90,7 +94,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     /**
      * Returns the full name of this object's preference branch.
      */
-    get root() this.branch.root,
+    get root() { return this.branch.root; },
 
     /**
      * Returns the value of the preference *name*, or *defaultValue* if

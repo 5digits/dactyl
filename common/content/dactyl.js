@@ -152,7 +152,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         return items;
     },
 
-    get menuItems() this.getMenuItems(),
+    get menuItems() { return this.getMenuItems(); },
 
     // Global constants
     CURRENT_TAB: "here",
@@ -164,8 +164,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     forcePrivate: null,
     forceTarget: null,
 
-    get forceOpen() ({ background: this.forceBackground,
-                       target: this.forceTarget }),
+    get forceOpen() {
+        return { background: this.forceBackground,
+                     target: this.forceTarget };
+    },
     set forceOpen(val) {
         for (let [k, v] of iter({ background: "forceBackground", target: "forceTarget" }))
             if (k in val)
@@ -604,8 +606,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      },
 
     /** @property {Element} The currently focused element. */
-    get focusedElement() services.focus.getFocusedElementForWindow(window, true, {}),
-    set focusedElement(elem) dactyl.focus(elem),
+    get focusedElement() {
+        return services.focus.getFocusedElementForWindow(window, true, {});
+    },
+    set focusedElement(elem) { dactyl.focus(elem); },
 
     /**
      * Returns whether this Dactyl extension supports *feature*.
@@ -1067,7 +1071,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     pluginFiles: {},
 
-    get plugins() plugins,
+    get plugins() { return plugins; },
 
     setNodeVisible: function setNodeVisible(node, visible) {
         if (window.setToolbarVisibility && node.localName == "toolbar")
@@ -1116,7 +1120,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         services.appStartup.quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
     },
 
-    get assert() util.assert,
+    get assert() { return util.assert; },
 
     /**
      * Traps errors in the called function, possibly reporting them.
@@ -1213,7 +1217,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @property {[Window]} Returns an array of all the host application's
      *     open windows.
      */
-    get windows() [w for (w of overlay.windows)]
+    get windows() { return [w for (w of overlay.windows)]; }
 
 }, {
     toolbarHidden: function toolbarHidden(elem) "true" == (elem.getAttribute("autohide") ||

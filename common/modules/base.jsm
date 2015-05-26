@@ -1028,8 +1028,8 @@ Class.prototype = {
      */
     init: function c_init() {},
 
-    get instance() ({}),
-    set instance(val) Class.replaceProperty(this, "instance", val),
+    get instance() { return {}; },
+    set instance(val) { Class.replaceProperty(this, "instance", val); },
 
     withSavedValues: function withSavedValues(names, callback, self) {
         let vals = names.map(name => this[name]);
@@ -1173,7 +1173,7 @@ var closureHooks = {
         return {
             configurable: false,
             writable: false,
-            get value() self.get(target, prop)
+            get value() { return self.get(target, prop); }
         }
     }
     */
@@ -1365,7 +1365,7 @@ var StructBase = Class("StructBase", Array, {
                 this[i] = arguments[i];
     },
 
-    get toStringParams() this,
+    get toStringParams() { return this; },
 
     clone: function struct_clone() this.constructor.apply(null, this.slice()),
 

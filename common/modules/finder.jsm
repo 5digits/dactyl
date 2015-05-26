@@ -44,8 +44,10 @@ var RangeFinder = Module("rangefinder", {
                 return this.rangeFind = null;
             return find;
         },
-        set rangeFind(val) overlay.setData(this.content.document,
-                                           "range-find", val)
+        set rangeFind(val) {
+            overlay.setData(this.content.document,
+                            "range-find", val);
+        }
     }),
 
     init: function init() {
@@ -64,9 +66,9 @@ var RangeFinder = Module("rangefinder", {
         }
     },
 
-    get commandline() this.modules.commandline,
-    get modes() this.modules.modes,
-    get options() this.modules.options,
+    get commandline() { return this.modules.commandline; },
+    get modes() { return this.modules.modes; },
+    get options() { return this.modules.options; },
 
     openPrompt: function openPrompt(mode) {
         this.modules.marks.push();
@@ -256,12 +258,14 @@ var RangeFinder = Module("rangefinder", {
 
             historyKey: "find",
 
-            get prompt() this.mode === modules.modes.FIND_BACKWARD ? "?" : "/",
+            get prompt() {
+                return this.mode === modules.modes.FIND_BACKWARD ? "?" : "/";
+            },
 
-            get onCancel()  modules.rangefinder.bound.onCancel,
-            get onChange()  modules.rangefinder.bound.onChange,
-            get onHistory() modules.rangefinder.bound.onHistory,
-            get onSubmit()  modules.rangefinder.bound.onSubmit
+            get onCancel()  { return modules.rangefinder.bound.onCancel; },
+            get onChange()  { return modules.rangefinder.bound.onChange; },
+            get onHistory() { return modules.rangefinder.bound.onHistory; },
+            get onSubmit()  { return modules.rangefinder.bound.onSubmit; }
         });
     },
     mappings: function initMappings(dactyl, modules, window) {
@@ -384,17 +388,19 @@ var RangeFind = Class("RangeFind", {
         this.lastString = "";
     },
 
-    get store() overlay.getData(this.content.document, "buffer", Object),
+    get store() {
+        return overlay.getData(this.content.document, "buffer", Object);
+    },
 
-    get backward() this.finder.findBackwards,
-    set backward(val) this.finder.findBackwards = val,
+    get backward() { return this.finder.findBackwards; },
+    set backward(val) { this.finder.findBackwards = val; },
 
-    get matchCase() this.finder.caseSensitive,
-    set matchCase(val) this.finder.caseSensitive = Boolean(val),
+    get matchCase() { return this.finder.caseSensitive; },
+    set matchCase(val) { this.finder.caseSensitive = Boolean(val); },
 
-    get findString() this.lastString,
+    get findString() { return this.lastString; },
 
-    get flags() this.matchCase ? "" : "i",
+    get flags() { return this.matchCase ? "" : "i"; },
 
     get selectedRange() {
         let win = this.store.focusedFrame && this.store.focusedFrame.get() || this.content;
@@ -707,8 +713,10 @@ var RangeFind = Class("RangeFind", {
         return range;
     },
 
-    get stale() this._stale || this.baseDocument.get() != this.content.document,
-    set stale(val) this._stale = val,
+    get stale() {
+        return this._stale || this.baseDocument.get() != this.content.document;
+    },
+    set stale(val) { this._stale = val; },
 
     addListeners: function addListeners() {
         for (let range of this.ranges)
@@ -766,9 +774,12 @@ var RangeFind = Class("RangeFind", {
             }
         },
 
-        get selectionController() this.docShell
-                    .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay)
-                    .QueryInterface(Ci.nsISelectionController),
+        get selectionController() {
+            return this.docShell
+                       .QueryInterface(Ci.nsIInterfaceRequestor)
+                       .getInterface(Ci.nsISelectionDisplay)
+                       .QueryInterface(Ci.nsISelectionController);
+        },
         get selection() {
             try {
                 return this.selectionController.getSelection(Ci.nsISelectionController.SELECTION_NORMAL);

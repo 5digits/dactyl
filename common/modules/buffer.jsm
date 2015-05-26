@@ -47,9 +47,9 @@ var Buffer = Module("Buffer", {
             this.win = win;
     },
 
-    get addPageInfoSection() Buffer.bound.addPageInfoSection,
+    get addPageInfoSection() { return Buffer.bound.addPageInfoSection; },
 
-    get pageInfo() Buffer.pageInfo,
+    get pageInfo() { return Buffer.pageInfo; },
 
     // called when the active document is scrolled
     _updateBufferPosition: function _updateBufferPosition() {
@@ -73,7 +73,7 @@ var Buffer = Module("Buffer", {
     /**
      * The load context of the window bound to this buffer.
      */
-    get loadContext() sanitizer.getContext(this.win),
+    get loadContext() { return sanitizer.getContext(this.win); },
 
     /**
      * Content preference methods.
@@ -211,10 +211,12 @@ var Buffer = Module("Buffer", {
     /**
      * @property {number} True when the buffer is fully loaded.
      */
-    get loaded() apply(Math, "min",
-        this.allFrames()
-            .map(frame => ["loading", "interactive", "complete"]
-                              .indexOf(frame.document.readyState))),
+    get loaded() {
+        return apply(Math, "min",
+            this.allFrames()
+                .map(frame => ["loading", "interactive", "complete"]
+                                .indexOf(frame.document.readyState)));
+    },
 
     /**
      * @property {Object} The local state store for the currently selected
@@ -231,7 +233,7 @@ var Buffer = Module("Buffer", {
 
     localStorePrototype: memoize({
         instance: {},
-        get jumps() [],
+        get jumps() { return []; },
         jumpsIndex: -1
     }),
 
@@ -251,11 +253,11 @@ var Buffer = Module("Buffer", {
     /**
      * @property {nsIURI} The current top-level document.
      */
-    get doc() this.win.document,
+    get doc() { return this.win.document; },
 
-    get docShell() util.docShell(this.win),
+    get docShell() { return util.docShell(this.win); },
 
-    get modules() this.topWindow.dactyl.modules,
+    get modules() { return this.topWindow.dactyl.modules; },
     set modules(val) {},
 
     topWindow: Class.Memoize(function () util.topWindow(this.win)),
@@ -263,7 +265,7 @@ var Buffer = Module("Buffer", {
     /**
      * @property {nsIURI} The current top-level document's URI.
      */
-    get uri() util.newURI(this.win.location.href),
+    get uri() { return util.newURI(this.win.location.href); },
 
     /**
      * @property {nsIURI} The current top-level document's URI, sans
@@ -280,20 +282,29 @@ var Buffer = Module("Buffer", {
      * @property {nsIURI} The current top-level document's URI, sans any
      *     fragment identifier.
      */
-    get documentURI() this.doc.documentURIObject || util.newURI(this.doc.documentURI),
+    get documentURI() {
+        return this.doc.documentURIObject ||
+               util.newURI(this.doc.documentURI);
+    },
 
     /**
      * @property {string} The current top-level document's URL.
      */
-    get URL() update(new String(this.win.location.href), util.newURI(this.win.location.href)),
+    get URL() {
+        return update(new String(this.win.location.href),
+                      util.newURI(this.win.location.href));
+    },
 
     /**
      * @property {number} The buffer's height in pixels.
      */
-    get pageHeight() this.win.innerHeight,
+    get pageHeight() { return this.win.innerHeight; },
 
-    get contentViewer() this.docShell.contentViewer
-                                     .QueryInterface(Ci.nsIMarkupDocumentViewer || Ci.nsIContentViewer),
+    get contentViewer() {
+        return this.docShell.contentViewer
+                   .QueryInterface(Ci.nsIMarkupDocumentViewer ||
+                                   Ci.nsIContentViewer);
+    },
 
     /**
      * @property {number} The current browser's zoom level, as a
@@ -309,15 +320,15 @@ var Buffer = Module("Buffer", {
      * @property {boolean} Whether the current browser is using full
      *     zoom, as opposed to text zoom.
      */
-    get fullZoom() this.ZoomManager.useFullZoom,
+    get fullZoom() { return this.ZoomManager.useFullZoom; },
     set fullZoom(value) { this.setZoom(this.zoomLevel, value); },
 
-    get ZoomManager() this.topWindow.ZoomManager,
+    get ZoomManager() { return this.topWindow.ZoomManager; },
 
     /**
      * @property {string} The current document's title.
      */
-    get title() this.doc.title,
+    get title() { return this.doc.title; },
 
     /**
      * @property {number} The buffer's horizontal scroll percentile.
@@ -343,7 +354,9 @@ var Buffer = Module("Buffer", {
      * @property {{ x: number, y: number }} The buffer's current scroll position
      * as reported by {@link Buffer.getScrollPosition}.
      */
-    get scrollPosition() Buffer.getScrollPosition(this.findScrollable(0, false)),
+    get scrollPosition() {
+        return Buffer.getScrollPosition(this.findScrollable(0, false));
+    },
 
     /**
      * Returns a list of all frames in the given window or current buffer.
@@ -380,7 +393,7 @@ var Buffer = Module("Buffer", {
      *
      * @returns {string}
      */
-    get currentWord() Buffer.currentWord(this.focusedFrame),
+    get currentWord() { return Buffer.currentWord(this.focusedFrame); },
     getCurrentWord: deprecated("buffer.currentWord", function getCurrentWord() Buffer.currentWord(this.focusedFrame, true)),
 
     /**
@@ -694,13 +707,15 @@ var Buffer = Module("Buffer", {
     /**
      * @property {nsISelection} The current document's normal selection.
      */
-    get selection() this.win.getSelection(),
+    get selection() { return this.win.getSelection(); },
 
     /**
      * @property {nsISelectionController} The current document's selection
      *     controller.
      */
-    get selectionController() util.selectionController(this.focusedFrame),
+    get selectionController() {
+        return util.selectionController(this.focusedFrame);
+    },
 
     /**
      * @property {string|null} The canonical short URL for the current
@@ -1458,26 +1473,34 @@ var Buffer = Module("Buffer", {
 
                 win: elem.defaultView || elem.ownerDocument.defaultView,
 
-                get clientWidth() this.win.innerWidth,
-                get clientHeight() this.win.innerHeight,
+                get clientWidth() { return this.win.innerWidth; },
+                get clientHeight() { return this.win.innerHeight; },
 
-                get scrollWidth() this.win.scrollMaxX + this.win.innerWidth,
-                get scrollHeight() this.win.scrollMaxY + this.win.innerHeight,
+                get scrollWidth() {
+                    return this.win.scrollMaxX + this.win.innerWidth;
+                },
+                get scrollHeight() {
+                    return this.win.scrollMaxY + this.win.innerHeight;
+                },
 
-                get scrollLeftMax() this.win.scrollMaxX,
-                get scrollRightMax() this.win.scrollMaxY,
+                get scrollLeftMax() { return this.win.scrollMaxX; },
+                get scrollRightMax() { return this.win.scrollMaxY; },
 
-                get scrollLeft() this.win.scrollX,
-                set scrollLeft(val) { this.win.scrollTo(val, this.win.scrollY); },
+                get scrollLeft() { return this.win.scrollX; },
+                set scrollLeft(val) {
+                    this.win.scrollTo(val, this.win.scrollY);
+                },
 
-                get scrollTop() this.win.scrollY,
-                set scrollTop(val) { this.win.scrollTo(this.win.scrollX, val); }
+                get scrollTop() { return this.win.scrollY; },
+                set scrollTop(val) {
+                    this.win.scrollTo(this.win.scrollX, val);
+                }
             };
         return elem;
     },
 
-    get ZOOM_MIN() prefs.get("zoom.minPercent"),
-    get ZOOM_MAX() prefs.get("zoom.maxPercent"),
+    get ZOOM_MIN() { return prefs.get("zoom.minPercent"); },
+    get ZOOM_MAX() { return prefs.get("zoom.maxPercent"); },
 
     setZoom: deprecated("buffer.setZoom",
                         function setZoom(...args) apply(overlay.activeModules.buffer, "setZoom", args)),
@@ -2565,7 +2588,7 @@ var Buffer = Module("Buffer", {
         options.add(["pageinfo", "pa"],
             "Define which sections are shown by the :pageinfo command",
             "charlist", "gesfm",
-            { get values() values(Buffer.pageInfo).toObject() });
+            { get values() { return values(Buffer.pageInfo).toObject(); }});
 
         options.add(["scroll", "scr"],
             "Number of lines to scroll with <C-u> and <C-d> commands",

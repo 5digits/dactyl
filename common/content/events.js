@@ -90,7 +90,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
         });
     },
 
-    get wrapListener() events.bound.wrapListener
+    get wrapListener() { return events.bound.wrapListener; }
 });
 
 /**
@@ -211,7 +211,7 @@ var Events = Module("events", {
         }
     },
 
-    get listen() this.builtin.bound.listen,
+    get listen() { return this.builtin.bound.listen; },
     addSessionListener: deprecated("events.listen", { get: function addSessionListener() this.listen }),
 
     /**
@@ -248,7 +248,7 @@ var Events = Module("events", {
      * @param {string} macro The name for the macro.
      */
     _recording: null,
-    get recording() this._recording,
+    get recording() { return this._recording; },
 
     set recording(macro) {
         dactyl.assert(macro == null || /[a-zA-Z0-9]/.test(macro),
@@ -437,7 +437,11 @@ var Events = Module("events", {
         return apply(DOM.Event, "stringify", arguments);
     },
 
-    get defaultTarget() dactyl.focusedElement || content.document.body || document.documentElement,
+    get defaultTarget() {
+        return dactyl.focusedElement ||
+               content.document.body ||
+               document.documentElement;
+    },
 
     /**
      * Returns true if there's a known native key handler for the given
@@ -1097,7 +1101,7 @@ var Events = Module("events", {
                 events._macroKeys.pop();
                 events.recording = arg;
             },
-            { get arg() !modes.recording });
+            { get arg() { return !modes.recording; }});
 
         mappings.add([modes.COMMAND],
             ["@", "<play-macro>"], "Play a macro",
@@ -1140,7 +1144,7 @@ var Events = Module("events", {
                 }
             },
 
-            get active() this.stack.length,
+            get active() { return this.stack.length; },
 
             get: function get(mode, key) this.stack.mappings[key],
 
@@ -1158,7 +1162,7 @@ var Events = Module("events", {
 
                 has: function (key) this.pass.has(key) || hasOwnProperty(this.commandHive.stack.mappings, key),
 
-                get pass() (this.flush(), this.pass),
+                get pass() { this.flush(); return this.pass; },
 
                 parse: function parse() {
                     let value = parse.superapply(this, arguments);

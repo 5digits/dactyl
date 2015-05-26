@@ -40,9 +40,12 @@ update(Sheet.prototype, {
 
     remove: function () { this.hive.remove(this); },
 
-    get uri() "dactyl://style/" + this.id + "/" + this.hive.name + "/" + (this.name || ""),
+    get uri() {
+        return "dactyl://style/" + this.id + "/" +
+            this.hive.name + "/" + (this.name || "");
+    },
 
-    get enabled() this._enabled,
+    get enabled() { return this._enabled; },
     set enabled(on) {
         if (on != this._enabled || this.fullCSS != this._fullCSS) {
             if (on)
@@ -94,7 +97,7 @@ var Hive = Class("Hive", {
         this.persist = persist;
     },
 
-    get modifiable() this.name !== "system",
+    get modifiable() { return this.name !== "system"; },
 
     addRef: function (obj) {
         this.refs.push(util.weakReference(obj));
@@ -118,9 +121,11 @@ var Hive = Class("Hive", {
 
     "@@iterator": function () iter(this.sheets),
 
-    get sites() Ary(this.sheets).map(s => s.sites)
-                                .flatten()
-                                .uniq().array,
+    get sites() {
+        return Ary(this.sheets).map(s => s.sites)
+                               .flatten()
+                               .uniq().array;
+    },
 
     /**
      * Add a new style sheet.
@@ -503,7 +508,8 @@ var Styles = Module("Styles", {
         }),
 
     patterns: memoize({
-        get property() util.regexp(literal(function () /*
+        get property() {
+            return util.regexp(literal(function () /*
                 (?:
                     (?P<preSpace> <space>*)
                     (?P<name> [-a-z]*)
@@ -514,36 +520,43 @@ var Styles = Module("Styles", {
                     )?
                 )
                 (?P<postSpace> <space>* (?: ; | $) )
-            */$), "gix", this),
+            */$), "gix", this);
+        },
 
-        get function() util.regexp(literal(function () /*
+        get function() {
+            return util.regexp(literal(function () /*
                 (?P<function>
                     \s* \( \s*
                         (?: <string> | [^)]*  )
                     \s* (?: \) | $)
                 )
-            */$), "gx", this),
+            */$), "gx", this);
+        },
 
         space: /(?: \s | \/\* .*? \*\/ )/,
 
-        get string() util.regexp(literal(function () /*
+        get string() {
+            return util.regexp(literal(function () /*
                 (?P<string>
                     " (?:[^\\"]|\\.)* (?:"|$) |
                     ' (?:[^\\']|\\.)* (?:'|$)
                 )
-            */$), "gx", this),
+            */$), "gx", this);
+        },
 
-        get token() util.regexp(literal(function () /*
-            (?P<token>
-                (?P<word> [-\w]+)
-                <function>?
-                \s*
-                | (?P<important> !important\b)
-                | \s* <string> \s*
-                | <space>+
-                | [^;}\s]+
-            )
-        */$), "gix", this)
+        get token() {
+            return util.regexp(literal(function () /*
+                (?P<token>
+                    (?P<word> [-\w]+)
+                    <function>?
+                    \s*
+                    | (?P<important> !important\b)
+                    | \s* <string> \s*
+                    | <space>+
+                    | [^;}\s]+
+                )
+            */$), "gix", this);
+        }
     }),
 
     /**
@@ -713,9 +726,9 @@ var Styles = Module("Styles", {
                     this.hive = styles.addHive(group.name, this, this.persist);
                 },
 
-                get names() this.hive.names,
-                get sheets() this.hive.sheets,
-                get sites() this.hive.sites,
+                get names() { return this.hive.names; },
+                get sheets() { return this.hive.sheets; },
+                get sites() { return this.hive.sites; },
 
                 __noSuchMethod__: function __noSuchMethod__(meth, args) {
                     return apply(this.hive, meth, args);

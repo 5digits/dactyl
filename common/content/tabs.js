@@ -88,7 +88,9 @@ var Tabs = Module("tabs", {
                         document).appendTo(img.parentNode);
 
                     update(tab, {
-                        get dactylOrdinal() Number(dom.nodes.icon.value),
+                        get dactylOrdinal() {
+                            return Number(dom.nodes.icon.value);
+                        },
                         set dactylOrdinal(i) {
                             dom.nodes.icon.value = dom.nodes.label.textContent = i;
                             this.setAttribute("dactylOrdinal", i);
@@ -109,13 +111,18 @@ var Tabs = Module("tabs", {
         this.updateSelectionHistory();
     },
 
-    get allTabs() Array.slice(config.tabbrowser.tabContainer.childNodes),
+    get allTabs() {
+        return Array.slice(config.tabbrowser.tabContainer.childNodes);
+    },
 
     /**
      * @property {Object} The previously accessed tab or null if no tab
      *     other than the current one has been accessed.
      */
-    get alternate() this.allTabs.indexOf(this._alternates[1]) > -1 ? this._alternates[1] : null,
+    get alternate() {
+        let alt = this._alternates[1];
+        return this.allTabs.indexOf(alt) > -1 ? alt : null;
+    },
 
     /**
      * @property {Iterator(Object)} A genenerator that returns all browsers
@@ -131,14 +138,17 @@ var Tabs = Module("tabs", {
     /**
      * @property {number} The number of tabs in the current window.
      */
-    get count() config.tabbrowser.mTabs.length,
+    get count() { return config.tabbrowser.mTabs.length; },
 
     /**
      * @property {Object} The local options store for the current tab.
      */
-    get options() this.localStore.options,
+    get options() { return this.localStore.options; },
 
-    get visibleTabs() config.tabbrowser.visibleTabs || this.allTabs.filter(tab => !tab.hidden),
+    get visibleTabs() {
+        return config.tabbrowser.visibleTabs ||
+               this.allTabs.filter(tab => !tab.hidden);
+    },
 
     /**
      * Returns the local state store for the tab at the specified *tabIndex*.
@@ -163,18 +173,20 @@ var Tabs = Module("tabs", {
      * @property {Object} The local state store for the currently selected
      *     tab.
      */
-    get localStore() this.getLocalStore(),
+    get localStore() { return this.getLocalStore(); },
 
     localStorePrototype: memoize({
         instance: {},
-        get options() ({})
+        get options() { return {}; }
     }),
 
     /**
      * @property {[Object]} The array of closed tabs for the current
      *     session.
      */
-    get closedTabs() JSON.parse(services.sessionStore.getClosedTabData(window)),
+    get closedTabs() {
+        return JSON.parse(services.sessionStore.getClosedTabData(window));
+    },
 
     /**
      * Clones the specified *tab* and append it to the tab list.

@@ -68,13 +68,13 @@ var MOW = Module("mow", {
 
     __noSuchMethod__: function (meth, args) apply(Buffer, meth, [this.body].concat(args)),
 
-    get widget() this.widgets.multilineOutput,
+    get widget() { return this.widgets.multilineOutput; },
 
     widgets: Class.Memoize(function widgets() commandline.widgets),
 
     body: Class.Memoize(function body() this.widget.contentDocument.documentElement),
-    get document() this.widget.contentDocument,
-    get window() this.widget.contentWindow,
+    get document() { return this.widget.contentDocument; },
+    get window() { return this.widget.contentWindow; },
 
     /**
      * Display a multi-line message.

@@ -50,10 +50,15 @@ var Map = Class("Map", {
     /** @property {[string]} All of this mapping's names (key sequences). */
     names: Class.Memoize(function () this._keys.map(k => DOM.Event.canonicalKeys(k))),
 
-    get toStringParams() [this.modes.map(m => m.name),
-                          this.names.map(JSON.stringify)],
+    get toStringParams() {
+        return [this.modes.map(m => m.name),
+                this.names.map(JSON.stringify)];
+    },
 
-    get identifier() [this.modes[0].name, this.hive.prefix + this.names[0]].join("."),
+    get identifier() {
+        return [this.modes[0].name, this.hive.prefix + this.names[0]]
+                   .join(".");
+    },
 
     /** @property {number} A unique ID for this mapping. */
     id: null,
@@ -107,7 +112,7 @@ var Map = Class("Map", {
      */
     hasName: function (name) this.keys.indexOf(name) >= 0,
 
-    get keys() Ary.flatten(this.names.map(mappings.bound.expand)),
+    get keys() { return Ary.flatten(this.names.map(mappings.bound.expand)); },
 
     /**
      * Execute the action for this mapping.
@@ -286,8 +291,8 @@ var MapHive = Class("MapHive", Contexts.Hive, {
 
         "@@iterator": function () Ary.iterValues(this),
 
-        get candidates() this.states.candidates,
-        get mappings() this.states.mappings,
+        get candidates() { return this.states.candidates; },
+        get mappings() { return this.states.mappings; },
 
         add: function (map) {
             this.push(map);
@@ -349,9 +354,9 @@ var Mappings = Module("mappings", {
 
     repeat: Modes.boundProperty(),
 
-    get allHives() contexts.allGroups.mappings,
+    get allHives() { return contexts.allGroups.mappings; },
 
-    get userHives() this.allHives.filter(h => h !== this.builtin),
+    get userHives() { return this.allHives.filter(h => h !== this.builtin); },
 
     expandLeader: deprecated("your brain", function expandLeader(keyString) keyString),
 
@@ -557,7 +562,7 @@ var Mappings = Module("mappings", {
                             count: args["-count"] || !(args["-ex"] || args["-javascript"]),
                             noremap: args["-builtin"],
                             persist: !args["-nopersist"],
-                            get rhs() String(this.action),
+                            get rhs() { return String(this.action); },
                             silent: args["-silent"]
                         });
                 }

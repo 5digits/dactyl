@@ -68,24 +68,29 @@ var Download = Class("Download", {
         return this;
     },
 
-    get active() !this.stopped,
+    get active() { return !this.stopped; },
 
-    get targetFile() File(this.download.target.path),
+    get targetFile() { return File(this.download.target.path); },
 
-    get displayName() this.targetFile.leafName,
+    get displayName() { return this.targetFile.leafName; },
 
-    get status() states[this.state],
+    get status() { return states[this.state]; },
 
     inState: function inState(states) states.indexOf(this.status) >= 0,
 
     allowedCommands: Class.Memoize(function () {
         let self = this;
         return {
-            get delete() !self.active && (self.targetFile.exists() || self.hasPartialData),
-            get launch() self.targetFile.exists() && self.succeeded,
-            get stop()  self.active,
-            get remove() !self.active,
-            get resume() self.canceled
+            get delete() {
+                return !self.active &&
+                       (self.targetFile.exists() || self.hasPartialData);
+            },
+            get launch() {
+                return self.targetFile.exists() && self.succeeded;
+            },
+            get stop()  { return self.active; },
+            get remove() { return !self.active; },
+            get resume() { return self.canceled; }
         };
     }),
 
@@ -318,7 +323,9 @@ var DownloadList = Class("DownloadList",
     allowedCommands: Class.Memoize(function () {
         let self = this;
         return {
-            get clear() iter(self.downloads.values()).some(dl => dl.allowedCommands.remove)
+            get clear() {
+                return iter(self.downloads.values()).some(dl => dl.allowedCommands.remove);
+            }
         };
     }),
 
@@ -482,7 +489,9 @@ var Downloads_ = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
                         names: ["-sort", "-s"],
                         description: "Sort order (see 'downloadsort')",
                         type: CommandOption.LIST,
-                        get default() modules.options["downloadsort"],
+                        get default() {
+                            return modules.options["downloadsort"];
+                        },
                         completer: function (context, args) modules.options.get("downloadsort").completer(context, { values: args["-sort"] }),
                         validator: function (value) modules.options.get("downloadsort").validator(value)
                     }

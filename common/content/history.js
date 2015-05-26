@@ -9,9 +9,9 @@
 var History = Module("history", {
     SORT_DEFAULT: "-date",
 
-    get format() bookmarks.format,
+    get format() { return bookmarks.format; },
 
-    get service() services.history,
+    get service() { return services.history; },
 
     get: function get(filter, maxItems, sort=this.SORT_DEFAULT) {
         if (isString(filter))
@@ -310,7 +310,7 @@ var History = Module("history", {
                     jumps = jumps.locations.map(l => ({
                         __proto__: l,
                         title: buffer.title,
-                        get URI() util.newURI(this.location)
+                        get URI() { return util.newURI(this.location); }
                     }));
                 }
 

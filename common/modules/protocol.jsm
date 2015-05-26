@@ -100,8 +100,8 @@ function ProtocolBase() {
     };
 }
 ProtocolBase.prototype = {
-    get contractID()        services.PROTOCOL + this.scheme,
-    get classDescription()  this.scheme + " utility protocol",
+    get contractID()        { return services.PROTOCOL + this.scheme; },
+    get classDescription()  { return this.scheme + " utility protocol"; },
     QueryInterface:         XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
 
     purge: function purge() {

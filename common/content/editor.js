@@ -26,8 +26,14 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             });
     },
 
-    get registers() storage.newMap("registers", { privateData: true, store: true }),
-    get registerRing() storage.newArray("register-ring", { privateData: true, store: true }),
+    get registers() {
+        return storage.newMap("registers",
+                              { privateData: true, store: true });
+    },
+    get registerRing() {
+        return storage.newArray("register-ring",
+                                { privateData: true, store: true });
+    },
 
     skipSave: false,
 
@@ -118,10 +124,10 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         }
     },
 
-    get isCaret() modes.getStack(1).main == modes.CARET,
-    get isTextEdit() modes.getStack(1).main == modes.TEXT_EDIT,
+    get isCaret() { return modes.getStack(1).main == modes.CARET; },
+    get isTextEdit() { return modes.getStack(1).main == modes.TEXT_EDIT; },
 
-    get editor() DOM(this.element).editor,
+    get editor() { return DOM(this.element).editor; },
 
     getController: function getController(cmd) {
         let controllers = this.element && this.element.controllers;
@@ -130,8 +136,10 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         return controllers.getControllerForCommand(cmd || "cmd_beginLine");
     },
 
-    get selection() this.editor && this.editor.selection || null,
-    get selectionController() this.editor && this.editor.selectionController || null,
+    get selection() { return this.editor && this.editor.selection || null; },
+    get selectionController() {
+        return this.editor && this.editor.selectionController || null;
+    },
 
     deselect: function () {
         if (this.selection && this.selection.focusNode)
@@ -156,9 +164,11 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             this.selection.addRange(range);
     },
 
-    get selectedText() String(this.selection),
+    get selectedText() { return String(this.selection); },
 
-    get preserveSelection() this.editor && !this.editor.shouldTxnSetSelection,
+    get preserveSelection() {
+        return this.editor && !this.editor.shouldTxnSetSelection;
+    },
     set preserveSelection(val) {
         if (this.editor)
             this.editor.setShouldTxnSetSelection(!val);

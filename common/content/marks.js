@@ -28,12 +28,16 @@ var Marks = Module("marks", {
      * @property {Array} Returns all marks, both local and URL, in a sorted
      *     array.
      */
-    get all() iter(this._localMarks.get(this.localURI) || {},
-                   this._urlMarks
-                  ).sort((a, b) => String.localeCompare(a[0], b[0]))
-                   .toArray(),
+    get all() {
+        return iter(this._localMarks.get(this.localURI) || {},
+                    this._urlMarks
+                   ).sort((a, b) => String.localeCompare(a[0], b[0]))
+                    .toArray();
+    },
 
-    get localURI() buffer.focusedFrame.document.documentURI.replace(/#.*/, ""),
+    get localURI() {
+        return buffer.focusedFrame.document.documentURI.replace(/#.*/, "");
+    },
 
     Mark: function Mark(params={}) {
         let win = buffer.focusedFrame;

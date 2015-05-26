@@ -30,7 +30,7 @@ var Binding = Class("Binding", {
         else
             this.removeAttribute("collapsed");
     },
-    get collapsed() !!this.getAttribute("collapsed"),
+    get collapsed() { return !!this.getAttribute("collapsed"); },
 
     __noSuchMethod__: Class.Property({
         configurable: true,
@@ -103,7 +103,10 @@ var Template = Module("Template", {
                 this.target = params.commandTarget;
             },
 
-            get command() this.getAttribute("command") || this.getAttribute("key"),
+            get command() {
+                return this.getAttribute("command") ||
+                       this.getAttribute("key");
+            },
 
             events: {
                 "click": function onClick(event) {

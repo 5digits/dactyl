@@ -70,7 +70,9 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
  * @instance autocommands
  */
 var AutoCommands = Module("autocommands", {
-    get activeHives() contexts.allGroups.autocmd.filter(h => h._store.length),
+    get activeHives() {
+        return contexts.allGroups.autocmd.filter(h => h._store.length);
+    },
 
     add: deprecated("group.autocmd.add", { get: function add() autocommands.user.bound.add }),
     get: deprecated("group.autocmd.get", { get: function get() autocommands.user.bound.get }),

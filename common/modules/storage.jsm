@@ -25,7 +25,7 @@ var StoreBase = Class("StoreBase", {
 
     fireEvent: function (event, arg) { storage.fireEvent(this.name, event, arg); },
 
-    get serial() JSON.stringify(this._object, this.replacer),
+    get serial() { return JSON.stringify(this._object, this.replacer); },
 
     init: function init(name, store, load, options) {
         this._load = load;
@@ -76,7 +76,7 @@ var StoreBase = Class("StoreBase", {
 var ArrayStore = Class("ArrayStore", StoreBase, {
     _constructor: Array,
 
-    get length() this._object.length,
+    get length() { return this._object.length; },
 
     set: function set(index, value, quiet) {
         var orig = this._object[index];
@@ -353,7 +353,7 @@ var Storage = Module("Storage", {
     },
 
     _privateMode: false,
-    get privateMode() this._privateMode,
+    get privateMode() { return this._privateMode; },
     set privateMode(enabled) {
         this._privateMode = Boolean(enabled);
 
@@ -452,7 +452,7 @@ var File = Class("File", {
         return file.QueryInterface(Ci.nsILocalFile);
     }),
 
-    get async() AsyncFile(this),
+    get async() { return AsyncFile(this); },
 
     charset: Class.Memoize(() => File.defaultEncoding),
 
@@ -493,15 +493,21 @@ var File = Class("File", {
         return this.constructor(newPath, null, this.charset);
     },
 
-    get fileName() OS.Path.basename(this.path),
+    get fileName() { return OS.Path.basename(this.path); },
 
-    get parent() this.constructor(OS.Path.dirname(this.path), null, this.charset),
+    get parent() {
+        return this.constructor(OS.Path.dirname(this.path),
+                                null,
+                                this.charset);
+    },
 
     /**
      * Returns an iterator for all lines in a file.
      */
-    get lines() File.readLines(services.FileInStream(this.file, -1, 0, 0),
-                               this.charset),
+    get lines() {
+        return File.readLines(services.FileInStream(this.file, -1, 0, 0),
+                              this.charset);
+    },
 
     /**
      * Reads this file's entire contents in "text" mode and returns the
@@ -834,7 +840,7 @@ var File = Class("File", {
 }
 
 var AsyncFile = Class("AsyncFile", File, {
-    get async() this,
+    get async() { return this; },
 
     /*
      * Creates a new directory, along with any parent directories which

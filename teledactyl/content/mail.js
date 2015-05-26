@@ -125,9 +125,9 @@ var Mail = Module("mail", {
         return "\"" + recipient + "\"";
     },
 
-    get currentAccount() this.currentFolder.rootFolder,
+    get currentAccount() { return this.currentFolder.rootFolder; },
 
-    get currentFolder() gFolderTreeView.getSelectedFolders()[0],
+    get currentFolder() { return gFolderTreeView.getSelectedFolders()[0]; },
 
     /** @property {[nsISmtpServer]} The list of configured SMTP servers. */
     get smtpServers() {

@@ -80,12 +80,12 @@ const Player = Module("player", {
     },
 
     /** @property {sbIMediaListView} The current media list view. @private */
-    get _currentView() SBGetBrowser().currentMediaListView,
+    get _currentView() { return SBGetBrowser().currentMediaListView; },
 
     /**
      * @property {number} The player volume in the range 0.0-1.0.
      */
-    get volume() gMM.volumeControl.volume,
+    get volume() { return gMM.volumeControl.volume; },
     set volume(value) {
         gMM.volumeControl.volume = value;
     },
@@ -465,11 +465,13 @@ const Player = Module("player", {
 
             historyKey: "search-view",
 
-            get prompt() this.mode === modules.modes.SEARCH_VIEW_BACKWARD ? "?" : "/",
+            get prompt() {
+                return this.mode === modules.modes.SEARCH_VIEW_BACKWARD ? "?" : "/";
+            },
 
-            get onCancel() player.closure.onSearchCancel,
-            get onChange() player.closure.onSearchKeyPress,
-            get onSubmit() player.closure.onSearchSubmit
+            get onCancel() { return player.closure.onSearchCancel; },
+            get onChange() { return player.closure.onSearchKeyPress; },
+            get onSubmit() { return player.closure.onSearchSubmit; }
         });
     },
     commands: function initCommands() {

@@ -63,9 +63,15 @@ Highlight.defaultValue("extends", function () this.defaultExtends);
 Highlight.defaultValue("value", function () this.defaultValue);
 
 update(Highlight.prototype, {
-    get base() this.baseClass != this.class && highlight.highlight[this.baseClass] || null,
+    get base() {
+        return this.baseClass != this.class &&
+               highlight.highlight[this.baseClass] ||
+               null;
+    },
 
-    get bases() Ary.compact(this.extends.map(name => highlight.get(name))),
+    get bases() {
+        return Ary.compact(this.extends.map(name => highlight.get(name)));
+    },
 
     get inheritedCSS() {
         if (this.gettingCSS)
@@ -79,9 +85,9 @@ update(Highlight.prototype, {
         }
     },
 
-    get css() this.selector + "{" + this.cssText + "}",
+    get css() { return this.selector + "{" + this.cssText + "}"; },
 
-    get cssText() this.inheritedCSS + this.value,
+    get cssText() { return this.inheritedCSS + this.value; },
 
     toString: function () "Highlight(" + this.class + ")\n\t" +
         [k + ": " + JSON.stringify(String(v))

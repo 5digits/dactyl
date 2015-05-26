@@ -224,11 +224,14 @@ var KeyProcessor = Class("KeyProcessor", {
         this.wantCount = this.main.count;
     },
 
-    get toStringParams() [this.main.name, this.hive.name],
+    get toStringParams() { return [this.main.name, this.hive.name]; },
 
     countStr: "",
     command: "",
-    get count() this.countStr ? Number(this.countStr) : this.main.params.count || null,
+    get count() {
+        return this.countStr ? Number(this.countStr)
+                             : this.main.params.count || null;
+    },
 
     append: function append(event) {
         this.events.push(event);

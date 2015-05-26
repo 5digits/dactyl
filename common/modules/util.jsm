@@ -22,7 +22,7 @@ var Magic = Class("Magic", {
         this.str = str;
     },
 
-    get message() this.str,
+    get message() { return this.str; },
 
     toString: function () this.str
 });
@@ -862,8 +862,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {Object}
      */
     intersection: function intersection(r1, r2) ({
-        get width()  this.right - this.left,
-        get height() this.bottom - this.top,
+        get width()  { return this.right  - this.left; },
+        get height() { return this.bottom - this.top; },
         left: Math.max(r1.left, r2.left),
         right: Math.min(r1.right, r2.right),
         top: Math.max(r1.top, r2.top),

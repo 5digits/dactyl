@@ -33,12 +33,14 @@ var Bookmarks = Module("bookmarks", {
         }
     },
 
-    get format() ({
-        anchored: false,
-        title: ["URL", "Info"],
-        keys: { text: "url", description: "title", icon: "icon", extra: "extra", tags: "tags", isURI: function () true },
-        process: [template.icon, template.bookmarkDescription]
-    }),
+    get format() {
+        return {
+            anchored: false,
+            title: ["URL", "Info"],
+            keys: { text: "url", description: "title", icon: "icon", extra: "extra", tags: "tags", isURI: function () true },
+            process: [template.icon, template.bookmarkDescription]
+        };
+    },
 
     // TODO: why is this a filter? --djk
     get: function get(filter, tags, maxItems, extra) {

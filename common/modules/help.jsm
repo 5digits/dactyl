@@ -215,11 +215,11 @@ var Help = Module("Help", {
             cache.flushEntry(entry, time);
     },
 
-    get data() this._data || cache.get("help.json"),
+    get data() { return this._data || cache.get("help.json"); },
 
-    get files() this.data.files,
-    get overlays() this.data.overlays,
-    get tags() this.data.tags,
+    get files() { return this.data.files; },
+    get overlays() { return this.data.overlays; },
+    get tags() { return this.data.tags; },
 
     Local: function Local(dactyl, modules, window) ({
         init: function init() {

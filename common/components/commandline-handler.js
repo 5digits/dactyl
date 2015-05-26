@@ -82,7 +82,11 @@ CommandLineHandler.prototype = {
         }
     },
 
-    get helpInfo() "  -" + config.name + " <opts>" + "             Additional options for " + config.appName + " startup\n".substr(config.name.length)
+    get helpInfo() {
+        return "  -" + config.name + " <opts>" +
+               "             Additional options for " +
+               config.appName + " startup\n".substr(config.name.length);
+    }
 };
 
 if (XPCOMUtils.generateNSGetFactory)

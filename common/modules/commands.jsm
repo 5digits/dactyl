@@ -140,13 +140,15 @@ var Command = Class("Command", {
             this.update(extraInfo);
     },
 
-    get toStringParams() [this.name, this.hive.name],
+    get toStringParams() { return [this.name, this.hive.name]; },
 
-    get identifier() this.hive.prefix + this.name,
+    get identifier() { return this.hive.prefix + this.name; },
 
-    get helpTag() ":" + this.name,
+    get helpTag() { return ":" + this.name; },
 
-    get lastCommand() this._lastCommand || this.modules.commandline.command,
+    get lastCommand() {
+        return this._lastCommand || this.modules.commandline.command;
+    },
     set lastCommand(val) { this._lastCommand = val; },
 
     /**
@@ -326,7 +328,10 @@ var Command = Class("Command", {
                 has: function AP_has(opt) hasOwnProperty(this.explicitOpts, opt)
                                        || typeof opt === "number" && hasOwnProperty(this, opt),
 
-                get literalArg() this.command.literal != null && this[this.command.literal] || "",
+                get literalArg() {
+                    let { literal } = this.command;
+                    return literal != null && this[literal] || "";
+                },
 
                 // TODO: string: Class.Memoize(function () { ... }),
 
@@ -431,8 +436,8 @@ var Command = Class("Command", {
 // Prototype.
 var Ex = Module("Ex", {
     Local: function Local(dactyl, modules, window) ({
-        get commands() modules.commands,
-        get context() modules.contexts.context
+        get commands() { return modules.commands; },
+        get context() { return modules.contexts.context; }
     }),
 
     _args: function E_args(cmd, args) {
@@ -528,7 +533,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         }
     },
 
-    get cacheKey() "commands/hives/" + this.name + ".json",
+    get cacheKey() { return "commands/hives/" + this.name + ".json"; },
 
     /** @property {Iterator(Command)} @private */
     "@@iterator": function __iterator__() {
@@ -678,13 +683,15 @@ var Commands = Module("commands", {
                     this.modules.moduleManager.initDependencies("commands");
             },
 
-            get context() contexts.context,
+            get context() { return contexts.context; },
 
-            get readHeredoc() modules.io.readHeredoc,
+            get readHeredoc() { return modules.io.readHeredoc; },
 
-            get allHives() contexts.allGroups.commands,
+            get allHives() { return contexts.allGroups.commands; },
 
-            get userHives() this.allHives.filter(h => h !== this.builtin),
+            get userHives() {
+                return this.allHives.filter(h => h !== this.builtin);
+            },
 
             /**
              * Executes an Ex command script.
@@ -1391,10 +1398,10 @@ var Commands = Module("commands", {
     },
 
     /** @property */
-    get complQuote() Commands.complQuote,
+    get complQuote() { return Commands.complQuote; },
 
     /** @property */
-    get quoteArg() Commands.quoteArg // XXX: better somewhere else?
+    get quoteArg() { return Commands.quoteArg; } // XXX: better somewhere else?
 
 }, {
     // returns [count, parsed_argument]

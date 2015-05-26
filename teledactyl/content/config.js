@@ -16,18 +16,21 @@ var Config = Module("config", ConfigBase, {
             util.overlayWindow(window, { append: <><hbox id="statusTextBox" flex=""/></> });
         },
 
-        get browser()
-            let (tabmail = document.getElementById('tabmail'))
-                tabmail && tabmail.tabInfo.length ? tabmail.getBrowserForSelectedTab()
-                                                  : document.getElementById("messagepane"),
+        get browser() {
+            return let (tabmail = document.getElementById('tabmail'))
+                       tabmail && tabmail.tabInfo.length ? tabmail.getBrowserForSelectedTab()
+                                                         : document.getElementById("messagepane");
+        },
 
         tabbrowser: {
             __proto__: Class.makeClosure.call(window.document.getElementById("tabmail")),
-            get mTabContainer() this.tabContainer,
-            get mTabs() this.tabContainer.childNodes,
-            get mCurrentTab() this.tabContainer.selectedItem,
-            get mStrip() this.tabStrip,
-            get browsers() [browser for (browser in Iterator(this.mTabs))],
+            get mTabContainer() { return this.tabContainer; },
+            get mTabs() { return this.tabContainer.childNodes; },
+            get mCurrentTab() { return this.tabContainer.selectedItem; },
+            get mStrip() { return this.tabStrip; },
+            get browsers() {
+                return [browser for (browser in Iterator(this.mTabs))];
+            },
 
             removeTab: function removeTab(tab) this.closeTab(tab),
 
@@ -39,13 +42,15 @@ var Config = Module("config", ConfigBase, {
             }
         },
 
-        get tabStip() this.tabbrowser.tabContainer,
+        get tabStip() { return this.tabbrowser.tabContainer; },
 
-        get mainWidget() this.isComposeWindow ? document.getElementById("content-frame") : window.GetThreadTree(),
+        get mainWidget() {
+            return this.isComposeWindow ? document.getElementById("content-frame") : window.GetThreadTree();
+        },
 
-        get browserModes() [modules.modes.MESSAGE],
+        get browserModes() { return [modules.modes.MESSAGE]; },
 
-        get mailModes() [modules.modes.NORMAL],
+        get mailModes() { return [modules.modes.NORMAL]; },
 
         // NOTE: as I don't use TB I have no idea how robust this is. --djk
         get outputHeight() {
