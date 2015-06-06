@@ -62,7 +62,9 @@ var CompletionContext = Class("CompletionContext", {
             ["anchored", "compare", "editor", "_filter", "filterFunc", "forceAnchored", "top"]
                 .forEach(key => self[key] = parent[key]);
 
-            self.__defineGetter__("value", function get_value() this.top.value);
+            self.__defineGetter__("value", function get_value() {
+                return this.top.value;
+            });
 
             self.offset = parent.offset;
             self.advance(offset);
@@ -88,8 +90,12 @@ var CompletionContext = Class("CompletionContext", {
             if (self != this)
                 return self;
             ["_caret", "contextList", "maxItems", "onUpdate", "selectionTypes", "tabPressed", "updateAsync", "value"].forEach(function fe(key) {
-                self.__defineGetter__(key, function () this.top[key]);
-                self.__defineSetter__(key, function (val) this.top[key] = val);
+                self.__defineGetter__(key, function () {
+                    return this.top[key];
+                });
+                self.__defineSetter__(key, function (val) {
+                    this.top[key] = val;
+                });
             });
         }
         else {
@@ -159,7 +165,7 @@ var CompletionContext = Class("CompletionContext", {
              *     changes its completion list. Only called when
              *     {@link #updateAsync} is true.
              */
-            this.onUpdate = function onUpdate() true;
+            this.onUpdate = function onUpdate() { return true; };
 
             this.runCount = 0;
 
@@ -167,12 +173,20 @@ var CompletionContext = Class("CompletionContext", {
              * @property {CompletionContext} The top-level completion context.
              */
             this.top = this;
-            this.__defineGetter__("incomplete", function get_incomplete() this._incomplete
-                || this.contextList.some(c => c.parent && c.incomplete));
-            this.__defineGetter__("waitingForTab", function get_waitingForTab() this._waitingForTab
-                || this.contextList.some(c => c.parent && c.waitingForTab));
-            this.__defineSetter__("incomplete", function get_incomplete(val) { this._incomplete = val; });
-            this.__defineSetter__("waitingForTab", function get_waitingForTab(val) { this._waitingForTab = val; });
+            this.__defineGetter__("incomplete", function get_incomplete() {
+                return this._incomplete ||
+                       this.contextList.some(c => c.parent && c.incomplete);
+            });
+            this.__defineGetter__("waitingForTab", function get_waitingForTab() {
+                return this._waitingForTab ||
+                       this.contextList.some(c => c.parent && c.waitingForTab);
+            });
+            this.__defineSetter__("incomplete", function get_incomplete(val) {
+                this._incomplete = val;
+            });
+            this.__defineSetter__("waitingForTab", function get_waitingForTab(val) {
+                this._waitingForTab = val;
+            });
             this.reset();
         }
         /**
@@ -211,9 +225,11 @@ var CompletionContext = Class("CompletionContext", {
         return this;
     },
 
-    __title: Class.Memoize(function __title() this._title.map(s =>
-                typeof s == "string" ? messages.get("completion.title." + s, s)
-                                     : s)),
+    __title: Class.Memoize(function __title() {
+        return this._title.map(s =>
+            typeof s == "string" ? messages.get("completion.title." + s, s)
+                                 : s);
+    }),
 
     set title(val) {
         delete this.__title;
@@ -222,7 +238,9 @@ var CompletionContext = Class("CompletionContext", {
     get title() { return this.__title; },
 
     get activeContexts() {
-        return this.contextList.filter(function f(c) c.items.length);
+        return this.contextList.filter(function f(c) {
+            return c.items.length;
+        });
     },
 
     // Temporary
@@ -238,12 +256,17 @@ var CompletionContext = Class("CompletionContext", {
         let self = this;
 
         try {
-            let allItems = this.contextList.map(function m(context) context.hasItems && context.items.length);
+            let allItems = this.contextList.map(function m(context) {
+                return context.hasItems && context.items.length;
+            });
             if (this.cache.allItems && Ary.equals(this.cache.allItems, allItems))
                 return this.cache.allItemsResult;
             this.cache.allItems = allItems;
 
-            let minStart = apply(Math, "min", this.activeContexts.map(function m(c) c.offset));
+            let minStart = apply(Math, "min",
+                                 this.activeContexts.map(function m(c) {
+                                     return c.offset;
+                                 }));
             if (minStart == Infinity)
                 minStart = 0;
 
@@ -256,11 +279,13 @@ var CompletionContext = Class("CompletionContext", {
                     return Ary.flatten(self.activeContexts.map(function m(context) {
                         let prefix = self.value.substring(minStart, context.offset);
 
-                        return context.items.map(function m(item) ({
-                            text: prefix + item.text,
-                            result: prefix + item.result,
-                            __proto__: item
-                        }));
+                        return context.items.map(function m(item) {
+                            return {
+                                text: prefix + item.text,
+                                result: prefix + item.result,
+                                __proto__: item
+                            };
+                        });
                     }));
                 }
             });
@@ -275,18 +300,30 @@ var CompletionContext = Class("CompletionContext", {
     // Temporary
     get allSubstrings() {
         let contexts = this.activeContexts;
-        let minStart = apply(Math, "min", contexts.map(function m(c) c.offset));
+        let minStart = apply(Math, "min",
+                             contexts.map(function m(c) {
+                                 return c.offset;
+                             }));
         let lists = contexts.map(function m(context) {
             let prefix = context.value.substring(minStart, context.offset);
-            return context.substrings.map(function m(s) prefix + s);
+            return context.substrings.map(function m(s) {
+                return prefix + s;
+            });
         });
 
         /* TODO: Deal with sub-substrings for multiple contexts again.
          * Possibly.
          */
         let substrings = lists.reduce(
-                function r(res, list) res.filter(function f(str) list.some(function s_(s) s.substr(0, str.length) == str)),
-                lists.pop());
+            function r(res, list) {
+                return res.filter(function f(str) {
+                    return list.some(function s_(s) {
+                        return s.substr(0, str.length) == str;
+                    });
+                });
+            },
+            lists.pop());
+
         if (!substrings) // FIXME: How is this undefined?
             return [];
         return Ary.uniq(Array.slice(substrings));
@@ -299,7 +336,9 @@ var CompletionContext = Class("CompletionContext", {
     get caret() { return this._caret - this.offset; },
     set caret(val) { this._caret = val + this.offset; },
 
-    get compare() { return this._compare || function compare() 0; },
+    get compare() {
+        return this._compare || function compare() { return 0; };
+    },
     set compare(val) { this._compare = val; },
 
     get completions() { return this._completions || []; },
@@ -370,10 +409,10 @@ var CompletionContext = Class("CompletionContext", {
         let res = { highlight: "" };
 
         function* result(quote) {
-            yield ["context", function p_context() self];
-            yield ["result", quote ? function p_result() quote[0] + util.trapErrors(1, quote, this.text) + quote[2]
-                                   : function p_result() this.text];
-            yield ["texts", function p_texts() Array.concat(this.text)];
+            yield ["context", function p_context() { return self; }];
+            yield ["result", quote ? function p_result() { return quote[0] + util.trapErrors(1, quote, this.text) + quote[2]; }
+                                   : function p_result() { return this.text; }];
+            yield ["texts", function p_texts() { return Array.concat(this.text); }];
         };
 
         for (let i of iter(this.keys, result(this.quote))) {
@@ -383,10 +422,16 @@ var CompletionContext = Class("CompletionContext", {
                 // reference any variables. Don't bother with eval context.
                 v = Function("i", "return i" + v);
             if (typeof v == "function")
-                res.__defineGetter__(k, function p_gf() Class.replaceProperty(this, k, v.call(this, this.item, self)));
+                res.__defineGetter__(k, function p_gf() {
+                    return Class.replaceProperty(this, k, v.call(this, this.item, self));
+                });
             else
-                res.__defineGetter__(k, function p_gp() Class.replaceProperty(this, k, this.item[v]));
-            res.__defineSetter__(k, function p_s(val) Class.replaceProperty(this, k, val));
+                res.__defineGetter__(k, function p_gp() {
+                    return Class.replaceProperty(this, k, this.item[v]);
+                });
+            res.__defineSetter__(k, function p_s(val) {
+                Class.replaceProperty(this, k, val);
+            });
         }
         return res;
     },
@@ -511,7 +556,9 @@ var CompletionContext = Class("CompletionContext", {
             // Item prototypes
             if (!this._cache.constructed) {
                 let proto = this.itemPrototype;
-                this._cache.constructed = items.map(function m(item) ({ __proto__: proto, item: item }));
+                this._cache.constructed = items.map(function m(item) {
+                    return { __proto__: proto, item: item };
+                });
             }
 
             // Filters
@@ -598,7 +645,9 @@ var CompletionContext = Class("CompletionContext", {
 
         let quote = this.quote;
         if (quote)
-            substrings = substrings.map(function m(str) quote[0] + quote[1](str));
+            substrings = substrings.map(function m(str) {
+                return quote[0] + quote[1](str);
+            });
         return this._substrings = substrings;
     },
 
@@ -658,7 +707,8 @@ var CompletionContext = Class("CompletionContext", {
         let step = start > end ? -1 : 1;
         start = Math.max(0, start || 0);
         end = Math.min(items.length, end ? end : items.length);
-        return iter.map(util.range(start, end, step), function m(i) items[i]);
+        return iter.map(util.range(start, end, step),
+                        function m(i) { return items[i]; });
     },
 
     getRow: function getRow(idx, doc) {
@@ -876,7 +926,8 @@ var CompletionContext = Class("CompletionContext", {
      */
     wait: function wait(timeout, interruptable) {
         this.allItems;
-        return util.waitFor(function wf() !this.incomplete, this, timeout, interruptable);
+        return util.waitFor(function wf() { return !this.incomplete; },
+                            this, timeout, interruptable);
     }
 }, {
     Sort: {
@@ -924,7 +975,11 @@ var Completion = Module("completion", {
             let res = apply(context, "fork", ["run", 0, this, name].concat(args));
             if (res) {
                 if (Components.stack.caller.name === "runCompleter") // FIXME
-                    return { items: res.map(function m(i) ({ item: i })) };
+                    return {
+                        items: res.map(function m(i) {
+                            return { item: i };
+                        })
+                    };
                 context.contexts["/run"].completions = res;
             }
             context.wait(null, true);
@@ -933,7 +988,7 @@ var Completion = Module("completion", {
 
         runCompleter: function runCompleter(name, filter, maxItems) {
             return apply(this, "_runCompleter", arguments)
-                       .items.map(function m(i) i.item);
+                       .items.map(function m(i) { return i.item; });
         },
 
         listCompleter: function listCompleter(name, filter, maxItems, ...args) {
@@ -945,15 +1000,25 @@ var Completion = Module("completion", {
 
             let contexts = context.activeContexts;
             if (!contexts.length)
-                contexts = context.contextList.filter(function f(c) c.hasItems).slice(0, 1);
+                contexts = context.contextList
+                                  .filter(function f(c) {
+                                       return c.hasItems;
+                                  })
+                                  .slice(0, 1);
             if (!contexts.length)
                 contexts = context.contextList.slice(-1);
 
             modules.commandline.commandOutput(
                 ["div", { highlight: "Completions" },
-                    template.map(contexts, function m(context)
-                        [template.completionRow(context.title, "CompTitle"),
-                         template.map(context.items, function m(item) context.createRow(item), null, 100)])]);
+                 template.map(contexts, function m(context) {
+                    return [template.completionRow(context.title, "CompTitle"),
+                            template.map(context.items,
+                                         function m(item) {
+                                            return context.createRow(item);
+                                         },
+                                         null,
+                                         100)];
+                 })]);
         }
     }),
 
@@ -972,7 +1037,9 @@ var Completion = Module("completion", {
 
             context.quote = context.quote || ["", util.identity, ""];
             let quote = context.quote[1];
-            context.quote[1] = function quote_1(str) quote(str.replace(/!/g, escape));
+            context.quote[1] = function quote_1(str) {
+                return quote(str.replace(/!/g, escape));
+            };
         }
 
         if (this.options["urlseparator"])
@@ -1029,8 +1096,14 @@ var Completion = Module("completion", {
 
         let words = context.filter.toLowerCase().split(/\s+/g);
         context.hasItems = true;
-        context.completions = context.completions.filter(function f({ url, title })
-            words.every(function e(w) (url + " " + title).toLowerCase().indexOf(w) >= 0));
+        context.completions =
+            context.completions
+                   .filter(function f({ url, title }) {
+                        return words.every(function e(w) {
+                            return (url + " " + title)
+                                       .toLowerCase().indexOf(w) >= 0;
+                        })
+                    });
 
         context.format = this.modules.bookmarks.format;
         context.keys.extra = function k_extra(item) {
@@ -1078,9 +1151,13 @@ var Completion = Module("completion", {
         }
 
         if (tags)
-            context.filters.push(function filter_(item) tags.
-                every(function e(tag) (item.tags || []).
-                    some(function s(t) !compare(tag, t))));
+            context.filters.push(function filter_(item) {
+                return tags.every(function e(tag) {
+                    return (item.tags || []).some(function s(t) {
+                        return !compare(tag, t);
+                    });
+                });
+            });
 
         context.anchored = false;
         if (!context.title)
@@ -1095,13 +1172,18 @@ var Completion = Module("completion", {
             // accept them if all tokens match either the URL or the title.
             // Filter out all directly matching strings.
             let match = context.filters[0];
-            context.filters[0] = function filters_0(item) !match.call(this, item);
+            context.filters[0] = function filters_0(item) {
+                !match.call(this, item);
+            };
 
             // and all that don't match the tokens.
             let tokens = context.filter.split(/\s+/);
-            context.filters.push(function filter_(item) tokens.every(
-                    function e(tok) contains(item.url, tok) ||
-                                   contains(item.title, tok)));
+            context.filters.push(function filter_(item) {
+                return tokens.every(function e(tok) {
+                    return contains(item.url, tok) ||
+                           contains(item.title, tok);
+                });
+            });
 
             let re = RegExp(tokens.filter(util.identity).map(util.regexp.escape).join("|"), "g");
             function highlight(item, text, i) {
@@ -1139,7 +1221,9 @@ var Completion = Module("completion", {
                     ["div", { highlight: "Completions" },
                         template.completionRow(["Context", "Title"], "CompTitle"),
                         template.map(completion.contextList || [],
-                                     function m(item) template.completionRow(item, "CompItem"))]);
+                                     function m(item) {
+                                         return template.completionRow(item, "CompItem");
+                                     })]);
             },
             {
                 argCount: "*",
@@ -1169,7 +1253,11 @@ var Completion = Module("completion", {
                 return first == val || second == val;
             },
             has: function () {
-                let test = function test(val) this.value.some(function s(value) this.checkHas(value, val), this);
+                let test = function test(val) {
+                    return this.value.some(function s(value) {
+                        return this.checkHas(value, val)
+                    }, this);
+                };
                 return Array.some(arguments, test, this);
             }
         };

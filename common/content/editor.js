@@ -779,7 +779,9 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             context = context.fork("registers");
             context.keys = { text: util.identity, description: editor.bound.getRegister };
 
-            context.match = function (r) !this.filter || this.filter.contains(r);
+            context.match = function (r) {
+                return !this.filter || this.filter.contains(r);
+            };
 
             context.fork("clipboard", 0, this, ctxt => {
                 ctxt.match = context.match;
@@ -1327,11 +1329,12 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["~"], "Switch case of the character under the cursor and move the cursor to the right",
             function ({ count }) {
-                function munger(range)
-                    String(range).replace(/./g, c => {
+                function munger(range) {
+                    return String(range).replace(/./g, c => {
                         let lc = c.toLocaleLowerCase();
                         return c == lc ? c.toLocaleUpperCase() : lc;
                     });
+                }
 
                 var range = editor.selectedRange;
                 if (range.collapsed) {

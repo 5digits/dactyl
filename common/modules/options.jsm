@@ -272,7 +272,7 @@ var Option = Class("Option", {
     name: null,
 
     /** @property {[string]} All names by which this option is identified. */
-    names: Class.Memoize(function () this.realNames),
+    names: Class.Memoize(function () { return this.realNames; }),
 
     /**
      * @property {string} The option's data type. One of:
@@ -461,7 +461,9 @@ var Option = Class("Option", {
         re.bang = bang;
         re.result = result !== undefined ? result : !bang;
         re.key = re.bang + Option.quote(util.regexp.getSource(re), /^!|:/);
-        re.toString = function () Option.unparseRegexp(this, keepQuotes);
+        re.toString = function () {
+            return Option.unparseRegexp(this, keepQuotes);
+        };
         return re;
     },
 
@@ -705,15 +707,21 @@ var Option = Class("Option", {
                 // NOTE: Vim doesn't prepend if there's a match in the current value
                 return uniq(Array.concat(values, this.value), true);
             case "-":
-                return this.value.filter(function (item) !this.has(item), new RealSet(values));
+                return this.value.filter(function (item) {
+                    return !this.has(item), new RealSet(values);
+                });
             case "=":
                 if (invert) {
                     let old = this.value.map(String);
                     let new_ = values.map(String);
                     let map = Ary(this.value).concat(values).map(val => [String(val), val]).toObject();
 
-                    let keepValues = old.filter(function (item) !this.has(item), new RealSet(new_));
-                    let addValues  = new_.filter(function (item) !this.has(item), new RealSet(old));
+                    let keepValues = old.filter(function (item) {
+                        return !this.has(item);
+                    }, new RealSet(new_));
+                    let addValues  = new_.filter(function (item) {
+                        return !this.has(item);
+                    }, new RealSet(old));
                     return addValues.concat(keepValues).map(s => map[s]);
                 }
                 return values;
@@ -816,8 +824,9 @@ var Option = Class("Option", {
 }, this);
 
 update(BooleanOption.prototype, {
-    names: Class.Memoize(function ()
-                Ary.flatten([[name, "no" + name] for (name of this.realNames)]))
+    names: Class.Memoize(function () {
+        return Ary.flatten([[name, "no" + name] for (name of this.realNames)]);
+    })
 });
 
 var OptionHive = Class("OptionHive", Contexts.Hive, {
@@ -982,8 +991,12 @@ var Options = Module("options", {
                 memoize(this._options, this._options.length, closure);
 
                 // quickly access options with options["wildmode"]:
-                this.__defineGetter__(name, function () this._optionMap[name].value);
-                this.__defineSetter__(name, function (value) { this._optionMap[name].value = value; });
+                this.__defineGetter__(name, function () {
+                    return this._optionMap[name].value;
+                });
+                this.__defineSetter__(name, function (value) {
+                    this._optionMap[name].value = value;
+                });
             }
         };
     },

@@ -15,7 +15,9 @@ lazyRequire("overlay", ["overlay"]);
 lazyRequire("storage", ["File"]);
 lazyRequire("template", ["template"]);
 
-var Const = function Const(val) Class.Property({ enumerable: true, value: val });
+var Const = function Const(val) {
+    return Class.Property({ enumerable: true, value: val });
+};
 
 var Group = Class("Group", {
     init: function init(name, description, filter, persist) {
@@ -93,7 +95,9 @@ var Group = Class("Group", {
         });
     },
 
-    defaultFilter: Class.Memoize(function () this.compileFilter(["*"]))
+    defaultFilter: Class.Memoize(function () {
+        return this.compileFilter(["*"]);
+    })
 });
 
 var Contexts = Module("contexts", {
@@ -204,13 +208,15 @@ var Contexts = Module("contexts", {
                 });
 
                 memoize(contexts.hives, name,
-                        () => Object.create(Object.create(contexts.hiveProto,
-                                                          { _hive: { value: name } })));
+                        () => Object.create(
+                                 Object.create(contexts.hiveProto,
+                                               { _hive: { value: name } })));
 
-                memoize(contexts.groupsProto, name,
-                        function () [group[name]
-                                     for (group of values(this.groups))
-                                     if (hasOwnProperty(group, name))]);
+                memoize(contexts.groupsProto, name, function () {
+                    return [group[name]
+                            for (group of values(this.groups))
+                            if (hasOwnProperty(group, name))];
+                });
             },
 
             get toStringParams() { return [this.name, this.Hive]; }
@@ -397,11 +403,13 @@ var Contexts = Module("contexts", {
         return frame;
     },
 
-    groups: Class.Memoize(function () this.matchingGroups()),
+    groups: Class.Memoize(function () { return this.matchingGroups(); }),
 
-    allGroups: Class.Memoize(function () Object.create(this.groupsProto, {
-        groups: { value: this.initializedGroups() }
-    })),
+    allGroups: Class.Memoize(function () {
+        return Object.create(this.groupsProto, {
+            groups: { value: this.initializedGroups() }
+        });
+    }),
 
     matchingGroups: function (uri) Object.create(this.groupsProto, {
         groups: { value: this.activeGroups(uri) }
@@ -443,7 +451,9 @@ var Contexts = Module("contexts", {
             group = this.Group(name, description, filter, persist);
             this.groupList.unshift(group);
             this.groupMap[name] = group;
-            this.hiveProto.__defineGetter__(name, function () group[this._hive]);
+            this.hiveProto.__defineGetter__(name, function () {
+                return group[this._hive];
+            });
         }
 
         if (replace) {
@@ -553,9 +563,11 @@ var Contexts = Module("contexts", {
             break;
 
         case "-ex":
-            action = function action() modules.commands
-                                              .execute(action.macro, makeParams(this, arguments),
-                                                       false, null, action.context);
+            action = function action() {
+                return modules.commands
+                              .execute(action.macro, makeParams(this, arguments),
+                                       false, null, action.context);
+            };
             action.macro = util.compileMacro(rhs, true);
             action.context = this.context && update({}, this.context);
             break;
@@ -571,7 +583,9 @@ var Contexts = Module("contexts", {
             break;
         }
 
-        action.toString = function toString() (type === default_ ? "" : type + " ") + rhs;
+        action.toString = function toString() {
+            return (type === default_ ? "" : type + " ") + rhs;
+        };
         args = null;
         return action;
     },
@@ -608,7 +622,9 @@ var Contexts = Module("contexts", {
         get persist() { return this.group.persist; },
         set persist(val) { this.group.persist = val; },
 
-        prefix: Class.Memoize(function () this.name === "builtin" ? "" : this.name + ":"),
+        prefix: Class.Memoize(function () {
+            return this.name === "builtin" ? "" : this.name + ":";
+        }),
 
         get toStringParams() { return [this.name]; }
     })

@@ -659,7 +659,10 @@ var Bookmarks = Module("bookmarks", {
             context.format = bookmarks.format;
             iter(extra).forEach(function ([k, v]) {
                 if (v != null)
-                    context.filters.push(function (item) item.item[k] != null && this.matchString(v, item.item[k]));
+                    context.filters.push(function (item) {
+                        return item.item[k] != null &&
+                               this.matchString(v, item.item[k]);
+                    });
             });
             context.generate = () => values(bookmarkcache.bookmarks);
             completion.urls(context, tags);

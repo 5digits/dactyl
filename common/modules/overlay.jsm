@@ -211,23 +211,28 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
             filter = filter.trim();
 
             if (filter === "*")
-                var test = function test(uri) true;
+                var test = function test(uri) { return true; };
             else if (!/^(?:[a-z-]+:|[a-z-.]+$)/.test(filter)) {
                 let re = util.regexp(filter);
-                test = function test(uri) re.test(uri.spec);
+                test = function test(uri) { return re.test(uri.spec); };
             }
             else if (/[*]$/.test(filter)) {
                 let re = RegExp("^" + util.regexp.escape(filter.substr(0, filter.length - 1)));
-                test = function test(uri) re.test(uri.spec);
+                test = function test(uri) { return re.test(uri.spec); };
                 test.re = re;
             }
             else if (/[\/:]/.test(filter)) {
-                test = function test(uri) uri.spec === filter;
+                test = function test(uri) { return uri.spec === filter; };
                 test.exact = true;
             }
             else
-                test = function test(uri) { try { return util.isSubdomain(uri.host, filter); } catch (e) { return false; } };
-            test.toString = function toString() filter;
+                test = function test(uri) {
+                    try {
+                        return util.isSubdomain(uri.host, filter);
+                    }
+                    catch (e) { return false; }
+                };
+            test.toString = function toString() { return filter; };
             test.key = filter;
         }
         if (arguments.length < 2)
@@ -417,7 +422,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
                 delete desc.value;
                 delete desc.writable;
-                desc.get = function get() value;
+                desc.get = function get() { return value; }
                 desc.set = function set(val) {
                     if (!callable(val) || !Function.prototype.toString(val).contains(sentinel))
                         Class.replaceProperty(this, k, val);
@@ -434,8 +439,14 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
                 if (callable(value)) {
                     var sentinel = "(function DactylOverlay() {}())";
-                    value.toString = function toString() toString.toString.call(this).replace(/\}?$/, sentinel + "; $&");
-                    value.toSource = function toSource() toSource.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
+                    value.toString = function toString() {
+                        return toString.toString.call(this)
+                                       .replace(/\}?$/, sentinel + "; $&");
+                    };
+                    value.toSource = function toSource() {
+                        return toSource.toSource.call(this)
+                                       .replace(/\}?$/, sentinel + "; $&");
+                    };
                 }
             }
             catch (e) {

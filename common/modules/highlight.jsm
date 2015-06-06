@@ -17,7 +17,9 @@ var Highlight = Struct("class", "selector", "sites",
                        "value", "extends", "agent",
                        "base", "baseClass", "style");
 Highlight.liveProperty = function (name, prop) {
-    this.prototype.__defineGetter__(name, function () this.get(name));
+    this.prototype.__defineGetter__(name, function () {
+        return this.get(name);
+    });
     this.prototype.__defineSetter__(name, function (val) {
         if (isObject(val) && name !== "style") {
             if (isArray(val))
@@ -45,22 +47,28 @@ Highlight.liveProperty("selector", "css");
 Highlight.liveProperty("sites");
 Highlight.liveProperty("style", "css");
 
-Highlight.defaultValue("baseClass", function () /^(\w*)/.exec(this.class)[0]);
+Highlight.defaultValue("baseClass", function () {
+    return /^(\w*)/.exec(this.class)[0];
+});
 
-Highlight.defaultValue("selector", function () highlight.selector(this.class));
+Highlight.defaultValue("selector", function () {
+    return highlight.selector(this.class);
+});
 
-Highlight.defaultValue("sites", function ()
-    this.base ? this.base.sites
-              : ["resource://dactyl*", "dactyl:*", "file://*"].concat(
-                    highlight.styleableChrome));
+Highlight.defaultValue("sites", function () {
+    return this.base ? this.base.sites
+                     : ["resource://dactyl*", "dactyl:*", "file://*"]
+                          .concat(highlight.styleableChrome);
+});
 
-Highlight.defaultValue("style", function ()
-    styles.system.add("highlight:" + this.class, this.sites, this.css, this.agent, true));
+Highlight.defaultValue("style", function () {
+    return styles.system.add("highlight:" + this.class, this.sites, this.css, this.agent, true);
+});
 
 Highlight.defaultValue("defaultExtends", () => []);
 Highlight.defaultValue("defaultValue", () => "");
-Highlight.defaultValue("extends", function () this.defaultExtends);
-Highlight.defaultValue("value", function () this.defaultValue);
+Highlight.defaultValue("extends", function () { return this.defaultExtends; });
+Highlight.defaultValue("value", function () { return this.defaultValue; });
 
 update(Highlight.prototype, {
     get base() {

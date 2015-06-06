@@ -39,22 +39,26 @@ var Messages = Module("messages", {
         services.stringBundle.flushBundles();
     },
 
-    bundles: Class.Memoize(function ()
-        Ary.uniq([JSMLoader.getTarget("dactyl://locale/" + this.name + ".properties"),
-                  JSMLoader.getTarget("dactyl://locale-local/" + this.name + ".properties"),
-                  "resource://dactyl-locale/en-US/" + this.name + ".properties",
-                  "resource://dactyl-locale-local/en-US/" + this.name + ".properties"],
-                 true)
-           .map(services.stringBundle.createBundle)
-           .filter(function (bundle) {
-               try {
-                   bundle.getSimpleEnumeration();
-                   return true;
-               }
-               catch (e) {
-                   return false;
-               }
-           })),
+    bundles: Class.Memoize(function () {
+        let urls = [
+            JSMLoader.getTarget("dactyl://locale/"),
+            JSMLoader.getTarget("dactyl://locale-local/"),
+            "resource://dactyl-locale/en-US/",
+            "resource://dactyl-locale-local/en-US/"
+        ].map(url => url + this.name + ".properties");
+
+        return Ary.uniq(urls, true)
+                  .map(services.stringBundle.createBundle)
+                  .filter(bundle => {
+                      try {
+                          bundle.getSimpleEnumeration();
+                          return true;
+                      }
+                      catch (e) {
+                          return false;
+                      }
+                  });
+   }),
 
     iterate: function* () {
         let seen = new RealSet;
@@ -166,7 +170,10 @@ var Messages = Module("messages", {
                         let value = this[_prop];
 
                         function getter(key, default_) {
-                            return function getter() messages.get([name, key].join("."), default_);
+                            return function getter() {
+                                return messages.get([name, key].join("."),
+                                                    default_);
+                            };
                         }
 
                         if (value != null) {

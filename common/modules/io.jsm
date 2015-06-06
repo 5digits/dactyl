@@ -837,7 +837,9 @@ unlet s:cpo_save
                     sep = sep || " ";
                     let width = 0;
                     let lines = [];
-                    lines.__defineGetter__("last", function () this[this.length - 1]);
+                    lines.__defineGetter__("last", function () {
+                        return this[this.length - 1];
+                    });
 
                     for (let item of values(items.array || items)) {
                         if (item.length > width && (!lines.length || lines.last.length > 1)) {
@@ -1056,7 +1058,9 @@ unlet s:cpo_save
                     dir = dir.replace("/+$", "") + "/";
                     completion.file(context, true, dir + context.filter);
                     context.title[0] = dir;
-                    context.keys.text = function (f) this.path.substr(dir.length);
+                    context.keys.text = function (f) {
+                        return this.path.substr(dir.length);
+                    };
                 });
         };
 

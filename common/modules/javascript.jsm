@@ -43,13 +43,17 @@ var JavaScript = Module("javascript", {
         }
     }),
 
-    globals: Class.Memoize(function () [
-       [this.modules.userContext, /*L*/"Global Variables"],
-       [this.modules, "modules"],
-       [this.window, "window"]
-    ]),
+    globals: Class.Memoize(function () {
+        return [
+            [this.modules.userContext, /*L*/"Global Variables"],
+            [this.modules, "modules"],
+            [this.window, "window"]
+        ];
+    }),
 
-    toplevel: Class.Memoize(function () this.modules.jsmodules),
+    toplevel: Class.Memoize(function () {
+        return this.modules.jsmodules;
+    }),
 
     lazyInit: true,
 
@@ -358,7 +362,9 @@ var JavaScript = Module("javascript", {
             //  Constants are unsorted, and appear before other non-null strings.
             //  Other strings are sorted in the default manner.
 
-            let isnan = function isnan(item) item != '' && isNaN(item);
+            let isnan = function isnan(item) {
+                return item != '' && isNaN(item);
+            };
             let compare = base.compare;
 
             base.compare = function (a, b) {
@@ -617,7 +623,10 @@ var JavaScript = Module("javascript", {
         return null;
     },
 
-    magicalNames: Class.Memoize(function () Object.getOwnPropertyNames(Cu.Sandbox(this.window), true).sort()),
+    magicalNames: Class.Memoize(function () {
+        return Object.getOwnPropertyNames(Cu.Sandbox(this.window), true)
+                     .sort();
+    }),
 
     /**
      * A list of properties of the global object which are not
@@ -706,7 +715,7 @@ var JavaScript = Module("javascript", {
         modes.addMode("REPL", {
             description: "JavaScript Read Eval Print Loop",
             bases: [modes.COMMAND_LINE],
-            displayName: Class.Memoize(function () this.name)
+            displayName: Class.Memoize(function () { return this.name; })
         });
     },
     commandline: function initCommandLine(dactyl, modules, window) {

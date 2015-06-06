@@ -65,12 +65,16 @@ var History = Module("history", {
         let obj = [];
         obj.__defineGetter__("index", () => sh.index);
         obj.__defineSetter__("index", val => { webNav.gotoIndex(val); });
-        obj[Symbol.iterator] = function () this.entries();
+        obj[Symbol.iterator] = function () { return this.entries(); };
 
         for (let item of iter(sh.SHistoryEnumerator, Ci.nsISHEntry))
             obj.push(update(Object.create(item), {
                 index: obj.length,
-                icon: Class.Memoize(function () services.favicon.getFaviconImageForPage(this.URI).spec)
+                icon: Class.Memoize(function () {
+                    return services.favicon
+                                   .getFaviconImageForPage(this.URI)
+                                   .spec;
+                })
             }));
         return obj;
     },
@@ -348,7 +352,9 @@ var History = Module("history", {
             if (maxItems && context.maxItems == null)
                 context.maxItems = 100;
             context.regenerate = true;
-            context.generate = function () history.get(context.filter, this.maxItems, sort);
+            context.generate = function () {
+                return history.get(context.filter, this.maxItems, sort);
+            };
         };
 
         completion.addUrlCompleter("history", "History", completion.history);

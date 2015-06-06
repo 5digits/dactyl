@@ -238,7 +238,9 @@ var Addon = Class("Addon", {
 
 ["cancelUninstall", "findUpdates", "getResourceURI", "hasResource", "isCompatibleWith",
  "uninstall"].forEach(function (prop) {
-     Addon.prototype[prop] = function proxy() apply(this.addon, prop, arguments);
+     Addon.prototype[prop] = function proxy() {
+         return apply(this.addon, prop, arguments);
+     };
 });
 
 ["aboutURL", "appDisabled", "applyBackgroundUpdates", "blocklistState", "contributors", "creator",

@@ -69,7 +69,9 @@ update(CommandOption, {
      * @property {object} The option accepts a boolean argument.
      * @final
      */
-    BOOL: ArgType("boolean", function parseBoolArg(val) Commands.parseBool(val)),
+    BOOL: ArgType("boolean", function parseBoolArg(val) {
+        return Commands.parseBool(val);
+    }),
     /**
      * @property {object} The option accepts a string argument.
      * @final
@@ -84,12 +86,16 @@ update(CommandOption, {
      * @property {object} The option accepts an integer argument.
      * @final
      */
-    INT: ArgType("int", function parseIntArg(val) parseInt(val)),
+    INT: ArgType("int", function parseIntArg(val) {
+        return parseInt(val);
+    }),
     /**
      * @property {object} The option accepts a float argument.
      * @final
      */
-    FLOAT: ArgType("float", function parseFloatArg(val) parseFloat(val)),
+    FLOAT: ArgType("float", function parseFloatArg(val) {
+        return parseFloat(val);
+    }),
     /**
      * @property {object} The option accepts a string list argument.
      *     E.g. "foo,bar"
@@ -219,21 +225,29 @@ var Command = Class("Command", {
      * @property {[string]} All of this command's name specs. e.g., "com[mand]"
      */
     specs: null,
-    parsedSpecs: Class.Memoize(function () Command.parseSpecs(this.specs)),
+    parsedSpecs: Class.Memoize(function () {
+        return Command.parseSpecs(this.specs);
+    }),
 
     /** @property {[string]} All of this command's short names, e.g., "com" */
-    shortNames: Class.Memoize(function () Ary.compact(this.parsedSpecs.map(n => n[1]))),
+    shortNames: Class.Memoize(function () {
+        return Ary.compact(this.parsedSpecs.map(n => n[1]));
+    }),
 
     /**
      * @property {[string]} All of this command's long names, e.g., "command"
      */
-    longNames: Class.Memoize(function () this.parsedSpecs.map(n => n[0])),
+    longNames: Class.Memoize(function () {
+        return this.parsedSpecs.map(n => n[0]);
+    }),
 
     /** @property {string} The command's canonical name. */
-    name: Class.Memoize(function () this.longNames[0]),
+    name: Class.Memoize(function () { return this.longNames[0]; }),
 
     /** @property {[string]} All of this command's long and short names. */
-    names: Class.Memoize(function () this.names = Ary.flatten(this.parsedSpecs)),
+    names: Class.Memoize(function () {
+        return this.names = Ary.flatten(this.parsedSpecs);
+    }),
 
     /** @property {string} This command's description, as shown in :listcommands */
     description: Messages.Localized(""),
@@ -301,17 +315,20 @@ var Command = Class("Command", {
      * @property {Array} The options this command takes.
      * @see Commands@parseArguments
      */
-    options: Class.Memoize(function ()
-        this._options.map(function (opt) {
+    options: Class.Memoize(function () {
+        return this._options.map(function (opt) {
             let option = CommandOption.fromArray(opt);
             option.localeName = ["command", this.name, option.names[0]];
             return option;
-        }, this)),
+        }, this);
+    }),
     _options: [],
 
-    optionMap: Class.Memoize(function () Ary(this.options)
-                .map(opt => opt.names.map(name => [name, opt]))
-                .flatten().toObject()),
+    optionMap: Class.Memoize(function () {
+        return Ary(this.options)
+                   .map(opt => opt.names.map(name => [name, opt]))
+                   .flatten().toObject();
+    }),
 
     newArgs: function newArgs(base) {
         let res = Object.create(this.argsPrototype);
@@ -582,7 +599,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         }
 
         for (let name of names) {
-            ex.__defineGetter__(name, function () this._run(name));
+            ex.__defineGetter__(name, function () { return this._run(name); });
             if (name in this._map && !this._map[name].isPlaceholder)
                 this.remove(name);
         }
@@ -1290,9 +1307,12 @@ var Commands = Module("commands", {
         */$), /U/g, "\\u"), "x")
     }),
 
-    validName: Class.Memoize(function validName() util.regexp("^" + this.nameRegexp.source + "$")),
+    validName: Class.Memoize(function validName() {
+        return util.regexp("^" + this.nameRegexp.source + "$");
+    }),
 
-    commandRegexp: Class.Memoize(function commandRegexp() util.regexp(literal(function () /*
+    commandRegexp: Class.Memoize(function commandRegexp() {
+        return util.regexp(literal(function () /*
             ^
             (?P<spec>
                 (?P<prespace> [:\s]*)
@@ -1309,7 +1329,8 @@ var Commands = Module("commands", {
             $
         */$), "x", {
             name: this.nameRegexp
-        })),
+        });
+    }),
 
     /**
      * Parses a complete Ex command.
@@ -1783,12 +1804,18 @@ var Commands = Module("commands", {
             });
     },
     javascript: function initJavascript(dactyl, modules, window) {
-        const { JavaScript } = modules;
+        const { setCompleter } = modules.JavaScript;
 
-        JavaScript.setCompleter([CommandHive.prototype.get, CommandHive.prototype.remove],
-                                [function () [[c.names, c.description] for (c of this)]]);
-        JavaScript.setCompleter([Commands.prototype.get],
-                                [function () [[c.names, c.description] for (c of this.iterator())]]);
+        setCompleter([CommandHive.prototype.get,
+                      CommandHive.prototype.remove],
+                     [function () {
+                         return [[c.names, c.description] for (c of this)];
+                     }]);
+        setCompleter([Commands.prototype.get],
+                     [function () {
+                         return [[c.names, c.description]
+                                 for (c of this.iterator())];
+                     }]);
     },
     mappings: function initMappings(dactyl, modules, window) {
         const { commands, mappings, modes } = modules;

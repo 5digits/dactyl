@@ -219,11 +219,12 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         if (this._prefContexts.length)
             this._prefContexts[this._prefContexts.length - 1][name] = this.get(name, null);
 
-        function assertType(needType)
-            util.assert(type === Ci.nsIPrefBranch.PREF_INVALID || type === needType,
+        function assertType(needType) {
+            return util.assert(type === Ci.nsIPrefBranch.PREF_INVALID || type === needType,
                 type === Ci.nsIPrefBranch.PREF_INT
                                 ? /*L*/"E521: Number required after =: " + name + "=" + value
                                 : /*L*/"E474: Invalid argument: " + name + "=" + value);
+        }
 
         let type = this.branch.getPrefType(name);
         try {
@@ -434,8 +435,14 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         };
     },
     javascript: function init_javascript(dactyl, modules) {
-        modules.JavaScript.setCompleter([this.get, this.safeSet, this.set, this.reset, this.toggle],
-                [function (context) (context.anchored=false, this.getNames().map(pref => [pref, ""]))]);
+        const { setCompleter } = modules.JavaScript;
+
+        setCompleter([this.get, this.safeSet, this.set,
+                      this.reset, this.toggle],
+                      [function (context) {
+                          context.anchored=false;
+                          return this.getNames().map(pref => [pref, ""]);
+                      }]);
     }
 });
 

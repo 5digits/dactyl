@@ -292,7 +292,7 @@ function init() {
     if (!(BOOTSTRAP_CONTRACT in Cc)) {
         // Use Sandbox to prevent closures over this scope
         let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].createInstance());
-        let factory = Cu.evalInSandbox("({ createInstance: function () this })", sandbox);
+        let factory = Cu.evalInSandbox("({ createInstance: function () { return this; }})", sandbox);
 
         factory.classID         = Components.ID("{f541c8b0-fe26-4621-a30b-e77d21721fb5}");
         factory.contractID      = BOOTSTRAP_CONTRACT;
@@ -372,9 +372,10 @@ function startup(data, reason) {
                 return Services.io.newFileURI(uri.QueryInterface(Ci.nsIFileURL).file);
             };
         else
-            getURI = function getURI(path)
-                Services.io.newURI("jar:" + Services.io.newFileURI(basePath).spec.replace(/!/g, "%21") + "!" +
-                                   "/" + path, null, null);
+            getURI = function getURI(path) {
+                let base = Services.io.newFileURI(basePath).spec.replace(/!/g, "%21");
+                return Services.io.newURI("jar:" + base + "!" + "/" + path, null, null);
+            };
 
         try {
             init();

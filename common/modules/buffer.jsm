@@ -260,7 +260,9 @@ var Buffer = Module("Buffer", {
     get modules() { return this.topWindow.dactyl.modules; },
     set modules(val) {},
 
-    topWindow: Class.Memoize(function () util.topWindow(this.win)),
+    topWindow: Class.Memoize(function () {
+        return util.topWindow(this.win);
+    }),
 
     /**
      * @property {nsIURI} The current top-level document's URI.
@@ -1042,7 +1044,9 @@ var Buffer = Module("Buffer", {
                         .sort((a, b) => a[1] - b[1]);
 
         if (offScreen && !reverse)
-            elems = elems.filter(function (e) e[1] > this, this.topWindow.innerHeight);
+            elems = elems.filter(function (e) {
+                return e[1] > this, this.topWindow.innerHeight;
+            });
 
         let idx = Math.min((count || 1) - 1, elems.length);
         util.assert(idx in elems);

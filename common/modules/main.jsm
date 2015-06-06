@@ -195,200 +195,202 @@ var Modules = function Modules(window) {
 config.loadStyles();
 
 overlay.overlayWindow(Object.keys(config.overlays),
-                      function _overlay(window) ({
-    ready: function onInit(document) {
-        const modules = Modules(window);
-        modules.moduleManager = this;
-        this.modules = modules;
-        this.jsmodules = modules.jsmodules;
+                      function _overlay(window) {
+    return {
+        ready: function onInit(document) {
+            const modules = Modules(window);
+            modules.moduleManager = this;
+            this.modules = modules;
+            this.jsmodules = modules.jsmodules;
 
-        window.dactyl = { modules: modules };
+            window.dactyl = { modules: modules };
 
-        defineModule.time("load", null, function _load() {
-            config.modules.global
-                  .forEach(function (name) {
-                      if (!isArray(name))
-                          defineModule.time("load", name, require, null, name, modules.jsmodules);
-                      else
-                          lazyRequire(name[0], name.slice(1), modules.jsmodules);
-                  });
+            defineModule.time("load", null, function _load() {
+                config.modules.global
+                    .forEach(function (name) {
+                        if (!isArray(name))
+                            defineModule.time("load", name, require, null, name, modules.jsmodules);
+                        else
+                            lazyRequire(name[0], name.slice(1), modules.jsmodules);
+                    });
 
-            config.modules.window
-                  .forEach(name => { defineModule.time("load", name, modules.load, modules, name); });
-        }, this);
-    },
+                config.modules.window
+                    .forEach(name => { defineModule.time("load", name, modules.load, modules, name); });
+            }, this);
+        },
 
-    load: function onLoad(document) {
-        let self = this;
+        load: function onLoad(document) {
+            let self = this;
 
-        var { modules } = this.modules;
-        delete window.dactyl;
+            var { modules } = this.modules;
+            delete window.dactyl;
 
-        this.startTime = Date.now();
-        this.deferredInit = { load: {} };
-        this.seen = new RealSet;
-        this.loaded = new RealSet;
-        modules.loaded = this.loaded;
+            this.startTime = Date.now();
+            this.deferredInit = { load: {} };
+            this.seen = new RealSet;
+            this.loaded = new RealSet;
+            modules.loaded = this.loaded;
 
-        this.modules = modules;
+            this.modules = modules;
 
-        this.scanModules();
-        this.initDependencies("init");
+            this.scanModules();
+            this.initDependencies("init");
 
-        modules.config.scripts.forEach(modules.load);
+            modules.config.scripts.forEach(modules.load);
 
-        this.scanModules();
+            this.scanModules();
 
-        defineModule.modules.forEach(function defModule({ lazyInit, constructor: { className } }) {
-            if (!lazyInit) {
-                Class.replaceProperty(modules, className, modules[className]);
-                this.initDependencies(className);
-            }
-            else
-                modules.__defineGetter__(className, () => {
-                    let module = modules.jsmodules[className];
-                    Class.replaceProperty(modules, className, module);
-                    if (module.reallyInit)
-                        module.reallyInit(); // :(
-
-                    if (!module.lazyDepends)
-                        self.initDependencies(className);
-                    return module;
-                });
-        }, this);
-    },
-
-    cleanup: function cleanup(window) {
-        overlay.windows.delete(window);
-
-        JSMLoader.atexit(() => {
-            Cu.nukeSandbox(this.jsmodules);
-        });
-    },
-
-    unload: function unload(window) {
-        for (let mod of this.modules.moduleList.reverse()) {
-            mod.stale = true;
-
-            if ("destroy" in mod)
-                util.trapErrors("destroy", mod);
-        }
-    },
-
-    visible: function visible(window) {
-        // Module.list.forEach(load);
-        this.initDependencies("load");
-        this.modules.times = update({}, defineModule.times);
-
-        defineModule.loadLog.push("Loaded in " + (Date.now() - this.startTime) + "ms");
-
-        overlay.windows.add(window);
-    },
-
-    loadModule: function loadModule(module, prereq, frame) {
-        let { loaded, seen } = this;
-        let { Module, modules } = this.modules;
-
-        if (isString(module)) {
-            if (!Module.constructors.hasOwnProperty(module))
-                modules.load(module);
-            module = Module.constructors[module];
-        }
-
-        try {
-            if (loaded.has(module.className))
-                return;
-
-            if (seen.add(module.className))
-                throw Error("Module dependency loop.");
-
-            for (let dep of module.requires)
-                this.loadModule(Module.constructors[dep], module.className);
-
-            defineModule.loadLog.push(
-                "Load" + (isString(prereq) ? " " + prereq + " dependency: " : ": ")
-                    + module.className);
-
-            if (frame && frame.filename)
-                defineModule.loadLog.push("  from: " + util.fixURI(frame.filename) + ":" + frame.lineNumber);
-
-            let obj = defineModule.time(module.className, "init", module);
-            Class.replaceProperty(modules, module.className, obj);
-
-            loaded.add(module.className);
-
-            if (loaded.has("dactyl") && obj.signals)
-                modules.dactyl.registerObservers(obj);
-
-            if (!module.lazyDepends)
-                this.initDependencies(module.className);
-        }
-        catch (e) {
-            util.dump("Loading " + (module && module.className) + ":");
-            util.reportError(e);
-        }
-        return modules[module.className];
-    },
-
-    deferInit: function deferInit(name, INIT, mod) {
-        let { modules } = this.modules;
-
-        let init = this.deferredInit[name] || {};
-        this.deferredInit[name] = init;
-
-        let className = mod.className || mod.constructor.className;
-
-        if (!hasOwnProperty(init, className)) {
-            init[className] = function callee() {
-                function finish() {
-                    this.currentDependency = className;
-                    defineModule.time(className, name, INIT[name], mod,
-                                      modules.dactyl, modules, window);
+            defineModule.modules.forEach(function defModule({ lazyInit, constructor: { className } }) {
+                if (!lazyInit) {
+                    Class.replaceProperty(modules, className, modules[className]);
+                    this.initDependencies(className);
                 }
-                if (!callee.frobbed) {
-                    callee.frobbed = true;
-                    if (modules[name] instanceof Class)
-                        modules[name].withSavedValues(["currentDependency"], finish);
-                    else
-                        finish.call({});
-                }
-            };
+                else
+                    modules.__defineGetter__(className, () => {
+                        let module = modules.jsmodules[className];
+                        Class.replaceProperty(modules, className, module);
+                        if (module.reallyInit)
+                            module.reallyInit(); // :(
 
-            INIT[name].require = name => { init[name](); };
-        }
-    },
+                        if (!module.lazyDepends)
+                            self.initDependencies(className);
+                        return module;
+                    });
+            }, this);
+        },
 
-    scanModules: function scanModules() {
-        let { Module, modules } = this.modules;
+        cleanup: function cleanup(window) {
+            overlay.windows.delete(window);
 
-        defineModule.modules.forEach(mod => {
-            let names = new RealSet(Object.keys(mod.INIT));
-            if ("init" in mod.INIT)
-                names.add("init");
+            JSMLoader.atexit(() => {
+                Cu.nukeSandbox(this.jsmodules);
+            });
+        },
 
-            for (let name of names)
-                this.deferInit(name, mod.INIT, mod);
-        });
+        unload: function unload(window) {
+            for (let mod of this.modules.moduleList.reverse()) {
+                mod.stale = true;
 
-        Module.list.forEach(mod => {
-            if (!mod.frobbed) {
-                modules.__defineGetter__(mod.className, () => {
-                    delete modules[mod.className];
-                    return this.loadModule(mod.className, null, Components.stack.caller);
-                });
-                Object.keys(mod.prototype.INIT)
-                      .forEach(name => { this.deferInit(name, mod.prototype.INIT, mod); });
+                if ("destroy" in mod)
+                    util.trapErrors("destroy", mod);
             }
-            mod.frobbed = true;
-        });
-    },
+        },
 
-    initDependencies: function initDependencies(name, parents) {
-        for (let [k, v] of iter(this.deferredInit[name] || {}))
-            if (!parents || ~parents.indexOf(k))
-                util.trapErrors(v);
-    }
-}));
+        visible: function visible(window) {
+            // Module.list.forEach(load);
+            this.initDependencies("load");
+            this.modules.times = update({}, defineModule.times);
+
+            defineModule.loadLog.push("Loaded in " + (Date.now() - this.startTime) + "ms");
+
+            overlay.windows.add(window);
+        },
+
+        loadModule: function loadModule(module, prereq, frame) {
+            let { loaded, seen } = this;
+            let { Module, modules } = this.modules;
+
+            if (isString(module)) {
+                if (!Module.constructors.hasOwnProperty(module))
+                    modules.load(module);
+                module = Module.constructors[module];
+            }
+
+            try {
+                if (loaded.has(module.className))
+                    return;
+
+                if (seen.add(module.className))
+                    throw Error("Module dependency loop.");
+
+                for (let dep of module.requires)
+                    this.loadModule(Module.constructors[dep], module.className);
+
+                defineModule.loadLog.push(
+                    "Load" + (isString(prereq) ? " " + prereq + " dependency: " : ": ")
+                        + module.className);
+
+                if (frame && frame.filename)
+                    defineModule.loadLog.push("  from: " + util.fixURI(frame.filename) + ":" + frame.lineNumber);
+
+                let obj = defineModule.time(module.className, "init", module);
+                Class.replaceProperty(modules, module.className, obj);
+
+                loaded.add(module.className);
+
+                if (loaded.has("dactyl") && obj.signals)
+                    modules.dactyl.registerObservers(obj);
+
+                if (!module.lazyDepends)
+                    this.initDependencies(module.className);
+            }
+            catch (e) {
+                util.dump("Loading " + (module && module.className) + ":");
+                util.reportError(e);
+            }
+            return modules[module.className];
+        },
+
+        deferInit: function deferInit(name, INIT, mod) {
+            let { modules } = this.modules;
+
+            let init = this.deferredInit[name] || {};
+            this.deferredInit[name] = init;
+
+            let className = mod.className || mod.constructor.className;
+
+            if (!hasOwnProperty(init, className)) {
+                init[className] = function callee() {
+                    function finish() {
+                        this.currentDependency = className;
+                        defineModule.time(className, name, INIT[name], mod,
+                                        modules.dactyl, modules, window);
+                    }
+                    if (!callee.frobbed) {
+                        callee.frobbed = true;
+                        if (modules[name] instanceof Class)
+                            modules[name].withSavedValues(["currentDependency"], finish);
+                        else
+                            finish.call({});
+                    }
+                };
+
+                INIT[name].require = name => { init[name](); };
+            }
+        },
+
+        scanModules: function scanModules() {
+            let { Module, modules } = this.modules;
+
+            defineModule.modules.forEach(mod => {
+                let names = new RealSet(Object.keys(mod.INIT));
+                if ("init" in mod.INIT)
+                    names.add("init");
+
+                for (let name of names)
+                    this.deferInit(name, mod.INIT, mod);
+            });
+
+            Module.list.forEach(mod => {
+                if (!mod.frobbed) {
+                    modules.__defineGetter__(mod.className, () => {
+                        delete modules[mod.className];
+                        return this.loadModule(mod.className, null, Components.stack.caller);
+                    });
+                    Object.keys(mod.prototype.INIT)
+                        .forEach(name => { this.deferInit(name, mod.prototype.INIT, mod); });
+                }
+                mod.frobbed = true;
+            });
+        },
+
+        initDependencies: function initDependencies(name, parents) {
+            for (let [k, v] of iter(this.deferredInit[name] || {}))
+                if (!parents || ~parents.indexOf(k))
+                    util.trapErrors(v);
+        }
+    };
+});
 
 endModule();
 

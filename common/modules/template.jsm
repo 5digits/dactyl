@@ -448,7 +448,7 @@ var Template = Module("Template", {
         // TODO: This might be mind-bogglingly slow. We'll see.
         return ["table", {},
             ["tr", { highlight: "Title", align: "left" },
-                this.map(headings, function (h)
+                this.map(headings, h =>
                     ["th", {}, h])],
             this.map(iter, row =>
                 ["tr", {},

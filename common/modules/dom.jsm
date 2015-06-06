@@ -150,7 +150,7 @@ var DOM = Class("DOM", {
         }
 
         if (DOM.isJSONXML(val))
-            val = (function () this).bind(val);
+            val = (function () { return this; }).bind(val);
 
         if (callable(val))
             return this.each(function (elem, i) {
@@ -539,8 +539,10 @@ var DOM = Class("DOM", {
 
         let encodeComponent = encodeURIComponent;
         if (charset !== "UTF-8")
-            encodeComponent = function encodeComponent(str)
-                escape(converter.ConvertFromUnicode(str) + converter.Finish());
+            encodeComponent = function encodeComponent(str) {
+                return escape(converter.ConvertFromUnicode(str) +
+                              converter.Finish());
+            };
 
         let elems = [];
         if (field instanceof Ci.nsIDOMHTMLInputElement && field.type == "submit")
@@ -1122,12 +1124,22 @@ var DOM = Class("DOM", {
             return this;
         },
 
-        code_key:       Class.Memoize(function (prop) this.init()[prop]),
-        code_nativeKey: Class.Memoize(function (prop) this.init()[prop]),
-        keyTable:       Class.Memoize(function (prop) this.init()[prop]),
-        key_code:       Class.Memoize(function (prop) this.init()[prop]),
-        key_key:        Class.Memoize(function (prop) this.init()[prop]),
-        pseudoKeys:     new RealSet(["count", "leader", "nop", "pass"]),
+        code_key: Class.Memoize(function (prop) {
+            return this.init()[prop];
+        }),
+        code_nativeKey: Class.Memoize(function (prop) {
+            return this.init()[prop];
+        }),
+        keyTable: Class.Memoize(function (prop) {
+            return this.init()[prop];
+        }),
+        key_code: Class.Memoize(function (prop) {
+            return this.init()[prop];
+        }),
+        key_key: Class.Memoize(function (prop) {
+            return this.init()[prop];
+        }),
+        pseudoKeys: new RealSet(["count", "leader", "nop", "pass"]),
 
         /**
          * Converts a user-input string of keys into a canonical
@@ -1927,8 +1939,10 @@ var DOM = Class("DOM", {
         dactyl: NS
     },
 
-    namespaceNames: Class.Memoize(function ()
-        iter(this.namespaces).map(([k, v]) => ([v, k])).toObject())
+    namespaceNames: Class.Memoize(function () {
+        return iter(this.namespaces).map(([k, v]) => ([v, k]))
+                                    .toObject();
+    })
 });
 
 Object.keys(DOM.Event.types).forEach(function (event) {

@@ -88,7 +88,9 @@ var ConfigBase = Class("ConfigBase", {
         "resource://dactyl-local/config.json"
     ],
 
-    configs: Class.Memoize(function () this.configFiles.map(url => JSON.parse(File.readURL(url)))),
+    configs: Class.Memoize(function () {
+        return this.configFiles.map(url => JSON.parse(File.readURL(url)));
+    }),
 
     loadConfig: function loadConfig(documentURL) {
 
@@ -211,7 +213,9 @@ var ConfigBase = Class("ConfigBase", {
     /**
      * The current dactyl locale.
      */
-    locale: Class.Memoize(function () this.bestLocale(this.locales)),
+    locale: Class.Memoize(function () {
+        return this.bestLocale(this.locales);
+    }),
 
     /**
      * The current application locale.
@@ -237,7 +241,9 @@ var ConfigBase = Class("ConfigBase", {
                       if (f.isDirectory())).array;
         }
 
-        let exists = function exists(pkg) services["resource:"].hasSubstitution("dactyl-locale-" + pkg);
+        let exists = function exists(pkg) {
+            return services["resource:"].hasSubstitution("dactyl-locale-" + pkg);
+        };
 
         return Ary.uniq([this.appLocale, this.appLocale.replace(/-.*/, "")]
                             .filter(exists)
@@ -415,11 +421,12 @@ var ConfigBase = Class("ConfigBase", {
 
     get fileExt() { return this.name.slice(0, -6); },
 
-    dtd: Class.Memoize(function ()
-        iter(this.dtdExtra,
-             (["dactyl." + k, v] for ([k, v] of iter(config.dtdDactyl))),
-             (["dactyl." + s, config[s]] for (s of config.dtdStrings)))
-            .toObject()),
+    dtd: Class.Memoize(function () {
+        return iter(this.dtdExtra,
+                    (["dactyl." + k, v] for ([k, v] of iter(config.dtdDactyl))),
+                    (["dactyl." + s, config[s]] for (s of config.dtdStrings)))
+                   .toObject();
+     }),
 
     dtdDactyl: memoize({
         get name() { return config.name; },
@@ -435,7 +442,9 @@ var ConfigBase = Class("ConfigBase", {
         "list.mailto": Class.Memoize(() => config.name + "@googlegroups.com"),
         "list.href": Class.Memoize(() => "http://groups.google.com/group/" + config.name),
 
-        "hg.latest": Class.Memoize(function () this.code + "source/browse/"), // XXX
+        "hg.latest": Class.Memoize(function () {
+            return this.code + "source/browse/"; // XXX
+        }),
         "irc": "irc://irc.oftc.net/#pentadactyl"
     }),
 
@@ -517,7 +526,10 @@ var ConfigBase = Class("ConfigBase", {
             return this.browser.mPanelContainer.boxObject.height;
         },
 
-        tabStrip: Class.Memoize(function () document.getElementById("TabsToolbar") || this.tabbrowser.mTabContainer)
+        tabStrip: Class.Memoize(function () {
+            return document.getElementById("TabsToolbar") ||
+                   this.tabbrowser.mTabContainer;
+        })
     }),
 
     /**

@@ -447,7 +447,9 @@ var Modes = Module("modes", {
 
         description: Messages.Localized(""),
 
-        displayName: Class.Memoize(function () this.name.split("_").map(util.capitalize).join(" ")),
+        displayName: Class.Memoize(function () {
+            return this.name.split("_").map(util.capitalize).join(" ");
+        }),
 
         isinstance: function isinstance(obj)
             this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
@@ -468,7 +470,9 @@ var Modes = Module("modes", {
 
         get count() { return !this.insert; },
 
-        _display: Class.Memoize(function _display() this.name.replace(/_/g, " ")),
+        _display: Class.Memoize(function _display() {
+            return this.name.replace(/_/g, " ");
+        }),
 
         display: function display() this._display,
 
@@ -476,15 +480,27 @@ var Modes = Module("modes", {
 
         hidden: false,
 
-        input: Class.Memoize(function input() this.insert || this.bases.length && this.bases.some(b => b.input)),
+        input: Class.Memoize(function input() {
+            return this.insert || this.bases.length &&
+                   this.bases.some(b => b.input);
+        }),
 
-        insert: Class.Memoize(function insert() this.bases.length && this.bases.some(b => b.insert)),
+        insert: Class.Memoize(function insert() {
+            return this.bases.length && this.bases.some(b => b.insert);
+        }),
 
-        ownsFocus: Class.Memoize(function ownsFocus() this.bases.length && this.bases.some(b => b.ownsFocus)),
+        ownsFocus: Class.Memoize(function ownsFocus() {
+            return this.bases.length && this.bases.some(b => b.ownsFocus);
+        }),
 
-        passEvent: function passEvent(event) this.input && event.charCode && !(event.ctrlKey || event.altKey || event.metaKey),
+        passEvent: function passEvent(event) {
+            return this.input && event.charCode &&
+                   !(event.ctrlKey || event.altKey || event.metaKey);
+        },
 
-        passUnknown: Class.Memoize(function () options.get("passunknown").getKey(this.name)),
+        passUnknown: Class.Memoize(function () {
+            return options.get("passunknown").getKey(this.name);
+        }),
 
         get mask() { return this; },
 
@@ -505,7 +521,9 @@ var Modes = Module("modes", {
     StackElement: (function () {
         const StackElement = Struct("main", "extended", "params", "saved");
         StackElement.className = "Modes.StackElement";
-        StackElement.defaultValue("params", function () this.main.params);
+        StackElement.defaultValue("params", function () {
+            return this.main.params;
+        });
 
         update(StackElement.prototype, {
             get toStringParams() {

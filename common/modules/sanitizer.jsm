@@ -233,33 +233,35 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 let branch = Item.PREFIX + Item.BRANCH;
 
                 overlay.overlayWindow("chrome://browser/content/sanitize.xul",
-                                   function (win) prefOverlay(branch, false, {
-                    append: {
-                        itemList: [
-                            ["listitem", { xmlns: "xul", label: /*L*/"See :help privacy for the following:",
-                                           disabled: "true", style: "font-style: italic; font-weight: bold;" }],
-                            template.map(ourItems(), ([item, desc]) =>
-                                ["listitem", { xmlns: "xul", preference: branch + item,
-                                               type: "checkbox", label: config.appName + ", " + desc,
-                                               onsyncfrompreference: "return gSanitizePromptDialog.onReadGeneric();" }])
-                        ]
-                    },
-                    ready: function ready(win) {
-                        let elem =  win.document.getElementById("itemList");
-                        elem.setAttribute("rows", elem.itemCount);
-                        win.Sanitizer = Class("Sanitizer", win.Sanitizer, {
-                            sanitize: function sanitize() {
-                                self.withSavedValues(["sanitizing"], function () {
-                                    self.sanitizing = true;
-                                    sanitize.superapply(this, arguments);
-                                    sanitizer.sanitizeItems([item.name for (item of values(self.itemMap))
-                                                             if (item.shouldSanitize(false))],
-                                                            Range.fromArray(this.range || []));
-                                }, this);
-                            }
-                        });
-                    }
-                }));
+                                      function (win) {
+                    return prefOverlay(branch, false, {
+                        append: {
+                            itemList: [
+                                ["listitem", { xmlns: "xul", label: /*L*/"See :help privacy for the following:",
+                                            disabled: "true", style: "font-style: italic; font-weight: bold;" }],
+                                template.map(ourItems(), ([item, desc]) =>
+                                    ["listitem", { xmlns: "xul", preference: branch + item,
+                                                type: "checkbox", label: config.appName + ", " + desc,
+                                                onsyncfrompreference: "return gSanitizePromptDialog.onReadGeneric();" }])
+                            ]
+                        },
+                        ready: function ready(win) {
+                            let elem =  win.document.getElementById("itemList");
+                            elem.setAttribute("rows", elem.itemCount);
+                            win.Sanitizer = Class("Sanitizer", win.Sanitizer, {
+                                sanitize: function sanitize() {
+                                    self.withSavedValues(["sanitizing"], function () {
+                                        self.sanitizing = true;
+                                        sanitize.superapply(this, arguments);
+                                        sanitizer.sanitizeItems([item.name for (item of values(self.itemMap))
+                                                                if (item.shouldSanitize(false))],
+                                                                Range.fromArray(this.range || []));
+                                    }, this);
+                                }
+                            });
+                        }
+                    });
+                });
             }
         });
     },
@@ -394,7 +396,9 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         session: 8
     },
 
-    UNPERMS: Class.Memoize(function () iter(this.PERMS).map(Array.reverse).toObject()),
+    UNPERMS: Class.Memoize(function () {
+        return iter(this.PERMS).map(Array.reverse).toObject();
+    }),
 
     COMMANDS: {
         "unset":   /*L*/"Unset",

@@ -47,10 +47,12 @@ var Marks = Module("marks", {
         params.offset = buffer.scrollPosition;
         params.path = DOM(buffer.findScrollable(0, false)).xpath;
         params.timestamp = Date.now() * 1000;
-        params.equals = function (m) this.location == m.location
-                                  && this.offset.x == m.offset.x
-                                  && this.offset.y == m.offset.y
-                                  && this.path == m.path;
+        params.equals = function (m) {
+            return this.location == m.location &&
+                   this.offset.x == m.offset.x &&
+                   this.offset.y == m.offset.y &&
+                   this.path == m.path;
+        };
         return params;
     },
 

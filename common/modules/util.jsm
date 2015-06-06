@@ -257,20 +257,21 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
     compileFormat: function compileFormat(format) {
         let stack = [frame()];
-        stack.__defineGetter__("top", function () this[this.length - 1]);
+        stack.__defineGetter__("top", function () {
+            return this[this.length - 1];
+        });
 
         function frame() {
-            return update(
-                function _frame(obj)
-                    _frame === stack.top || _frame.valid(obj)
-                        ? _frame.elements.map(e => callable(e) ? e(obj) : e)
-                                        .join("")
-                        : "",
-                {
-                    elements: [],
-                    seen: {},
-                    valid: function valid(obj) this.elements.every(e => !e.test || e.test(obj))
-                });
+            return update(function _frame(obj) {
+                return _frame === stack.top || _frame.valid(obj)
+                            ? _frame.elements.map(e => callable(e) ? e(obj) : e)
+                                            .join("")
+                            : "";
+            }, {
+                elements: [],
+                seen: new RealSet,
+                valid: function valid(obj) this.elements.every(e => !e.test || e.test(obj))
+            });
         }
 
         let end = 0;
@@ -341,24 +342,26 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     compileMacro: function compileMacro(macro, keepUnknown) {
         let stack = [frame()];
-        stack.__defineGetter__("top", function () this[this.length - 1]);
+        stack.__defineGetter__("top", function () {
+            return this[this.length - 1];
+        });
 
         let unknown = util.identity;
         if (!keepUnknown)
             unknown = () => "";
 
+        // FIXME: duplicated in compileFormat
         function frame() {
-            return update(
-                function _frame(obj)
-                    _frame === stack.top || _frame.valid(obj)
-                        ? _frame.elements.map(e => callable(e) ? e(obj) : e)
-                                .join("")
-                        : "",
-                {
-                    elements: [],
-                    seen: new RealSet,
-                    valid: function valid(obj) this.elements.every(e => (!e.test || e.test(obj)))
-                });
+            return update(function _frame(obj) {
+                return _frame === stack.top || _frame.valid(obj)
+                            ? _frame.elements.map(e => callable(e) ? e(obj) : e)
+                                            .join("")
+                            : "";
+            }, {
+                elements: [],
+                seen: new RealSet,
+                valid: function valid(obj) this.elements.every(e => !e.test || e.test(obj))
+            });
         }
 
         let defaults = { lt: "<", gt: ">" };
@@ -394,9 +397,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
                 let quote = util.identity;
                 if (flags.has("q"))
-                    quote = function quote(obj) typeof obj === "number" ? obj : JSON.stringify(obj);
+                    quote = function quote(obj) {
+                        return typeof obj === "number" ? obj : JSON.stringify(obj);
+                    };
                 if (flags.has("e"))
-                    quote = function quote(obj) "";
+                    quote = function quote(obj) { return ""; };
 
                 if (hasOwnProperty(defaults, name))
                     stack.top.elements.push(quote(defaults[name]));
@@ -879,7 +884,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     isDactyl: Class.Memoize(function () {
         let base = util.regexp.escape(Components.stack.filename.replace(/[^\/]+$/, ""));
         let re = RegExp("^(?:.* -> )?(?:resource://dactyl(?!-content/eval.js)|" + base + ")\\S+$");
-        return function isDactyl(frame) re.test(frame.filename);
+        return function isDactyl(frame) { return re.test(frame.filename); };
     }),
 
     /**
@@ -1407,7 +1412,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             this.errors.push([new Date, obj + "\n" + obj.stack]);
             this.errors = this.errors.slice(-this.maxErrors);
-            this.errors.toString = function () [k + "\n" + v for ([k, v] of this)].join("\n\n");
+            this.errors.toString = function () {
+                return [k + "\n" + v for ([k, v] of this)].join("\n\n");
+            };
 
             this.dump(String(error));
             this.dump(obj);
@@ -1634,7 +1641,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 }
                 catch (e if e instanceof StopIteration) {};
             })();
-        }),
+    }),
 
     /**
      * Wraps a callback function such that its errors are not lost. This

@@ -1154,10 +1154,18 @@ var Events = Module("events", {
             "Pass certain keys through directly for the given URLs",
             "sitemap", "", {
                 flush: function flush() {
-                    memoize(this, "filters", function () this.value.filter(f => f(buffer.documentURI)));
-                    memoize(this, "pass", function () new RealSet(Ary.flatten(this.filters.map(f => f.keys))));
-                    memoize(this, "commandHive", function hive() Hive(this.filters, "command"));
-                    memoize(this, "inputHive", function hive() Hive(this.filters, "input"));
+                    memoize(this, "filters", function () {
+                        return this.value.filter(f => f(buffer.documentURI));
+                    });
+                    memoize(this, "pass", function () {
+                        return new RealSet(Ary.flatten(this.filters.map(f => f.keys)));
+                    });
+                    memoize(this, "commandHive", function hive() {
+                        return Hive(this.filters, "command");
+                    });
+                    memoize(this, "inputHive", function hive() {
+                        return Hive(this.filters, "input");
+                    });
                 },
 
                 has: function (key) this.pass.has(key) || hasOwnProperty(this.commandHive.stack.mappings, key),

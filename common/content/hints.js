@@ -759,8 +759,10 @@ var Hints = Module("hints", {
             events.listen(appContent, "scroll", this.resizeTimer.bound.tell, false);
 
         const Mode = Hints.Mode;
-        Mode.prototype.__defineGetter__("matcher", function ()
-            options.get("extendedhinttags").getKey(this.name, options.get("hinttags").matcher));
+        Mode.prototype.__defineGetter__("matcher", function () {
+            return options.get("extendedhinttags")
+                          .getKey(this.name, options.get("hinttags").matcher);
+        });
 
         function cleanLoc(loc) {
             try {

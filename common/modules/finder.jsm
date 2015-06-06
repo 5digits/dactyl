@@ -750,7 +750,9 @@ var RangeFind = Class("RangeFind", {
             this.save();
         },
 
-        docShell: Class.Memoize(function () util.docShell(this.window)),
+        docShell: Class.Memoize(function () {
+            return util.docShell(this.window);
+        }),
 
         intersects: function (range) RangeFind.intersects(this.range, range),
 

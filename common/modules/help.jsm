@@ -80,14 +80,15 @@ var Help = Module("Help", {
     init: function init() {
         this.initialized = false;
 
-        function Loop(fn)
-            function (uri, path) {
+        function Loop(fn) {
+            return function (uri, path) {
                 if (!help.initialized)
                     return RedirectChannel(uri.spec, uri, 2,
                                            "Initializing. Please wait...");
 
                 return fn.apply(this, arguments);
-            }
+            };
+        }
 
         update(services["dactyl:"].providers, {
             "help": Loop((uri, path) => help.files[path]),

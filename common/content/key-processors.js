@@ -46,7 +46,9 @@ var ProcessorStack = Class("ProcessorStack", {
             this.processors.unshift(KeyProcessor(modes.BASE, hive));
     },
 
-    passUnknown: Class.Memoize(function () options.get("passunknown").getKey(this.modes)),
+    passUnknown: Class.Memoize(function () {
+        return options.get("passunknown").getKey(this.modes);
+    }),
 
     notify: function () {
         events.dbg("NOTIFY()");
@@ -107,7 +109,9 @@ var ProcessorStack = Class("ProcessorStack", {
         }
         else if (result !== Events.KILL && !this.actions.length &&
                  !(this.events[0].isReplay || this.passUnknown ||
-                   this.modes.some(function (m) m.passEvent(this), this.events[0]))) {
+                   this.modes.some(function (m) {
+                       return m.passEvent(this);
+                   }, this.events[0]))) {
             // No patching processors, this isn't a fake, pass-through
             // event, we're not in pass-through mode, and we're not
             // choosing to pass unknown keys. Kill the event and beep.

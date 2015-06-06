@@ -289,7 +289,9 @@ var Storage = Module("Storage", {
 
             this.keys[key] = new constructor(key, params.store, load, params);
             this.keys[key].timer = new Timer(1000, 10000, () => this.save(key));
-            this.__defineGetter__(key, function () this.keys[key]);
+            this.__defineGetter__(key, function () {
+                return this.keys[key];
+            });
         }
         return this.keys[key];
     },
@@ -698,13 +700,18 @@ var File = Class("File", {
      */
     PATH_SEP: Class.Memoize(() => /foo(.)bar/.exec(OS.Path.join("foo", "bar"))[1]),
 
-    pathSplit: Class.Memoize(function () util.regexp("[/" + util.regexp.escape(this.PATH_SEP) + "]", "g")),
+    pathSplit: Class.Memoize(function () {
+        return util.regexp("[/" + util.regexp.escape(this.PATH_SEP) + "]",
+                           "g");
+    }),
 
     DoesNotExist: function DoesNotExist(path, error) ({
         __proto__: DoesNotExist.prototype,
         path: path,
         exists: function () false,
-        __noSuchMethod__: function () { throw error || Error("Does not exist"); }
+        __noSuchMethod__: function () {
+            throw error || Error("Does not exist");
+        }
     }),
 
     defaultEncoding: "UTF-8",
@@ -827,7 +834,9 @@ var File = Class("File", {
             catch (e) {}
 
             if (isFunction)
-                File.prototype[prop] = util.wrapCallback(function wrapper() apply(this.file, prop, arguments));
+                File.prototype[prop] = util.wrapCallback(function wrapper() {
+                    return apply(this.file, prop, arguments);
+                });
             else
                 Object.defineProperty(File.prototype, prop, {
                     configurable: true,

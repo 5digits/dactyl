@@ -22,7 +22,9 @@ function newURI(url, charset, base) {
 
 var Bookmark = Struct("url", "title", "icon", "post", "keyword", "tags", "charset", "id");
 var Keyword = Struct("keyword", "title", "icon", "url");
-Bookmark.defaultValue("icon", function () BookmarkCache.getFavicon(this.url));
+Bookmark.defaultValue("icon", function () {
+    return BookmarkCache.getFavicon(this.url);
+});
 update(Bookmark.prototype, {
     get extra() {
         return [
@@ -48,7 +50,7 @@ update(Bookmark.prototype, {
 
     get folder() {
         let res = [];
-        res.toString = function () this.join("/");
+        res.toString = function () { return this.join("/"); };
 
         let id = this.id, title;
         while ((id    = services.bookmarks.getFolderIdForItem(id)) &&
@@ -87,11 +89,13 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
 
     "@@iterator": function () values(bookmarkcache.bookmarks),
 
-    bookmarks: Class.Memoize(function () this.load()),
+    bookmarks: Class.Memoize(function () { return this.load(); }),
 
-    keywords: Class.Memoize(function () Ary.toObject([[b.keyword, b]
-                                                      for (b of this)
-                                                      if (b.keyword)])),
+    keywords: Class.Memoize(function () {
+        return Ary.toObject([[b.keyword, b]
+                             for (b of this)
+                             if (b.keyword)]);
+    }),
 
     rootFolders: ["toolbarFolder", "bookmarksMenuFolder", "unfiledBookmarksFolder"]
         .map(s => services.bookmarks[s]),

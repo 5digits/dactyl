@@ -19,7 +19,7 @@ var namespace = "@namespace html " + JSON.stringify(XHTML) + ";\n" +
 var Sheet = Struct("name", "id", "sites", "css", "hive", "agent");
 Sheet.liveProperty = function (name) {
     let i = this.prototype.members[name];
-    this.prototype.__defineGetter__(name, function () this[i]);
+    this.prototype.__defineGetter__(name, function () { return this[i]; });
     this.prototype.__defineSetter__(name, function (val) {
         if (isArray(val))
             val = Array.slice(val);
@@ -322,12 +322,13 @@ var Styles = Module("Styles", {
 
         hives = hives || styles.hives.filter(h => (h.modifiable && h.sheets.length));
 
-        function sheets(group)
-            group.sheets.slice()
-                 .filter(sheet => ((!name || sheet.name === name) &&
-                                   (!sites || sites.every(s => sheet.sites.indexOf(s) >= 0))))
-                 .sort((a, b) => (a.name && b.name ? String.localeCompare(a.name, b.name)
-                                                   : !!b.name - !!a.name || a.id - b.id));
+        function sheets(group) {
+            return group.sheets.slice()
+                        .filter(sheet => ((!name || sheet.name === name) &&
+                                          (!sites || sites.every(s => sheet.sites.indexOf(s) >= 0))))
+                        .sort((a, b) => (a.name && b.name ? String.localeCompare(a.name, b.name)
+                                                          : !!b.name - !!a.name || a.id - b.id));
+        }
 
         let uris = util.visibleURIs(content);
 
@@ -414,8 +415,11 @@ var Styles = Module("Styles", {
         context.generate = () => values(group.sites);
 
         context.keys.text = util.identity;
-        context.keys.description = function (site) this.sheets.length + /*L*/" sheet" + (this.sheets.length == 1 ? "" : "s") + ": " +
-            Ary.compact(this.sheets.map(s => s.name)).join(", ");
+        context.keys.description = function (site) {
+            return this.sheets.length + /*L*/" sheet" +
+                   (this.sheets.length == 1 ? "" : "s") + ": " +
+                   Ary.compact(this.sheets.map(s => s.name)).join(", ");
+        };
         context.keys.sheets = site => group.sheets.filter(s => s.sites.indexOf(site) >= 0);
         context.keys.active = site => uris.some(Styles.matchFilter(site));
 
@@ -438,20 +442,25 @@ var Styles = Module("Styles", {
         filter = filter.trim();
 
         if (filter === "*")
-            var test = function test(uri) true;
+            var test = function test(uri) { return true; };
         else if (!/^(?:[a-z-]+:|[a-z-.]+$)/.test(filter)) {
             let re = util.regexp(filter);
-            test = function test(uri) re.test(uri.spec);
+            test = function test(uri) { return re.test(uri.spec); };
         }
         else if (/[*]$/.test(filter)) {
             let re = RegExp("^" + util.regexp.escape(filter.substr(0, filter.length - 1)));
-            test = function test(uri) re.test(uri.spec);
+            test = function test(uri) { return re.test(uri.spec); };
         }
         else if (/[\/:]/.test(filter))
-            test = function test(uri) uri.spec === filter;
+            test = function test(uri) { return uri.spec === filter; };
         else
-            test = function test(uri) { try { return util.isSubdomain(uri.host, filter); } catch (e) { return false; } };
-        test.toString = function toString() filter;
+            test = function test(uri) {
+                try {
+                    return util.isSubdomain(uri.host, filter);
+                }
+                catch (e) { return false; }
+            };
+        test.toString = function toString() { return filter; }
         test.key = filter;
         if (arguments.length < 2)
             return test;

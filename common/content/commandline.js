@@ -289,7 +289,9 @@ var CommandWidgets = Class("CommandWidgets", {
         yield elem;
     },
 
-    completionContainer: Class.Memoize(function () this.completionList.parentNode),
+    completionContainer: Class.Memoize(function () {
+        return this.completionList.parentNode;
+    }),
 
     contextMenu: Class.Memoize(function () {
         ["copy", "copylink", "selectall"].forEach(function (tail) {
@@ -304,10 +306,11 @@ var CommandWidgets = Class("CommandWidgets", {
         return document.getElementById("dactyl-contextmenu");
     }),
 
-    multilineOutput: Class.Memoize(function () this._whenReady("dactyl-multiline-output",
-                                                               elem => {
-        highlight.highlightNode(elem.contentDocument.body, "MOW");
-    }), true),
+    multilineOutput: Class.Memoize(function () {
+        return this._whenReady("dactyl-multiline-output", elem => {
+            highlight.highlightNode(elem.contentDocument.body, "MOW");
+        });
+    }, true),
 
     multilineInput: Class.Memoize(() => document.getElementById("dactyl-multiline-input")),
 

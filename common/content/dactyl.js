@@ -16,8 +16,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     init: function () {
         window.dactyl = this;
         // cheap attempt at compatibility
-        let prop = { get: deprecated("dactyl", function liberator() dactyl),
-                     configurable: true };
+        let prop = {
+            get: deprecated("dactyl", function liberator() { return dactyl; }),
+            configurable: true
+        };
         Object.defineProperty(window, "liberator", prop);
         Object.defineProperty(modules, "liberator", prop);
         this.commands = {};
@@ -255,7 +257,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 argCount: "*",
                 completer: function (context, args) {
                     context.keys.text = util.identity;
-                    context.keys.description = function () seen[this.text] + /*L*/" matching items";
+                    context.keys.description = function () {
+                        return seen[this.text] + /*L*/" matching items";
+                    };
                     context.ignoreCase = true;
                     let seen = {};
                     context.completions = Ary(keys(item).join(" ").toLowerCase().split(/[()\s]+/)

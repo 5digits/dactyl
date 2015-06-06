@@ -177,13 +177,15 @@ const Config = Module("config", ConfigBase, {
         Leave: "Triggered before exiting Songbird"
     },
 
-    completers: Class.memoize(function () update({
-        displaypane: "displayPane",
-        playlist: "playlist",
-        mediaview: "mediaView",
-        mediasort: "mediaListSort",
-        song: "song"
-    }, this.__proto__.completers)),
+    completers: Class.memoize(function () {
+        return update({
+            displaypane: "displayPane",
+            playlist: "playlist",
+            mediaview: "mediaView",
+            mediasort: "mediaListSort",
+            song: "song"
+        }, this.__proto__.completers);
+    }),
 
     removeTab: function (tab) {
         if (config.tabbrowser.mTabs.length > 1)

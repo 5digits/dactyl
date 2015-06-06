@@ -76,7 +76,9 @@ var Config = Module("config", ConfigBase, {
                 dactyl.beep();
         },
 
-        completers: Class.Memoize(function () update({ mailfolder: "mailFolder" }, this.__proto__.completers)),
+        completers: Class.Memoize(function () {
+            return update({ mailfolder: "mailFolder" }, this.__proto__.completers);
+        }),
 
         dialogs: {
             about: ["About Thunderbird",

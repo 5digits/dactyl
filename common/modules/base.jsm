@@ -273,10 +273,12 @@ function apply(obj, meth, args) {
  * @default false
  * @returns {Generator}
  */
-function prototype(obj)
-    obj.__proto__ || Object.getPrototypeOf(obj) ||
-    XPCNativeWrapper.unwrap(obj).__proto__ ||
-    Object.getPrototypeOf(XPCNativeWrapper.unwrap(obj));
+function prototype(obj) {
+    return obj.__proto__ ||
+           Object.getPrototypeOf(obj) ||
+           XPCNativeWrapper.unwrap(obj).__proto__ ||
+           Object.getPrototypeOf(XPCNativeWrapper.unwrap(obj));
+}
 
 function* properties(obj, prototypes) {
     let orig = obj;
@@ -796,7 +798,9 @@ function update(target) {
                 if (typeof desc.value === "function" && target.__proto__ && !(desc.value instanceof Ci.nsIDOMElement /* wtf? */)) {
                     let func = desc.value.wrapped || desc.value;
                     if (!func.superapply) {
-                        func.__defineGetter__("super", function get_super() Object.getPrototypeOf(target)[k]);
+                        func.__defineGetter__("super", function get_super() {
+                            return Object.getPrototypeOf(target)[k];
+                        });
 
                         func.superapply = function superapply(self, args) {
                             let meth = Object.getPrototypeOf(target)[k];
@@ -918,8 +922,10 @@ Class.objectGlobal = object => {
  *
  * @param {Object} desc The property descriptor.
  */
-Class.Property = function Property(desc) update(
-    Object.create(Property.prototype), desc || { configurable: true, writable: true });
+Class.Property = function Property(desc) {
+    return update(Object.create(Property.prototype),
+                  desc || { configurable: true, writable: true });
+};
 Class.Property.prototype.init = () => {};
 /**
  * Extends a subclass with a superclass. The subclass's
@@ -998,7 +1004,9 @@ Class.Memoize = function Memoize(getter, wait)
                     }
                 };
 
-            this.set = function s_Memoize(val) Class.replaceProperty(this.instance || this, key, val);
+            this.set = function s_Memoize(val) {
+                return Class.replaceProperty(this.instance || this, key, val);
+            };
         }
     });
 
@@ -1006,8 +1014,8 @@ Class.Memoize = function Memoize(getter, wait)
  * Updates the given object with the object in the target class's
  * prototype.
  */
-Class.Update = function Update(obj)
-    Class.Property({
+Class.Update = function Update(obj) {
+    return Class.Property({
         configurable: true,
         enumerable: true,
         writable: true,
@@ -1015,12 +1023,15 @@ Class.Update = function Update(obj)
             this.value = update({}, target[key], obj);
         }
     });
+};
 
 Class.replaceProperty = function replaceProperty(obj, prop, value) {
     Object.defineProperty(obj, prop, { configurable: true, enumerable: true, value: value, writable: true });
     return value;
 };
-Class.toString = function toString() "[class " + this.className + "]";
+Class.toString = function toString() {
+    return "[class " + this.className + "]";
+};
 Class.prototype = {
     /**
      * Initializes new instances of this class. Called automatically
@@ -1353,8 +1364,12 @@ function Struct(...args) {
         members: Ary(args).map((v, k) => [v, k]).toObject()
     });
     args.forEach(function (name, i) {
-        Struct.prototype.__defineGetter__(name, function () this[i]);
-        Struct.prototype.__defineSetter__(name, function (val) { this[i] = val; });
+        Struct.prototype.__defineGetter__(name, function () {
+            return this[i];
+        });
+        Struct.prototype.__defineSetter__(name, function (val) {
+            this[i] = val;
+        });
     });
     return Struct;
 }
@@ -1401,9 +1416,12 @@ var StructBase = Class("StructBase", Array, {
      */
     defaultValue: function defaultValue(key, val) {
         let i = this.prototype.members[key];
-        this.prototype.__defineGetter__(i, function () (this[i] = val.call(this)));
-        this.prototype.__defineSetter__(i, function (value)
-            Class.replaceProperty(this, i, value));
+        this.prototype.__defineGetter__(i, function () {
+            return this[i] = val.call(this);
+        });
+        this.prototype.__defineSetter__(i, function (value) {
+            return Class.replaceProperty(this, i, value);
+        });
         return this;
     },
 
@@ -1728,7 +1746,9 @@ const Iter = Class("Iter", {
             this.iter = iter.__iterator__();
 
         if (this.iter.finalize)
-            this.finalize = function finalize() apply(this.iter, "finalize", arguments);
+            this.finalize = function finalize() {
+                return apply(this.iter, "finalize", arguments);
+            };
     },
 
     next: function next() this.iter.next(),

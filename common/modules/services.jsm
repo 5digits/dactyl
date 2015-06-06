@@ -178,10 +178,13 @@ var Services = Module("Services", {
     addClass: function addClass(name, class_, ifaces, init, quiet) {
         this.services[name] = { class: class_, interfaces: Array.concat(ifaces || []), method: "createInstance", init: init, quiet: quiet };
         if (init)
-            memoize(this.services[name], "callable",
-                    function () callable(XPCOMShim(this.interfaces)[this.init]));
+            memoize(this.services[name], "callable", function () {
+                return callable(XPCOMShim(this.interfaces)[this.init]);
+            });
 
-        this[name] = (function Create() this._create(name, arguments)).bind(this);
+        this[name] = (function Create() {
+            return this._create(name, arguments);
+        }).bind(this);
         update.apply(null, [this[name]].concat([Ci[i] for (i of Array.concat(ifaces))]));
         return this[name];
     },
