@@ -11,7 +11,7 @@
         "dir": "directory",
         "environment": "environment",
         "event": "autocmdEvent",
-        "extension": "extension",
+        "extension": "addon",
         "file": "file",
         "help": "help",
         "highlight": "highlightGroup",
