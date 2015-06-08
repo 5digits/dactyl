@@ -972,14 +972,24 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *      for *obj*.
      */
     makeDTD: function makeDTD(obj) {
-        let map = { "'": "&apos;", '"': "&quot;", "%": "&#x25;", "&": "&amp;", "<": "&lt;", ">": "&gt;" };
+        let map = {
+            "'": "&apos;", '"': "&quot;", "%": "&#x25;",
+            "&": "&amp;",  "<": "&lt;",   ">": "&gt;"
+        };
 
-        return iter(obj)
-          .map(([k, v]) => ["<!ENTITY ", k, " '", String.replace(v == null ? "null" : typeof v == "xml" ? v.toXMLString() : v,
-                                                                 typeof v == "xml" ? /['%]/g : /['"%&<>]/g,
-                                                                 m => map[m]),
-                            "'>"].join(""))
-          .join("\n");
+        function escape(val) {
+           let isDOM = DOM.isJSONXML(val);
+           return String.replace(val == null ? "null" :
+                                 isDOM       ? DOM.toXML(val)
+                                             : val,
+                                 isDOM ? /['%]/g
+                                       : /['"%&<>]/g,
+                                 m => map[m]);
+        }
+
+        return iter(obj).map(([k, v]) =>
+                             ["<!ENTITY ", k, " '", escape(v), "'>"].join(""))
+                        .join("\n");
     },
 
     /**
