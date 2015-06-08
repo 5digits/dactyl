@@ -1794,7 +1794,6 @@ var Ary = Class("Ary", Array, {
         if (Symbol.iterator in ary && !isArray(ary))
             ary = [k for (k of ary)];
 
-        let self = this;
         return new Proxy(ary, {
             get: function array_get(target, prop) {
                 if (prop == "array")
