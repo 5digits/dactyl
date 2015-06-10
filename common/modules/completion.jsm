@@ -366,7 +366,7 @@ var CompletionContext = Class("CompletionContext", {
     get createRow() { return this._createRow || template.completionRow; }, // XXX
     set createRow(createRow) { return this._createRow = createRow; },
 
-    get filterFunc() { return this._filterFunc || util.identity; },
+    get filterFunc() { return this._filterFunc || identity; },
     set filterFunc(val) { this._filterFunc = val; },
 
     get filter() {
@@ -595,7 +595,7 @@ var CompletionContext = Class("CompletionContext", {
         if (this._substrings)
             return this._substrings;
 
-        let fixCase = this.ignoreCase ? String.toLowerCase : util.identity;
+        let fixCase = this.ignoreCase ? String.toLowerCase : identity;
         let text   = fixCase(items[0].text);
         let filter = fixCase(this.filter);
 
@@ -1035,7 +1035,7 @@ var Completion = Module("completion", {
         if (/^jar:[^!]*$/.test(context.filter)) {
             context.advance(4);
 
-            context.quote = context.quote || ["", util.identity, ""];
+            context.quote = context.quote || ["", identity, ""];
             let quote = context.quote[1];
             context.quote[1] = function quote_1(str) {
                 return quote(str.replace(/!/g, escape));
@@ -1185,7 +1185,7 @@ var Completion = Module("completion", {
                 });
             });
 
-            let re = RegExp(tokens.filter(util.identity).map(util.regexp.escape).join("|"), "g");
+            let re = RegExp(tokens.filter(identity).map(util.regexp.escape).join("|"), "g");
             function highlight(item, text, i) {
                 return process[i].call(this, item, template.highlightRegexp(text, re));
             }

@@ -165,7 +165,7 @@ var Download = Class("Download", {
         let val = this._compare[order.substr(1)](this, other);
 
         return (order[0] == "-") ? -val : val;
-    }, this).find(util.identity) || 0,
+    }, this).find(identity) || 0,
 
     timeRemaining: Infinity,
 

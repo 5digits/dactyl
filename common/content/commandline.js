@@ -166,7 +166,7 @@ var CommandWidgets = Class("CommandWidgets", {
         this.elements[obj.name] = obj;
 
         function get(prefix, map, id) {
-            return (obj.getElement || util.identity)(map[id] || document.getElementById(prefix + id));
+            return (obj.getElement || identity)(map[id] || document.getElementById(prefix + id));
         }
 
         this.active.__defineGetter__(obj.name, () => this.activeGroup[obj.name][obj.name]);
@@ -200,7 +200,7 @@ var CommandWidgets = Class("CommandWidgets", {
                         else {
                             highlight.highlightNode(elem,
                                 (val[0] != null ? val[0] : obj.defaultGroup)
-                                    .split(/\s/).filter(util.identity)
+                                    .split(/\s/).filter(identity)
                                     .map(g => g + " " + nodeSet.group + g)
                                     .join(" "));
                             elem.value = val[1];

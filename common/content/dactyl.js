@@ -256,7 +256,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             {
                 argCount: "*",
                 completer: function (context, args) {
-                    context.keys.text = util.identity;
+                    context.keys.text = identity;
                     context.keys.description = function () {
                         return seen[this.text] + /*L*/" matching items";
                     };
@@ -662,7 +662,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      */
     generateHelp: function generateHelp(obj, extraHelp, str, specOnly) {
         let link, tag, spec;
-        link = tag = spec = util.identity;
+        link = tag = spec = identity;
         let args = null;
 
         if (obj instanceof Command) {
@@ -1286,7 +1286,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                        template.map(iter(dactyl.indices),
                                     ([name, iter]) =>
                            ["dl", { insertafter: name + "-index" },
-                               template.map(iter(), util.identity)],
+                               template.map(iter(), identity)],
                            "\n\n")]);
         }, true);
 

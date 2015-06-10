@@ -98,6 +98,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     haveGecko: deprecated("config.haveGecko", { get: function haveGecko() config.bound.haveGecko }),
     OS: deprecated("config.OS", { get: function OS() config.OS }),
 
+    identity: deprecated("identity", { get: function identity() global.identity }),
+
     dactyl: update(function dactyl(obj) {
         if (obj)
             var global = Class.objectGlobal(obj);
@@ -346,7 +348,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             return this[this.length - 1];
         });
 
-        let unknown = util.identity;
+        let unknown = identity;
         if (!keepUnknown)
             unknown = () => "";
 
@@ -395,7 +397,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 let [, flags, name] = /^((?:[a-z]-)*)(.*)/.exec(macro);
                 flags = new RealSet(flags);
 
-                let quote = util.identity;
+                let quote = identity;
                 if (flags.has("q"))
                     quote = function quote(obj) {
                         return typeof obj === "number" ? obj : JSON.stringify(obj);
@@ -850,14 +852,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             canceled.then(req.cancel);
         });
     },
-
-    /**
-     * The identity function.
-     *
-     * @param {Object} k
-     * @returns {Object}
-     */
-    identity: function identity(k) k,
 
     /**
      * Returns the intersection of two rectangles.

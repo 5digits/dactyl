@@ -201,6 +201,7 @@ defineModule("base", {
         "deprecated",
         "endModule",
         "hasOwnProperty",
+        "identity",
         "isArray",
         "isGenerator",
         "isObject",
@@ -723,6 +724,14 @@ function call(fn, self, ...args) {
     fn.apply(self, args);
     return fn;
 }
+
+/**
+ * Returns *val*.
+ *
+ * @param {*} val
+ * @returns {*}
+ */
+function identity(val) { return val; }
 
 /**
  * Memoizes an object property value.
@@ -1632,7 +1641,7 @@ update(iter, {
     compact: function compact(iter) (item for (item of iter) if (item != null)),
 
     every: function every(iter, pred, self) {
-        pred = pred || util.identity;
+        pred = pred || identity;
         for (let elem of iter)
             if (!pred.call(self, elem))
                 return false;
@@ -1640,7 +1649,7 @@ update(iter, {
     },
 
     some: function every(iter, pred, self) {
-        pred = pred || util.identity;
+        pred = pred || identity;
         for (let elem of iter)
             if (pred.call(self, elem))
                 return true;

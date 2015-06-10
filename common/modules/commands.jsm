@@ -917,7 +917,7 @@ var Commands = Module("commands", {
      * @returns {Command}
      */
     get: function get(name, full) iter(this.hives).map(([i, hive]) => hive.get(name, full))
-                                                  .find(util.identity),
+                                                  .find(identity),
 
     /**
      * Returns true if a command invocation contains a URL referring to the
@@ -1569,7 +1569,7 @@ var Commands = Module("commands", {
             let quote = RegExp.$2;
             context.quote = null;
             context.offset -= idx;
-            context.filter = str.substr(0, idx) + (quote ? Option.quote : util.identity)(context.filter);
+            context.filter = str.substr(0, idx) + (quote ? Option.quote : identity)(context.filter);
 
             context.fork("ex", 0, completion, "ex");
         };

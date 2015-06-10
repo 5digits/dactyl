@@ -156,7 +156,7 @@ var Hive = Class("Hive", {
             sheet.sites = filter;
         }
         else {
-            sheet = Sheet(name, styles._id++, filter.filter(util.identity), String(css), this, agent);
+            sheet = Sheet(name, styles._id++, filter.filter(identity), String(css), this, agent);
             this.sheets.push(sheet);
         }
 
@@ -414,7 +414,7 @@ var Styles = Module("Styles", {
 
         context.generate = () => values(group.sites);
 
-        context.keys.text = util.identity;
+        context.keys.text = identity;
         context.keys.description = function (site) {
             return this.sheets.length + /*L*/" sheet" +
                    (this.sheets.length == 1 ? "" : "s") + ": " +

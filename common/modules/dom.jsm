@@ -659,7 +659,7 @@ var DOM = Class("DOM", {
                 res.push({}.toString.call(elem));
             }
         }, this);
-        res = template.map(res, util.identity, ",");
+        res = template.map(res, identity, ",");
         return color ? res : res.join("");
     },
 

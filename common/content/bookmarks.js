@@ -438,7 +438,7 @@ var Bookmarks = Module("bookmarks", {
                                              for (b of bookmarkcache)
                                              if (b.tags))
                                             .flatten().uniq().array;
-                context.keys = { text: util.identity, description: util.identity };
+                context.keys = { text: identity, description: identity };
             },
             type: CommandOption.LIST
         };
@@ -705,7 +705,7 @@ var Bookmarks = Module("bookmarks", {
                                 }
                                 catch (e) {}
                             return null;
-                        }).filter(util.identity);
+                        }).filter(identity);
                     };
                 });
         };
@@ -742,7 +742,7 @@ var Bookmarks = Module("bookmarks", {
                 let ctxt = context.fork(name, 0);
 
                 ctxt.title = [/*L*/desc + " Suggestions"];
-                ctxt.keys = { text: util.identity, description: function () "" };
+                ctxt.keys = { text: identity, description: function () "" };
                 ctxt.compare = CompletionContext.Sort.unsorted;
                 ctxt.filterFunc = null;
 

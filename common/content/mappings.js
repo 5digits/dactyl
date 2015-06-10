@@ -196,7 +196,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      */
     add: function (modes, keys, description, action, extra={}) {
         modes = Array.concat(modes);
-        if (!modes.every(util.identity))
+        if (!modes.every(identity))
             throw TypeError(/*L*/"Invalid modes: " + modes);
 
         let map = Map(modes, keys, description, action, extra);

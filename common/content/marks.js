@@ -301,14 +301,14 @@ var Marks = Module("marks", {
                     "(" + Math.round(mark.offset.x * 100),
                           Math.round(mark.offset.y * 100) + ")",
                     (tab && "tab: " + tabs.index(tab))
-            ].filter(util.identity).join(", ");
+            ].filter(identity).join(", ");
 
         if (mark.position)
             return [name, mark.location,
                     "(" + Math.round(mark.position.x * 100) + "%",
                           Math.round(mark.position.y * 100) + "%)",
                     (tab && "tab: " + tabs.index(tab))
-            ].filter(util.identity).join(", ");
+            ].filter(identity).join(", ");
     },
 
     isLocalMark: bind("test", /^[a-z`']$/),

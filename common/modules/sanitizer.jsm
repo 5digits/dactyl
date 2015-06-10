@@ -620,7 +620,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             context.title = ["Domain"];
             context.anchored = false;
             context.compare = modules.CompletionContext.Sort.unsorted;
-            context.keys = { text: util.identity, description: util.identity };
+            context.keys = { text: identity, description: identity };
             context.completions = res;
         };
     },

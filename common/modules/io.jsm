@@ -584,7 +584,7 @@ var IO = Module("io", {
         let args = Ary(util.range(0, func.length))
                     .map(bind("createTempFile", this, ext, label)).array;
         try {
-            if (!args.every(util.identity))
+            if (!args.every(identity))
                 return false;
             var res = func.apply(self || this, args);
         }
@@ -979,7 +979,7 @@ unlet s:cpo_save
         completion.charset = context => {
             context.anchored = false;
             context.keys = {
-                text: util.identity,
+                text: identity,
                 description: charset => io.charsetTitle(charset)
             };
             context.completions = io.charsets;
@@ -1163,7 +1163,7 @@ unlet s:cpo_save
             });
         options.add(["cdpath", "cd"],
             "List of directories searched when executing :cd",
-            "stringlist", ["."].concat(services.environment.get("CDPATH").split(/[:;]/).filter(util.identity)).join(","),
+            "stringlist", ["."].concat(services.environment.get("CDPATH").split(/[:;]/).filter(identity)).join(","),
             {
                 get files() {
                     return this.value.map(path => File(path, modules.io.cwd))

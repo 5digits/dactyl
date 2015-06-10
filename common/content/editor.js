@@ -777,7 +777,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
     completion: function initCompletion() {
         completion.register = function complete_register(context) {
             context = context.fork("registers");
-            context.keys = { text: util.identity, description: editor.bound.getRegister };
+            context.keys = { text: identity, description: editor.bound.getRegister };
 
             context.match = function (r) {
                 return !this.filter || this.filter.contains(r);
@@ -1413,7 +1413,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                     let res = {};
                     services.spell.getDictionaryList(res, {});
                     context.completions = res.value;
-                    context.keys = { text: util.identity, description: util.identity };
+                    context.keys = { text: identity, description: identity };
                 }
             });
     },

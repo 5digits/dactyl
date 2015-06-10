@@ -528,7 +528,7 @@ var Contexts = Module("contexts", {
             });
         }
 
-        let process = util.identity;
+        let process = identity;
 
         if (callable(params))
             var makeParams = function makeParams(self, args) {
@@ -663,7 +663,7 @@ var Contexts = Module("contexts", {
 
                 if (!group.builtin && args.has("-args")) {
                     group.argsExtra = contexts.bindMacro({ literalArg: "return " + args["-args"] },
-                                                         "-javascript", util.identity);
+                                                         "-javascript", identity);
                     group.args = args["-args"];
                 }
 

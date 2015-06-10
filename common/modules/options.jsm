@@ -1322,7 +1322,7 @@ var Options = Module("options", {
                             [option.stringValue, _("option.currentValue")],
                             [option.stringDefaultValue, _("option.defaultValue")]
                     ].filter(f => f[0] !== "");
-                    context.quote = ["", util.identity, ""];
+                    context.quote = ["", identity, ""];
                 });
             }
 

@@ -2552,7 +2552,7 @@ var Buffer = Module("Buffer", {
                                 res = iter.find(filter.matcher(doc),
                                                 elem => ((elem.nodeValue || elem.textContent).trim() == line &&
                                                          DOM(elem).display != "none"))
-                                   || iter.nth(filter.matcher(doc), util.identity, line - 1);
+                                   || iter.nth(filter.matcher(doc), identity, line - 1);
                             if (res)
                                 break;
                         }

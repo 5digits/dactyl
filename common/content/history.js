@@ -331,7 +331,7 @@ var History = Module("history", {
         completion.domain = context => {
             context.anchored = false;
             context.compare = (a, b) => String.localeCompare(a.key, b.key);
-            context.keys = { text: util.identity, description: util.identity,
+            context.keys = { text: identity, description: identity,
                 key: function (host) host.split(".").reverse().join(".") };
 
             // FIXME: Schema-specific
