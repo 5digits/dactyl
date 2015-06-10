@@ -63,6 +63,11 @@ var Config = Module("config", ConfigBase, {
                     () => { modules.buffer.viewSelectionSource(); }]
             },
 
+            get toolbars() {
+                let navbar = window.document.getElementById("nav-bar");
+                return window.getTogglableToolbars().concat(navbar);
+            },
+
             removeTab: function removeTab(tab) {
                 if (window.gInPrintPreviewMode)
                     window.PrintUtils.exitPrintPreview();

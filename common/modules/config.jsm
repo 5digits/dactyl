@@ -603,6 +603,8 @@ var ConfigBase = Class("ConfigBase", {
 
     sidebars: {},
 
+    toolbars: [],
+
     /**
      * @constant
      * @property {string} The default highlighting rules.
