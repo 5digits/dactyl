@@ -1203,13 +1203,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *
      * @param {number} start The interval's start value.
      * @param {number} end The interval's end value.
-     * @param {boolean} step The value to step the range by. May be
-     *     negative. @default 1
-     * @returns {Iterator(Object)}
+     * @param {number} step The value to step the range by. May be negative.
+     *     @default 1
+     * @returns {Generator(number)}
      */
-    range: function* range(start, end, step) {
-        if (!step)
-            step = 1;
+    range: function* range(start, end, step=1) {
         if (step > 0) {
             for (; start < end; start += step)
                 yield start;
