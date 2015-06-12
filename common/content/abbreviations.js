@@ -287,7 +287,7 @@ var Abbreviations = Module("abbreviations", {
                                 ["td", { highlight: "Title" }, !i++ ? String(hive.name) : ""],
                                 ["td", {}, abbrev.modeChar],
                                 ["td", {}, abbrev.lhs],
-                                ["td", {}, abbrev.rhs]]),
+                                ["td", {}, String(abbrev.rhs)]]),
                         ["tr", { style: "height: .5ex;" }]];
                 })];
 
