@@ -709,7 +709,8 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 values: [
                     ["all", "Accept all cookies"],
                     ["samesite", "Accept all non-third-party cookies"],
-                    ["none", "Accept no cookies"]
+                    ["none", "Accept no cookies"],
+                    ["visited", "Accept cookies from visited sites"]
                 ],
                 getter: function () (this.values[prefs.get(this.PREF)] || ["all"])[0],
                 setter: function (val) {

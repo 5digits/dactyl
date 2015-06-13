@@ -1572,7 +1572,7 @@ var Buffer = Module("Buffer", {
                        _("buffer.save.altText")]);
 
         if (!isinstance(node, Ci.nsIDOMDocument) && node.textContent)
-            names.push([node.textContent,
+            names.push([node.textContent.trim(),
                        _("buffer.save.linkText")]);
 
         names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")),
