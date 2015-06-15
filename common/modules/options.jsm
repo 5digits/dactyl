@@ -708,8 +708,8 @@ var Option = Class("Option", {
                 return uniq(Array.concat(values, this.value), true);
             case "-":
                 return this.value.filter(function (item) {
-                    return !this.has(item), new RealSet(values);
-                });
+                    return !this.has(item);
+                }, new RealSet(values));
             case "=":
                 if (invert) {
                     let old = this.value.map(String);
