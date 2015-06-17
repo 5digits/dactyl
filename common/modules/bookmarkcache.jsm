@@ -118,7 +118,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
 
         let post = BookmarkCache.getAnnotation(node.itemId, this.POST);
         let charset = BookmarkCache.getAnnotation(node.itemId, this.CHARSET);
-        return Bookmark(node.uri, node.title, node.icon && node.icon.spec, post, keyword, tags, charset, node.itemId);
+        return Bookmark(node.uri, node.title, node.icon, post, keyword, tags, charset, node.itemId);
     },
 
     annotate: function (id, key, val, timespan) {
