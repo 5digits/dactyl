@@ -715,6 +715,11 @@ function isString(val) {
 /**
  * Returns true if and only if its sole argument may be called
  * as a function. This includes classes and function objects.
+ *
+ * Excludes callable DOM objects: https://bugzil.la/268945
+ *
+ * @param {*} val
+ * @returns {boolean}
  */
 function callable(val) {
     return typeof val === "function" && !(val instanceof Ci.nsIDOMElement);
@@ -804,7 +809,7 @@ function update(target) {
                 desc = desc.value.init(k, target) || desc.value;
 
             try {
-                if (typeof desc.value === "function" && target.__proto__ && !(desc.value instanceof Ci.nsIDOMElement /* wtf? */)) {
+                if (callable(desc.value) && target.__proto__) {
                     let func = desc.value.wrapped || desc.value;
                     if (!func.superapply) {
                         func.__defineGetter__("super", function get_super() {
