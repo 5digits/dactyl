@@ -646,7 +646,8 @@ var isinstance_types = {
     boolean: Boolean,
     string: String,
     function: Function,
-    number: Number
+    number: Number,
+    symbol: Symbol
 };
 function isinstance(object, interfaces) {
     if (object == null)

@@ -4,6 +4,7 @@ Null         /* JavaScript null values */    color: blue;
 Number       /* JavaScript numbers */        color: blue;
 Object       /* JavaScript objects */        color: maroon;
 String       /* String values */             color: green; white-space: pre;
+Symbol       /* JavaScript symbols */        color: darkcyan;
 Comment      /* JavaScriptor CSS comments */ color: gray;
 
 Key          /* Keywords */                  font-weight: bold;

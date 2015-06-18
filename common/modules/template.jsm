@@ -284,10 +284,13 @@ var Template = Module("Template", {
                 if (processStrings)
                     str = JSON.stringify(str);
                 return ["span", { highlight: "String" }, str];
+            case "symbol":
+                return ["span", { highlight: "Symbol" }, str];
             case "boolean":
                 return ["span", { highlight: "Boolean" }, str];
             case "function":
-                if (arg instanceof Ci.nsIDOMElement) // wtf?
+                // See: https://bugzil.la/268945
+                if (arg instanceof Ci.nsIDOMElement)
                     return util.objectToString(arg, !bw);
 
                 str = str.replace("/* use strict */ \n", "/* use strict */ ");
@@ -310,8 +313,6 @@ var Template = Module("Template", {
                                                            { highlight: "NonText" },
                                                            "^J"]);
                 return ["span", { highlight: "Object" }, str];
-            case "xml":
-                return arg;
             default:
                 return "<unknown type>";
             }
