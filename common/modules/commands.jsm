@@ -331,8 +331,9 @@ var Command = Class("Command", {
     }),
 
     newArgs: function newArgs(base) {
-        let res = Object.create(this.argsPrototype);
+        let res = [];
         update(res, base);
+        res.__proto__ = this.argsPrototype;
         return res;
     },
 
