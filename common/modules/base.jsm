@@ -1743,18 +1743,19 @@ update(iter, {
     },
 
     /**
-     * Zips the contents of two arrays. The resulting array is the length of
-     * ary1, with any shortcomings of ary2 replaced with null strings.
+     * Zips the contents of two iterables. The resulting iterable is the length
+     * of iter1, with any shortcomings of iter2 replaced with null strings.
      *
-     * @param {Array} ary1
-     * @param {Array} ary2
-     * @returns {Array}
+     * @param {Iterable} iter1
+     * @param {Iterable} iter2
+     * @returns {Generator}
      */
     zip: function* zip(iter1, iter2) {
-        try {
-            yield [iter1.next(), iter2.next()];
+        let i = iter2[Symbol.iterator]();
+        for (let x of iter1) {
+            let y = i.next().value;
+            yield [x, y === undefined ? "" : y];
         }
-        catch (e if e instanceof StopIteration) {}
     }
 });
 
