@@ -911,10 +911,8 @@ var Buffer = Module("Buffer", {
      *
      * @param {boolean} direction The direction to scroll. If true then
      *     scroll up and if false scroll down.
-     * @param {number} count The multiple of 'scroll' lines to scroll.
-     * @optional
      */
-    scrollByScrollSize: function scrollByScrollSize(direction, count=1) {
+    scrollByScrollSize: function scrollByScrollSize(direction) {
         let { options } = this.modules;
 
         direction = direction ? 1 : -1;
