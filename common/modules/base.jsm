@@ -1405,6 +1405,10 @@ var StructBase = Class("StructBase", Array, {
     get: function struct_get(key, val) this[this.members[key]],
     set: function struct_set(key, val) this[this.members[key]] = val,
 
+    toObject: function struct_toObject() {
+        return iter.toObject([k, this[k]] for (k of keys(this.members)));
+    },
+
     toString: function struct_toString() Class.prototype.toString.apply(this, arguments),
 
     // Iterator over our named members
