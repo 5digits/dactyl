@@ -479,7 +479,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         if (fileName == null)
             if (info)
-                ({ file: fileName, line: lineNumber, context: ctxt }) = info;
+                ({ file: fileName, line: lineNumber, context: ctxt } = info);
 
         if (fileName && fileName[0] == "[")
             fileName = "dactyl://command-line/";

@@ -408,7 +408,7 @@ var DOM = Class("DOM", {
 
         return this.each(function (elem, i) {
             if (func)
-                ({ left, top }) = func.call(this, elem, i);
+                ({ left, top } = func.call(this, elem, i));
 
             if (elem instanceof Ci.nsIDOMWindow)
                 elem.scrollTo(left == null ? elem.scrollX : left,
@@ -966,7 +966,7 @@ var DOM = Class("DOM", {
                         && parent.style.overflow == "visible")
                     return;
 
-                ({ rect }) = DOM(elem);
+                ({ rect } = DOM(elem));
                 let { viewport } = parent;
                 let isect = util.intersection(rect, viewport);
 
