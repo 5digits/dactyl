@@ -1819,7 +1819,7 @@ var Ary = Class("Ary", Array, {
                 if (prop == "array")
                     return target;
 
-                if (prop in Ary && callable(Ary[prop]))
+                if (hasOwnProperty(Ary, prop) && callable(Ary[prop]))
                     return arrayWrap(Ary[prop].bind(Ary, target));
 
                 let p = target[prop];
