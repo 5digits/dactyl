@@ -1578,7 +1578,7 @@ function iter(obj, iface) {
                 for (let j of iter(args[i]))
                     yield j;
         })();
-    else if (isinstance(obj, ["Array"]))
+    else if (isinstance(obj, ["Array", StructBase]))
         res = obj.entries();
     else if (Symbol.iterator in obj)
         res = obj[Symbol.iterator]();
