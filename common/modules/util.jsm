@@ -1705,6 +1705,19 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     /**
+     * Iterates, depth-first, over the given window and all of its descendant
+     * frames.
+     *
+     * @param {nsIDOMWindow} win The root window.
+     * @returns {Generator(nsIDOMWindow)}
+     */
+    iterFrames: function* iterFrames(win) {
+            yield win;
+            for (let i = 0; i < win.frames.length; i++)
+                yield* iterFrames(win.frames[i]);
+    },
+
+    /**
      * Returns a list of all domains and subdomains of documents in the
      * given window and all of its descendant frames.
      *
@@ -1712,16 +1725,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {[string]} The visible domains.
      */
     visibleHosts: function visibleHosts(win) {
-        let res = [],
-            seen = new RealSet;
-        (function rec(frame) {
+        let res = [], seen = new RealSet;
+        for (let frame of this.iterFrames(win)) {
             try {
                 if (frame.location.hostname)
                     res = res.concat(util.subdomains(frame.location.hostname));
             }
             catch (e) {}
-            Array.forEach(frame.frames, rec);
-        })(win);
+        }
         return res.filter(h => !seen.add(h));
     },
 
@@ -1733,15 +1744,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {[nsIURI]} The visible URIs.
      */
     visibleURIs: function visibleURIs(win) {
-        let res = [],
-            seen = new RealSet;
-        (function rec(frame) {
+        let res = [], seen = new RealSet;
+        for (let frame of this.iterFrames(win)) {
             try {
-                res = res.concat(util.newURI(frame.location.href));
+                res.push(util.newURI(frame.location.href));
             }
             catch (e) {}
-            Array.forEach(frame.frames, rec);
-        })(win);
+        }
         return res.filter(h => !seen.add(h.spec));
     },
 

@@ -363,17 +363,13 @@ var Buffer = Module("Buffer", {
     /**
      * Returns a list of all frames in the given window or current buffer.
      */
-    allFrames: function allFrames(win, focusedFirst) {
-        let frames = [];
-        (function rec(frame) {
-            if (true || frame.document.body instanceof Ci.nsIDOMHTMLBodyElement)
-                frames.push(frame);
-            Array.forEach(frame.frames, rec);
-        })(win || this.win);
+    allFrames: function allFrames(win=this.win, focusedFirst) {
+        let frames = iter(util.iterFrames(win)).toArray();
 
         if (focusedFirst)
             return frames.filter(f => f === this.focusedFrame).concat(
                    frames.filter(f => f !== this.focusedFrame));
+
         return frames;
     },
 
@@ -2337,7 +2333,7 @@ var Buffer = Module("Buffer", {
                 if (count >= 1 || !elem || !events.isContentNode(elem)) {
                     let xpath = ["frame", "iframe", "input", "xul:textbox", "textarea[not(@disabled) and not(@readonly)]"];
 
-                    let frames = buffer.allFrames(null, true);
+                    let frames = buffer.allFrames(undefined, true);
 
                     let elements = Ary.flatten(frames.map(win => [m for (m of DOM.XPath(xpath, win.document))]))
                                       .filter(function (elem) {
