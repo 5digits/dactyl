@@ -490,7 +490,7 @@ var Events = Module("events", {
                     case "accel":  keys[accel] = true; break;
                     default:       keys[modifier + "Key"] = true; break;
                     case "any":
-                        if (!iter.some(keys, ([k, v]) => v && needed[k]))
+                        if (!iter(keys).some(([k, v]) => v && needed[k]))
                             continue outer;
                         for (let [k, v] of iter(keys)) {
                             if (v)
