@@ -26,7 +26,9 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
         this._store = [];
     },
 
-    "@@iterator": function () this._store[Symbol.iterator](),
+    "@@iterator": function () {
+        return this._store[Symbol.iterator]();
+    },
 
     /**
      * Adds a new autocommand. *cmd* will be executed when one of the specified
@@ -171,7 +173,9 @@ var AutoCommands = Module("autocommands", {
             hives: contexts.Hives("autocmd", AutoCmdHive),
             user: contexts.hives.autocmd.user,
             allHives: contexts.allGroups.autocmd,
-            matchingHives: function matchingHives(uri, doc) contexts.matchingGroups(uri, doc).autocmd
+            matchingHives: function matchingHives(uri, doc) {
+                return contexts.matchingGroups(uri, doc).autocmd;
+            }
         });
     },
     commands: function initCommands() {

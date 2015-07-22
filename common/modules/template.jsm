@@ -49,14 +49,16 @@ var Binding = Class("Binding", {
         }.call(this);
     },
 
-    bind: function bind(func) function bound() {
-        try {
-            return func.apply(this.dactylBinding, arguments);
-        }
-        catch (e) {
-            util.reportError(e);
-            throw e;
-        }
+    bind: function bind(func) {
+        return function bound() {
+            try {
+                return func.apply(this.dactylBinding, arguments);
+            }
+            catch (e) {
+                util.reportError(e);
+                throw e;
+            }
+        };
     },
 
     events: Class.Memoize(function () {
@@ -88,7 +90,7 @@ var Binding = Class("Binding", {
     Object.defineProperty(Binding.prototype, key, {
         configurable: true,
         enumerable: false,
-        value: function () apply(this.node, key, arguments),
+        value: function () { return apply(this.node, key, arguments); },
         writable: true
     });
 });
@@ -174,22 +176,26 @@ var Template = Module("Template", {
         return res;
     },
 
-    bookmarkDescription: function (item, text) [
-        !(item.extra && item.extra.length) ? [] :
-        ["span", { highlight: "URLExtra" },
-            " (",
-            template.map(item.extra, e =>
-                ["", e[0], ": ",
-                 ["span", { highlight: e[2] }, e[1]]],
-                "\u00a0"),
-            ")\u00a0"],
-        ["a", { identifier: item.id == null ? "" : item.id,
-                "dactyl:command": item.command || "",
-                href: item.item.url, highlight: "URL" },
-            text || ""]
-    ],
+    bookmarkDescription: function (item, text) {
+        return [
+            !(item.extra && item.extra.length) ? [] :
+            ["span", { highlight: "URLExtra" },
+                " (",
+                template.map(item.extra, e =>
+                    ["", e[0], ": ",
+                    ["span", { highlight: e[2] }, e[1]]],
+                    "\u00a0"),
+                ")\u00a0"],
+            ["a", { identifier: item.id == null ? "" : item.id,
+                    "dactyl:command": item.command || "",
+                    href: item.item.url, highlight: "URL" },
+                text || ""]
+        ];
+    },
 
-    filter: function (str) ["span", { highlight: "Filter" }, str],
+    filter: function (str) {
+        return ["span", { highlight: "Filter" }, str];
+    },
 
     completionRow: function completionRow(item, highlightGroup) {
         if (typeof icon == "function")
@@ -378,12 +384,14 @@ var Template = Module("Template", {
             return str;
     },
 
-    icon: function (item, text) [
-        ["span", { highlight: "CompIcon" },
-            item.icon ? ["img", { src: item.icon }] : []],
-        ["span", { class: "td-strut" }],
-        text
-    ],
+    icon: function (item, text) {
+        return [
+            ["span", { highlight: "CompIcon" },
+                item.icon ? ["img", { src: item.icon }] : []],
+            ["span", { class: "td-strut" }],
+            text
+        ];
+    },
 
     jumps: function jumps(index, elems) {
         return ["table", {},

@@ -29,9 +29,9 @@ var Messages = Module("messages", {
                 }
                 return self.get(message);
             }),
-            valueOf: function valueOf() this.message,
-            toString: function toString() this.message,
-            toJSON: function toJSON() this.message
+            valueOf: function valueOf() { return this.message; },
+            toString: function toString() { return this.message; },
+            toJSON: function toJSON() { return this.message; }
         });
     },
 
@@ -200,7 +200,7 @@ var Messages = Module("messages", {
                         return Class.replaceProperty(this, prop, value);
                     },
 
-                    set: function set(val) this[_prop] = val
+                    set: function set(val) { this[_prop] = val; }
                 };
             }
             this.default = prop;

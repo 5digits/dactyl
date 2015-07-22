@@ -24,7 +24,7 @@ var Magic = Class("Magic", {
 
     get message() { return this.str; },
 
-    toString: function () this.str
+    toString: function () { return this.str; }
 });
 
 var FailedAssertion = Class("FailedAssertion", ErrorBase, {
@@ -119,7 +119,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
         };
     }, {
-        __noSuchMethod__: function __noSuchMethod__() this().__noSuchMethod__.apply(null, arguments)
+        __noSuchMethod__: function __noSuchMethod__() {
+            return this().__noSuchMethod__.apply(null, arguments);
+        }
     }),
 
     /**
@@ -186,15 +188,18 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} name The name to mangle.
      * @returns {string} The mangled name.
      */
-    camelCase: function camelCase(name) String.replace(name, /-(.)/g,
-                                                       (m, m1) => m1.toUpperCase()),
+    camelCase: function camelCase(name) {
+        return String.replace(name, /-(.)/g, (m, m1) => m1.toUpperCase());
+    },
 
     /**
      * Capitalizes the first character of the given string.
      * @param {string} str The string to capitalize
      * @returns {string}
      */
-    capitalize: function capitalize(str) str && str[0].toUpperCase() + str.slice(1).toLowerCase(),
+    capitalize: function capitalize(str) {
+        return str && str[0].toUpperCase() + str.slice(1).toLowerCase();
+    },
 
     /**
      * Returns a RegExp object that matches characters specified in the range
@@ -255,7 +260,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} b
      * @returns {number}
      */
-    compareIgnoreCase: function compareIgnoreCase(a, b) String.localeCompare(a.toLowerCase(), b.toLowerCase()),
+    compareIgnoreCase: function compareIgnoreCase(a, b) {
+        return String.localeCompare(a.toLowerCase(), b.toLowerCase());
+    },
 
     compileFormat: function compileFormat(format) {
         let stack = [frame()];
@@ -272,7 +279,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }, {
                 elements: [],
                 seen: new RealSet,
-                valid: function valid(obj) this.elements.every(e => !e.test || e.test(obj))
+                valid: function valid(obj) {
+                    return this.elements.every(e => !e.test || e.test(obj));
+                }
             });
         }
 
@@ -296,15 +305,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 util.assert(stack.length, /*L*/"Unmatched %] in format");
             }
             else {
-                let quote = function quote(obj, char) obj[char];
+                let quote = function quote(obj, char) { return obj[char]; };
                 if (char !== char.toLowerCase())
-                    quote = function quote(obj, char) Commands.quote(obj[char]);
+                    quote = function quote(obj, char) { return Commands.quote(obj[char]); };
                 char = char.toLowerCase();
 
                 stack.top.elements.push(update(
                     obj => obj[char] != null ? quote(obj, char)
                                              : "",
-                    { test: function test(obj) obj[char] != null }));
+                    { test: function test(obj) { return obj[char] != null; } }));
 
                 for (let elem of stack)
                     elem.seen[char] = true;
@@ -362,7 +371,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }, {
                 elements: [],
                 seen: new RealSet,
-                valid: function valid(obj) this.elements.every(e => !e.test || e.test(obj))
+                valid: function valid(obj) {
+                    return this.elements.every(e => !e.test || e.test(obj));
+                }
             });
         }
 
@@ -415,9 +426,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                             obj => obj[name] != null && idx in obj[name] ? quote(obj[name][idx])
                                                                          : hasOwnProperty(obj, name) ? "" : unknown(full),
                             {
-                                test: function test(obj) obj[name] != null && idx in obj[name]
-                                                      && obj[name][idx] !== false
-                                                      && (!flags.e || obj[name][idx] != "")
+                                test: function test(obj) {
+                                    return obj[name] != null &&
+                                           idx in obj[name] &&
+                                           obj[name][idx] !== false &&
+                                           (!flags.e || obj[name][idx] != "");
+                                }
                             }));
                     }
                     else {
@@ -425,9 +439,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                             obj => obj[name] != null ? quote(obj[name])
                                                      : hasOwnProperty(obj, name) ? "" : unknown(full),
                             {
-                                test: function test(obj) obj[name] != null
-                                                      && obj[name] !== false
-                                                      && (!flags.e || obj[name] != "")
+                                test: function test(obj) {
+                                    return obj[name] != null &&
+                                           obj[name] !== false &&
+                                           (!flags.e || obj[name] != "");
+                                }
                             }));
                     }
 
@@ -554,8 +570,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} chars The characters to unquote.
      * @returns {string}
      */
-    dequote: function dequote(pattern, chars)
-        pattern.replace(/\\(.)/, (m0, m1) => chars.contains(m1) ? m1 : m0),
+    dequote: function dequote(pattern, chars) {
+        return pattern.replace(/\\(.)/,
+                               (m0, m1) => chars.contains(m1) ? m1 : m0);
+    },
 
     /**
      * Returns the nsIDocShell for the given window.
@@ -564,9 +582,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {nsIDocShell}
      */
 
-     docShell: function docShell(win)
-            win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
-               .QueryInterface(Ci.nsIDocShell),
+     docShell: function docShell(win) {
+         return win.QueryInterface(Ci.nsIInterfaceRequestor)
+                   .getInterface(Ci.nsIWebNavigation)
+                   .QueryInterface(Ci.nsIDocShell);
+     },
 
     /**
      * Prints a message to the console. If *msg* is an object it is pretty
@@ -799,7 +819,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             if (params.method == "HEAD" && !params.notificationCallbacks)
                 params.notificationCallbacks = Class(XPCOM([Ci.nsIChannelEventSink, Ci.nsIInterfaceRequestor]), {
-                    getInterface: function getInterface(iid) this.QueryInterface(iid),
+                    getInterface: function getInterface(iid) {
+                        return this.QueryInterface(iid);
+                    },
 
                     asyncOnChannelRedirect: function (oldChannel, newChannel, flags, callback) {
                         if (newChannel instanceof Ci.nsIHttpChannel)
@@ -860,14 +882,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {Object} r2
      * @returns {Object}
      */
-    intersection: function intersection(r1, r2) ({
-        get width()  { return this.right  - this.left; },
-        get height() { return this.bottom - this.top; },
-        left: Math.max(r1.left, r2.left),
-        right: Math.min(r1.right, r2.right),
-        top: Math.max(r1.top, r2.top),
-        bottom: Math.min(r1.bottom, r2.bottom)
-    }),
+    intersection: function intersection(r1, r2) {
+        return {
+            get width()  { return this.right  - this.left; },
+            get height() { return this.bottom - this.top; },
+            left: Math.max(r1.left, r2.left),
+            right: Math.min(r1.right, r2.right),
+            top: Math.max(r1.top, r2.top),
+            bottom: Math.min(r1.bottom, r2.bottom)
+        };
+    },
 
     /**
      * Returns true if the given stack frame resides in Dactyl code.
@@ -888,7 +912,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} domain
      * @returns {boolean}
      */
-    isDomainURL: function isDomainURL(url, domain) util.isSubdomain(util.getHost(url), domain),
+    isDomainURL: function isDomainURL(url, domain) {
+        return util.isSubdomain(util.getHost(url), domain);
+    },
 
     /**
      * Returns true if *host* is a subdomain of *domain*.
@@ -1010,7 +1036,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * Removes leading garbage prepended to URIs by the subscript
      * loader.
      */
-    fixURI: function fixURI(url) String.replace(url, /.* -> /, ""),
+    fixURI: function fixURI(url) {
+        return String.replace(url, /.* -> /, "");
+    },
 
     /**
      * Pretty print a JavaScript object. Use HTML markup to color certain items
@@ -1302,7 +1330,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             bound: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "bound")),
             closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "bound")),
             dactylPropertyNames: ["exec", "match", "test", "toSource", "toString", "global", "ignoreCase", "lastIndex", "multiLine", "source", "sticky"],
-            iterate: function iterate(str, idx) util.regexp.iterate(this, str, idx)
+            iterate: function iterate(str, idx) {
+                return util.regexp.iterate(this, str, idx);
+            }
         });
 
         // Return a struct with properties for named parameters if we
@@ -1325,7 +1355,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
          * @param {string} str
          * @returns {string}
          */
-        escape: function regexp_escape(str) str.replace(/([\\{}()[\]^$.?*+|])/g, "\\$1"),
+        escape: function regexp_escape(str) {
+            return str.replace(/([\\{}()[\]^$.?*+|])/g, "\\$1");
+        },
 
         /**
          * Given a RegExp, returns its source in the form showable to the user.
@@ -1333,9 +1365,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
          * @param {RegExp} re The regexp showable source of which is to be returned.
          * @returns {string}
          */
-        getSource: function regexp_getSource(re) re.source.replace(/\\(.)/g,
-                                                                   (m0, m1) => m1 === "/" ? m1
-                                                                                          : m0),
+        getSource: function regexp_getSource(re) {
+            return re.source.replace(/\\(.)/g,
+                                     (m0, m1) => m1 === "/" ? m1
+                                                            : m0);
+        },
 
         /**
          * Iterates over all matches of the given regexp in the given
@@ -1406,7 +1440,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             this.errorCount++;
 
             let obj = update({}, error, {
-                toString: function () String(error),
+                toString: function () { return String(error); },
                 stack: Magic(util.stackLines(String(error.stack || Error().stack)).join("\n").replace(/^/mg, "\t"))
             });
 
@@ -1463,16 +1497,21 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {Window} window
      * @returns {nsISelectionController}
      */
-    selectionController: function selectionController(win)
-        win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
-           .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay)
-           .QueryInterface(Ci.nsISelectionController),
+    selectionController: function selectionController(win) {
+        return win.QueryInterface(Ci.nsIInterfaceRequestor)
+                  .getInterface(Ci.nsIWebNavigation)
+                  .QueryInterface(Ci.nsIInterfaceRequestor)
+                  .getInterface(Ci.nsISelectionDisplay)
+                  .QueryInterface(Ci.nsISelectionController);
+    },
 
     /**
      * Escapes a string against shell meta-characters and argument
      * separators.
      */
-    shellEscape: function shellEscape(str) '"' + String.replace(str, /[\\"$`]/g, "\\$&") + '"',
+    shellEscape: function shellEscape(str) {
+        return '"' + String.replace(str, /[\\"$`]/g, "\\$&") + '"';
+    },
 
     /**
      * Suspend execution for at least *delay* milliseconds. Functions by
@@ -1634,8 +1673,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {function} A new function which may not execute
      *      synchronously.
      */
-    yieldable: deprecated("Task.spawn", function yieldable(func)
-        function magic() {
+    yieldable: deprecated("Task.spawn", function yieldable(func) {
+        return function magic() {
             let gen = func.apply(this, arguments);
             (function next() {
                 try {
@@ -1643,6 +1682,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 }
                 catch (e if e instanceof StopIteration) {};
             })();
+        };
     }),
 
     /**
@@ -1663,10 +1703,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {Window} win The child window.
      * @returns {Window} The top-level parent window.
      */
-    topWindow: function topWindow(win)
-            win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
-               .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
-               .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow),
+    topWindow: function topWindow(win) {
+        return win.QueryInterface(Ci.nsIInterfaceRequestor)
+                  .getInterface(Ci.nsIWebNavigation)
+                  .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
+                  .QueryInterface(Ci.nsIInterfaceRequestor)
+                  .getInterface(Ci.nsIDOMWindow);
+    },
 
     /**
      * Traps errors in the called function, possibly reporting them.
@@ -1759,7 +1802,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     weakReference: function weakReference(jsval) {
         if (jsval == null)
-            return { get: function get() null };
+            return { get: function get() { return null; } };
         return Cu.getWeakReference(jsval);
     },
 
@@ -1797,7 +1840,9 @@ this.Math = update(Object.create(GlobalMath), {
      * @param {number} max The maximum constraint.
      * @returns {number}
      */
-    constrain: function constrain(value, min, max) Math.min(Math.max(min, value), max)
+    constrain: function constrain(value, min, max) {
+        return Math.min(Math.max(min, value), max);
+    }
 });
 
 endModule();

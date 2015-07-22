@@ -1058,7 +1058,7 @@ var Tabs = Module("tabs", {
 
             let filter = context.filter.toLowerCase();
 
-            let defItem = { parent: { getTitle: function () "" } };
+            let defItem = { parent: { getTitle: function () { return ""; } } };
 
             let tabGroups = {};
             tabs.getGroups();
@@ -1071,22 +1071,28 @@ var Tabs = Module("tabs", {
                 group[1].push([i, tab.linkedBrowser]);
             });
 
-            context.pushProcessor(0, function (item, text, next) [
-                ["span", { highlight: "Indicator", style: "display: inline-block;" },
-                    item.indicator],
-                next.call(this, item, text)
-            ]);
-            context.process[1] = function (item, text) template.bookmarkDescription(item, template.highlightFilter(text, this.filter));
+            context.pushProcessor(0, function (item, text, next) {
+                return [
+                    ["span", { highlight: "Indicator", style: "display: inline-block;" },
+                        item.indicator],
+                    next.call(this, item, text)
+                ];
+            });
+            context.process[1] = function (item, text) {
+                return template.bookmarkDescription(item, template.highlightFilter(text, this.filter));
+            };
 
             context.anchored = false;
             context.keys = {
                 text: "text",
                 description: "url",
-                indicator: function (item) item.tab === tabs.getTab()  ? "%" :
-                                           item.tab === tabs.alternate ? "#" : " ",
+                indicator: function (item) {
+                    return item.tab === tabs.getTab()  ? "%" :
+                           item.tab === tabs.alternate ? "#" : " ";
+                },
                 icon: "icon",
                 id: "id",
-                command: function () "tabs.select"
+                command: function () { return "tabs.select"; }
             };
             context.compare = CompletionContext.Sort.number;
             context.filters[0] = CompletionContext.Filter.textDescription;
@@ -1121,8 +1127,11 @@ var Tabs = Module("tabs", {
             context.title = ["Tab Groups"];
             context.keys = {
                 text: "id",
-                description: function (group) group.getTitle() ||
-                    group.getChildren().map(t => t.tab.label).join(", ")
+                description: function (group) {
+                    return group.getTitle() ||
+                           group.getChildren().map(t => t.tab.label)
+                                              .join(", ");
+                }
             };
             context.generate = () => {
                 context.incomplete = true;

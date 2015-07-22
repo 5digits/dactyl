@@ -718,7 +718,9 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         modes.addMode("VISUAL", {
             char: "v",
             description: "Active when text is selected",
-            display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : ""),
+            display: function () {
+                return "VISUAL" + (this._extended & modes.LINE ? " LINE" : "");
+            },
             bases: [modes.COMMAND],
             ownsFocus: true
         }, {
@@ -762,7 +764,9 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         });
         modes.addMode("AUTOCOMPLETE", {
             description: "Active when an input autocomplete pop-up is active",
-            display: function () "AUTOCOMPLETE (insert)",
+            display: function () {
+                return "AUTOCOMPLETE (insert)";
+            },
             bases: [modes.INSERT]
         });
     },
@@ -924,26 +928,29 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             editor.selectionController.repaintSelection(editor.selectionController.SELECTION_NORMAL);
         }
 
-        function clear(forward, re)
-            function _clear(editor) {
+        function clear(forward, re) {
+            return function _clear(editor) {
                 updateRange(editor, forward, re, range => {});
                 dactyl.assert(!editor.selection.isCollapsed);
                 editor.selection.deleteFromDocument();
                 let parent = DOM(editor.rootElement.parentNode);
                 if (parent.isInput)
                     parent.input();
-            }
+            };
+        }
 
-        function move(forward, re, sameWord)
-            function _move(editor) {
+        function move(forward, re, sameWord) {
+            return function _move(editor) {
                 updateRange(editor, forward, re,
                             range => { range.collapse(!forward); },
                             sameWord);
-            }
-        function select(forward, re)
-            function _select(editor) {
+            };
+        }
+        function select(forward, re) {
+            return function _select(editor) {
                 updateRange(editor, forward, re, range => {});
-            }
+            };
+        }
         function beginLine(editor_) {
             editor.executeCommand("cmd_beginLine");
             move(true, /\s/, true)(editor_);
@@ -1083,9 +1090,10 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             },
             { count: true, type: "operator" });
 
-        let bind = function bind(names, description, action, params)
+        let bind = function bind(names, description, action, params) {
             mappings.add([modes.INPUT], names, description,
                          action, update({ type: "editor" }, params));
+        };
 
         bind(["<C-w>"], "Delete previous word",
              function () {
@@ -1166,9 +1174,10 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             ["<C-]>", "<C-5>"], "Expand Insert mode abbreviation",
             function () { editor.expandAbbreviation(modes.INSERT); });
 
-        bind = function bind(names, description, action, params)
+        bind = function bind(names, description, action, params) {
             mappings.add([modes.TEXT_EDIT], names, description,
                          action, update({ type: "editor" }, params));
+        };
 
         bind(["<C-a>"], "Increment the next number",
              function ({ count }) { editor.modifyNumber(count || 1); },
@@ -1279,10 +1288,11 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             },
             { arg: true });
 
-        bind = function bind(names, description, action, params)
+        bind = function bind(names, description, action, params) {
             mappings.add([modes.TEXT_EDIT, modes.OPERATOR, modes.VISUAL],
                          names, description,
                          action, update({ type: "editor" }, params));
+        };
 
         // finding characters
         function offset(backward, before, pos) {
@@ -1347,7 +1357,9 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             },
             { count: true });
 
-        bind = function bind(...args) apply(mappings, "add", [[modes.AUTOCOMPLETE]].concat(args));
+        bind = function bind(...args) {
+            apply(mappings, "add", [[modes.AUTOCOMPLETE]].concat(args));
+        };
 
         bind(["<Esc>"], "Return to Insert mode",
              () => Events.PASS_THROUGH);

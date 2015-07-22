@@ -80,7 +80,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} branch The sub-branch to branch to.
      * @returns {Prefs}
      */
-    Branch: function Branch(branch) Prefs(this.root + branch),
+    Branch: function Branch(branch) { return Prefs(this.root + branch); },
 
     /**
      * Clears the entire branch.
@@ -143,21 +143,27 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} branch The sub-branch for which to return preferences.
      * @optional
      */
-    getNames: function getNames(branch) this.branch.getChildList(branch || "", { value: 0 }),
+    getNames: function getNames(branch) {
+        return this.branch.getChildList(branch || "", { value: 0 });
+    },
 
     /**
      * Returns true if the given preference exists in this branch.
      *
      * @param {string} name The name of the preference to check.
      */
-    has: function has(name) this.branch.getPrefType(name) !== 0,
+    has: function has(name) {
+        return this.branch.getPrefType(name) !== 0;
+    },
 
     /**
      * Returns true if the given preference is set to its default value.
      *
      * @param {string} name The name of the preference to check.
      */
-    isDefault: function isDefault(name) !this.branch.prefHasUserValue(name),
+    isDefault: function isDefault(name) {
+        return !this.branch.prefHasUserValue(name);
+    },
 
     _checkSafe: function _checkSafe(name, message, value) {
         let curval = this.get(name, null);
@@ -382,7 +388,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         if (!this._observers[pref])
             this._observers[pref] = [];
         this._observers[pref].push(!strong ? util.weakReference(callback)
-                                           : { get: function () callback });
+                                           : { get: function () { return callback; } });
     },
 
     /**
@@ -429,8 +435,10 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         modules.completion.preference = function preference(context) {
             context.anchored = false;
             context.title = [config.host + " Preference", "Value"];
-            context.keys = { text: function (item) item,
-                             description: function (item) prefs.get(item) };
+            context.keys = {
+                text: function (item) { return item; },
+                description: function (item) { return prefs.get(item); }
+            };
             context.completions = prefs.getNames();
         };
     },

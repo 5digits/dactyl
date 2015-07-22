@@ -86,7 +86,9 @@ function ProtocolBase() {
 
     this.pages = {};
     this.providers = {
-        "content": function (uri, path) this.pages[path] || this.contentBase + path,
+        "content": function (uri, path) {
+            return this.pages[path] || this.contentBase + path;
+        },
 
         "data": function (uri) {
             var channel = services.io.newChannel(uri.path.replace(/^\/(.*)(?:#.*)?/, "data:$1"),
@@ -116,7 +118,7 @@ ProtocolBase.prototype = {
     },
 
     defaultPort: -1,
-    allowPort: function (port, scheme) false,
+    allowPort: function (port, scheme) { return false; },
     protocolFlags: 0
          | Ci.nsIProtocolHandler.URI_IS_UI_RESOURCE
          | Ci.nsIProtocolHandler.URI_IS_LOCAL_RESOURCE,

@@ -139,7 +139,10 @@ var ArrayStore = Class("ArrayStore", StoreBase, {
         this.fireEvent("change", null);
     },
 
-    get: function get(index) index >= 0 ? this._object[index] : this._object[this._object.length + index]
+    get: function get(index) {
+        return index >= 0 ? this._object[index] :
+                            this._object[this._object.length + index];
+    }
 });
 
 var ObjectStore = Class("ObjectStore", StoreBase, {
@@ -156,9 +159,13 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
                                       undefined;
     },
 
-    has: function has(key) hasOwnProperty(this._object, key),
+    has: function has(key) {
+        return hasOwnProperty(this._object, key);
+    },
 
-    keys: function keys() Object.keys(this._object),
+    keys: function keys() {
+        return Object.keys(this._object);
+    },
 
     remove: function remove(key) {
         var res = this._object[key];
@@ -182,11 +189,13 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
 var sessionGlobal = Cu.import("resource://gre/modules/Services.jsm", {});
 
 var Storage = Module("Storage", {
-    Local: function Local(dactyl, modules, window) ({
-        init: function init() {
-            this.privateMode = PrivateBrowsingUtils.isWindowPrivate(window);
-        }
-    }),
+    Local: function Local(dactyl, modules, window) {
+        return {
+            init: function init() {
+                this.privateMode = PrivateBrowsingUtils.isWindowPrivate(window);
+            }
+        };
+    },
 
     alwaysReload: {},
 
@@ -381,7 +390,9 @@ var Storage = Module("Storage", {
     }
 }, {
     Replacer: {
-        skipXpcom: function skipXpcom(key, val) val instanceof Ci.nsISupports ? null : val
+        skipXpcom: function skipXpcom(key, val) {
+            return val instanceof Ci.nsISupports ? null : val;
+        }
     }
 }, {
     cleanup: function (dactyl, modules, window) {
@@ -616,31 +627,38 @@ var File = Class("File", {
     },
 
     // Wrapped native methods:
-    copyTo: function copyTo(dir, name)
-        this.file.copyTo(this.constructor(dir).file,
-                         name),
+    copyTo: function copyTo(dir, name) {
+        return this.file.copyTo(this.constructor(dir).file,
+                                name);
+    },
 
-    copyToFollowingLinks: function copyToFollowingLinks(dir, name)
-        this.file.copyToFollowingLinks(this.constructor(dir).file,
-                                       name),
+    copyToFollowingLinks: function copyToFollowingLinks(dir, name) {
+        return this.file.copyToFollowingLinks(this.constructor(dir).file,
+                                              name);
+    },
 
-    moveTo: function moveTo(dir, name)
-        this.file.moveTo(this.constructor(dir).file,
-                         name),
+    moveTo: function moveTo(dir, name) {
+        return this.file.moveTo(this.constructor(dir).file,
+                                name);
+    },
 
-    equals: function equals(file)
-        this.file.equals(this.constructor(file).file),
+    equals: function equals(file) {
+        return this.file.equals(this.constructor(file).file);
+    },
 
-    contains: function contains(dir, recur)
-        this.file.contains(this.constructor(dir).file,
-                           recur),
+    contains: function contains(dir, recur) {
+        return this.file.contains(this.constructor(dir).file,
+                                  recur);
+    },
 
-    getRelativeDescriptor: function getRelativeDescriptor(file)
-        this.file.getRelativeDescriptor(this.constructor(file).file),
+    getRelativeDescriptor: function getRelativeDescriptor(file) {
+        return this.file.getRelativeDescriptor(this.constructor(file).file);
+    },
 
-    setRelativeDescriptor: function setRelativeDescriptor(file, path)
+    setRelativeDescriptor: function setRelativeDescriptor(file, path) {
         this.file.setRelativeDescriptor(this.constructor(file).file,
-                                        path)
+                                        path);
+    }
 }, {
     /**
      * @property {number} Open for reading only.
@@ -705,14 +723,16 @@ var File = Class("File", {
                            "g");
     }),
 
-    DoesNotExist: function DoesNotExist(path, error) ({
-        __proto__: DoesNotExist.prototype,
-        path: path,
-        exists: function () false,
-        __noSuchMethod__: function () {
-            throw error || Error("Does not exist");
-        }
-    }),
+    DoesNotExist: function DoesNotExist(path, error) {
+        return {
+            __proto__: DoesNotExist.prototype,
+            path: path,
+            exists: function () { return false; },
+            __noSuchMethod__: function () {
+                throw error || Error("Does not exist");
+            }
+        };
+    },
 
     defaultEncoding: "UTF-8",
 
@@ -757,7 +777,9 @@ var File = Class("File", {
         return OS.Path.normalize(path.replace(/\//g, File.PATH_SEP));
     },
 
-    expandPathList: function (list) list.map(this.expandPath),
+    expandPathList: function (list) {
+        return list.map(this.expandPath);
+    },
 
     readURL: function readURL(url, encoding) {
         let channel = services.io.newChannel(url, null, null);
@@ -808,7 +830,9 @@ var File = Class("File", {
         }
     },
 
-    replacePathSep: function replacePathSep(path) path.split("/").join(File.PATH_SEP),
+    replacePathSep: function replacePathSep(path) {
+        return path.split("/").join(File.PATH_SEP);
+    },
 
     joinPaths: function joinPaths(head, tail, cwd) {
         let path = this(head, cwd);
@@ -840,7 +864,7 @@ var File = Class("File", {
             else
                 Object.defineProperty(File.prototype, prop, {
                     configurable: true,
-                    get: function wrap_get() this.file[prop],
+                    get: function wrap_get() { return this.file[prop]; },
                     set: function wrap_set(val) { this.file[prop] = val; }
                 });
         }

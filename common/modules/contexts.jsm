@@ -57,7 +57,7 @@ var Group = Class("Group", {
             this.children.splice(0).forEach(this.contexts.bound.removeGroup);
     },
 
-    argsExtra: function argsExtra() ({}),
+    argsExtra: function argsExtra() { return {}; },
 
     makeArgs: function makeArgs(doc, context, args) {
         let res = update({ doc: doc, context: context }, args);
@@ -78,7 +78,9 @@ var Group = Class("Group", {
         }
 
         return update(siteFilter, {
-            toString: function () this.filters.join(","),
+            toString: function () {
+                return this.filters.join(",");
+            },
 
             toJSONXML: function (modules) {
                 let uri = modules && modules.buffer.uri;
@@ -112,118 +114,120 @@ var Contexts = Module("contexts", {
         this.pluginModules = {};
     },
 
-    Local: function Local(dactyl, modules, window) ({
-        init: function () {
-            const contexts = this;
-            this.modules = modules;
+    Local: function Local(dactyl, modules, window) {
+        return {
+            init: function () {
+                const contexts = this;
+                this.modules = modules;
 
-            Object.defineProperty(modules.plugins, "contexts", Const({}));
+                Object.defineProperty(modules.plugins, "contexts", Const({}));
 
-            this.groupList = [];
-            this.groupMap = {};
-            this.groupsProto = {};
-            this.hives = {};
-            this.hiveProto = {};
+                this.groupList = [];
+                this.groupMap = {};
+                this.groupsProto = {};
+                this.hives = {};
+                this.hiveProto = {};
 
-            this.builtin = this.addGroup("builtin", "Builtin items");
-            this.user = this.addGroup("user", "User-defined items", null, true);
-            this.builtinGroups = [this.builtin, this.user];
-            this.builtin.modifiable = false;
+                this.builtin = this.addGroup("builtin", "Builtin items");
+                this.user = this.addGroup("user", "User-defined items", null, true);
+                this.builtinGroups = [this.builtin, this.user];
+                this.builtin.modifiable = false;
 
-            this.GroupFlag = Class("GroupFlag", CommandOption, {
-                init: function (name) {
+                this.GroupFlag = Class("GroupFlag", CommandOption, {
+                    init: function (name) {
+                        this.name = name;
+
+                        this.type = ArgType("group", group => {
+                            return isString(group) ? contexts.getGroup(group, name)
+                                                : group[name];
+                        });
+                    },
+
+                    get toStringParams() { return [this.name]; },
+
+                    names: ["-group", "-g"],
+
+                    description: "Group to which to add",
+
+                    get default() {
+                        return (contexts.context &&
+                                contexts.context.group ||
+                                contexts.user)[this.name];
+                    },
+
+                    completer: function (context) {
+                        modules.completion.group(context);
+                    }
+                });
+
+                memoize(modules, "userContext",  () => contexts.Context(modules.io.getRCFile("~", true), contexts.user, [modules, false]));
+                memoize(modules, "_userContext", () => modules.userContext);
+            },
+
+            cleanup: function () {
+                for (let hive of this.groupList.slice())
+                    util.trapErrors("cleanup", hive, "shutdown");
+            },
+
+            destroy: function () {
+                for (let hive of this.groupList.slice())
+                    util.trapErrors("destroy", hive, "shutdown");
+
+                for (let plugin of values(this.modules.plugins.contexts)) {
+                    if (plugin && "onUnload" in plugin && callable(plugin.onUnload))
+                        util.trapErrors("onUnload", plugin);
+
+                    if (isinstance(plugin, ["Sandbox"]))
+                        util.trapErrors("nukeSandbox", Cu, plugin);
+                }
+            },
+
+            signals: {
+                "browser.locationChange": function (webProgress, request, uri) {
+                    this.flush();
+                }
+            },
+
+            Group: Class("Group", Group,
+                        { modules: modules,
+                        get hiveMap() { return modules.contexts.hives; }}),
+
+            Hives: Class("Hives", Class.Property, {
+                init: function init(name, constructor) {
+                    const { contexts } = modules;
+
+                    if (this.Hive)
+                        return {
+                            enumerable: true,
+
+                            get: () => Ary(contexts.groups[this.name])
+                        };
+
+                    this.Hive = constructor;
                     this.name = name;
+                    memoize(contexts.Group.prototype, name, function () {
+                        let group = constructor(this);
+                        this.hives.push(group);
+                        contexts.flush();
+                        return group;
+                    });
 
-                    this.type = ArgType("group", group => {
-                        return isString(group) ? contexts.getGroup(group, name)
-                                               : group[name];
+                    memoize(contexts.hives, name,
+                            () => Object.create(
+                                    Object.create(contexts.hiveProto,
+                                                { _hive: { value: name } })));
+
+                    memoize(contexts.groupsProto, name, function () {
+                        return [group[name]
+                                for (group of values(this.groups))
+                                if (hasOwnProperty(group, name))];
                     });
                 },
 
-                get toStringParams() { return [this.name]; },
-
-                names: ["-group", "-g"],
-
-                description: "Group to which to add",
-
-                get default() {
-                    return (contexts.context &&
-                            contexts.context.group ||
-                            contexts.user)[this.name];
-                },
-
-                completer: function (context) {
-                    modules.completion.group(context);
-                }
-            });
-
-            memoize(modules, "userContext",  () => contexts.Context(modules.io.getRCFile("~", true), contexts.user, [modules, false]));
-            memoize(modules, "_userContext", () => modules.userContext);
-        },
-
-        cleanup: function () {
-            for (let hive of this.groupList.slice())
-                util.trapErrors("cleanup", hive, "shutdown");
-        },
-
-        destroy: function () {
-            for (let hive of this.groupList.slice())
-                util.trapErrors("destroy", hive, "shutdown");
-
-            for (let plugin of values(this.modules.plugins.contexts)) {
-                if (plugin && "onUnload" in plugin && callable(plugin.onUnload))
-                    util.trapErrors("onUnload", plugin);
-
-                if (isinstance(plugin, ["Sandbox"]))
-                    util.trapErrors("nukeSandbox", Cu, plugin);
-            }
-        },
-
-        signals: {
-            "browser.locationChange": function (webProgress, request, uri) {
-                this.flush();
-            }
-        },
-
-        Group: Class("Group", Group,
-                     { modules: modules,
-                       get hiveMap() { return modules.contexts.hives; }}),
-
-        Hives: Class("Hives", Class.Property, {
-            init: function init(name, constructor) {
-                const { contexts } = modules;
-
-                if (this.Hive)
-                    return {
-                        enumerable: true,
-
-                        get: () => Ary(contexts.groups[this.name])
-                    };
-
-                this.Hive = constructor;
-                this.name = name;
-                memoize(contexts.Group.prototype, name, function () {
-                    let group = constructor(this);
-                    this.hives.push(group);
-                    contexts.flush();
-                    return group;
-                });
-
-                memoize(contexts.hives, name,
-                        () => Object.create(
-                                 Object.create(contexts.hiveProto,
-                                               { _hive: { value: name } })));
-
-                memoize(contexts.groupsProto, name, function () {
-                    return [group[name]
-                            for (group of values(this.groups))
-                            if (hasOwnProperty(group, name))];
-                });
-            },
-
-            get toStringParams() { return [this.name, this.Hive]; }
-        })
-    }),
+                get toStringParams() { return [this.name, this.Hive]; }
+            })
+        };
+    },
 
     Context: function Context(file, group, args) {
         const { contexts, io, newContext, plugins, userContext } = this.modules;
@@ -292,7 +296,7 @@ var Contexts = Module("contexts", {
                 Object.defineProperty(plugins, self.NAME, {
                     configurable: true,
                     enumerable: true,
-                    get: function () self,
+                    get: function () { return self; },
                     set: function (val) {
                         util.dactyl(val).reportError(FailedAssertion(_("plugin.notReplacingContext", self.NAME), 3, false), true);
                     }
@@ -377,7 +381,7 @@ var Contexts = Module("contexts", {
             Object.defineProperty(plugins, self.NAME, {
                 configurable: true,
                 enumerable: true,
-                get: function () self,
+                get: function () { return self; },
                 set: function (val) {
                     util.dactyl(val).reportError(FailedAssertion(_("plugin.notReplacingContext", self.NAME), 3, false), true);
                 }
@@ -413,9 +417,10 @@ var Contexts = Module("contexts", {
         });
     }),
 
-    matchingGroups: function (uri) Object.create(this.groupsProto, {
-        groups: { value: this.activeGroups(uri) }
-    }),
+    matchingGroups: function (uri) {
+        return Object.create(this.groupsProto,
+                             { groups: { value: this.activeGroups(uri) } });
+    },
 
     activeGroups: function (uri) {
         if (uri instanceof Ci.nsIDOMDocument)
@@ -525,8 +530,8 @@ var Contexts = Module("contexts", {
             return Class.Property({
                 configurable: true,
                 enumerable: true,
-                get: function Proxy_get() process(obj[key]),
-                set: function Proxy_set(val) obj[key] = val
+                get: function Proxy_get() { return process(obj[key]); },
+                set: function Proxy_set(val) { obj[key] = val; }
             });
         }
 
@@ -592,11 +597,12 @@ var Contexts = Module("contexts", {
         return action;
     },
 
-    withContext: function withContext(defaults, callback, self)
-        this.withSavedValues(["context"], function () {
+    withContext: function withContext(defaults, callback, self) {
+        return this.withSavedValues(["context"], function () {
             this.context = defaults && update({}, defaults);
             return callback.call(self, this.context);
-        })
+        });
+    }
 }, {
     Hive: Class("Hive", {
         init: function init(group) {

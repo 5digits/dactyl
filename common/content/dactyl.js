@@ -203,7 +203,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     registerObserver: function registerObserver(type, callback, weak) {
         if (!(type in this._observers))
             this._observers[type] = [];
-        this._observers[type].push(weak ? util.weakReference(callback) : { get: function () callback });
+        this._observers[type].push(weak ? util.weakReference(callback)
+                                        : { get: function () { return callback; } });
     },
 
     registerObservers: function registerObservers(obj, prop) {
@@ -620,7 +621,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {string} feature The feature name.
      * @returns {boolean}
      */
-    has: function has(feature) config.has(feature),
+    has: function has(feature) { return config.has(feature); },
 
     /**
      * @private
@@ -1083,11 +1084,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             node.collapsed = !visible;
     },
 
-    confirmQuit: function confirmQuit()
-        prefs.withContext(function () {
+    confirmQuit: function confirmQuit() {
+        return prefs.withContext(function () {
             prefs.set("browser.warnOnQuit", false);
             return window.canQuitApplication();
-        }),
+        });
+    },
 
     /**
      * Quit the host application, no matter how many tabs/windows are open.

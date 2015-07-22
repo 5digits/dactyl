@@ -34,14 +34,16 @@ var JavaScript = Module("javascript", {
         this._nullSandbox = Cu.Sandbox("about:blank");
     },
 
-    Local: function (dactyl, modules, window) ({
-        init: function init() {
-            this.modules = modules;
-            this.window = window;
+    Local: function (dactyl, modules, window) {
+        return {
+            init: function init() {
+                this.modules = modules;
+                this.window = window;
 
-            init.supercall(this);
-        }
-    }),
+                init.supercall(this);
+            }
+        };
+    },
 
     globals: Class.Memoize(function () {
         return [
@@ -57,8 +59,10 @@ var JavaScript = Module("javascript", {
 
     lazyInit: true,
 
-    newContext: function () this.modules.newContext(this.modules.userContext, false,
-                                                    "Dactyl JS Temp Context"),
+    newContext: function () {
+        return this.modules.newContext(this.modules.userContext, false,
+                                       "Dactyl JS Temp Context");
+    },
 
     completers: Class.Memoize(() => Object.create(JavaScript.completers)),
 
@@ -354,8 +358,9 @@ var JavaScript = Module("javascript", {
         }
 
         if (!compl) {
-            base.process[1] = function highlight(item, v)
-                template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true, 200);
+            base.process[1] = function highlight(item, v) {
+                return template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true, 200);
+            };
 
             // Sort in a logical fashion for object keys:
             //  Numbers are sorted as numbers, rather than strings, and appear first.
@@ -376,7 +381,9 @@ var JavaScript = Module("javascript", {
             base.keys = {
                 text: prefix ? text => text.substr(prefix.length)
                              : text => text,
-                description: function (item) self.getKey(this.obj, item),
+                description: function (item) {
+                    return self.getKey(this.obj, item);
+                },
                 key: function (item) {
                     if (!isNaN(key))
                         return parseInt(key);
@@ -769,7 +776,9 @@ var JavaScript = Module("javascript", {
                 return this.rootNode;
             }),
 
-            __noSuchMethod__: function (meth, args) apply(Buffer, meth, [this.rootNode].concat(args))
+            __noSuchMethod__: function (meth, args) {
+                return apply(Buffer, meth, [this.rootNode].concat(args));
+            }
         });
 
         modules.CommandREPLMode = Class("CommandREPLMode", modules.CommandMode, {

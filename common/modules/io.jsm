@@ -300,8 +300,9 @@ var IO = Module("io", {
     File: Class.Memoize(function () {
         let io = this;
         return Class("File", File, {
-            init: function init(path, checkCWD=true)
-                init.supercall(this, path, checkCWD && io.cwd)
+            init: function init(path, checkCWD=true) {
+                return init.supercall(this, path, checkCWD && io.cwd);
+            }
         });
     }),
 
@@ -530,11 +531,13 @@ var IO = Module("io", {
 
             function result(status, output) {
                 return {
-                    __noSuchMethod__: function (meth, args) apply(this.output, meth, args),
-                    valueOf: function () this.output,
+                    __noSuchMethod__: function (meth, args) {
+                        return apply(this.output, meth, args);
+                    },
+                    valueOf: function () { return this.output; },
                     output: output.replace(/^(.*)\n$/, "$1"),
                     returnValue: status,
-                    toString: function () this.output
+                    toString: function () { return this.output; }
                 };
             }
 

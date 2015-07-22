@@ -23,32 +23,34 @@ function equals(a, b) {
 
 /** @instance rangefinder */
 var RangeFinder = Module("rangefinder", {
-    Local: function (dactyl, modules, window) ({
-        init: function () {
-            this.dactyl = dactyl;
-            this.modules = modules;
-            this.window = window;
-            this.lastFindPattern = "";
-        },
+    Local: function (dactyl, modules, window) {
+        return {
+            init: function () {
+                this.dactyl = dactyl;
+                this.modules = modules;
+                this.window = window;
+                this.lastFindPattern = "";
+            },
 
-        get content() {
-            let { window } = this.modes.getStack(0).params;
-            return window || this.window.content;
-        },
+            get content() {
+                let { window } = this.modes.getStack(0).params;
+                return window || this.window.content;
+            },
 
-        get rangeFind() {
-            let find = overlay.getData(this.content.document,
-                                       "range-find", null);
+            get rangeFind() {
+                let find = overlay.getData(this.content.document,
+                                        "range-find", null);
 
-            if (!isinstance(find, RangeFind) || find.stale)
-                return this.rangeFind = null;
-            return find;
-        },
-        set rangeFind(val) {
-            overlay.setData(this.content.document,
-                            "range-find", val);
-        }
-    }),
+                if (!isinstance(find, RangeFind) || find.stale)
+                    return this.rangeFind = null;
+                return find;
+            },
+            set rangeFind(val) {
+                overlay.setData(this.content.document,
+                                "range-find", val);
+            }
+        };
+    },
 
     init: function init() {
         prefs.safeSet("accessibility.typeaheadfind.autostart", false);
@@ -754,7 +756,9 @@ var RangeFind = Class("RangeFind", {
             return util.docShell(this.window);
         }),
 
-        intersects: function (range) RangeFind.intersects(this.range, range),
+        intersects: function (range) {
+            return RangeFind.intersects(this.range, range);
+        },
 
         save: function save() {
             this.scroll = Point(this.window.pageXOffset, this.window.pageYOffset);
@@ -802,7 +806,10 @@ var RangeFind = Class("RangeFind", {
             return false;
         }
     },
-    containsNode: function containsNode(range, n, quiet) n.ownerDocument && this.contains(range, RangeFind.nodeRange(n), quiet),
+    containsNode: function containsNode(range, n, quiet) {
+        return n.ownerDocument &&
+               this.contains(range, RangeFind.nodeRange(n), quiet);
+    },
     intersects: function intersects(range, r) {
         try {
             return r.compareBoundaryPoints(range.START_TO_END, range) >= 0 &&

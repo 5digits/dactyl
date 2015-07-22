@@ -60,11 +60,13 @@ var ProcessorStack = Class("ProcessorStack", {
         }
     },
 
-    _result: function (result) (result === Events.KILL         ? "KILL"  :
-                                result === Events.PASS         ? "PASS"  :
-                                result === Events.PASS_THROUGH ? "PASS_THROUGH"  :
-                                result === Events.ABORT        ? "ABORT" :
-                                callable(result) ? result.toSource().substr(0, 50) : result),
+    _result: function (result) {
+        return (result === Events.KILL         ? "KILL"  :
+                result === Events.PASS         ? "PASS"  :
+                result === Events.PASS_THROUGH ? "PASS_THROUGH"  :
+                result === Events.ABORT        ? "ABORT" :
+                callable(result) ? result.toSource().substr(0, 50) : result);
+    },
 
     execute: function execute(result, force) {
         events.dbg("EXECUTE(" + this._result(result) + ", " + force + ") events:" + this.events.length
@@ -255,8 +257,8 @@ var KeyProcessor = Class("KeyProcessor", {
         return this.onKeyPress(event);
     },
 
-    execute: function execute(map, args)
-        () => {
+    execute: function execute(map, args) {
+        return () => {
             if (this.preExecute)
                 apply(this, "preExecute", args);
 
@@ -266,7 +268,8 @@ var KeyProcessor = Class("KeyProcessor", {
             if (this.postExecute)
                 apply(this, "postExecute", args);
             return res;
-        },
+        };
+    },
 
     onKeyPress: function onKeyPress(event) {
         if (event.skipmap)

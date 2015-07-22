@@ -106,10 +106,11 @@ var Modes = Module("modes", {
             bases: [this.BASE],
             hidden: true,
             passthrough: true,
-            display: function ()
-                (modes.getStack(1).main == modes.PASS_THROUGH
-                    ? (modes.getStack(2).main.display() || modes.getStack(2).main.name)
-                    : "PASS THROUGH") + " (next)"
+            display: function () {
+                return (modes.getStack(1).main == modes.PASS_THROUGH
+                           ? (modes.getStack(2).main.display() || modes.getStack(2).main.name)
+                           : "PASS THROUGH") + " (next)";
+            }
         }, {
             // Fix me.
             preExecute: function (map) { if (modes.main == modes.QUOTE && map.name !== "<C-v>") modes.pop(); },
@@ -198,7 +199,9 @@ var Modes = Module("modes", {
 
     NONE: 0,
 
-    "@@iterator": function __iterator__() Ary.iterValues(this.all),
+    "@@iterator": function __iterator__() {
+        return Ary.iterValues(this.all);
+    },
 
     get all() { return this._modes.slice(); },
 
@@ -251,19 +254,28 @@ var Modes = Module("modes", {
             util.dump("    " + i + ": " + mode);
     },
 
-    getMode: function getMode(name) this._modeMap[name],
+    getMode: function getMode(name) {
+        return this._modeMap[name];
+    },
 
-    getStack: function getStack(idx) this._modeStack[this._modeStack.length - idx - 1] || this._modeStack[0],
+    getStack: function getStack(idx) {
+        return this._modeStack[this._modeStack.length - idx - 1] ||
+               this._modeStack[0];
+    },
 
     get stack() { return this._modeStack.slice(); },
 
-    getCharModes: function getCharModes(chr) (this.modeChars[chr] || []).slice(),
+    getCharModes: function getCharModes(chr) {
+        return (this.modeChars[chr] || []).slice();
+    },
 
-    have: function have(mode) this._modeStack.some(m => isinstance(m.main, mode)),
+    have: function have(mode) {
+        return this._modeStack.some(m => isinstance(m.main, mode));
+    },
 
-    matchModes: function matchModes(obj)
-        this._modes.filter(mode => Object.keys(obj)
-                                         .every(k => obj[k] == (mode[k] || false))),
+    matchModes: function matchModes(obj) {
+        return this._modes.filter(mode => Object.keys(obj).every(k => obj[k] == (mode[k] || false)));
+    },
 
     // show the current mode string in the command line
     show: function show() {
@@ -451,8 +463,10 @@ var Modes = Module("modes", {
             return this.name.split("_").map(util.capitalize).join(" ");
         }),
 
-        isinstance: function isinstance(obj)
-            this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
+        isinstance: function isinstance(obj) {
+            return this.allBases.indexOf(obj) >= 0 ||
+                   callable(obj) && this instanceof obj;
+        },
 
         allBases: Class.Memoize(function () {
             let seen = new RealSet,
@@ -474,7 +488,7 @@ var Modes = Module("modes", {
             return this.name.replace(/_/g, " ");
         }),
 
-        display: function display() this._display,
+        display: function display() { return this._display; },
 
         extended: false,
 
@@ -506,18 +520,19 @@ var Modes = Module("modes", {
 
         get toStringParams() { return [this.name]; },
 
-        valueOf: function valueOf() this.id
+        valueOf: function valueOf() { return this.id; }
     }, {
         _id: 0
     }),
-    ModeStack: function ModeStack(array)
-        update(array, {
+    ModeStack: function ModeStack(array) {
+        return update(array, {
             pop: function pop() {
                 if (this.length <= 1)
                     throw Error("Trying to pop last element in mode stack");
                 return pop.superapply(this, arguments);
             }
-        }),
+        });
+    },
     StackElement: (function () {
         const StackElement = Struct("main", "extended", "params", "saved");
         StackElement.className = "Modes.StackElement";
@@ -546,19 +561,21 @@ var Modes = Module("modes", {
         return Class.Property(update({
             configurable: true,
             enumerable: true,
-            init: function bound_init(prop) update(this, {
-                get: function bound_get() {
-                    if (desc.get)
-                        var val = desc.get.call(this, value);
-                    return val === undefined ? value : val;
-                },
-                set: function bound_set(val) {
-                    modes.save(id, this, prop, desc.test);
-                    if (desc.set)
-                        value = desc.set.call(this, val);
-                    value = !desc.set || value === undefined ? val : value;
-                }
-            })
+            init: function bound_init(prop) {
+                return update(this, {
+                    get: function bound_get() {
+                        if (desc.get)
+                            var val = desc.get.call(this, value);
+                        return val === undefined ? value : val;
+                    },
+                    set: function bound_set(val) {
+                        modes.save(id, this, prop, desc.test);
+                        if (desc.set)
+                            value = desc.set.call(this, val);
+                        value = !desc.set || value === undefined ? val : value;
+                    }
+                });
+            }
         }, desc));
     }
 }, {

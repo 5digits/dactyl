@@ -18,8 +18,10 @@ var Bookmarks = Module("bookmarks", {
                 autocommands.trigger("Bookmark" + util.capitalize(event),
                      update({
                          bookmark: {
-                             toString: function () "bookmarkcache.bookmarks[" + arg.id + "]",
-                             valueOf: function () arg
+                             toString: function () {
+                                 return "bookmarkcache.bookmarks[" + arg.id + "]";
+                             },
+                             valueOf: function () { return arg; }
                          }
                      }, arg.toObject()));
             bookmarks.timer.tell();
@@ -37,7 +39,7 @@ var Bookmarks = Module("bookmarks", {
         return {
             anchored: false,
             title: ["URL", "Info"],
-            keys: { text: "url", description: "title", icon: "icon", extra: "extra", tags: "tags", isURI: function () true },
+            keys: { text: "url", description: "title", icon: "icon", extra: "extra", tags: "tags", isURI: function () { return true; }},
             process: [template.icon, template.bookmarkDescription]
         };
     },
@@ -752,7 +754,10 @@ var Bookmarks = Module("bookmarks", {
                 let ctxt = context.fork(name, 0);
 
                 ctxt.title = [/*L*/desc + " Suggestions"];
-                ctxt.keys = { text: identity, description: function () "" };
+                ctxt.keys = {
+                    text: identity,
+                    description: function () { return ""; }
+                };
                 ctxt.compare = CompletionContext.Sort.unsorted;
                 ctxt.filterFunc = null;
 

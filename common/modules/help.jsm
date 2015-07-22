@@ -43,11 +43,13 @@ var HelpBuilder = Class("HelpBuilder", {
         }
     },
 
-    toJSON: function toJSON() ({
-        files: this.files,
-        overlays: this.overlays,
-        tags: this.tags
-    }),
+    toJSON: function toJSON() {
+        return {
+            files: this.files,
+            overlays: this.overlays,
+            tags: this.tags
+        };
+    },
 
     // Find the tags in the document.
     addTags: function addTags(file, doc) {
@@ -222,189 +224,196 @@ var Help = Module("Help", {
     get overlays() { return this.data.overlays; },
     get tags() { return this.data.tags; },
 
-    Local: function Local(dactyl, modules, window) ({
-        init: function init() {
-            dactyl.commands["dactyl.help"] = event => {
-                let elem = event.originalTarget;
-                modules.help.help(elem.getAttribute("tag") || elem.textContent);
-            };
-        },
+    Local: function Local(dactyl, modules, window) {
+        return {
+            init: function init() {
+                dactyl.commands["dactyl.help"] = event => {
+                    let elem = event.originalTarget;
+                    modules.help.help(elem.getAttribute("tag") || elem.textContent);
+                };
+            },
 
-        /**
-         * Returns the URL of the specified help *topic* if it exists.
-         *
-         * @param {string} topic The help topic to look up.
-         * @param {boolean} consolidated Whether to search the consolidated help page.
-         * @returns {string}
-         */
-        findHelp: function (topic, consolidated) {
-            if (!consolidated && hasOwnProperty(help.files, topic))
-                return topic;
-            let items = modules.completion._runCompleter("help", topic, null, !!consolidated).items;
-            let partialMatch = null;
+            /**
+            * Returns the URL of the specified help *topic* if it exists.
+            *
+            * @param {string} topic The help topic to look up.
+            * @param {boolean} consolidated Whether to search the consolidated help page.
+            * @returns {string}
+            */
+            findHelp: function (topic, consolidated) {
+                if (!consolidated && hasOwnProperty(help.files, topic))
+                    return topic;
+                let items = modules.completion._runCompleter("help", topic, null, !!consolidated).items;
+                let partialMatch = null;
 
-            function format(item) {
-                return item.description + "#" + encodeURIComponent(item.text);
-            }
-
-            for (let item of items) {
-                if (item.text == topic)
-                    return format(item);
-                else if (!partialMatch && topic)
-                    partialMatch = item;
-            }
-
-            if (partialMatch)
-                return format(partialMatch);
-            return null;
-        },
-
-        /**
-         * Opens the help page containing the specified *topic* if it exists.
-         *
-         * @param {string} topic The help topic to open.
-         * @param {boolean} consolidated Whether to use the consolidated help page.
-         */
-        help: function (topic, consolidated) {
-            dactyl.initHelp();
-
-            if (!topic) {
-                let helpFile = consolidated ? "all" : modules.options["helpfile"];
-
-                if (hasOwnProperty(help.files, helpFile))
-                    dactyl.open("dactyl://help/" + helpFile, { from: "help" });
-                else
-                    dactyl.echomsg(_("help.noFile", JSON.stringify(helpFile)));
-                return;
-            }
-
-            let page = this.findHelp(topic, consolidated);
-            dactyl.assert(page != null, _("help.noTopic", topic));
-
-            dactyl.open("dactyl://help/" + page, { from: "help" });
-        },
-
-        exportHelp: function (path) {
-            const FILE = io.File(path);
-            const PATH = FILE.leafName.replace(/\..*/, "") + "/";
-            const TIME = Date.now();
-
-            if (!FILE.exists() && (/\/$/.test(path) && !/\./.test(FILE.leafName)))
-                FILE.create(FILE.DIRECTORY_TYPE, 0o755);
-
-            dactyl.initHelp();
-            if (FILE.isDirectory()) {
-                var addDataEntry = function addDataEntry(file, data) FILE.child(file).write(data);
-                var addURIEntry  = function addURIEntry(file, uri) addDataEntry(file, util.httpGet(uri).responseText);
-            }
-            else {
-                var zip = services.ZipWriter(FILE.file, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
-
-                addURIEntry = function addURIEntry(file, uri)
-                    zip.addEntryChannel(PATH + file, TIME, 9,
-                        services.io.newChannel(uri, null, null), false);
-                addDataEntry = function addDataEntry(file, data) // Unideal to an extreme.
-                    addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
-            }
-
-            let empty = new RealSet("area base basefont br col frame hr img input isindex link meta param"
-                                    .split(" "));
-            function fix(node) {
-                switch (node.nodeType) {
-                case Ci.nsIDOMNode.ELEMENT_NODE:
-                    if (isinstance(node, [Ci.nsIDOMHTMLBaseElement]))
-                        return;
-
-                    data.push("<", node.localName);
-                    if (node instanceof Ci.nsIDOMHTMLHtmlElement)
-                        data.push(" xmlns=" + JSON.stringify(XHTML),
-                                  " xmlns:dactyl=" + JSON.stringify(NS));
-
-                    for (let { name, value } of node.attributes) {
-                        if (name == "dactyl:highlight") {
-                            styles.add(value);
-                            name = "class";
-                            value = "hl-" + value;
-                        }
-                        if (name == "href") {
-                            value = node.href || value;
-                            if (value.startsWith("dactyl://help-tag/")) {
-                                try {
-                                    let uri = services.io.newChannel(value, null, null).originalURI;
-                                    value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
-                                }
-                                catch (e) {
-                                    util.dump("Magical tag thingy failure for: " + value);
-                                    dactyl.reportError(e);
-                                }
-                            }
-                            if (!/^#|[\/](#|$)|^[a-z]+:/.test(value))
-                                value = value.replace(/(#|$)/, ".xhtml$1");
-                        }
-                        if (name == "src" && value.indexOf(":") > 0) {
-                            chromeFiles[value] = value.replace(/.*\//, "");
-                            value = value.replace(/.*\//, "");
-                        }
-
-                        data.push(" ", name, '="', DOM.escapeHTML(value), '"');
-                    }
-                    if (empty.has(node.localName))
-                        data.push(" />");
-                    else {
-                        data.push(">");
-                        if (node instanceof Ci.nsIDOMHTMLHeadElement)
-                            data.push('<link rel="stylesheet" type="text/css" href="help.css"/>');
-                        Array.map(node.childNodes, fix);
-                        data.push("</", node.localName, ">");
-                    }
-                    break;
-                case Ci.nsIDOMNode.TEXT_NODE:
-                    data.push(DOM.escapeHTML(node.textContent, true));
+                function format(item) {
+                    return item.description + "#" + encodeURIComponent(item.text);
                 }
+
+                for (let item of items) {
+                    if (item.text == topic)
+                        return format(item);
+                    else if (!partialMatch && topic)
+                        partialMatch = item;
+                }
+
+                if (partialMatch)
+                    return format(partialMatch);
+                return null;
+            },
+
+            /**
+            * Opens the help page containing the specified *topic* if it exists.
+            *
+            * @param {string} topic The help topic to open.
+            * @param {boolean} consolidated Whether to use the consolidated help page.
+            */
+            help: function (topic, consolidated) {
+                dactyl.initHelp();
+
+                if (!topic) {
+                    let helpFile = consolidated ? "all" : modules.options["helpfile"];
+
+                    if (hasOwnProperty(help.files, helpFile))
+                        dactyl.open("dactyl://help/" + helpFile, { from: "help" });
+                    else
+                        dactyl.echomsg(_("help.noFile", JSON.stringify(helpFile)));
+                    return;
+                }
+
+                let page = this.findHelp(topic, consolidated);
+                dactyl.assert(page != null, _("help.noTopic", topic));
+
+                dactyl.open("dactyl://help/" + page, { from: "help" });
+            },
+
+            exportHelp: function (path) {
+                const FILE = io.File(path);
+                const PATH = FILE.leafName.replace(/\..*/, "") + "/";
+                const TIME = Date.now();
+
+                if (!FILE.exists() && (/\/$/.test(path) && !/\./.test(FILE.leafName)))
+                    FILE.create(FILE.DIRECTORY_TYPE, 0o755);
+
+                dactyl.initHelp();
+                if (FILE.isDirectory()) {
+                    var addDataEntry = function addDataEntry(file, data) {
+                        FILE.child(file).write(data);
+                    };
+                    var addURIEntry  = function addURIEntry(file, uri) {
+                        addDataEntry(file, util.httpGet(uri).responseText);
+                    };
+                }
+                else {
+                    var zip = services.ZipWriter(FILE.file, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
+
+                    addURIEntry = function addURIEntry(file, uri) {
+                        zip.addEntryChannel(PATH + file, TIME, 9,
+                            services.io.newChannel(uri, null, null), false);
+                    };
+                    addDataEntry = function addDataEntry(file, data) {// Unideal to an extreme.
+                        addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
+                    };
+                }
+
+                let empty = new RealSet("area base basefont br col frame hr img input isindex link meta param"
+                                        .split(" "));
+                function fix(node) {
+                    switch (node.nodeType) {
+                    case Ci.nsIDOMNode.ELEMENT_NODE:
+                        if (isinstance(node, [Ci.nsIDOMHTMLBaseElement]))
+                            return;
+
+                        data.push("<", node.localName);
+                        if (node instanceof Ci.nsIDOMHTMLHtmlElement)
+                            data.push(" xmlns=" + JSON.stringify(XHTML),
+                                    " xmlns:dactyl=" + JSON.stringify(NS));
+
+                        for (let { name, value } of node.attributes) {
+                            if (name == "dactyl:highlight") {
+                                styles.add(value);
+                                name = "class";
+                                value = "hl-" + value;
+                            }
+                            if (name == "href") {
+                                value = node.href || value;
+                                if (value.startsWith("dactyl://help-tag/")) {
+                                    try {
+                                        let uri = services.io.newChannel(value, null, null).originalURI;
+                                        value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
+                                    }
+                                    catch (e) {
+                                        util.dump("Magical tag thingy failure for: " + value);
+                                        dactyl.reportError(e);
+                                    }
+                                }
+                                if (!/^#|[\/](#|$)|^[a-z]+:/.test(value))
+                                    value = value.replace(/(#|$)/, ".xhtml$1");
+                            }
+                            if (name == "src" && value.indexOf(":") > 0) {
+                                chromeFiles[value] = value.replace(/.*\//, "");
+                                value = value.replace(/.*\//, "");
+                            }
+
+                            data.push(" ", name, '="', DOM.escapeHTML(value), '"');
+                        }
+                        if (empty.has(node.localName))
+                            data.push(" />");
+                        else {
+                            data.push(">");
+                            if (node instanceof Ci.nsIDOMHTMLHeadElement)
+                                data.push('<link rel="stylesheet" type="text/css" href="help.css"/>');
+                            Array.map(node.childNodes, fix);
+                            data.push("</", node.localName, ">");
+                        }
+                        break;
+                    case Ci.nsIDOMNode.TEXT_NODE:
+                        data.push(DOM.escapeHTML(node.textContent, true));
+                    }
+                }
+
+                let { buffer, content, events } = modules;
+                let chromeFiles = {};
+                let styles = new RealSet;
+
+                for (let [file, ] of iter(help.files)) {
+                    let url = "dactyl://help/" + file;
+                    dactyl.open(url);
+                    util.waitFor(() => (content.location.href == url && buffer.loaded &&
+                                        content.document.documentElement instanceof Ci.nsIDOMHTMLHtmlElement),
+                                15000);
+                    events.waitForPageLoad();
+                    var data = [
+                        '<?xml version="1.0" encoding="UTF-8"?>\n',
+                        '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n',
+                        '          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
+                    ];
+                    fix(content.document.documentElement);
+                    addDataEntry(file + ".xhtml", data.join(""));
+                }
+
+                data = [h for (h of highlight)
+                        if (styles.has(h.class) || /^Help/.test(h.class))]
+                    .map(h => h.selector
+                            .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
+                            .replace(/html\|/g, "") + "\t" + "{" + h.cssText + "}")
+                    .join("\n");
+                addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
+
+                addDataEntry("tag-map.json", JSON.stringify(help.tags));
+
+                let m, re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
+                while ((m = re.exec(data)))
+                    chromeFiles[m[0]] = m[2];
+
+                for (let [uri, leaf] of iter(chromeFiles))
+                    addURIEntry(leaf, uri);
+
+                if (zip)
+                    zip.close();
             }
-
-            let { buffer, content, events } = modules;
-            let chromeFiles = {};
-            let styles = new RealSet;
-
-            for (let [file, ] of iter(help.files)) {
-                let url = "dactyl://help/" + file;
-                dactyl.open(url);
-                util.waitFor(() => (content.location.href == url && buffer.loaded &&
-                                    content.document.documentElement instanceof Ci.nsIDOMHTMLHtmlElement),
-                             15000);
-                events.waitForPageLoad();
-                var data = [
-                    '<?xml version="1.0" encoding="UTF-8"?>\n',
-                    '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n',
-                    '          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
-                ];
-                fix(content.document.documentElement);
-                addDataEntry(file + ".xhtml", data.join(""));
-            }
-
-            data = [h for (h of highlight)
-                    if (styles.has(h.class) || /^Help/.test(h.class))]
-                .map(h => h.selector
-                           .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
-                           .replace(/html\|/g, "") + "\t" + "{" + h.cssText + "}")
-                .join("\n");
-            addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
-
-            addDataEntry("tag-map.json", JSON.stringify(help.tags));
-
-            let m, re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
-            while ((m = re.exec(data)))
-                chromeFiles[m[0]] = m[2];
-
-            for (let [uri, leaf] of iter(chromeFiles))
-                addURIEntry(leaf, uri);
-
-            if (zip)
-                zip.close();
-        }
-
-    })
+        };
+    }
 }, {
 }, {
     commands: function initCommands(dactyl, modules, window) {
@@ -445,7 +454,10 @@ var Help = Module("Help", {
             context.anchored = false;
             context.completions = help.tags;
             if (consolidated)
-                context.keys = { text: 0, description: function () "all" };
+                context.keys = {
+                    text: 0,
+                    description: function () { return "all"; }
+                };
         };
     },
     javascript: function initJavascript(dactyl, modules, window) {

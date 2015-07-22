@@ -13,8 +13,9 @@ defineModule("overlay", {
 
 lazyRequire("highlight", ["highlight"]);
 
-var getAttr = function getAttr(elem, ns, name)
-    elem.hasAttributeNS(ns, name) ? elem.getAttributeNS(ns, name) : null;
+var getAttr = function getAttr(elem, ns, name) {
+    return elem.hasAttributeNS(ns, name) ? elem.getAttributeNS(ns, name) : null;
+};
 var setAttr = function setAttr(elem, ns, name, val) {
     if (val == null)
         elem.removeAttributeNS(ns, name);
@@ -34,7 +35,7 @@ var Overlay = Class("Overlay", {
 
     get win() { return this.window; },
 
-    $: function $(sel, node) DOM(sel, node || this.doc),
+    $: function $(sel, node) { return DOM(sel, node || this.doc); },
 
     cleanup: function cleanup(window, reason) {
         for (let fn of this.cleanups)

@@ -97,9 +97,11 @@ update(Highlight.prototype, {
 
     get cssText() { return this.inheritedCSS + this.value; },
 
-    toString: function () "Highlight(" + this.class + ")\n\t" +
-        [k + ": " + JSON.stringify(String(v))
-         for ([k, v] of this)].join("\n\t")
+    toString: function () {
+        return "Highlight(" + this.class + ")\n\t" +
+               [k + ": " + JSON.stringify(String(v))
+                for ([k, v] of this)].join("\n\t");
+    }
 });
 
 /**
@@ -113,10 +115,15 @@ var Highlights = Module("Highlight", {
         this.loaded = {};
     },
 
-    keys: function keys() Object.keys(this.highlight).sort(),
+    keys: function keys() {
+        return Object.keys(this.highlight).sort();
+    },
 
-    "@@iterator": function () values(this.highlight).sort((a, b) => String.localeCompare(a.class, b.class))
-                                                    .iterValues(),
+    "@@iterator": function () {
+        return values(this.highlight)
+                   .sort((a, b) => String.localeCompare(a.class, b.class))
+                   .iterValues();
+    },
 
     _create: function _create(agent, args) {
         let obj = Highlight.apply(Highlight, args);
@@ -165,7 +172,9 @@ var Highlights = Module("Highlight", {
         return obj;
     },
 
-    get: function get(k) this.highlight[k],
+    get: function get(k) {
+        return this.highlight[k];
+    },
 
     set: function set(key, newStyle, force, append, extend) {
         let highlight = this.highlight[key] || this._create(false, [key]);
@@ -234,13 +243,13 @@ var Highlights = Module("Highlight", {
      *
      * @param {string} class
      */
-    selector: function selector(class_)
-        class_.replace(/(^|[>\s])([A-Z][\w-]+)\b/g,
-            (m, n1, hl) => {
-                if (this.highlight[hl] && this.highlight[hl].class != class_)
-                    return n1 + this.highlight[hl].selector;
-                return n1 + "[dactyl|highlight~=" + hl + "]";
-            }),
+    selector: function selector(class_) {
+        return class_.replace(/(^|[>\s])([A-Z][\w-]+)\b/g, (m, n1, hl) => {
+            if (this.highlight[hl] && this.highlight[hl].class != class_)
+                return n1 + this.highlight[hl].selector;
+            return n1 + "[dactyl|highlight~=" + hl + "]";
+        });
+    },
 
     groupRegexp: util.regexp(literal(function () /*
         ^

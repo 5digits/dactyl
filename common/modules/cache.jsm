@@ -52,14 +52,16 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         });
     },
 
-    Local: function Local(dactyl, modules, window) ({
-        init: function init() {
-            delete this.instance;
-            this.providers = {};
-        },
+    Local: function Local(dactyl, modules, window) {
+        return {
+            init: function init() {
+                delete this.instance;
+                this.providers = {};
+            },
 
-        isLocal: true
-    }),
+            isLocal: true
+        };
+    },
 
     parse: function parse(str) {
         if ('{['.contains(str[0]))
@@ -246,12 +248,16 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         return result;
     },
 
-    _has: function _has(name) hasOwnProperty(this.providers, name)
-                           || this.storage.has(name),
+    _has: function _has(name) {
+        return hasOwnProperty(this.providers, name) ||
+               this.storage.has(name);
+    },
 
-    has: function has(name) [this.globalProviders, this.localProviders]
-            .some(obj => isinstance(obj, ["Set"]) ? obj.has(name)
-                                                  : hasOwnProperty(obj, name)),
+    has: function has(name) {
+        return [this.globalProviders, this.localProviders]
+                   .some(obj => isinstance(obj, ["Set"]) ? obj.has(name)
+                                                         : hasOwnProperty(obj, name));
+    },
 
     register: function register(name, callback, long) {
         if (this.isLocal)

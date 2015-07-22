@@ -111,7 +111,9 @@ var CompletionContext = Class("CompletionContext", {
             this.anchored = true;
             this.forceAnchored = null;
 
-            this.compare = function compare(a, b) String.localeCompare(a.text, b.text);
+            this.compare = function compare(a, b) {
+                return String.localeCompare(a.text, b.text);
+            };
             /**
              * @property {function} This function is called when we close
              *     a completion window with Esc or Ctrl-c. Usually this callback
@@ -219,9 +221,11 @@ var CompletionContext = Class("CompletionContext", {
          * Returns a key, as detailed in {@link #keys}.
          * @function
          */
-        this.getKey = function getKey(item, key) (typeof self.keys[key] == "function") ? self.keys[key].call(this, item.item) :
+        this.getKey = function getKey(item, key) {
+            return (typeof self.keys[key] == "function") ? self.keys[key].call(this, item.item) :
                 key in self.keys ? item.item[self.keys[key]]
                                  : item.item[key];
+        };
         return this;
     },
 
@@ -330,7 +334,9 @@ var CompletionContext = Class("CompletionContext", {
     },
     // Temporary
     get longestAllSubstring() {
-        return this.allSubstrings.reduce(function r(a, b) a.length > b.length ? a : b, "");
+        return this.allSubstrings.reduce(function r(a, b) {
+            return a.length > b.length ? a : b, "";
+        });
     },
 
     get caret() { return this._caret - this.offset; },
@@ -536,12 +542,12 @@ var CompletionContext = Class("CompletionContext", {
         // Item matchers
         if (this.ignoreCase)
             this.matchString = this.anchored ?
-                function matchString(filter, str) String.toLowerCase(str).indexOf(filter.toLowerCase()) == 0 :
-                function matchString(filter, str) String.toLowerCase(str).indexOf(filter.toLowerCase()) >= 0;
+                function matchString(filter, str) { return String.toLowerCase(str).indexOf(filter.toLowerCase()) == 0; } :
+                function matchString(filter, str) { return String.toLowerCase(str).indexOf(filter.toLowerCase()) >= 0; };
         else
             this.matchString = this.anchored ?
-                function matchString(filter, str) String.indexOf(str, filter) == 0 :
-                function matchString(filter, str) String.indexOf(str, filter) >= 0;
+                function matchString(filter, str) { return String.indexOf(str, filter) == 0; } :
+                function matchString(filter, str) { return String.indexOf(str, filter) >= 0; };
 
         // Item formatters
         this.processor = Array.slice(this.process);
@@ -571,7 +577,9 @@ var CompletionContext = Class("CompletionContext", {
                 filtered.sort(this.compare);
                 if (!this.anchored) {
                     let filter = this.filter;
-                    filtered.sort(function s(a, b) b.text.startsWith(filter) - a.text.startsWith(filter));
+                    filtered.sort(function s(a, b) {
+                        return b.text.startsWith(filter) - a.text.startsWith(filter);
+                    });
                 }
             }
 
@@ -604,11 +612,11 @@ var CompletionContext = Class("CompletionContext", {
             text = text.substr(0, 100);
 
         if (this.anchored) {
-            var compare = function compare(text, s) text.substr(0, s.length) == s;
+            var compare = function compare(text, s) { return text.substr(0, s.length) == s; };
             var substrings = [text];
         }
         else {
-            var compare = function compare(text, s) text.contains(s);
+            var compare = function compare(text, s) { return text.contains(s); };
             var substrings = [];
             let start = 0;
             let idx;
@@ -619,8 +627,8 @@ var CompletionContext = Class("CompletionContext", {
             }
         }
 
-        substrings = items.reduce(function r(res, item)
-            res.map(function m(substring) {
+        substrings = items.reduce(function r(res, item) {
+            return res.map(function m(substring) {
                 // A simple binary search to find the longest substring
                 // of the given string which also matches the current
                 // item's text.
@@ -640,8 +648,8 @@ var CompletionContext = Class("CompletionContext", {
                     }
                 }
                 return len == substring.length ? substring : substring.substr(0, Math.max(len, 0));
-            }),
-            substrings);
+            });
+        }, substrings);
 
         let quote = this.quote;
         if (quote)
@@ -860,7 +868,9 @@ var CompletionContext = Class("CompletionContext", {
      * @param {string} str The string to match.
      * @returns {boolean} True if the string matches, false otherwise.
      */
-    match: function match(str) this.matchString(this.filter, str),
+    match: function match(str) {
+        return this.matchString(this.filter, str);
+    },
 
     /**
      * Pushes a new output processor onto the processor chain of
@@ -874,7 +884,9 @@ var CompletionContext = Class("CompletionContext", {
      */
     pushProcessor: function pushProcess(index, func) {
         let next = this.process[index];
-        this.process[index] = function process_(item, text) func(item, text, next);
+        this.process[index] = function process_(item, text) {
+            return func(item, text, next);
+        };
     },
 
     /**
@@ -887,7 +899,8 @@ var CompletionContext = Class("CompletionContext", {
             throw Error();
 
         this.offset = 0;
-        this.process = [template.icon, function process_1(item, k) k];
+        this.process = [template.icon,
+                        function process_1(item, k) { return k; }];
         this.filters = [CompletionContext.Filter.text];
         this.tabPressed = false;
         this.title = ["Completions"];
@@ -931,8 +944,10 @@ var CompletionContext = Class("CompletionContext", {
     }
 }, {
     Sort: {
-        number: function S_number(a, b) parseInt(a.text) - parseInt(b.text)
-                    || String.localeCompare(a.text, b.text),
+        number: function S_number(a, b) {
+            return parseInt(a.text) - parseInt(b.text) ||
+                   String.localeCompare(a.text, b.text);
+        },
         unsorted: null
     },
 
@@ -962,65 +977,67 @@ var Completion = Module("completion", {
 
     get setFunctionCompleter() { return JavaScript.setCompleter; }, // Backward compatibility
 
-    Local: function Local(dactyl, modules, window) ({
-        urlCompleters: {},
+    Local: function Local(dactyl, modules, window) {
+        return {
+            urlCompleters: {},
 
-        get modules() { return modules; },
-        get options() { return modules.options; },
+            get modules() { return modules; },
+            get options() { return modules.options; },
 
-        // FIXME
-        _runCompleter: function _runCompleter(name, filter, maxItems, ...args) {
-            let context = modules.CompletionContext(filter);
-            context.maxItems = maxItems;
-            let res = apply(context, "fork", ["run", 0, this, name].concat(args));
-            if (res) {
-                if (Components.stack.caller.name === "runCompleter") // FIXME
-                    return {
-                        items: res.map(function m(i) {
-                            return { item: i };
-                        })
-                    };
-                context.contexts["/run"].completions = res;
+            // FIXME
+            _runCompleter: function _runCompleter(name, filter, maxItems, ...args) {
+                let context = modules.CompletionContext(filter);
+                context.maxItems = maxItems;
+                let res = apply(context, "fork", ["run", 0, this, name].concat(args));
+                if (res) {
+                    if (Components.stack.caller.name === "runCompleter") // FIXME
+                        return {
+                            items: res.map(function m(i) {
+                                return { item: i };
+                            })
+                        };
+                    context.contexts["/run"].completions = res;
+                }
+                context.wait(null, true);
+                return context.allItems;
+            },
+
+            runCompleter: function runCompleter(name, filter, maxItems) {
+                return apply(this, "_runCompleter", arguments)
+                        .items.map(function m(i) { return i.item; });
+            },
+
+            listCompleter: function listCompleter(name, filter, maxItems, ...args) {
+                let context = modules.CompletionContext(filter || "");
+                context.maxItems = maxItems;
+                apply(context, "fork", ["list", 0, this, name].concat(args));
+                context = context.contexts["/list"];
+                context.wait(null, true);
+
+                let contexts = context.activeContexts;
+                if (!contexts.length)
+                    contexts = context.contextList
+                                    .filter(function f(c) {
+                                        return c.hasItems;
+                                    })
+                                    .slice(0, 1);
+                if (!contexts.length)
+                    contexts = context.contextList.slice(-1);
+
+                modules.commandline.commandOutput(
+                    ["div", { highlight: "Completions" },
+                    template.map(contexts, function m(context) {
+                        return [template.completionRow(context.title, "CompTitle"),
+                                template.map(context.items,
+                                            function m(item) {
+                                                return context.createRow(item);
+                                            },
+                                            null,
+                                            100)];
+                    })]);
             }
-            context.wait(null, true);
-            return context.allItems;
-        },
-
-        runCompleter: function runCompleter(name, filter, maxItems) {
-            return apply(this, "_runCompleter", arguments)
-                       .items.map(function m(i) { return i.item; });
-        },
-
-        listCompleter: function listCompleter(name, filter, maxItems, ...args) {
-            let context = modules.CompletionContext(filter || "");
-            context.maxItems = maxItems;
-            apply(context, "fork", ["list", 0, this, name].concat(args));
-            context = context.contexts["/list"];
-            context.wait(null, true);
-
-            let contexts = context.activeContexts;
-            if (!contexts.length)
-                contexts = context.contextList
-                                  .filter(function f(c) {
-                                       return c.hasItems;
-                                  })
-                                  .slice(0, 1);
-            if (!contexts.length)
-                contexts = context.contextList.slice(-1);
-
-            modules.commandline.commandOutput(
-                ["div", { highlight: "Completions" },
-                 template.map(contexts, function m(context) {
-                    return [template.completionRow(context.title, "CompTitle"),
-                            template.map(context.items,
-                                         function m(item) {
-                                            return context.createRow(item);
-                                         },
-                                         null,
-                                         100)];
-                 })]);
-        }
-    }),
+        };
+    },
 
     ////////////////////////////////////////////////////////////////////////////////
     ////////////////////// COMPLETION TYPES ////////////////////////////////////////
@@ -1147,7 +1164,9 @@ var Completion = Module("completion", {
         let contains = String.indexOf;
         if (context.ignoreCase) {
             compare = util.compareIgnoreCase;
-            contains = function contains_(a, b) a && a.toLowerCase().contains(b.toLowerCase());
+            contains = function contains_(a, b) {
+                return a && a.toLowerCase().contains(b.toLowerCase());
+            };
         }
 
         if (tags)
@@ -1191,8 +1210,12 @@ var Completion = Module("completion", {
             }
             let process = context.process;
             context.process = [
-                function process_0(item, text) highlight.call(this, item, item.text, 0),
-                function process_1(item, text) highlight.call(this, item, text, 1)
+                function process_0(item, text) {
+                    return highlight.call(this, item, item.text, 0);
+                },
+                function process_1(item, text) {
+                    return highlight.call(this, item, text, 1);
+                }
             ];
         });
     }

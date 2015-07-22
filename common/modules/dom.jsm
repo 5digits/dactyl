@@ -22,7 +22,9 @@ var NS = "http://vimperator.org/namespaces/liberator";
 
 function BooleanAttribute(attr) {
     return {
-        get: function (elem) elem.getAttribute(attr) == "true",
+        get: function (elem) {
+            return elem.getAttribute(attr) == "true";
+        },
         set: function (elem, val) {
             if (val === "false" || !val)
                 elem.removeAttribute(attr);
@@ -86,7 +88,9 @@ var DOM = Class("DOM", {
             yield this[i];
     },
 
-    Empty: function Empty() this.constructor(null, this.document),
+    Empty: function Empty() {
+        return this.constructor(null, this.document);
+    },
 
     nodes: Class.Memoize(() => ({})),
 
@@ -117,7 +121,10 @@ var DOM = Class("DOM", {
         }
     },
 
-    matcher: function matcher(sel) elem => (elem.mozMatchesSelector && elem.mozMatchesSelector(sel)),
+    matcher: function matcher(sel) {
+        return elem => (elem.mozMatchesSelector &&
+                        elem.mozMatchesSelector(sel));
+    },
 
     each: function each(fn, self) {
         let obj = self || this.Empty();
@@ -292,7 +299,9 @@ var DOM = Class("DOM", {
         let self = this;
 
         return {
-            toString: function () self[0].className,
+            toString: function () {
+                return self[0].className;
+            },
 
             get list() { return Array.slice(self[0].classList); },
             set list(val) { self.attr("class", val.join(" ")); },
@@ -303,8 +312,10 @@ var DOM = Class("DOM", {
                 });
             },
 
-            add: function add(cls) this.each("add", cls),
-            remove: function remove(cls) this.each("remove", cls),
+            add: function add(cls) { return this.each("add", cls); },
+            remove: function remove(cls) {
+                return this.each("remove", cls);
+            },
             toggle: function toggle(cls, val, thisObj) {
                 if (callable(val))
                     return self.each(function (elem, i) {
@@ -313,7 +324,9 @@ var DOM = Class("DOM", {
                 return this.each(val == null ? "toggle" : val ? "add" : "remove", cls);
             },
 
-            has: function has(cls) this[0].classList.has(cls)
+            has: function has(cls) {
+                return this[0].classList.has(cls);
+            }
         };
     },
 
@@ -321,7 +334,9 @@ var DOM = Class("DOM", {
         let self = this;
 
         return {
-            toString: function () self.attrNS(NS, "highlight") || "",
+            toString: function () {
+                return self.attrNS(NS, "highlight") || "";
+            },
 
             get list() {
                 let s = this.toString().trim();
@@ -334,31 +349,39 @@ var DOM = Class("DOM", {
                 self.attrNS(NS, "highlight", str || null);
             },
 
-            has: function has(hl) ~this.list.indexOf(hl),
+            has: function has(hl) {
+                return ~this.list.indexOf(hl);
+            },
 
-            add: function add(hl) self.each(function () {
-                highlight.loaded[hl] = true;
-                this.highlight.list = this.highlight.list.concat(hl);
-            }),
+            add: function add(hl) {
+                self.each(function () {
+                    highlight.loaded[hl] = true;
+                    this.highlight.list = this.highlight.list.concat(hl);
+                });
+            },
 
-            remove: function remove(hl) self.each(function () {
-                this.highlight.list = this.highlight.list.filter(h => h != hl);
-            }),
+            remove: function remove(hl) {
+                self.each(function () {
+                    this.highlight.list = this.highlight.list.filter(h => h != hl);
+                });
+            },
 
-            toggle: function toggle(hl, val, thisObj) self.each(function (elem, i) {
-                let { highlight } = this;
-                let v = callable(val) ? val.call(thisObj || this, elem, i) : val;
+            toggle: function toggle(hl, val, thisObj) {
+                self.each(function (elem, i) {
+                    let { highlight } = this;
+                    let v = callable(val) ? val.call(thisObj || this, elem, i) : val;
 
-                highlight[(v == null ? highlight.has(hl) : !v) ? "remove" : "add"](hl);
-            })
+                    highlight[(v == null ? highlight.has(hl) : !v) ? "remove" : "add"](hl);
+                });
+            }
         };
     },
 
     get rect() {
         return this[0] instanceof Ci.nsIDOMWindow ? { width: this[0].scrollMaxX + this[0].innerWidth,
                                                       height: this[0].scrollMaxY + this[0].innerHeight,
-                                                      get right() this.width + this.left,
-                                                      get bottom() this.height + this.top,
+                                                      get right() { return this.width + this.left; },
+                                                      get bottom() { return this.height + this.top; },
                                                       top: -this[0].scrollY,
                                                       left: -this[0].scrollX } :
                this[0]                            ? this[0].getBoundingClientRect() : {};
@@ -712,9 +735,13 @@ var DOM = Class("DOM", {
 
         return this[0].style[css.property(key)];
     }, {
-        name: function (property) property.replace(/[A-Z]/g, m0 => "-" + m0.toLowerCase()),
+        name: function (property) {
+            return property.replace(/[A-Z]/g, m0 => "-" + m0.toLowerCase());
+        },
 
-        property: function (name) name.replace(/-(.)/g, (m0, m1) => m1.toUpperCase())
+        property: function (name) {
+            return name.replace(/-(.)/g, (m0, m1) => m1.toUpperCase());
+        }
     }),
 
     append: function append(val) {
@@ -789,8 +816,9 @@ var DOM = Class("DOM", {
         return this;
     },
 
-    clone: function clone(deep)
-        this.map(elem => elem.cloneNode(deep)),
+    clone: function clone(deep) {
+        return this.map(elem => elem.cloneNode(deep));
+    },
 
     toggle: function toggle(val, self) {
         if (callable(val))
@@ -824,11 +852,13 @@ var DOM = Class("DOM", {
         }, this);
     },
 
-    createContents: function createContents()
-        this.each(DOM.createContents, this),
+    createContents: function createContents() {
+        return this.each(DOM.createContents, this);
+    },
 
-    isScrollable: function isScrollable(direction)
-        this.length && DOM.isScrollable(this[0], direction),
+    isScrollable: function isScrollable(direction) {
+        return this.length && DOM.isScrollable(this[0], direction);
+    },
 
     getSet: function getSet(args, get, set) {
         if (!args.length)
@@ -1455,16 +1485,19 @@ var DOM = Class("DOM", {
         ? (elem, dir) => services.dactyl.getScrollable(elem) & (dir ? services.dactyl["DIRECTION_" + dir.toUpperCase()] : ~0)
         : (elem, dir) => true),
 
-    isJSONXML: function isJSONXML(val) isArray(val) && isinstance(val[0], ["String", "Array", "XML", DOM.DOMString])
-                                    || isObject(val) && "toDOM" in val,
+    isJSONXML: function isJSONXML(val) {
+        return isArray(val) &&
+               isinstance(val[0], ["String", "Array", "XML", DOM.DOMString]) ||
+               isObject(val) && "toDOM" in val;
+    },
 
-    DOMString: function DOMString(val) ({
-        __proto__: DOMString.prototype,
-
-        toDOM: function toDOM(doc) doc.createTextNode(val),
-
-        toString: function () val
-    }),
+    DOMString: function DOMString(val) {
+        return {
+            __proto__: DOMString.prototype,
+            toDOM: function toDOM(doc) { return doc.createTextNode(val); },
+            toString: function () { return val; }
+        };
+    },
 
     /**
      * The set of input element type attribute values that mark the element as
@@ -1889,10 +1922,12 @@ var DOM = Class("DOM", {
                 );
 
                 let res = {
-                    iterateNext: function () result.iterateNext(),
+                    iterateNext: function () { return result.iterateNext(); },
                     get resultType() { return result.resultType; },
                     get snapshotLength() { return result.snapshotLength; },
-                    snapshotItem: function (i) result.snapshotItem(i)
+                    snapshotItem: function (i) {
+                        return result.snapshotItem(i);
+                    }
                 };
                 if (asIterator)
                     res[Symbol.iterator] = function* () {
@@ -1912,7 +1947,9 @@ var DOM = Class("DOM", {
             }
         },
         {
-            resolver: function lookupNamespaceURI(prefix) (DOM.namespaces[prefix] || null)
+            resolver: function lookupNamespaceURI(prefix) {
+                return DOM.namespaces[prefix] || null;
+            }
         }),
 
     /**

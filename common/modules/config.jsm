@@ -40,7 +40,7 @@ AboutHandler.prototype = {
         return channel;
     },
 
-    getURIFlags: function (uri) Ci.nsIAboutModule.ALLOW_SCRIPT
+    getURIFlags: function (uri) { return Ci.nsIAboutModule.ALLOW_SCRIPT; }
 };
 var ConfigBase = Class("ConfigBase", {
     /**
@@ -74,14 +74,20 @@ var ConfigBase = Class("ConfigBase", {
         services["dactyl:"].pages["dtd"] = () => [null, cache.get("config.dtd")];
 
         update(services["dactyl:"].providers, {
-            "locale": function (uri, path) LocaleChannel("dactyl-locale", config.locale, path, uri),
-            "locale-local": function (uri, path) LocaleChannel("dactyl-local-locale", config.locale, path, uri)
+            "locale": function (uri, path) {
+                return LocaleChannel("dactyl-locale", config.locale, path, uri);
+            },
+            "locale-local": function (uri, path) {
+                return LocaleChannel("dactyl-local-locale", config.locale, path, uri);
+            }
         });
     },
 
     get prefs() { return localPrefs; },
 
-    has: function (feature) this.features.has(feature),
+    has: function (feature) {
+        return this.features.has(feature);
+    },
 
     configFiles: [
         "resource://dactyl-common/config.json",
@@ -478,59 +484,61 @@ var ConfigBase = Class("ConfigBase", {
         this.helpStyled = true;
     },
 
-    Local: function Local(dactyl, modules, { document, window }) ({
-        init: function init() {
-            this.loadConfig(document.documentURI);
+    Local: function Local(dactyl, modules, { document, window }) {
+        return {
+            init: function init() {
+                this.loadConfig(document.documentURI);
 
-            let append = [
-                    ["menupopup", { id: "viewSidebarMenu", xmlns: "xul" }],
-                    ["broadcasterset", { id: "mainBroadcasterSet", xmlns: "xul" }]];
+                let append = [
+                        ["menupopup", { id: "viewSidebarMenu", xmlns: "xul" }],
+                        ["broadcasterset", { id: "mainBroadcasterSet", xmlns: "xul" }]];
 
-            for (let [id, [name, key, uri]] of iter(this.sidebars)) {
-                append[0].push(
-                        ["menuitem", { observes: "pentadactyl-" + id + "Sidebar", label: name,
-                                       accesskey: key }]);
-                append[1].push(
-                        ["broadcaster", { id: "pentadactyl-" + id + "Sidebar", autoCheck: "false",
-                                          type: "checkbox", group: "sidebar", sidebartitle: name,
-                                          sidebarurl: uri,
-                                          oncommand: "toggleSidebar(this.id || this.observes);" }]);
-            }
+                for (let [id, [name, key, uri]] of iter(this.sidebars)) {
+                    append[0].push(
+                            ["menuitem", { observes: "pentadactyl-" + id + "Sidebar", label: name,
+                                        accesskey: key }]);
+                    append[1].push(
+                            ["broadcaster", { id: "pentadactyl-" + id + "Sidebar", autoCheck: "false",
+                                            type: "checkbox", group: "sidebar", sidebartitle: name,
+                                            sidebarurl: uri,
+                                            oncommand: "toggleSidebar(this.id || this.observes);" }]);
+                }
 
-            util.overlayWindow(window, { append: append });
-        },
+                util.overlayWindow(window, { append: append });
+            },
 
-        get window() { return window; },
+            get window() { return window; },
 
-        get document() { return document; },
+            get document() { return document; },
 
-        ids: Class.Update({
-            get commandContainer() { return document.documentElement.id; }
-        }),
+            ids: Class.Update({
+                get commandContainer() { return document.documentElement.id; }
+            }),
 
-        browser: Class.Memoize(() => window.gBrowser),
-        tabbrowser: Class.Memoize(() => window.gBrowser),
+            browser: Class.Memoize(() => window.gBrowser),
+            tabbrowser: Class.Memoize(() => window.gBrowser),
 
-        get browserModes() { return [modules.modes.NORMAL]; },
+            get browserModes() { return [modules.modes.NORMAL]; },
 
-        /**
-         * @property {string} The ID of the application's main XUL window.
-         */
-        mainWindowId: document.documentElement.id,
+            /**
+            * @property {string} The ID of the application's main XUL window.
+            */
+            mainWindowId: document.documentElement.id,
 
-        /**
-         * @property {number} The height (px) that is available to the output
-         *     window.
-         */
-        get outputHeight() {
-            return this.browser.mPanelContainer.boxObject.height;
-        },
+            /**
+            * @property {number} The height (px) that is available to the output
+            *     window.
+            */
+            get outputHeight() {
+                return this.browser.mPanelContainer.boxObject.height;
+            },
 
-        tabStrip: Class.Memoize(function () {
-            return document.getElementById("TabsToolbar") ||
-                   this.tabbrowser.mTabContainer;
-        })
-    }),
+            tabStrip: Class.Memoize(function () {
+                return document.getElementById("TabsToolbar") ||
+                    this.tabbrowser.mTabContainer;
+            })
+        };
+    },
 
     /**
      * @property {Object} A mapping of names and descriptions

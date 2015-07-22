@@ -329,7 +329,9 @@ var StatusLine = Module("statusline", {
      *    Any other number  - The progress is cleared.
      */
     progress: Modes.boundProperty({
-        get: function progress() this._progress,
+        get: function progress() {
+            return this._progress;
+        },
         set: function progress(progress) {
             this._progress = progress || "";
 

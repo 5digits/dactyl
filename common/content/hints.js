@@ -194,7 +194,9 @@ var HintSession = Class("HintSession", CommandMode, {
      * @param {string} key The key to test.
      * @returns {boolean} Whether the key represents a hint number.
      */
-    isHintKey: function isHintKey(key) this.hintKeys.indexOf(key) >= 0,
+    isHintKey: function isHintKey(key) {
+        return this.hintKeys.indexOf(key) >= 0;
+    },
 
     /**
      * Gets the actual offset of an imagemap area.
@@ -1266,9 +1268,10 @@ var Hints = Module("hints", {
         });
     },
     mappings: function () {
-        let bind = function bind(names, description, action, params)
+        let bind = function bind(names, description, action, params) {
             mappings.add(config.browserModes, names, description,
                          action, params);
+        };
 
         bind(["f"],
             "Start Hints mode",
@@ -1288,9 +1291,10 @@ var Hints = Module("hints", {
             function ({ count }) { hints.open("g;", { continue: true, count: count }); },
             { count: true });
 
-        bind = function bind(names, description, action, params)
+        bind = function bind(names, description, action, params) {
             mappings.add([modes.HINTS], names, description,
                          action, params);
+        };
 
         bind(["<Return>"],
             "Follow the selected hint",
@@ -1306,7 +1310,7 @@ var Hints = Module("hints", {
 
         bind(["<BS>", "<C-h>"],
             "Delete the previous character",
-            function ({ self }) self.backspace());
+            function ({ self }) { self.backspace(); });
 
         bind(["\\"],
             "Toggle hint filtering",
@@ -1343,7 +1347,9 @@ var Hints = Module("hints", {
                     return vals;
                 },
 
-                testValues: function testValues(vals, validator) vals.every(re => Option.splitList(re).every(validator)),
+                testValues: function testValues(vals, validator) {
+                    return vals.every(re => Option.splitList(re).every(validator));
+                },
 
                 validator: DOM.validateMatcher
             });

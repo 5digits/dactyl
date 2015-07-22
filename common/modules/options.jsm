@@ -107,9 +107,13 @@ var Option = Class("Option", {
      * @param {value} value The option value.
      * @returns {value|[string]}
      */
-    parse: function parse(value) Option.dequote(value),
+    parse: function parse(value) {
+        return Option.dequote(value);
+    },
 
-    parseKey: function parseKey(value) value,
+    parseKey: function parseKey(value) {
+        return value;
+    },
 
     /**
      * Returns *values* packed in the appropriate format for the option type.
@@ -117,7 +121,9 @@ var Option = Class("Option", {
      * @param {value|[string]} values The option value.
      * @returns {value}
      */
-    stringify: function stringify(vals) Commands.quote(vals),
+    stringify: function stringify(vals) {
+        return Commands.quote(vals);
+    },
 
     /**
      * Returns the option's value as an array of parsed values if the option
@@ -203,7 +209,9 @@ var Option = Class("Option", {
     get stringDefaultValue() { return this.stringify(this.defaultValue); },
     set stringDefaultValue(val) { this.defaultValue = this.parse(val); },
 
-    getKey: function getKey(key) undefined,
+    getKey: function getKey(key) {
+        return undefined;
+    },
 
     /**
      * Returns whether the option value contains one or more of the specified
@@ -211,7 +219,9 @@ var Option = Class("Option", {
      *
      * @returns {boolean}
      */
-    has: function has() Array.some(arguments, val => this.value.indexOf(val) >= 0),
+    has: function has() {
+        return Array.some(arguments, val => this.value.indexOf(val) >= 0);
+    },
 
     /**
      * Returns whether this option is identified by *name*.
@@ -219,16 +229,22 @@ var Option = Class("Option", {
      * @param {string} name
      * @returns {boolean}
      */
-    hasName: function hasName(name) this.names.indexOf(name) >= 0,
+    hasName: function hasName(name) {
+        return this.names.indexOf(name) >= 0;
+    },
 
     /**
      * Returns whether the specified *values* are valid for this option.
      * @see Option#validator
      */
-    isValidValue: function isValidValue(values) this.validator(values),
+    isValidValue: function isValidValue(values) {
+        return this.validator(values);
+    },
 
-    invalidArgument: function invalidArgument(arg, op) _("error.invalidArgument",
-        this.name + (op || "").replace(/=?$/, "=") + arg),
+    invalidArgument: function invalidArgument(arg, op) {
+        return _("error.invalidArgument",
+                 this.name + (op || "").replace(/=?$/, "=") + arg);
+    },
 
     /**
      * Resets the option to its default value.
@@ -325,8 +341,9 @@ var Option = Class("Option", {
      * @property {function(host, values)} A function which should strip
      *     references to a given domain from the given values.
      */
-    filterDomain: function filterDomain(host, values)
-        Array.filter(values, val => !this.domains([val]).some(val => util.isSubdomain(val, host))),
+    filterDomain: function filterDomain(host, values) {
+        return Array.filter(values, val => !this.domains([val]).some(val => util.isSubdomain(val, host)));
+    },
 
     /**
      * @property {value} The option's default value. This value will be used
@@ -388,7 +405,9 @@ var Option = Class("Option", {
      */
     setter: null,
 
-    testValues: function testValues(values, validator) validator(values),
+    testValues: function testValues(values, validator) {
+        return validator(values);
+    },
 
     /**
      * @property {function} The function called to validate the option's value
@@ -445,7 +464,9 @@ var Option = Class("Option", {
     SCOPE_BOTH: 3,
 
     has: {
-        toggleAll: function toggleAll() toggleAll.supercall(this, "all") ^ !!toggleAll.superapply(this, arguments)
+        toggleAll: function toggleAll() {
+            return toggleAll.supercall(this, "all") ^ !!toggleAll.superapply(this, arguments);
+        }
     },
 
     parseRegexp: function parseRegexp(value, result, flags) {
@@ -467,8 +488,10 @@ var Option = Class("Option", {
         return re;
     },
 
-    unparseRegexp: function unparseRegexp(re, quoted) re.bang + Option.quote(util.regexp.getSource(re), /^!|:/) +
-        (typeof re.result === "boolean" ? "" : ":" + (quoted ? re.result : Option.quote(re.result, /:/))),
+    unparseRegexp: function unparseRegexp(re, quoted) {
+        return re.bang + Option.quote(util.regexp.getSource(re), /^!|:/) +
+               (typeof re.result === "boolean" ? "" : ":" + (quoted ? re.result : Option.quote(re.result, /:/)));
+    },
 
     parseSite: function parseSite(pattern, result, rest) {
         if (isArray(rest)) // Called by Array.map
@@ -484,13 +507,17 @@ var Option = Class("Option", {
             bang: bang,
             filter: filter,
             result: result !== undefined ? result : !bang,
-            toString: function toString() this.bang + Option.quote(this.filter, /:/) +
-                (typeof this.result === "boolean" ? "" : ":" + quote(this.result))
+            toString: function toString() {
+                return this.bang + Option.quote(this.filter, /:/) +
+                       (typeof this.result === "boolean" ? "" : ":" + quote(this.result));
+            }
         });
     },
 
     getKey: {
-        stringlist: function stringlist(k) this.value.indexOf(k) >= 0,
+        stringlist: function stringlist(k) {
+            return this.value.indexOf(k) >= 0;
+        },
         get charlist() { return this.stringlist; },
 
         regexplist: function regexplist(k, default_=null) {
@@ -505,40 +532,58 @@ var Option = Class("Option", {
     },
 
     domains: {
-        sitelist: function (vals) Ary.compact(vals.map(site => util.getHost(site.filter))),
+        sitelist: function (vals) {
+            return Ary.compact(vals.map(site => util.getHost(site.filter)));
+        },
         get sitemap() { return this.sitelist; }
     },
 
     stringify: {
-        charlist:    function (vals) Commands.quote(vals.join("")),
+        charlist: function (vals) {
+            return Commands.quote(vals.join(""));
+        },
 
-        stringlist:  function (vals) vals.map(Option.quote).join(","),
+        stringlist: function (vals) {
+            return vals.map(Option.quote).join(",");
+        },
 
-        stringmap:   function (vals) [Option.quote(k, /:/) + ":" + Option.quote(v, /:/) for ([k, v] of iter(vals))].join(","),
+        stringmap: function (vals) {
+            return [Option.quote(k, /:/) + ":" + Option.quote(v, /:/) for ([k, v] of iter(vals))].join(",");
+        },
 
-        regexplist:  function (vals) vals.join(","),
+        regexplist: function (vals)  { return vals.join(","); },
         get regexpmap() { return this.regexplist; },
         get sitelist() { return this.regexplist; },
         get sitemap() { return this.regexplist; }
     },
 
     parse: {
-        number:     function (value) {
+        number: function (value) {
             let val = Option.dequote(value);
             return (Option.validIf(Number(val) % 1 == 0,
                                   _("option.intRequired")) &&
                     parseInt(val));
         },
 
-        boolean:    function boolean(value) Option.dequote(value) == "true" || value == true ? true : false,
+        boolean: function boolean(value) {
+            return Option.dequote(value) == "true" || value == true ? true : false;
+        },
 
-        charlist:   function charlist(value) Array.slice(Option.dequote(value)),
+        charlist: function charlist(value) {
+            return Array.slice(Option.dequote(value));
+        },
 
-        stringlist: function stringlist(value) (value === "") ? [] : Option.splitList(value),
+        stringlist: function stringlist(value) {
+            return (value === "") ? [] : Option.splitList(value);
+        },
 
-        regexplist: function regexplist(value) (value === "") ? [] :
-            Option.splitList(value, true)
-                  .map(re => Option.parseRegexp(re, undefined, this.regexpFlags)),
+        regexplist: function regexplist(value) {
+            if (value === "")
+                return [];
+            else
+                return Option.splitList(value, true)
+                             .map(re => Option.parseRegexp(re, undefined, this.regexpFlags));
+        },
 
         sitelist: function sitelist(value) {
             if (value === "")
@@ -548,15 +593,20 @@ var Option = Class("Option", {
             return value.map(Option.parseSite, this);
         },
 
-        stringmap: function stringmap(value) Ary.toObject(
-            Option.splitList(value, true).map(function (v) {
+        stringmap: function stringmap(value) {
+            return Ary.toObject(Option.splitList(value, true).map(v => {
                 let [count, key, quote] = Commands.parseArg(v, /:/);
                 return [key, Option.dequote(v.substr(count + 1))];
-            })),
+            }));
+        },
 
-        regexpmap: function regexpmap(value) Option.parse.list.call(this, value, Option.parseRegexp),
+        regexpmap: function regexpmap(value) {
+            return Option.parse.list.call(this, value, Option.parseRegexp);
+        },
 
-        sitemap: function sitemap(value) Option.parse.list.call(this, value, Option.parseSite),
+        sitemap: function sitemap(value) {
+            return Option.parse.list.call(this, value, Option.parseSite);
+        },
 
         list: function list(value, parse) {
             let prev = null;
@@ -580,14 +630,22 @@ var Option = Class("Option", {
 
     parseKey: {
         number: Number,
-        boolean: function boolean(value) value == "true" || value == true ? true : false
+        boolean: function boolean(value) {
+            return value == "true" || value == true ? true : false;
+        }
     },
 
     testValues: {
-        regexpmap:  function regexpmap(vals, validator) vals.every(re => validator(re.result)),
+        regexpmap: function regexpmap(vals, validator) {
+            return vals.every(re => validator(re.result));
+        },
         get sitemap() { return this.regexpmap; },
-        stringlist: function stringlist(vals, validator) vals.every(validator, this),
-        stringmap:  function stringmap(vals, validator) values(vals).every(validator, this)
+        stringlist: function stringlist(vals, validator) {
+            return vals.every(validator, this);
+        },
+        stringmap: function stringmap(vals, validator) {
+            return values(vals).every(validator, this);
+        }
     },
 
     dequote: function dequote(value) {
@@ -613,10 +671,13 @@ var Option = Class("Option", {
         return res;
     },
 
-    quote: function quote(str, re) isArray(str) ? str.map(s => quote(s, re)).join(",") :
-        Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) || re && re.test && re.test(str)
-            ? (/[\b\f\n\r\t]/.test(str) ? '"' : "'")
-            : ""](str, re),
+    // XXX
+    quote: function quote(str, re) {
+        return isArray(str) ? str.map(s => quote(s, re)).join(",") :
+            Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) || re && re.test && re.test(str)
+                ? (/[\b\f\n\r\t]/.test(str) ? '"' : "'")
+                : ""](str, re);
+    },
 
     ops: {
         boolean: function boolean(operator, values, scope, invert) {
@@ -1002,8 +1063,9 @@ var Options = Module("options", {
     },
 
     /** @property {Iterator(Option)} @private */
-    "@@iterator": function __iterator__()
-        values(this._options.sort((a, b) => String.localeCompare(a.name, b.name))),
+    "@@iterator": function __iterator__() {
+        return values(this._options.sort((a, b) => String.localeCompare(a.name, b.name)));
+    },
 
     allPrefs: deprecated("prefs.getNames", function allPrefs() apply(prefs, "getNames", arguments)),
     getPref: deprecated("prefs.get", function getPref() apply(prefs, "get", arguments)),
@@ -1130,16 +1192,18 @@ var Options = Module("options", {
             name: ["listo[ptions]", "lo"],
             description: "List all options along with their short descriptions",
             index: "option",
-            iterate: function (args) options,
+            iterate: function (args) { return options; },
             format: {
-                description: function (opt) [
+                description: function (opt) {
+                    return [
                         opt.scope == Option.SCOPE_LOCAL
                             ? ["span", { highlight: "URLExtra" },
                                   "(" + _("option.bufferLocal") + ")"]
                             : "",
                         template.linkifyHelp(opt.description)
-                ],
-                help: function (opt) "'" + opt.name + "'"
+                    ];
+                },
+                help: function (opt) { return "'" + opt.name + "'"; }
             }
         });
 
@@ -1439,24 +1503,28 @@ var Options = Module("options", {
                 update({
                     bang: true,
                     completer: setCompleter,
-                    domains: function domains(args) Ary.flatten(args.map(function (spec) {
-                        try {
-                            let opt = modules.options.parseOpt(spec);
-                            if (opt.option && opt.option.domains)
-                                return opt.option.domains(opt.values);
-                        }
-                        catch (e) {
-                            util.reportError(e);
-                        }
-                        return [];
-                    })),
+                    domains: function domains(args) {
+                        return Ary.flatten(args.map(function (spec) {
+                            try {
+                                let opt = modules.options.parseOpt(spec);
+                                if (opt.option && opt.option.domains)
+                                    return opt.option.domains(opt.values);
+                            }
+                            catch (e) {
+                                util.reportError(e);
+                            }
+                            return [];
+                        }));
+                    },
                     keepQuotes: true,
-                    privateData: function privateData(args) args.some(function (spec) {
-                        let opt = modules.options.parseOpt(spec);
-                        return opt.option && opt.option.privateData &&
-                            (!callable(opt.option.privateData) ||
-                             opt.option.privateData(opt.values));
-                    })
+                    privateData: function privateData(args) {
+                        return args.some(function (spec) {
+                            let opt = modules.options.parseOpt(spec);
+                            return opt.option && opt.option.privateData &&
+                                   (!callable(opt.option.privateData) ||
+                                   opt.option.privateData(opt.values));
+                        });
+                    }
                 }, params.extra || {}));
         });
 

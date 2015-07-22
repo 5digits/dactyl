@@ -208,8 +208,11 @@ var Services = Module("Services", {
      *
      * @param {string} name The service's cache key.
      */
-    has: function has(name) hasOwnProperty(this.services, name) && this.services[name].class in Cc &&
-        this.services[name].interfaces.every(iface => iface in Ci)
+    has: function has(name) {
+        return hasOwnProperty(this.services, name) &&
+               this.services[name].class in Cc &&
+               this.services[name].interfaces.every(iface => iface in Ci);
+    }
 });
 
 endModule();

@@ -33,10 +33,11 @@ Sheet.liveProperty("agent");
 Sheet.liveProperty("css");
 Sheet.liveProperty("sites");
 update(Sheet.prototype, {
-    formatSites: function (uris)
-          template.map(this.sites,
-                       filter => ["span", { highlight: uris.some(Styles.matchFilter(filter)) ? "Filter" : "" }, filter],
-                       ","),
+    formatSites: function (uris) {
+          return template.map(this.sites,
+                              filter => ["span", { highlight: uris.some(Styles.matchFilter(filter)) ? "Filter" : "" }, filter],
+                              ",");
+    },
 
     remove: function () { this.hive.remove(this); },
 
@@ -119,7 +120,9 @@ var Hive = Class("Hive", {
             });
     },
 
-    "@@iterator": function () iter(this.sheets),
+    "@@iterator": function () {
+        return iter(this.sheets);
+    },
 
     get sites() {
         return Ary(this.sheets).map(s => s.sites)
@@ -259,9 +262,9 @@ var Hive = Class("Hive", {
  * @author Kris Maglione <maglione.k@gmail.com>
  */
 var Styles = Module("Styles", {
-    Local: function (dactyl, modules, window) ({
-        cleanup: function () {}
-    }),
+    Local: function (dactyl, modules, window) {
+        return { cleanup: function () {} };
+    },
 
     init: function () {
         this._id = 0;
@@ -298,7 +301,9 @@ var Styles = Module("Styles", {
         return hive;
     },
 
-    "@@iterator": function () iter(this.user.sheets.concat(this.system.sheets)),
+    "@@iterator": function () {
+        return iter(this.user.sheets.concat(this.system.sheets));
+    },
 
     _proxy: function (name, args) {
         let obj = this[args[0] ? "system" : "user"];
@@ -677,24 +682,30 @@ var Styles = Module("Styles", {
             {
                 name: ["stylee[nable]", "stye[nable]"],
                 desc: "Enable a user style sheet",
-                action: function (sheet) sheet.enabled = true,
-                filter: function (sheet) !sheet.enabled
+                action: function (sheet) {
+                    sheet.enabled = true;
+                },
+                filter: function (sheet) { return !sheet.enabled; }
             },
             {
                 name: ["styled[isable]", "styd[isable]"],
                 desc: "Disable a user style sheet",
-                action: function (sheet) sheet.enabled = false,
-                filter: function (sheet) sheet.enabled
+                action: function (sheet) {
+                    sheet.enabled = false;
+                },
+                filter: function (sheet) { return sheet.enabled; }
             },
             {
                 name: ["stylet[oggle]", "styt[oggle]"],
                 desc: "Toggle a user style sheet",
-                action: function (sheet) sheet.enabled = !sheet.enabled
+                action: function (sheet) {
+                    sheet.enabled = !sheet.enabled;
+                }
             },
             {
                 name: ["dels[tyle]"],
                 desc: "Remove a user style sheet",
-                action: function (sheet) sheet.remove()
+                action: function (sheet) { sheet.remove(); }
             }
         ].forEach(function (cmd) {
             commands.add(cmd.name, cmd.desc,
@@ -752,8 +763,10 @@ var Styles = Module("Styles", {
         const names = Array.slice(DOM(["div"], window.document).style);
         modules.completion.css = context => {
             context.title = ["CSS Property"];
-            context.keys = { text: function (p) p + ":",
-                             description: function () "" };
+            context.keys = {
+                text: function (p) { return p + ":"; },
+                description: function () { return ""; }
+            };
 
             for (let match of Styles.propertyIter(context.filter, true))
                 var lastMatch = match;
@@ -767,10 +780,10 @@ var Styles = Module("Styles", {
     javascript: function initJavascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter(["get", "add", "remove", "find"].map(m => Hive.prototype[m]),
             [ // Prototype: (name, filter, css, index)
-                function (context, obj, args) this.names,
+                function (context, obj, args) { return this.names; },
                 (context, obj, args) => Styles.completeSite(context, window.content),
                 null,
-                function (context, obj, args) this.sheets
+                function (context, obj, args) { return this.sheets; }
             ]);
     },
     template: function initTemplate() {

@@ -61,7 +61,7 @@ update(Bookmark.prototype, {
     }
 });
 Bookmark.prototype.members.uri = Bookmark.prototype.members.url;
-Bookmark.setter = function (key, func) this.prototype.__defineSetter__(key, func);
+Bookmark.setter = function (key, func) { return this.prototype.__defineSetter__(key, func); };
 Bookmark.setter("url", function (val) { this.uri = isString(val) ? newURI(val) : val; });
 Bookmark.setter("title", function (val) { services.bookmarks.setItemTitle(this.id, val); });
 Bookmark.setter("post", function (val) { bookmarkcache.annotate(this.id, bookmarkcache.POST, val); });
@@ -87,7 +87,9 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         services.bookmarks.removeObserver(this);
     },
 
-    "@@iterator": function () values(bookmarkcache.bookmarks),
+    "@@iterator": function () {
+        return values(bookmarkcache.bookmarks);
+    },
 
     bookmarks: Class.Memoize(function () { return this.load(); }),
 
@@ -137,11 +139,13 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         return null;
     },
 
-    readBookmark: function readBookmark(id) ({
-        itemId: id,
-        uri:    services.bookmarks.getBookmarkURI(id).spec,
-        title:  services.bookmarks.getItemTitle(id)
-    }),
+    readBookmark: function readBookmark(id) {
+        return {
+            itemId: id,
+            uri:    services.bookmarks.getBookmarkURI(id).spec,
+            title:  services.bookmarks.getItemTitle(id)
+        };
+    },
 
     findRoot: function findRoot(id) {
         do {
@@ -151,7 +155,9 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         return root;
     },
 
-    isBookmark: function (id) this.rootFolders.indexOf(this.findRoot(id)) >= 0,
+    isBookmark: function (id) {
+        return this.rootFolders.indexOf(this.findRoot(id)) >= 0;
+    },
 
     /**
      * Returns true if the given URL is bookmarked and that bookmark is
@@ -254,9 +260,10 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
 }, {
     DEFAULT_FAVICON: "chrome://mozapps/skin/places/defaultFavicon.png",
 
-    getAnnotation: function getAnnotation(item, anno)
-        services.annotation.itemHasAnnotation(item, anno) ?
-        services.annotation.getItemAnnotation(item, anno) : null,
+    getAnnotation: function getAnnotation(item, anno) {
+        return services.annotation.itemHasAnnotation(item, anno) ?
+               services.annotation.getItemAnnotation(item, anno) : null;
+    },
 
     getFavicon: function getFavicon(uri) {
         try {

@@ -7,7 +7,9 @@
 var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
 var Cs = new Proxy(Components.stack, {
-    get: function Cs_get(target, prop) Components.stack.caller[prop]
+    get: function Cs_get(target, prop) {
+        return Components.stack.caller[prop];
+    }
 });
 
 function module(url) {
@@ -348,7 +350,7 @@ function deprecated(alternative, fn) {
 
     let name,
         func = callable(fn) ? fn
-                            : function () apply(this, fn, arguments);
+                            : function () { return apply(this, fn, arguments); };
 
     function deprecatedMethod() {
         let obj = !this                      ? "" :
@@ -365,7 +367,7 @@ function deprecated(alternative, fn) {
         deprecatedMethod.realName = func.name;
 
     return callable(fn) ? deprecatedMethod : Class.Property({
-        get: function () deprecatedMethod,
+        get: function () { return deprecatedMethod; },
         init: function (prop) { name = prop; }
     });
 }
@@ -773,8 +775,9 @@ function memoize(obj, key, getter) {
                 }
             },
 
-            set: function s_replaceProperty(val)
-                Class.replaceProperty(this.instance || this, key, val)
+            set: function s_replaceProperty(val) {
+                Class.replaceProperty(this.instance || this, key, val);
+            }
         });
     }
     catch (e) {
@@ -905,7 +908,7 @@ function Class(...args) {
     memoize(Constructor, "bound", Class.makeClosure);
     if (Iter && Ary) // Hack. :/
         Object.defineProperty(Constructor, "closure",
-                              deprecated("bound", { get: function closure() this.bound }));
+                              deprecated("bound", { get: function closure() { return this.bound; } }));
     update(Constructor, args[1]);
 
     Constructor.__proto__ = superclass;
@@ -972,8 +975,8 @@ Class.extend = function extend(subclass, superclass, overrides) {
  *      property's value.
  * @returns {Class.Property}
  */
-Class.Memoize = function Memoize(getter, wait)
-    Class.Property({
+Class.Memoize = function Memoize(getter, wait) {
+    return Class.Property({
         configurable: true,
         enumerable: true,
         init: function (key) {
@@ -1024,6 +1027,7 @@ Class.Memoize = function Memoize(getter, wait)
             };
         }
     });
+};
 
 /**
  * Updates the given object with the object in the target class's
@@ -1248,7 +1252,7 @@ function XPCOMShim(interfaces) {
                 throw Cr.NS_ERROR_NO_INTERFACE;
             return this;
         },
-        getHelperForLanguage: function () null,
+        getHelperForLanguage: function () { return null; },
         getInterfaces: function (count) { count.value = 0; }
     });
     return (interfaces || []).reduce((shim, iface) => shim.QueryInterface(Ci[iface]),
@@ -1257,7 +1261,7 @@ function XPCOMShim(interfaces) {
 let stub = Class.Property({
     configurable: true,
     enumerable: false,
-    value: function stub() null,
+    value: function stub() { return null; },
     writable: true
 });
 
@@ -1280,7 +1284,7 @@ var ErrorBase = Class("ErrorBase", Error, {
         this.fileName = frame.filename;
         this.lineNumber = frame.lineNumber;
     },
-    toString: function () String(this.message)
+    toString: function () { return String(this.message); }
 });
 
 /**
@@ -1397,19 +1401,27 @@ var StructBase = Class("StructBase", Array, {
 
     get toStringParams() { return this; },
 
-    clone: function struct_clone() this.constructor.apply(null, this.slice()),
+    clone: function struct_clone() {
+        return this.constructor.apply(null, this.slice());
+    },
 
     bound: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "bound")),
     closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
 
-    get: function struct_get(key, val) this[this.members[key]],
-    set: function struct_set(key, val) this[this.members[key]] = val,
+    get: function struct_get(key, val) {
+        return this[this.members[key]];
+    },
+    set: function struct_set(key, val) {
+        return this[this.members[key]] = val;
+    },
 
     toObject: function struct_toObject() {
         return iter.toObject([k, this[k]] for (k of keys(this.members)));
     },
 
-    toString: function struct_toString() Class.prototype.toString.apply(this, arguments),
+    toString: function struct_toString() {
+        return Class.prototype.toString.apply(this, arguments);
+    },
 
     // Iterator over our named members
     "@@iterator": function* struct__iterator__() {
@@ -1635,7 +1647,9 @@ function iter(obj, iface) {
     return Iter(res);
 }
 update(iter, {
-    toArray: function toArray(iter) Ary(iter).array,
+    toArray: function toArray(iter) {
+        return Ary(iter).array;
+    },
 
     // See Ary.prototype for API docs.
     toObject: function toObject(iter) {
@@ -1648,7 +1662,9 @@ update(iter, {
         return obj;
     },
 
-    compact: function compact(iter) (item for (item of iter) if (item != null)),
+    compact: function compact(iter) {
+        return (item for (item of iter) if (item != null));
+    },
 
     every: function every(iter, pred, self) {
         pred = pred || identity;
@@ -1733,7 +1749,9 @@ update(iter, {
         return undefined;
     },
 
-    sort: function sort(iter, fn, self) Ary(iter).sort(fn, self),
+    sort: function sort(iter, fn, self) {
+        return Ary(iter).sort(fn, self);
+    },
 
     uniq: function* uniq(iter) {
         let seen = new RealSet;

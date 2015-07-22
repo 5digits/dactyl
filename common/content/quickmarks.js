@@ -51,7 +51,9 @@ var QuickMarks = Module("quickmarks", {
      * @param {string} mark The mark to find.
      * @returns {string} The mark's URL.
      */
-    get: function (mark) this._qmarks.get(mark) || null,
+    get: function (mark) {
+        return this._qmarks.get(mark) || null;
+    },
 
     /**
      * Deletes the specified quickmarks. The *filter* is a list of quickmarks

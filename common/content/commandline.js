@@ -66,20 +66,29 @@ var CommandWidgets = Class("CommandWidgets", {
 
         this.addElement({
             name: "commandline",
-            getGroup: function () options.get("guioptions").has("C") ? this.commandbar : this.statusbar,
-            getValue: function () this.command
+            getGroup: function () {
+                return options.get("guioptions").has("C") ? this.commandbar
+                                                          : this.statusbar;
+            },
+            getValue: function () {
+                return this.command;
+            }
         });
 
         this.addElement({
             name: "strut",
             defaultGroup: "Normal",
-            getGroup: function () this.commandbar,
-            getValue: function () options.get("guioptions").has("c")
+            getGroup: function () { return this.commandbar; },
+            getValue: function () {
+                return options.get("guioptions").has("c");
+            }
         });
 
         this.addElement({
             name: "command",
-            test: function test(stack, prev) stack.pop && !isinstance(prev.main, modes.COMMAND_LINE),
+            test: function test(stack, prev) {
+                return stack.pop && !isinstance(prev.main, modes.COMMAND_LINE);
+            },
             id: "commandline-command",
             get: function command_get(elem) {
                 // The long path is because of complications with the
@@ -92,7 +101,9 @@ var CommandWidgets = Class("CommandWidgets", {
                 }
             },
             getElement: CommandWidgets.getEditor,
-            getGroup: function (value) this.activeGroup.commandline,
+            getGroup: function (value) {
+                return this.activeGroup.commandline;
+            },
             onChange: function command_onChange(elem, value) {
                 if (elem.inputField != dactyl.focusedElement)
                     try {
@@ -114,7 +125,7 @@ var CommandWidgets = Class("CommandWidgets", {
             name: "prompt",
             id: "commandline-prompt",
             defaultGroup: "CmdPrompt",
-            getGroup: function () this.activeGroup.commandline
+            getGroup: function () { return this.activeGroup.commandline; }
         });
 
         this.addElement({
@@ -136,14 +147,14 @@ var CommandWidgets = Class("CommandWidgets", {
         this.addElement({
             name: "message-pre",
             defaultGroup: "WarningMsg",
-            getGroup: function () this.activeGroup.message
+            getGroup: function () { return this.activeGroup.message; }
         });
 
         this.addElement({
             name: "message-box",
             defaultGroup: "Normal",
-            getGroup: function () this.activeGroup.message,
-            getValue: function () this.message
+            getGroup: function () { return this.activeGroup.message; },
+            getValue: function () { return this.message; }
         });
 
         this.addElement({
@@ -1393,8 +1404,9 @@ var CommandLine = Module("commandline", {
          * Returns true if the currently selected 'wildmode' index
          * has the given completion type.
          */
-        haveType: function haveType(type)
-            this.wildmode.checkHas(this.wildtype, type == "first" ? "" : type),
+        haveType: function haveType(type) {
+            return this.wildmode.checkHas(this.wildtype, type == "first" ? "" : type);
+        },
 
         /**
          * Returns the completion item for the given selection
@@ -1405,8 +1417,9 @@ var CommandLine = Module("commandline", {
          *      @default {@link #selected}
          * @returns {object}
          */
-        getItem: function getItem(tuple=this.selected)
-            tuple && tuple[0] && tuple[0].items[tuple[1]],
+        getItem: function getItem(tuple=this.selected) {
+            return tuple && tuple[0] && tuple[0].items[tuple[1]];
+        },
 
         /**
          * Returns a tuple representing the next item, at the given
@@ -1779,7 +1792,9 @@ var CommandLine = Module("commandline", {
                 return Events.PASS;
             });
 
-        let bind = function bind(...args) apply(mappings, "add", [[modes.COMMAND_LINE]].concat(args));
+        let bind = function bind(...args) {
+            apply(mappings, "add", [[modes.COMMAND_LINE]].concat(args));
+        };
 
         bind(["<Esc>", "<C-[>"], "Stop waiting for completions or exit Command Line mode",
              function ({ self }) {
@@ -2305,12 +2320,17 @@ var ItemList = Class("ItemList", {
      * @param {CompletionContext} context
      * @returns {ItemList.Group}
      */
-    getGroup: function getGroup(context)
-        context instanceof ItemList.Group ? context
-                                          : context && context.getCache("itemlist-group",
-                                                                        () => ItemList.Group(this, context)),
+    getGroup: function getGroup(context) {
+        if (context instanceof ItemList.Group)
+            return context;
+        else
+            return context && context.getCache("itemlist-group",
+                                               () => ItemList.Group(this, context));
+    },
 
-    getOffset: function getOffset(tuple) tuple && this.getGroup(tuple[0]).getOffset(tuple[1])
+    getOffset: function getOffset(tuple) {
+        return tuple && this.getGroup(tuple[0]).getOffset(tuple[1]);
+    }
 }, {
     RESIZE_BRIEF: 1 << 0,
 
@@ -2454,9 +2474,13 @@ var ItemList = Class("ItemList", {
             }
         },
 
-        getRow: function getRow(idx) this.context.getRow(idx, this.doc),
+        getRow: function getRow(idx) {
+            return this.context.getRow(idx, this.doc);
+        },
 
-        getOffset: function getOffset(idx) this.offsets.start + (idx || 0),
+        getOffset: function getOffset(idx) {
+            return this.offsets.start + (idx || 0);
+        },
 
         get selectedRow() { return this.getRow(this._selectedIdx); },
 
@@ -2475,10 +2499,13 @@ var ItemList = Class("ItemList", {
     Range: Class.Memoize(function () {
         let Range = Struct("ItemList.Range", "start", "end");
         update(Range.prototype, {
-            contains: function contains(idx)
-                typeof idx == "number" ? idx >= this.start && idx < this.end
-                                       : this.contains(idx.start) &&
-                                         idx.end >= this.start && idx.end <= this.end
+            contains: function contains(idx) {
+                if (typeof idx == "number")
+                    return idx >= this.start && idx < this.end;
+                else
+                   return this.contains(idx.start) &&
+                          idx.end >= this.start && idx.end <= this.end;
+            }
         });
         return Range;
     })

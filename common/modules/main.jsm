@@ -26,7 +26,9 @@ var ModuleBase = Class("ModuleBase", {
      */
     requires: [],
 
-    toString: function () "[module " + this.constructor.className + "]"
+    toString: function () {
+        return "[module " + this.constructor.className + "]";
+    }
 });
 
 var _id = 0;

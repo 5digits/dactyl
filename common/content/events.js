@@ -113,7 +113,7 @@ var Events = Module("events", {
         });
 
         this._fullscreen = window.fullScreen;
-        this._lastFocus = { get: function () null };
+        this._lastFocus = { get: function () { return null; } };
         this._macroKeys = [];
         this._lastMacro = "";
 
@@ -472,8 +472,8 @@ var Events = Module("events", {
         let accel = config.OS.isMacOSX ? "metaKey" : "ctrlKey";
 
         let access = iter({ 1: "shiftKey", 2: "ctrlKey", 4: "altKey", 8: "metaKey" })
-                        .filter(function ([k, v]) this & k,
-                                prefs.get("ui.key.chromeAccess"))
+                        .filter(function ([k, v]) { return this & k; },
+                                prefs.get("ui.key.chromeAccess")) // XXX
                         .map(([k, v]) => [v, true])
                         .toObject();
 
@@ -514,7 +514,9 @@ var Events = Module("events", {
      * @param {string} key The key code to test.
      * @returns {boolean}
      */
-    isAcceptKey: function (key) key == "<Return>" || key == "<C-j>" || key == "<C-m>",
+    isAcceptKey: function (key) {
+        return key == "<Return>" || key == "<C-j>" || key == "<C-m>";
+    },
 
     /**
      * Returns true if *key* is a key code defined to reject/cancel input on
@@ -523,7 +525,9 @@ var Events = Module("events", {
      * @param {string} key The key code to test.
      * @returns {boolean}
      */
-    isCancelKey: function (key) key == "<Esc>" || key == "<C-[>" || key == "<C-c>",
+    isCancelKey: function (key) {
+        return key == "<Esc>" || key == "<C-[>" || key == "<C-c>";
+    },
 
     /**
      * Returns true if *node* belongs to the current content document or any
@@ -969,9 +973,10 @@ var Events = Module("events", {
         }
     },
 
-    shouldPass: function shouldPass(event)
-        !event.noremap && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
-        options.get("passkeys").has(DOM.Event.stringify(event))
+    shouldPass: function shouldPass(event) {
+        return !event.noremap && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
+               options.get("passkeys").has(DOM.Event.stringify(event));
+    }
 }, {
     ABORT: {},
     KILL: true,
@@ -1140,7 +1145,7 @@ var Events = Module("events", {
                 this.stack = MapHive.Stack(values.map(v => Map(v[map + "Keys"])));
                 function Map(keys) {
                     return {
-                        execute: function () Events.PASS_THROUGH,
+                        execute: function () { return Events.PASS_THROUGH; },
                         keys: keys
                     };
                 }
@@ -1148,9 +1153,13 @@ var Events = Module("events", {
 
             get active() { return this.stack.length; },
 
-            get: function get(mode, key) this.stack.mappings[key],
+            get: function get(mode, key) {
+                return this.stack.mappings[key];
+            },
 
-            getCandidates: function getCandidates(mode, key) this.stack.candidates[key]
+            getCandidates: function getCandidates(mode, key) {
+                return this.stack.candidates[key];
+            }
         });
         options.add(["passkeys", "pk"],
             "Pass certain keys through directly for the given URLs",

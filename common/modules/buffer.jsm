@@ -29,18 +29,20 @@ lazyRequire("template", ["template"]);
  * @instance buffer
  */
 var Buffer = Module("Buffer", {
-    Local: function Local(dactyl, modules, window) ({
-        get win() {
-            return window.content;
-
-            let win = services.focus.focusedWindow;
-            if (!win || win == window || util.topWindow(win) != window)
+    Local: function Local(dactyl, modules, window) {
+        return {
+            get win() {
                 return window.content;
-            if (win.top == window)
-                return win;
-            return win.top;
-        }
-    }),
+
+                let win = services.focus.focusedWindow;
+                if (!win || win == window || util.topWindow(win) != window)
+                    return window.content;
+                if (win.top == window)
+                    return win;
+                return win.top;
+            }
+        };
+    },
 
     init: function init(win) {
         if (win)
@@ -870,31 +872,43 @@ var Buffer = Module("Buffer", {
      * Scrolls the currently active element horizontally. See
      * {@link Buffer.scrollHorizontal} for parameters.
      */
-    scrollHorizontal: function scrollHorizontal(increment, number)
-        Buffer.scrollHorizontal(this.findScrollable(number, true), increment, number),
+    scrollHorizontal: function scrollHorizontal(increment, number) {
+        return Buffer.scrollHorizontal(this.findScrollable(number, true),
+                                       increment,
+                                       number);
+    },
 
     /**
      * Scrolls the currently active element vertically. See
      * {@link Buffer.scrollVertical} for parameters.
      */
-    scrollVertical: function scrollVertical(increment, number)
-        Buffer.scrollVertical(this.findScrollable(number, false), increment, number),
+    scrollVertical: function scrollVertical(increment, number) {
+        return Buffer.scrollVertical(this.findScrollable(number, false),
+                                     increment,
+                                     number);
+    },
 
     /**
      * Scrolls the currently active element to the given horizontal and
      * vertical percentages. See {@link Buffer.scrollToPercent} for
      * parameters.
      */
-    scrollToPercent: function scrollToPercent(horizontal, vertical, dir)
-        Buffer.scrollToPercent(this.findScrollable(dir || 0, vertical == null), horizontal, vertical),
+    scrollToPercent: function scrollToPercent(horizontal, vertical, dir) {
+        return Buffer.scrollToPercent(this.findScrollable(dir || 0, vertical == null),
+                                      horizontal,
+                                      vertical);
+    },
 
     /**
      * Scrolls the currently active element to the given horizontal and
      * vertical positions. See {@link Buffer.scrollToPosition} for
      * parameters.
      */
-    scrollToPosition: function scrollToPosition(horizontal, vertical)
-        Buffer.scrollToPosition(this.findScrollable(0, vertical == null), horizontal, vertical),
+    scrollToPosition: function scrollToPosition(horizontal, vertical) {
+        return Buffer.scrollToPosition(this.findScrollable(0, vertical == null),
+                                       horizontal,
+                                       vertical);
+    },
 
     _scrollByScrollSize: function _scrollByScrollSize(count, direction) {
         let { options } = this.modules;
@@ -2109,7 +2123,9 @@ var Buffer = Module("Buffer", {
                             }
                         },
                         notificationCallbacks: Class(XPCOM([Ci.nsIChannelEventSink, Ci.nsIInterfaceRequestor]), {
-                            getInterface: function getInterface(iid) this.QueryInterface(iid),
+                            getInterface: function getInterface(iid) {
+                                return this.QueryInterface(iid);
+                            },
 
                             asyncOnChannelRedirect: function (oldChannel, newChannel, flags, callback) {
                                 if (newChannel instanceof Ci.nsIHttpChannel)

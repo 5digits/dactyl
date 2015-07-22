@@ -66,7 +66,9 @@ var MOW = Module("mow", {
         });
     },
 
-    __noSuchMethod__: function (meth, args) apply(Buffer, meth, [this.body].concat(args)),
+    __noSuchMethod__: function (meth, args) {
+        return apply(Buffer, meth, [this.body].concat(args));
+    },
 
     get widget() { return this.widgets.multilineOutput; },
 
@@ -288,7 +290,9 @@ var MOW = Module("mow", {
     },
 
     visible: Modes.boundProperty({
-        get: function get_mowVisible() !this.widgets.mowContainer.collapsed,
+        get: function get_mowVisible() {
+            return !this.widgets.mowContainer.collapsed;
+        },
         set: function set_mowVisible(value) {
             this.widgets.mowContainer.collapsed = !value;
 
