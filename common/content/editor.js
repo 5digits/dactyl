@@ -833,7 +833,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
 
         // add mappings for commands like h,j,k,l,etc. in CARET, VISUAL and TEXT_EDIT mode
         function addMovementMap(keys, description, hasCount, caretModeMethod, caretModeArg, textEditCommand, visualTextEditCommand) {
-            let extraInfo = {
+            let extra = {
                 count: !!hasCount,
                 type: "operator"
             };
@@ -872,7 +872,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                         }
                     }
                 },
-                extraInfo);
+                extra);
 
             mappings.add([modes.CARET, modes.TEXT_EDIT, modes.OPERATOR], keys, description,
                 function ({ count }) {
@@ -885,7 +885,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                             caretExecute(false);
                     }
                 },
-                extraInfo);
+                extra);
         }
 
         // add mappings for commands like i,a,s,c,etc. in TEXT_EDIT mode

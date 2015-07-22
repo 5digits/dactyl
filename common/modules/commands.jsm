@@ -113,8 +113,8 @@ update(CommandOption, {
  *     command name prefix.
  * @param {string} description A short one line description of the command.
  * @param {function} action The action invoked by this command when executed.
- * @param {Object} extraInfo An optional extra configuration hash. The
- *     following properties are supported.
+ * @param {Object} extra An optional extra configuration hash. The following
+ * properties are supported.
  *         always      - see {@link Command#always}
  *         argCount    - see {@link Command#argCount}
  *         bang        - see {@link Command#bang}
@@ -131,19 +131,19 @@ update(CommandOption, {
  * @private
  */
 var Command = Class("Command", {
-    init: function init(specs, description, action, extraInfo) {
+    init: function init(specs, description, action, extra) {
         specs = Array.concat(specs); // XXX
 
         this.specs = specs;
         this.description = description;
         this.action = action;
 
-        if (extraInfo.options)
-            this._options = extraInfo.options;
-        delete extraInfo.options;
+        if (extra.options)
+            this._options = extra.options;
+        delete extra.options;
 
-        if (extraInfo)
-            this.update(extraInfo);
+        if (extra)
+            this.update(extra);
     },
 
     get toStringParams() { return [this.name, this.hive.name]; },

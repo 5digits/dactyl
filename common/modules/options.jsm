@@ -35,8 +35,8 @@ let ValueError = Class("ValueError", ErrorBase);
  * @param {string} description A short one line description of the option.
  * @param {string} type The option's value data type (see {@link Option#type}).
  * @param {string} defaultValue The default value for this option.
- * @param {Object} extraInfo An optional extra configuration hash. The
- *     following properties are supported.
+ * @param {Object} extra An optional extra configuration hash. The following
+ * properties are supported.
  *         completer   - see {@link Option#completer}
  *         domains     - see {@link Option#domains}
  *         getter      - see {@link Option#getter}
@@ -50,14 +50,14 @@ let ValueError = Class("ValueError", ErrorBase);
  * @private
  */
 var Option = Class("Option", {
-    init: function init(modules, names, description, defaultValue, extraInfo) {
+    init: function init(modules, names, description, defaultValue, extra) {
         this.modules = modules;
         this.name = names[0];
         this.realNames = names;
         this.description = description;
 
-        if (extraInfo)
-            this.update(extraInfo);
+        if (extra)
+            this.update(extra);
 
         this._defaultValue = defaultValue;
 
@@ -836,8 +836,8 @@ var OptionHive = Class("OptionHive", Contexts.Hive, {
         this.has = v => hasOwnProperty(this.values, v);
     },
 
-    add: function add(names, description, type, defaultValue, extraInfo) {
-        return this.modules.options.add(names, description, type, defaultValue, extraInfo);
+    add: function add(names, description, type, defaultValue, extra) {
+        return this.modules.options.add(names, description, type, defaultValue, extra);
     }
 });
 
@@ -952,20 +952,20 @@ var Options = Module("options", {
              * @param {string} type The option type (see {@link Option#type}).
              * @param {value} defaultValue The option's default value.
              * @param {Object} extra An optional extra configuration hash (see
-             *     {@link Map#extraInfo}).
+             *     {@link Map#extra}).
              * @optional
              */
-            add: function add(names, description, type, defaultValue, extraInfo) {
+            add: function add(names, description, type, defaultValue, extra) {
                 if (!util.isDactyl(Components.stack.caller))
                     deprecated.warn(add, "options.add", "group.options.add");
 
                 util.assert(type in Option.types, _("option.noSuchType", type),
                             false);
 
-                if (!extraInfo)
-                    extraInfo = {};
+                if (!extra)
+                    extra = {};
 
-                extraInfo.definedAt = contexts.getCaller(Components.stack.caller);
+                extra.definedAt = contexts.getCaller(Components.stack.caller);
 
                 let name = names[0];
                 if (name in this._optionMap) {
@@ -976,12 +976,12 @@ var Options = Module("options", {
                 let closure = () => this._optionMap[name];
 
                 memoize(this._optionMap, name,
-                        () => Option.types[type](modules, names, description, defaultValue, extraInfo));
+                        () => Option.types[type](modules, names, description, defaultValue, extra));
 
                 for (let alias of names.slice(1))
                     memoize(this._optionMap, alias, closure);
 
-                if (extraInfo.setter && (!extraInfo.scope || extraInfo.scope & Option.SCOPE_GLOBAL))
+                if (extra.setter && (!extra.scope || extra.scope & Option.SCOPE_GLOBAL))
                     if (this.dactyl.initialized)
                         closure().initValue();
                     else

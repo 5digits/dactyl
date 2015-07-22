@@ -439,7 +439,7 @@ var Mappings = Module("mappings", {
      * @param {string} description A description of the key mapping.
      * @param {function} action The action invoked by each key sequence.
      * @param {Object} extra An optional extra configuration hash (see
-     *     {@link Map#extraInfo}).
+     *     {@link Map#extra}).
      * @optional
      */
     addUserMap: deprecated("group.mappings.add", function addUserMap() {
