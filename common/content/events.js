@@ -643,38 +643,12 @@ var Events = Module("events", {
                 delete overlay.getData(elem)["focus-allowed"];
         },
 
-        /*
-        onFocus: function onFocus(event) {
-            let elem = event.originalTarget;
-            if (!(elem instanceof Element))
-                return;
-            let win = elem.ownerDocument.defaultView;
-
-            try {
-                util.dump(elem, services.focus.getLastFocusMethod(win) & (0x7000));
-                if (buffer.focusAllowed(win))
-                    win.dactylLastFocus = elem;
-                else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement])) {
-                    if (win.dactylLastFocus)
-                        dactyl.focus(win.dactylLastFocus);
-                    else
-                        elem.blur();
-                }
-            }
-            catch (e) {
-                util.dump(win, String(elem.ownerDocument), String(elem.ownerDocument && elem.ownerDocument.defaultView));
-                util.reportError(e);
-            }
-        },
-        */
-
         input: function onInput(event) {
             event.originalTarget.dactylKeyPress = undefined;
         },
 
         // this keypress handler gets always called first, even if e.g.
         // the command-line has focus
-        // TODO: ...help me...please...
         keypress: function onKeyPress(event) {
             event.dactylDefaultPrevented = event.defaultPrevented;
 
@@ -865,9 +839,6 @@ var Events = Module("events", {
         }
     },
 
-    // argument "event" is deliberately not used, as i don't seem to have
-    // access to the real focus target
-    // Huh? --djk
     onFocusChange: util.wrapCallback(function onFocusChange(event) {
         function hasHTMLDocument(win) {
             return win && win.document && win.document instanceof Ci.nsIDOMHTMLDocument;
