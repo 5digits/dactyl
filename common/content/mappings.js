@@ -575,12 +575,12 @@ var Mappings = Module("mappings", {
                 completer: function (context, args) {
                     let mapmodes = Ary.uniq(args["-modes"].map(findMode));
                     if (args.length == 1)
-                        return completion.userMapping(context, mapmodes, args["-group"]);
-                    if (args.length == 2) {
+                        completion.userMapping(context, mapmodes, args["-group"]);
+                    else if (args.length == 2) {
                         if (args["-javascript"])
-                            return completion.javascript(context);
-                        if (args["-ex"])
-                            return completion.ex(context);
+                            completion.javascript(context);
+                        else if (args["-ex"])
+                            completion.ex(context);
                     }
                 },
                 hereDoc: true,
@@ -629,8 +629,10 @@ var Mappings = Module("mappings", {
                     }
                 ],
                 serialize: function () {
-                    return this.name != "map" ? [] :
-                        Ary(mappings.userHives)
+                    if (this.name != "map")
+                        return [];
+                    else
+                        return Ary(mappings.userHives)
                             .filter(h => h.persist)
                             .map(hive => [
                                 {
@@ -691,8 +693,7 @@ var Mappings = Module("mappings", {
 
                     if (!found && !args.bang)
                         dactyl.echoerr(_("map.noSuch", args[0]));
-                },
-                {
+                }, {
                     identifier: "unmap",
                     argCount: "?",
                     bang: true,
@@ -712,10 +713,14 @@ var Mappings = Module("mappings", {
         let modeFlag = {
             names: ["-mode", "-m"],
             type: CommandOption.STRING,
-            validator: function (value) Array.concat(value).every(findMode),
-            completer: function () [[Ary.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.description]
-                                    for (mode of modes.all)
-                                    if (!mode.hidden)]
+            validator: function (value) {
+                return Array.concat(value).every(findMode);
+            },
+            completer: function () {
+                return [[Ary.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.description]
+                        for (mode of modes.all)
+                        if (!mode.hidden)];
+            }
         };
 
         function findMode(name) {

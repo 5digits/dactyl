@@ -405,10 +405,11 @@ var Mail = Module("mail", {
                     MsgOpenNewTabForFolder(folder.URI);
                 else
                     SelectFolder(folder.URI);
-            },
-            {
+            }, {
                 argCount: "?",
-                completer: function (context) completion.mailFolder(context),
+                completer: function (context) {
+                    completion.mailFolder(context);
+                },
                 count: true,
                 literal: 0
             });
@@ -449,19 +450,25 @@ var Mail = Module("mail", {
 
         commands.add(["copy[to]"],
             "Copy selected messages",
-            function (args) { mail._moveOrCopy(true, args.literalArg); },
-            {
+            function (args) {
+                mail._moveOrCopy(true, args.literalArg);
+            }, {
                 argCount: "1",
-                completer: function (context) completion.mailFolder(context),
+                completer: function (context) {
+                    completion.mailFolder(context);
+                },
                 literal: 0
             });
 
         commands.add(["move[to]"],
             "Move selected messages",
-            function (args) { mail._moveOrCopy(false, args.literalArg); },
-            {
+            function (args) {
+                mail._moveOrCopy(false, args.literalArg);
+            }, {
                 argCount: "1",
-                completer: function (context) completion.mailFolder(context),
+                completer: function (context) {
+                    completion.mailFolder(context);
+                },
                 literal: 0
             });
 
@@ -875,7 +882,9 @@ var Mail = Module("mail", {
             "Set the archive folder",
             "string", "Archive",
             {
-                completer: function (context) completion.mailFolder(context)
+                completer: function (context) {
+                    completion.mailFolder(context);
+                }
             });
 
         // TODO: generate the possible values dynamically from the menu
@@ -893,25 +902,29 @@ var Mail = Module("mail", {
 
                     return value;
                 },
-                completer: function (context) [
-                    ["inherit",  "Default View"], // FIXME: correct description?
-                    ["classic",  "Classic View"],
-                    ["wide",     "Wide View"],
-                    ["vertical", "Vertical View"]
-                ]
+                completer: function () {
+                    return [
+                        ["inherit",  "Default View"], // FIXME: correct description?
+                        ["classic",  "Classic View"],
+                        ["wide",     "Wide View"],
+                        ["vertical", "Vertical View"]
+                    ];
+                }
             });
 
         options.add(["smtpserver", "smtp"],
             "Set the default SMTP server",
             "string", services.smtp.defaultServer.key, // TODO: how should we handle these persistent external defaults - "inherit" or null?
             {
-                getter: function () services.smtp.defaultServer.key,
+                getter: function () { return services.smtp.defaultServer.key; },
                 setter: function (value) {
                     let server = mail.smtpServers.filter(s => s.key == value)[0];
                     services.smtp.defaultServer = server;
                     return value;
                 },
-                completer: function (context) [[s.key, s.serverURI] for ([, s] in Iterator(mail.smtpServers))]
+                completer: function () {
+                    return [[s.key, s.serverURI] for ([, s] in Iterator(mail.smtpServers))];
+                }
             });
 
         /*options.add(["threads"],

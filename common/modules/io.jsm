@@ -650,7 +650,9 @@ var IO = Module("io", {
                 }
             }, {
                 argCount: "?",
-                completer: function (context) completion.directory(context, true),
+                completer: function (context) {
+                    completion.directory(context, true);
+                },
                 literal: 0
             });
 
@@ -689,7 +691,9 @@ var IO = Module("io", {
             }, {
                 argCount: "*", // FIXME: should be "?" but kludged for proper error message
                 bang: true,
-                completer: function (context) completion.file(context, true)
+                completer: function (context) {
+                    completion.file(context, true);
+                }
             });
 
         commands.add(["mkv[imruntime]"],
@@ -889,17 +893,22 @@ unlet s:cpo_save
             }, {
                 argCount: "?",
                 bang: true,
-                completer: function (context) completion.directory(context, true),
+                completer: function (context) {
+                    completion.directory(context, true);
+                },
                 literal: 1
             });
 
         commands.add(["runt[ime]"],
             "Source the specified file from each directory in 'runtimepath'",
-            function (args) { io.sourceFromRuntimePath(args, args.bang); },
-            {
+            function (args) {
+                io.sourceFromRuntimePath(args, args.bang);
+            }, {
                 argCount: "+",
                 bang: true,
-                completer: function (context) completion.runtime(context)
+                completer: function (context) {
+                    completion.runtime(context);
+                }
             }
         );
 
@@ -927,7 +936,9 @@ unlet s:cpo_save
             }, {
                 argCount: "+", // FIXME: should be "1" but kludged for proper error message
                 bang: true,
-                completer: function (context) completion.file(context, true)
+                completer: function (context) {
+                    completion.file(context, true);
+                }
             });
 
         commands.add(["!", "run"],
@@ -969,7 +980,9 @@ unlet s:cpo_save
                 argCount: "?",
                 bang: true,
                 // This is abominably slow.
-                // completer: function (context) completion.shellCommand(context),
+                //completer: function (context) {
+                //    completion.shellCommand(context);
+                //},
                 literal: 0
             });
     },
@@ -1156,10 +1169,15 @@ unlet s:cpo_save
 
         options.add(["fileencoding", "fenc"],
             "The character encoding used when reading and writing files",
-            "string", "UTF-8", {
-                completer: function (context) completion.charset(context),
-                getter: function () File.defaultEncoding,
-                setter: function (value) (File.defaultEncoding = value)
+            "string", "UTF-8",
+            {
+                completer: function (context) {
+                    completion.charset(context);
+                },
+                getter: function () { return File.defaultEncoding; },
+                setter: function (value) {
+                    return File.defaultEncoding = value;
+                }
             });
         options.add(["cdpath", "cd"],
             "List of directories searched when executing :cd",
@@ -1169,7 +1187,9 @@ unlet s:cpo_save
                     return this.value.map(path => File(path, modules.io.cwd))
                                .filter(dir => dir.exists());
                 },
-                setter: function (value) File.expandPathList(value)
+                setter: function (value) {
+                    return File.expandPathList(value);
+                }
             });
 
         options.add(["runtimepath", "rtp"],
@@ -1185,7 +1205,7 @@ unlet s:cpo_save
         options.add(["shell", "sh"],
             "Shell to use for executing external commands with :! and :run",
             "string", shell,
-            { validator: function (val) io.pathSearch(val) });
+            { validator: function (val) { return io.pathSearch(val); } });
 
         options.add(["shellcmdflag", "shcf"],
             "Flag passed to shell when executing external commands with :! and :run",

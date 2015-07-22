@@ -1033,15 +1033,17 @@ var Events = Module("events", {
             }, {
                 argCount: "?",
                 bang: true,
-                completer: function (context) completion.macro(context),
+                completer: function (context) { completion.macro(context); },
                 literal: 0
             });
 
         commands.add(["mac[ros]"],
             "List all macros",
-            function (args) { completion.listCompleter("macro", args[0]); }, {
+            function (args) {
+                completion.listCompleter("macro", args[0]);
+            }, {
                 argCount: "?",
-                completer: function (context) completion.macro(context)
+                completer: function (context) { completion.macro(context); }
             });
     },
     completion: function initCompletion() {
@@ -1168,7 +1170,10 @@ var Events = Module("events", {
                     });
                 },
 
-                has: function (key) this.pass.has(key) || hasOwnProperty(this.commandHive.stack.mappings, key),
+                has: function (key) {
+                    return this.pass.has(key) ||
+                           hasOwnProperty(this.commandHive.stack.mappings, key);
+                },
 
                 get pass() { this.flush(); return this.pass; },
 

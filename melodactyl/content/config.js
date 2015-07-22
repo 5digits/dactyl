@@ -242,10 +242,11 @@ const Config = Module("config", ConfigBase, {
                 let arg = args.literalArg;
                 dactyl.assert(arg in Config.displayPanes, _("error.invalidArgument", arg));
                 config.closeDisplayPane(Config.displayPanes[arg]);
-            },
-            {
+            }, {
                 argCount: "1",
-                completer: function (context) completion.displayPane(context),
+                completer: function (context) {
+                    completion.displayPane(context);
+                },
                 literal: 0
             });
 
@@ -257,10 +258,11 @@ const Config = Module("config", ConfigBase, {
                 dactyl.assert(arg in Config.displayPanes, _("error.invalidArgument", arg));
                 // TODO: focus when we have better key handling of these extended modes
                 config.openDisplayPane(Config.displayPanes[arg]);
-            },
-            {
+            }, {
                 argCount: "1",
-                completer: function (context) completion.displayPane(context),
+                completer: function (context) {
+                    completion.displayPane(context);
+                },
                 literal: 0
             });
 
@@ -316,7 +318,7 @@ const Config = Module("config", ConfigBase, {
                     prefs.set("browser.offline", ioService.offline);
                     return value;
                 },
-                getter: function () !services.io.offline
+                getter: function () { return !services.io.offline; }
             });
     },
     services: function initServices(dactyl, modules, window) {

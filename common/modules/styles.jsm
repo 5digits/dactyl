@@ -628,8 +628,7 @@ var Styles = Module("Styles", {
                     if (args["-nopersist"] || !args["-append"] || style.persist === undefined)
                         style.persist = !args["-nopersist"];
                 }
-            },
-            {
+            }, {
                 completer: function (context, args) {
                     let sheet = args["-group"].get(args["-name"]);
                     if (args.completeArg == 0) {
@@ -654,8 +653,8 @@ var Styles = Module("Styles", {
                     nameFlag(),
                     { names: ["-nopersist", "-N"], description: "Do not save this style to an auto-generated RC file" }
                 ],
-                serialize: function ()
-                    Ary(styles.hives)
+                serialize: function () {
+                    return Ary(styles.hives)
                         .filter(hive => hive.persist)
                         .map(hive =>
                              hive.sheets.filter(style => style.persist)
@@ -670,7 +669,8 @@ var Styles = Module("Styles", {
                                         "-name": style.name || undefined
                                     }
                                 })))
-                        .flatten().array
+                        .flatten().array;
+                }
             });
 
         [

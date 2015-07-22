@@ -860,7 +860,9 @@ var JavaScript = Module("javascript", {
             }, {
                 argCount: "?",
                 bang: true,
-                completer: function (context) modules.completion.javascript(context),
+                completer: function (context) {
+                    modules.completion.javascript(context);
+                },
                 hereDoc: true,
                 literal: 0
             });

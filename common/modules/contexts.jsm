@@ -152,7 +152,9 @@ var Contexts = Module("contexts", {
                             contexts.user)[this.name];
                 },
 
-                completer: function (context) modules.completion.group(context)
+                completer: function (context) {
+                    modules.completion.group(context);
+                }
             });
 
             memoize(modules, "userContext",  () => contexts.Context(modules.io.getRCFile("~", true), contexts.user, [modules, false]));
@@ -685,8 +687,7 @@ var Contexts = Module("contexts", {
                                 !["-description", "-locations", "-nopersist"]
                                     .some(hasOwnProperty.bind(null, args.explicitOpts)),
                             _("group.cantModifyBuiltin"));
-            },
-            {
+            }, {
                 argCount: "?",
                 bang: true,
                 completer: function (context, args) {
@@ -718,24 +719,26 @@ var Contexts = Module("contexts", {
                     }
                 ],
                 serialGroup: 20,
-                serialize: function () [
-                    {
-                        command: this.name,
-                        bang: true,
-                        options: iter([v, typeof group[k] == "boolean" ? null : group[k]]
-                                      // FIXME: this map is expressed multiple times
-                                      for ([k, v] of iter({
-                                          args: "-args",
-                                          description: "-description",
-                                          filter: "-locations"
-                                      }))
-                                      if (group[k])).toObject(),
-                        arguments: [group.name],
-                        ignoreDefaults: true
-                    }
-                    for (group of contexts.initializedGroups())
-                    if (!group.builtin && group.persist)
-                ].concat([{ command: this.name, arguments: ["user"] }])
+                serialize: function () {
+                    return [
+                        {
+                            command: this.name,
+                            bang: true,
+                            options: iter([v, typeof group[k] == "boolean" ? null : group[k]]
+                                        // FIXME: this map is expressed multiple times
+                                        for ([k, v] of iter({
+                                            args: "-args",
+                                            description: "-description",
+                                            filter: "-locations"
+                                        }))
+                                        if (group[k])).toObject(),
+                            arguments: [group.name],
+                            ignoreDefaults: true
+                        }
+                        for (group of contexts.initializedGroups())
+                        if (!group.builtin && group.persist)
+                    ].concat([{ command: this.name, arguments: ["user"] }]);
+                }
             });
 
         commands.add(["delg[roup]"],
@@ -749,8 +752,7 @@ var Contexts = Module("contexts", {
                     util.assert(contexts.getGroup(args[0]), _("group.noSuch", args[0]));
                     contexts.removeGroup(args[0]);
                 }
-            },
-            {
+            }, {
                 argCount: "?",
                 bang: true,
                 completer: function (context, args) {

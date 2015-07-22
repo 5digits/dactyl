@@ -650,7 +650,9 @@ var Tabs = Module("tabs", {
                     argCount: "?",
                     bang: true,
                     count: true,
-                    completer: function (context) completion.buffer(context),
+                    completer: function (context) {
+                        completion.buffer(context);
+                    },
                     literal: 0,
                     privateData: true
                 });
@@ -661,8 +663,7 @@ var Tabs = Module("tabs", {
             function (args) {
                 for (let tab of tabs.match(args[0], args.count))
                     config.browser[!args.bang || !tab.pinned ? "pinTab" : "unpinTab"](tab);
-            },
-            {
+            }, {
                 argCount: "?",
                 bang: true,
                 count: true,
@@ -678,8 +679,7 @@ var Tabs = Module("tabs", {
             function (args) {
                 for (let tab of tabs.match(args[0], args.count))
                     config.browser.unpinTab(tab);
-            },
-            {
+            }, {
                 argCount: "?",
                 count: true,
                 completer: function (context) {
@@ -699,7 +699,7 @@ var Tabs = Module("tabs", {
                 }
             }, {
                 argCount: "1",
-                completer: function (context) completion.ex(context),
+                completer: function (context) { completion.ex(context); },
                 literal: 0,
                 subCommand: 0
             });
@@ -713,7 +713,7 @@ var Tabs = Module("tabs", {
                 });
             }, {
                 argCount: "1",
-                completer: function (context) completion.ex(context),
+                completer: function (context) { completion.ex(context); },
                 literal: 0,
                 subCommand: 0
             });
@@ -727,7 +727,7 @@ var Tabs = Module("tabs", {
                 });
             }, {
                 argCount: "1",
-                completer: function (context) completion.ex(context),
+                completer: function (context) { completion.ex(context); },
                 literal: 0,
                 subCommand: 0
             });
@@ -741,7 +741,7 @@ var Tabs = Module("tabs", {
                 }
             }, {
                 argCount: "1",
-                completer: function (context) completion.ex(context),
+                completer: function (context) { completion.ex(context); },
                 literal: 0,
                 subCommand: 0
             });
@@ -821,7 +821,9 @@ var Tabs = Module("tabs", {
                     argCount: "?",
                     bang: true,
                     count: true,
-                    completer: function (context) completion.buffer(context),
+                    completer: function (context) {
+                        completion.buffer(context);
+                    },
                     literal: 0,
                     privateData: true
                 });
@@ -866,7 +868,9 @@ var Tabs = Module("tabs", {
                 }, {
                     argCount: "1",
                     bang: true,
-                    completer: function (context) completion.buffer(context, true),
+                    completer: function (context) {
+                        completion.buffer(context, true);
+                    },
                     literal: 0
                 });
 
@@ -882,8 +886,12 @@ var Tabs = Module("tabs", {
                                 { from: "tabopen", where: dactyl.NEW_TAB, background: args.bang });
                 }, {
                     bang: true,
-                    completer: function (context) completion.url(context),
-                    domains: function (args) commands.get("open").domains(args),
+                    completer: function (context) {
+                        completion.url(context);
+                    },
+                    domains: function (args) {
+                        return commands.get("open").domains(args);
+                    },
                     literal: 0,
                     privateData: true
                 });
@@ -1012,9 +1020,13 @@ var Tabs = Module("tabs", {
                         context.anchored = false;
                         context.compare = CompletionContext.Sort.unsorted;
                         context.filters = [CompletionContext.Filter.textDescription];
-                        context.keys = { text: function ([i, { state: s }]) (i + 1) + ": " + s.entries[s.index - 1].url,
-                                         description: "[1].title",
-                                         icon: "[1].image" };
+                        context.keys = {
+                            text: function ([i, { state: s }]) {
+                                return (i + 1) + ": " + s.entries[s.index - 1].url;
+                            },
+                            description: "[1].title",
+                            icon: "[1].image"
+                        };
                         context.completions = tabs.closedTabs.entries();
                     },
                     count: true,

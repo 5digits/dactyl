@@ -1690,7 +1690,9 @@ var CommandLine = Module("commandline", {
                 function (args) {
                     command.action(CommandLine.echoArgumentToString(args[0] || "", true));
                 }, {
-                    completer: function (context) completion.javascript(context),
+                    completer: function (context) {
+                        completion.javascript(context);
+                    },
                     literal: 0
                 });
         });
@@ -1723,7 +1725,7 @@ var CommandLine = Module("commandline", {
             function (args) {
                 commandline.runSilently(() => { commands.execute(args[0] || "", null, true); });
             }, {
-                completer: function (context) completion.ex(context),
+                completer: function (context) { completion.ex(context); },
                 literal: 0,
                 subCommand: 0
             });
@@ -1884,17 +1886,17 @@ var CommandLine = Module("commandline", {
         options.add(["history", "hi"],
             "Number of Ex commands and search patterns to store in the command-line history",
             "number", 500,
-            { validator: function (value) value >= 0 });
+            { validator: function (value) { return value >= 0; } });
 
         options.add(["maxitems"],
             "Maximum number of completion items to display at once",
             "number", 20,
-            { validator: function (value) value >= 1 });
+            { validator: function (value) { return value >= 1; } });
 
         options.add(["messages", "msgs"],
             "Number of messages to store in the :messages history",
             "number", 100,
-            { validator: function (value) value >= 0 });
+            { validator: function (value) { return value >= 0; } });
     },
     sanitizer: function initSanitizer() {
         sanitizer.addItem("commandline", {

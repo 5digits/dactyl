@@ -332,10 +332,11 @@ var Highlights = Module("Highlight", {
                     dactyl.assert(lastScheme, _("command.colorscheme.notFound", scheme));
                 }
                 autocommands.trigger("ColorScheme", { name: scheme });
-            },
-            {
+            }, {
                 argCount: "1",
-                completer: function (context) completion.colorScheme(context)
+                completer: function (context) {
+                    completion.colorScheme(context);
+                }
             });
 
         commands.add(["hi[ghlight]"],
@@ -381,8 +382,7 @@ var Highlights = Module("Highlight", {
                     highlight.set(key, css, clear, "-append" in args, args["-link"]);
                 else
                     util.assert(false, _("error.invalidArgument"));
-            },
-            {
+            }, {
                 // TODO: add this as a standard highlight completion function?
                 completer: function (context, args) {
                     // Complete a highlight group on :hi clear ...
@@ -420,18 +420,20 @@ var Highlights = Module("Highlight", {
                         }
                     }
                 ],
-                serialize: function () [
-                    {
-                        command: this.name,
-                        arguments: [v.class],
-                        literalArg: v.value,
-                        options: {
-                            "-link": v.extends.length ? v.extends : undefined
+                serialize: function () {
+                    return [
+                        {
+                            command: this.name,
+                            arguments: [v.class],
+                            literalArg: v.value,
+                            options: {
+                                "-link": v.extends.length ? v.extends : undefined
+                            }
                         }
-                    }
-                    for (v of highlight)
-                    if (v.value != v.defaultValue)
-                ]
+                        for (v of highlight)
+                        if (v.value != v.defaultValue)
+                    ];
+                }
             });
     },
     completion: function initCompletion(dactyl, modules) {

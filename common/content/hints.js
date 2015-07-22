@@ -1381,7 +1381,7 @@ var Hints = Module("hints", {
         options.add(["hinttimeout", "hto"],
             "Timeout before automatically following a non-unique numerical hint",
             "number", 0,
-            { validator: function (value) value >= 0 });
+            { validator: function (value) { return value >= 0; } });
 
         options.add(["followhints", "fh"],
             "Define the conditions under which selected hints are followed",
@@ -1404,15 +1404,17 @@ var Hints = Module("hints", {
                     "wordstartswith": "The typed characters are split on whitespace. The resulting groups must all match the beginnings of words, in order.",
                     "transliterated": UTF8("When true, special latin characters are translated to their ASCII equivalents (e.g., é ⇒ e)")
                 },
-                validator: function (values) Option.validateCompleter.call(this, values) &&
-                    1 === values.reduce((acc, v) => acc + (["contains", "custom", "firstletters", "wordstartswith"].indexOf(v) >= 0),
-                                        0)
+                validator: function (values) {
+                    return Option.validateCompleter.call(this, values) &&
+                           1 === values.reduce((acc, v) => acc + (["contains", "custom", "firstletters", "wordstartswith"].indexOf(v) >= 0),
+                                               0);
+                }
             });
 
         options.add(["wordseparators", "wsp"],
             "Regular expression defining which characters separate words when matching hints",
             "string", '[.,!?:;/"^$%&?()[\\]{}<>#*+|=~ _-]',
-            { validator: function (value) RegExp(value) });
+            { validator: function (value) { return RegExp(value); } });
 
         options.add(["hintinputs", "hin"],
             "Which text is used to filter hints for input elements",

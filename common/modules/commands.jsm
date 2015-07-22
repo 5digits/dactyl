@@ -1676,9 +1676,13 @@ var Commands = Module("commands", {
                         // TODO: "E180: invalid complete value: " + arg
                         names: ["-complete", "-C"],
                         description: "The argument completion function",
-                        completer: function (context) [[k, ""] for ([k, v] of iter(config.completers))],
+                        completer: function (context) {
+                            return [[k, ""] for ([k, v] of iter(config.completers))];
+                        },
                         type: CommandOption.STRING,
-                        validator: function (arg) arg in config.completers || /^custom,/.test(arg)
+                        validator: function (arg) {
+                            return arg in config.completers || /^custom,/.test(arg);
+                        }
                     },
                     {
                         names: ["-description", "-desc", "-d"],
@@ -1715,28 +1719,30 @@ var Commands = Module("commands", {
                 ],
                 literal: 1,
 
-                serialize: function () Ary(commands.userHives)
-                    .filter(h => h.persist)
-                    .map(hive => [
-                        {
-                            command: this.name,
-                            bang: true,
-                            options: iter([v, typeof cmd[k] == "boolean" ? null : cmd[k]]
-                                          // FIXME: this map is expressed multiple times
-                                          for ([k, v] of iter({
-                                              argCount: "-nargs",
-                                              bang: "-bang",
-                                              count: "-count",
-                                              description: "-description"
-                                          }))
-                                          if (cmd[k])).toObject(),
-                            arguments: [cmd.name],
-                            literalArg: cmd.action,
-                            ignoreDefaults: true
-                        }
-                        for (cmd of hive) if (cmd.persist)
-                    ])
-                    .flatten().array
+                serialize: function () {
+                    return Ary(commands.userHives)
+                        .filter(h => h.persist)
+                        .map(hive => [
+                            {
+                                command: this.name,
+                                bang: true,
+                                options: iter([v, typeof cmd[k] == "boolean" ? null : cmd[k]]
+                                            // FIXME: this map is expressed multiple times
+                                            for ([k, v] of iter({
+                                                argCount: "-nargs",
+                                                bang: "-bang",
+                                                count: "-count",
+                                                description: "-description"
+                                            }))
+                                            if (cmd[k])).toObject(),
+                                arguments: [cmd.name],
+                                literalArg: cmd.action,
+                                ignoreDefaults: true
+                            }
+                            for (cmd of hive) if (cmd.persist)
+                        ])
+                        .flatten().array;
+                }
             });
 
         commands.add(["delc[ommand]"],
@@ -1754,16 +1760,21 @@ var Commands = Module("commands", {
             }, {
                 argCount: "?",
                 bang: true,
-                completer: function (context, args) modules.completion.userCommand(context, args["-group"]),
+                completer: function (context, args) {
+                    modules.completion.userCommand(context, args["-group"]);
+                },
                 options: [contexts.GroupFlag("commands")]
             });
 
         commands.add(["comp[letions]"],
             "List the completion results for a given command substring",
-            function (args) { modules.completion.listCompleter("ex", args[0]); },
-            {
+            function (args) {
+                modules.completion.listCompleter("ex", args[0]);
+            }, {
                 argCount: "1",
-                completer: function (context, args) modules.completion.ex(context),
+                completer: function (context) {
+                    modules.completion.ex(context);
+                },
                 literal: 0
             });
 
@@ -1801,10 +1812,11 @@ var Commands = Module("commands", {
 
                 let lines = res.split("\n").length;
                 dactyl.echomsg(_("command.yank.yankedLine" + (lines == 1 ? "" : "s"), lines));
-            },
-            {
+            }, {
                 argCount: "1",
-                completer: function (context) modules.completion[/^:/.test(context.filter) ? "ex" : "javascript"](context),
+                completer: function (context) {
+                    modules.completion[/^:/.test(context.filter) ? "ex" : "javascript"](context);
+                },
                 literal: 0
             });
     },

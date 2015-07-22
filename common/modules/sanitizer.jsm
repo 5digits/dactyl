@@ -507,15 +507,14 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 else
                     sanitize(items);
 
-            },
-            {
+            }, {
                 argCount: "*", // FIXME: should be + and 0
                 bang: true,
                 completer: function (context) {
                     context.title = ["Privacy Item", "Description"];
                     context.completions = modules.options.get("sanitizeitems").values;
                 },
-                domains: function (args) args["-host"] || [],
+                domains: function (args) { return args["-host"] || []; },
                 options: [
                     {
                         names: ["-host", "-h"],
@@ -533,9 +532,13 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     }, {
                         names: ["-timespan", "-t"],
                         description: "Timespan for which to sanitize items",
-                        completer: function (context) modules.options.get("sanitizetimespan").completer(context),
+                        completer: function (context) {
+                            modules.options.get("sanitizetimespan").completer(context);
+                        },
                         type: modules.CommandOption.STRING,
-                        validator: function (arg) modules.options.get("sanitizetimespan").validator(arg)
+                        validator: function (arg) {
+                            return modules.options.get("sanitizetimespan").validator(arg);
+                        }
                     }
                 ],
                 privateData: true
@@ -645,8 +648,10 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     return res && !/^!/.test(res);
                 },
 
-                validator: function (values) values.length &&
-                    values.every(val => (val === "all" || hasOwnProperty(sanitizer.itemMap, val.replace(/^!/, ""))))
+                validator: function (values) {
+                    return values.length &&
+                           values.every(val => (val === "all" || hasOwnProperty(sanitizer.itemMap, val.replace(/^!/, ""))));
+                }
             });
 
         options.add(["sanitizeshutdown", "ss"],
@@ -712,7 +717,9 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     ["none", "Accept no cookies"],
                     ["visited", "Accept cookies from visited sites"]
                 ],
-                getter: function () (this.values[prefs.get(this.PREF)] || ["all"])[0],
+                getter: function () {
+                    return (this.values[prefs.get(this.PREF)] || ["all"])[0];
+                },
                 setter: function (val) {
                     prefs.set(this.PREF, this.values.map(i => i[0]).indexOf(val));
                     return val;
@@ -731,7 +738,9 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     ["prompt",  "Always prompt for a lifetime"],
                     ["session", "The current session"]
                 ],
-                getter: function () (this.values[prefs.get(this.PREF)] || [prefs.get(this.PREF_DAYS)])[0],
+                getter: function () {
+                    return (this.values[prefs.get(this.PREF)] || [prefs.get(this.PREF_DAYS)])[0];
+                },
                 setter: function (value) {
                     let val = this.values.map(i => i[0]).indexOf(value);
                     if (val > -1)
@@ -743,7 +752,10 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 },
                 initialValue: true,
                 persist: false,
-                validator: function validator(val) parseInt(val) == val || validator.superapply(this, arguments)
+                validator: function validator(val) {
+                    return parseInt(val) == val ||
+                           validator.superapply(this, arguments);
+                }
             });
     }
 });

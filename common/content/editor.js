@@ -1382,7 +1382,9 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                         args.push(obj["file"]);
                     return args;
                 },
-                has: function (key) util.compileMacro(this.value).seen.has(key),
+                has: function (key) {
+                    return util.compileMacro(this.value).seen.has(key);
+                },
                 validator: function (value) {
                     this.format({}, value);
                     let allowed = new RealSet(["column", "file", "line"]);

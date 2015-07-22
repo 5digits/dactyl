@@ -131,11 +131,12 @@ var QuickMarks = Module("quickmarks", {
                     quickmarks.removeAll();
                 else
                     quickmarks.remove(args[0]);
-            },
-            {
+            }, {
                 argCount: "?",
                 bang: true,
-                completer: function (context) completion.quickmark(context)
+                completer: function (context) {
+                    completion.quickmark(context);
+                }
             });
 
         commands.add(["qma[rk]"],
@@ -147,13 +148,12 @@ var QuickMarks = Module("quickmarks", {
                     quickmarks.add(args[0], buffer.uri.spec);
                 else
                     quickmarks.add(args[0], args[1]);
-            },
-            {
+            }, {
                 argCount: "+",
                 completer: function (context, args) {
                     if (args.length == 1)
-                        return completion.quickmark(context);
-                    if (args.length == 2) {
+                        completion.quickmark(context);
+                    else if (args.length == 2) {
                         context.fork("current", 0, this, context => {
                             context.title = ["Extra Completions"];
                             context.completions = [
@@ -172,7 +172,9 @@ var QuickMarks = Module("quickmarks", {
                 quickmarks.list(args[0] || "");
             }, {
                 argCount: "?",
-                completer: function (context) completion.quickmark(context)
+                completer: function (context) {
+                    completion.quickmark(context);
+                }
             });
     },
     completion: function initCompletion() {

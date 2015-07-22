@@ -213,9 +213,9 @@ var AutoCommands = Module("autocommands", {
                 bang: true,
                 completer: function (context, args) {
                     if (args.length == 1)
-                        return completion.autocmdEvent(context);
-                    if (args.length == 3)
-                        return args["-javascript"] ? completion.javascript(context) : completion.ex(context);
+                        completion.autocmdEvent(context);
+                    else if (args.length == 3)
+                        args["-javascript"] ? completion.javascript(context) : completion.ex(context);
                 },
                 hereDoc: true,
                 keepQuotes: true,
@@ -273,7 +273,9 @@ var AutoCommands = Module("autocommands", {
                         autocommands.trigger(event, { url: uri.spec });
                 }, {
                     argCount: "*", // FIXME: kludged for proper error message should be "1".
-                    completer: function (context) completion.autocmdEvent(context),
+                    completer: function (context) {
+                        completion.autocmdEvent(context);
+                    },
                     keepQuotes: true
                 });
         });

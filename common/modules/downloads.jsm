@@ -481,8 +481,7 @@ var Downloads_ = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
             function (args) {
                 let downloads = DownloadList(modules, args[0], args["-sort"]);
                 modules.commandline.echo(downloads);
-            },
-            {
+            }, {
                 argCount: "?",
                 options: [
                     {
@@ -492,8 +491,12 @@ var Downloads_ = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
                         get default() {
                             return modules.options["downloadsort"];
                         },
-                        completer: function (context, args) modules.options.get("downloadsort").completer(context, { values: args["-sort"] }),
-                        validator: function (value) modules.options.get("downloadsort").validator(value)
+                        completer: function (context, args) {
+                            modules.options.get("downloadsort").completer(context, { values: args["-sort"] });
+                        },
+                        validator: function (value) {
+                            return modules.options.get("downloadsort").validator(value);
+                        }
                     }
                 ]
             });
@@ -546,7 +549,9 @@ var Downloads_ = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
                                                            .flatten().array;
                 },
 
-                has: function () Array.some(arguments, val => this.value.some(v => v.substr(1) == val)),
+                has: function () {
+                    return Array.some(arguments, val => this.value.some(v => v.substr(1) == val));
+                },
 
                 validator: function (value) {
                     let seen = new RealSet();

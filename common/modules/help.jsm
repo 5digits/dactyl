@@ -429,7 +429,9 @@ var Help = Module("Help", {
                 }, {
                     argCount: "?",
                     bang: true,
-                    completer: function (context) completion.help(context, consolidated),
+                    completer: function (context) {
+                        completion.help(context, consolidated);
+                    },
                     literal: 0
                 });
         });

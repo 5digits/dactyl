@@ -200,8 +200,7 @@ var History = Module("history", {
                         history.stepTo(-Math.max(args.count, 1));
                 }
                 return null;
-            },
-            {
+            }, {
                 argCount: "?",
                 bang: true,
                 completer: function completer(context) {
@@ -211,9 +210,13 @@ var History = Module("history", {
                     context.compare = CompletionContext.Sort.unsorted;
                     context.filters = [CompletionContext.Filter.textDescription];
                     context.completions = sh.slice(0, sh.index).reverse();
-                    context.keys = { text: function (item) (sh.index - item.index) + ": " + item.URI.spec,
-                                     description: "title",
-                                     icon: "icon" };
+                    context.keys = {
+                        text: function (item) {
+                            return (sh.index - item.index) + ": " + item.URI.spec;
+                        },
+                        description: "title",
+                        icon: "icon"
+                    };
                 },
                 count: true,
                 literal: 0,
@@ -242,8 +245,7 @@ var History = Module("history", {
                         history.stepTo(Math.max(args.count, 1));
                 }
                 return null;
-            },
-            {
+            }, {
                 argCount: "?",
                 bang: true,
                 completer: function completer(context) {
@@ -253,9 +255,13 @@ var History = Module("history", {
                     context.compare = CompletionContext.Sort.unsorted;
                     context.filters = [CompletionContext.Filter.textDescription];
                     context.completions = sh.slice(sh.index + 1);
-                    context.keys = { text: function (item) (item.index - sh.index) + ": " + item.URI.spec,
-                                     description: "title",
-                                     icon: "icon" };
+                    context.keys = {
+                        text: function (item) {
+                            return (item.index - sh.index) + ": " + item.URI.spec;
+                        },
+                        description: "title",
+                        icon: "icon"
+                   };
                 },
                 count: true,
                 literal: 0,
@@ -264,9 +270,13 @@ var History = Module("history", {
 
         commands.add(["hist[ory]", "hs"],
             "Show recently visited URLs",
-            function (args) { history.list(args.join(" "), args.bang, args["-max"], args["-sort"]); }, {
+            function (args) {
+                history.list(args.join(" "), args.bang, args["-max"], args["-sort"]);
+            }, {
                 bang: true,
-                completer: function (context, args) completion.history(context, args["-max"], args["-sort"]),
+                completer: function (context, args) {
+                    completion.history(context, args["-max"], args["-sort"]);
+                },
                 options: [
                     {
                         names: ["-max", "-m"],

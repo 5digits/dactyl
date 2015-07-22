@@ -1224,8 +1224,7 @@ var Completion = Module("completion", {
                                      function m(item) {
                                          return template.completionRow(item, "CompItem");
                                      })]);
-            },
-            {
+            }, {
                 argCount: "*",
                 completer: function (context) {
                     let PREFIX = "/ex/contexts";
@@ -1303,7 +1302,9 @@ var Completion = Module("completion", {
                     return values;
                 },
 
-                validator: function validator(values) validator.supercall(this, this.setter(values))
+                validator: function validator(values) {
+                    return validator.supercall(this, this.setter(values));
+                }
             });
 
         options.add(["wildanchor", "wia"],

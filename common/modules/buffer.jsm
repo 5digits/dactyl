@@ -815,7 +815,9 @@ var Buffer = Module("Buffer", {
                     self.saveURI({ uri: uri, file: file, context: elem });
                 },
 
-                completer: function (context) completion.savePage(context, elem)
+                completer: function (context) {
+                    completion.savePage(context, elem);
+                }
             }).open();
         }
         catch (e) {
@@ -1891,8 +1893,7 @@ var Buffer = Module("Buffer", {
                       .getInterface(Ci.nsIWebBrowserPrint).print(settings, null);
 
                 dactyl.echomsg(_("print.sent"));
-            },
-            {
+            }, {
                 argCount: "?",
                 bang: true,
                 completer: function (context, args) {
@@ -1911,8 +1912,7 @@ var Buffer = Module("Buffer", {
                 dactyl.assert(!arg || opt.validator(opt.parse(arg)),
                               _("error.invalidArgument", arg));
                 buffer.showPageInfo(true, arg);
-            },
-            {
+            }, {
                 argCount: "?",
                 completer: function (context) {
                     modules.completion.optionValue(context, "pageinfo", "+", "");
@@ -1934,10 +1934,11 @@ var Buffer = Module("Buffer", {
                     options["usermode"] = false;
 
                 window.stylesheetSwitchAll(buffer.focusedFrame, arg);
-            },
-            {
+            }, {
                 argCount: "?",
-                completer: function (context) modules.completion.alternateStyleSheet(context),
+                completer: function (context) {
+                    modules.completion.alternateStyleSheet(context);
+                },
                 literal: 0
             });
 
@@ -2016,8 +2017,7 @@ var Buffer = Module("Buffer", {
                                     doc.contentType, false, null, chosenData,
                                     doc.referrer ? window.makeURI(doc.referrer) : null,
                                     doc, true);
-            },
-            {
+            }, {
                 argCount: "?",
                 bang: true,
                 completer: function (context) {
@@ -2041,11 +2041,14 @@ var Buffer = Module("Buffer", {
 
         commands.add(["vie[wsource]"],
             "View source code of current document",
-            function (args) { buffer.viewSource(args[0], args.bang); },
-            {
+            function (args) {
+                buffer.viewSource(args[0], args.bang);
+            }, {
                 argCount: "?",
                 bang: true,
-                completer: function (context) modules.completion.url(context, "bhf")
+                completer: function (context) {
+                    modules.completion.url(context, "bhf");
+                }
             });
 
         commands.add(["zo[om]"],
@@ -2475,7 +2478,9 @@ var Buffer = Module("Buffer", {
             "string", "UTF-8",
             {
                 scope: Option.SCOPE_LOCAL,
-                getter: function () buffer.docShell.QueryInterface(Ci.nsIDocCharset).charset,
+                getter: function () {
+                    return buffer.docShell.QueryInterface(Ci.nsIDocCharset).charset;
+                },
                 setter: function (val) {
                     if (options["encoding"] == val)
                         return val;
@@ -2491,7 +2496,9 @@ var Buffer = Module("Buffer", {
                     });
                     return null;
                 },
-                completer: function (context) completion.charset(context)
+                completer: function (context) {
+                    completion.charset(context);
+                }
             });
 
         options.add(["iskeyword", "isk"],
@@ -2502,7 +2509,7 @@ var Buffer = Module("Buffer", {
                     this.regexp = util.regexp(value);
                     return value;
                 },
-                validator: function (value) RegExp(value)
+                validator: function (value) { return RegExp(value); }
             });
 
         options.add(["jumptags", "jt"],
@@ -2518,8 +2525,10 @@ var Buffer = Module("Buffer", {
                         vals[k] = update(new String(v), { matcher: DOM.compileMatcher(Option.splitList(v)) });
                     return vals;
                 },
-                validator: function (value) DOM.validateMatcher.call(this, value)
-                    && Object.keys(value).every(v => v.length == 1)
+                validator: function (value) {
+                    return DOM.validateMatcher.call(this, value) &&
+                           Object.keys(value).every(v => v.length == 1);
+                }
             });
 
         options.add(["linenumbers", "ln"],
@@ -2591,7 +2600,7 @@ var Buffer = Module("Buffer", {
         options.add(["scroll", "scr"],
             "Number of lines to scroll with <C-u> and <C-d> commands",
             "number", 0,
-            { validator: function (value) value >= 0 });
+            { validator: function (value) { return value >= 0; } });
 
         options.add(["showstatuslinks", "ssli"],
             "Where to show the destination of the link under the cursor",
@@ -2616,7 +2625,9 @@ var Buffer = Module("Buffer", {
 
                 initValue: function () {},
 
-                getter: function getter(value) !prefs.get(this.PREF) ? 1 : value,
+                getter: function getter(value) {
+                    return !prefs.get(this.PREF) ? 1 : value;
+                },
 
                 setter: function setter(value) {
                     prefs.set(this.PREF, value > 1);
@@ -2624,15 +2635,19 @@ var Buffer = Module("Buffer", {
                         return value;
                 },
 
-                validator: function (value) value > 0
+                validator: function (value) { return value > 0; }
             });
 
         options.add(["usermode", "um"],
             "Show current website without styling defined by the author",
             "boolean", false,
             {
-                setter: function (value) buffer.contentViewer.authorStyleDisabled = value,
-                getter: function () buffer.contentViewer.authorStyleDisabled
+                setter: function (value) {
+                    return buffer.contentViewer.authorStyleDisabled = value;
+                },
+                getter: function () {
+                    return buffer.contentViewer.authorStyleDisabled;
+                }
             });
 
         options.add(["yankshort", "ys"],

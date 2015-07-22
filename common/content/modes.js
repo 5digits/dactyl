@@ -659,8 +659,10 @@ var Modes = Module("modes", {
                 return vals;
             },
 
-            validator: function validator(vals) vals.map(v => v.replace(/^!/, ""))
-                                                    .every(k => hasOwnProperty(this.values, k)),
+            validator: function validator(vals) {
+                return vals.map(v => v.replace(/^!/, ""))
+                           .every(k => hasOwnProperty(this.values, k));
+            },
 
             get values() {
                 return Ary.toObject([[m.name.toLowerCase(), m.description]

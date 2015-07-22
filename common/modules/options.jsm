@@ -1418,15 +1418,17 @@ var Options = Module("options", {
                 description: "Set an option",
                 modifiers: {},
                 extra: {
-                    serialize: function () [
-                        {
-                            command: this.name,
-                            literalArg: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
-                                                               : opt.name + "=" + opt.stringValue]
-                        }
-                        for (opt of modules.options)
-                        if (!opt.getter && !opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
-                    ]
+                    serialize: function () {
+                        return [
+                            {
+                                command: this.name,
+                                literalArg: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
+                                                                   : opt.name + "=" + opt.stringValue]
+                            }
+                            for (opt of modules.options)
+                            if (!opt.getter && !opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
+                        ];
+                    }
                 }
             }
         ].forEach(function (params) {

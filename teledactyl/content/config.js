@@ -164,7 +164,9 @@ var Config = Module("config", ConfigBase, {
                         window.MailOfflineMgr.toggleOfflineStatus();
                     return value;
                 },
-                getter: function () window.MailOfflineMgr.isOnline()
+                getter: function () {
+                    return window.MailOfflineMgr.isOnline();
+                }
             });
     }
 });

@@ -208,11 +208,14 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
     commands: function initCommands(dactyl, modules, window) {
         commands.add(["o[pen]"],
             "Open one or more URLs in the current tab",
-            function (args) { dactyl.open(args[0] || "about:blank"); },
-            {
-                completer: function (context) completion.url(context),
-                domains: function (args) Ary.compact(dactyl.parseURLs(args[0] || "")
-                                                           .map(url => util.getHost(url))),
+            function (args) {
+                dactyl.open(args[0] || "about:blank");
+            }, {
+                completer: function (context) { completion.url(context); },
+                domains: function (args) {
+                    return Ary.compact(dactyl.parseURLs(args[0] || "")
+                                             .map(url => util.getHost(url)));
+                },
                 literal: 0,
                 privateData: true
             });

@@ -486,11 +486,12 @@ const Player = Module("player", {
                                                      "chrome://songbird/content/mediapages/filtersPage.xul");
                     // TODO: make this player.focusTrack work ?
                     player.focusTrack(view.getItemByIndex(0));
-                },
-                {
+                }, {
                     argCount: "1",
                     literal: 0
-                    //completer: function (context, args) completion.tracks(context, args);
+                    //completer: function (context, args) {
+                    //    completion.tracks(context, args);
+                    //}
                 });
 
         commands.add(["load"],
@@ -513,10 +514,11 @@ const Player = Module("player", {
                     // load main library if there are no args
                     _SBShowMainLibrary();
                 }
-            },
-            {
+            }, {
                 argCount: "?",
-                completer: function (context, args) completion.playlist(context),
+                completer: function (context) {
+                    completion.playlist(context);
+                },
                 literal: 0
             });
 
@@ -595,10 +597,11 @@ const Player = Module("player", {
                     }
                     dactyl.echoerr(_("error.invalidArgument", arg));
                 }
-            },
-            {
+            }, {
                 argCount: "1",
-                completer: function (context) completion.mediaView(context),
+                completer: function (context) {
+                    completion.mediaView(context);
+                },
                 literal: 0
             });
 
@@ -606,17 +609,22 @@ const Player = Module("player", {
                 "Sort the current media view",
                 function (args) {
                     player.sortBy(args[0], args["-order"] == "up");
-                },
-                {
+                }, {
                     argCount: "1",
-                    completer: function (context) completion.mediaListSort(context),
+                    completer: function (context) {
+                        completion.mediaListSort(context);
+                    },
                     options: [
                         {
                             names: ["-order", "-o"], type: CommandOption.STRING,
                             default: "up",
                             description: "Specify the sorting order of the given field",
-                            validator: function (arg) /^(up|down)$/.test(arg),
-                            completer: function () [["up", "Sort in ascending order"], ["down", "Sort in descending order"]]
+                            validator: function (arg) {
+                                return /^(up|down)$/.test(arg);
+                            },
+                            completer: function () {
+                                return [["up", "Sort in ascending order"], ["down", "Sort in descending order"]];
+                            }
                         }
                     ]
                 });
@@ -645,8 +653,7 @@ const Player = Module("player", {
                 gMM.sequencer.playView(mainView,
                         mainView.getIndexForItem(library.getItemsByProperties(properties).queryElementAt(0, Ci.sbIMediaItem)));
                 player.focusPlayingTrack();
-            },
-            {
+            }, {
                 argCount: "+",
                 completer: function (context, args) {
                     if (args.completeArg == 0)
@@ -815,21 +822,29 @@ const Player = Module("player", {
             "Set the playback repeat mode",
             "number", 0,
             {
-                setter: function (value) gMM.sequencer.repeatMode = value,
-                getter: function () gMM.sequencer.repeatMode,
-                completer: function (context) [
-                    ["0", "Repeat none"],
-                    ["1", "Repeat one"],
-                    ["2", "Repeat all"]
-                ]
+                setter: function (value) {
+                    return gMM.sequencer.repeatMode = value;
+                },
+                getter: function () { return gMM.sequencer.repeatMode; },
+                completer: function () {
+                    return [
+                        ["0", "Repeat none"],
+                        ["1", "Repeat one"],
+                        ["2", "Repeat all"]
+                    ];
+                }
             });
 
         options.add(["shuffle"],
             "Play tracks in shuffled order",
             "boolean", false,
             {
-                setter: function (value) gMM.sequencer.mode = value ? gMM.sequencer.MODE_SHUFFLE : gMM.sequencer.MODE_FORWARD,
-                getter: function () gMM.sequencer.mode == gMM.sequencer.MODE_SHUFFLE
+                setter: function (value) {
+                    return gMM.sequencer.mode = value ? gMM.sequencer.MODE_SHUFFLE : gMM.sequencer.MODE_FORWARD;
+                },
+                getter: function () {
+                    return gMM.sequencer.mode == gMM.sequencer.MODE_SHUFFLE;
+                }
             });
     }
 });

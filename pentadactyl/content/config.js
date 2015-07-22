@@ -153,13 +153,12 @@ var Config = Module("config", ConfigBase, {
                     }
 
                 return dactyl.echoerr(_("error.invalidArgument", args[0]));
-            },
-            {
+            }, {
                 argCount: "?",
                 bang: true,
                 completer: function (context) {
                     context.ignoreCase = true;
-                    return completion.sidebar(context);
+                    completion.sidebar(context);
                 },
                 literal: 0
             });
@@ -171,10 +170,9 @@ var Config = Module("config", ConfigBase, {
                     this.forceTarget = dactyl.NEW_WINDOW;
                     this.execute(args[0], null, true);
                 });
-            },
-            {
+            }, {
                 argCount: "1",
-                completer: function (context) completion.ex(context),
+                completer: function (context) { completion.ex(context); },
                 literal: 0,
                 subCommand: 0
             });
@@ -191,10 +189,11 @@ var Config = Module("config", ConfigBase, {
                     dactyl.open(args[0], dactyl.NEW_WINDOW);
                 else
                     dactyl.open("about:blank", dactyl.NEW_WINDOW);
-            },
-            {
-                completer: function (context) completion.url(context),
-                domains: function (args) commands.get("open").domains(args),
+            }, {
+                completer: function (context) { completion.url(context); },
+                domains: function (args) {
+                    return commands.get("open").domains(args);
+                },
                 literal: 0,
                 privateData: true
             });
@@ -242,7 +241,7 @@ var Config = Module("config", ConfigBase, {
                         window.BrowserOffline.toggleOfflineStatus();
                     return value;
                 },
-                getter: function () !services.io.offline
+                getter: function () { return !services.io.offline; }
             });
     }
 });

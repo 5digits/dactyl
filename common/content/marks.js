@@ -349,10 +349,9 @@ var Marks = Module("marks", {
                 dactyl.assert(!special || !arg, _("error.invalidArgument"));
 
                 marks.remove(arg, special);
-            },
-            {
+            }, {
                 bang: true,
-                completer: function (context) completion.mark(context),
+                completer: function (context) { completion.mark(context); },
                 literal: 0
             });
 
@@ -372,7 +371,7 @@ var Marks = Module("marks", {
             function (args) {
                 marks.list(args[0] || "");
             }, {
-                completer: function (context) completion.mark(context),
+                completer: function (context) { completion.mark(context); },
                 literal: 0
             });
     },
