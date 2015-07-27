@@ -548,7 +548,7 @@ var Buffer = Module("Buffer", {
                             yield res[i];
         }
 
-        for (let frame of this.allFrames(null, true))
+        for (let frame of this.allFrames(undefined, true))
             for (let elem of followFrame(frame))
                 if (count-- === 0) {
                     if (follow)
