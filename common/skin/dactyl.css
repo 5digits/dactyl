@@ -109,10 +109,6 @@ input[type=file][dactyl|highlight~=HintElem] {
     url-prefix(dactyl:),
     url-prefix(resource:) {
 
-#TabsToolbar .tab-icon-image, .tab-throbber { -moz-box-ordinal-group: 10; }
-[dactyl|highlight~=tab-number]              { -moz-box-ordinal-group: 20; }
-.tab-text, .tab-label, .tab-close-button    { -moz-box-ordinal-group: 50; }
-
 [dactyl|highlight~=Bell] {
     -moz-appearance: none !important;
 }
@@ -227,7 +223,7 @@ statusbarpanel {
 
 @-moz-document url(chrome://browser/content/browser.xul) {
 
-/* Fix ginormous Australis tabs. */
+/* Fix ginormous Australis tabs. 
 [dactyl-australis=true] :-moz-any(xul|tab.tabbrowser-tab, .tabs-newtab-button)
         .tab-background > * {
     min-height: 24px !important;
@@ -245,6 +241,7 @@ statusbarpanel {
     min-height: 0 !important;
     max-height: 24px !important;
 }
+*/
 
 /* Fix stupid line... */
 [dactyl-australis=true] #navigator-toolbox::after {
