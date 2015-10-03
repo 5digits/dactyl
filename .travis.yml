@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+- '0.10'
+script: make DIRS=pentadactyl
+deploy:
+  provider: releases
+  api_key:
+    secure: Ktg4mUTI6NZ5L0i6RpqXdJa4EcmE7FVlfr09OYCbE+1rFwESzmhc85xq9UUL6Ztk+nCDsKTbw5Er7PDzVaD572z9lJ1VNfGnTP5zHWmjXzLNTUvgVFZbX9yfjqGwgWaxB9G51nw0fosUHTMudSVkoyVUFFfPvvlh8QqqSr/zlhIai4aO0/U00u9/7KJAhobY1iLiSuAvDB3dLzZZkU0Z+78Tob5MY16rcSK0HvBzJY4LtA46flWbAjKN2f92fDvwd09dwaoJ0Ri7TT9n8R01pb/c+Jlya+hC0vieyi8Q9y6n8VG+cFTL+YqmhdtfEmoB6OxAR4UHD8jTaqHqROuAHzWiHxMvXMaHQ15cCIWcqSVfn8wmQ+ncCyuURwF+wG6i5JbHO8PdFeWICo+2u+sirYqUlKAfUT+9KoJh4SOL5BMQh+KGgtoeCYJO9WQMQwub+Ygct1Hbfx/UjM2HBOV6ENGAeQHKdV9nZZ6u807S7iJnxVSxxGFXBpUy1YwXkyFID5lmEHF2UbRK7zVSP2fGTCJrd4yxmWfgUkyv/3dJ8/XquJJNN/D1HW87Lo+/sFGoKZgxlTu5OGwQPIX8u8fPuIxYljNjoNLzLvFhbtYgNAd5SBUsaZfHVWqqkJakRtHZ05BzqQS4+oa/oYJUFadAUc8xXSeNG7VCZRBjGbWHys8=
+  skip_cleanup: true
+  file: downloads/pentadactyl*.xpi
+  file_glob: true
+  on:
+    tags: true
