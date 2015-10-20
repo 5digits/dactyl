@@ -31,16 +31,7 @@ lazyRequire("template", ["template"]);
 var Buffer = Module("Buffer", {
     Local: function Local(dactyl, modules, window) {
         return {
-            get win() {
-                return window.content;
-
-                let win = services.focus.focusedWindow;
-                if (!win || win == window || util.topWindow(win) != window)
-                    return window.content;
-                if (win.top == window)
-                    return win;
-                return win.top;
-            }
+            get win() { return window.content; }
         };
     },
 
