@@ -231,7 +231,7 @@ var DownloadList = Class("DownloadList",
         this.nodes = {
             commandTarget: this
         };
-        this.downloads = Map();
+        this.downloads = new Map();
     },
 
     cleanup: function cleanup() {
