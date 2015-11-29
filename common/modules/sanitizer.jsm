@@ -158,8 +158,9 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     return;
                 if (host) {
                     for (let p of Sanitizer.iterPermissions(host)) {
-                        services.permissions.remove(util.createURI(p.host), p.type);
-                        services.permissions.add(util.createURI(p.host), p.type, 0);
+                        let uri = util.createURI(p);
+                        services.permissions.remove(uri, p.type);
+                        services.permissions.add(uri, p.type, 0);
                     }
                     for (let p of iter(services.contentPrefs.getPrefs(util.createURI(host))))
                         services.contentPrefs.removePref(util.createURI(host), p.QueryInterface(Ci.nsIProperty).name);
@@ -563,7 +564,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             }
             function setPerms(host, perm) {
                 let uri = util.createURI(host);
-                services.permissions.remove(uri.host, "cookie");
+                services.permissions.remove(uri, "cookie");
                 services.permissions.add(uri, "cookie", Sanitizer.PERMS[perm]);
             }
             commands.add(["cookies", "ck"],
