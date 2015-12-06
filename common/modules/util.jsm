@@ -1380,7 +1380,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
          * @param {number} lastIndex The index at which to begin searching. @optional
          */
         iterate: function iterate(regexp, string, lastIndex) {
-            return iter(new function* () {
+            return iter(function* () {
                 regexp.lastIndex = lastIndex = lastIndex || 0;
                 let match;
                 while (match = regexp.exec(string)) {
@@ -1390,7 +1390,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     if (match[0].length == 0 || !regexp.global)
                         break;
                 }
-            });
+            }());
         }
     }),
 
