@@ -131,7 +131,7 @@ var Help = Module("Help", {
 
             let matchBetas = util.regexp(/\[((?:b|rc)\d)\]/, "gx");
 
-            let betas = Array.from(betas.iterate(NEWS),
+            let betas = Array.from(matchBetas.iterate(NEWS),
                                    match => match[1]);
 
             let beta = betas.sort().pop();
