@@ -8,6 +8,8 @@
 
 /** @scope modules */
 
+let securityState = new WeakMap();
+
 var StatusLine = Module("statusline", {
     init: function init() {
         this._statusLine = document.getElementById("status-bar");
@@ -121,7 +123,7 @@ var StatusLine = Module("statusline", {
         });
 
         try {
-            this.security = content.document.dactylSecurity || "insecure";
+            this.security = securityState.get(content) || "insecure";
         }
         catch (e) {}
     },
@@ -179,7 +181,7 @@ var StatusLine = Module("statusline", {
                 this.security = "insecure";
 
             if (webProgress && webProgress.DOMWindow)
-                webProgress.DOMWindow.document.dactylSecurity = this.security;
+                securityState.set(webProgress.DOMWindow, this.security);
         },
         "browser.stateChange": function onStateChange(webProgress, request, flags, status) {
             const L = Ci.nsIWebProgressListener;
@@ -261,12 +263,13 @@ var StatusLine = Module("statusline", {
         if (isinstance(uri, Ci.nsIURI)) {
             // when session information is available, add [+] when we can go
             // backwards, [-] when we can go forwards
-            if (uri.equals(buffer.uri) && window.getWebNavigation) {
-                let sh = window.getWebNavigation().sessionHistory;
-                if (sh && sh.index > 0)
+            if (uri.equals(buffer.uri)) {
+                let { webNav } = buffer;
+                if (webNav.canGoBack)
                     modified += "-";
-                if (sh && sh.index < sh.count - 1)
+                if (webNav.canGoForward)
                     modified += "+";
+
                 if (this.bookmarked)
                     modified += UTF8("❤");
             }

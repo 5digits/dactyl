@@ -620,7 +620,7 @@ var CompletionContext = Class("CompletionContext", {
             var substrings = [text];
         }
         else {
-            var compare = function compare(text, s) { return text.contains(s); };
+            var compare = function compare(text, s) { return text.includes(s); };
             var substrings = [];
             let start = 0;
             let idx;
@@ -1169,7 +1169,7 @@ var Completion = Module("completion", {
         if (context.ignoreCase) {
             compare = util.compareIgnoreCase;
             contains = function contains_(a, b) {
-                return a && a.toLowerCase().contains(b.toLowerCase());
+                return a && a.toLowerCase().includes(b.toLowerCase());
             };
         }
 

@@ -409,7 +409,9 @@ var Contexts = Module("contexts", {
         return frame;
     },
 
-    groups: Class.Memoize(function () { return this.matchingGroups(); }),
+    groups: Class.Memoize(function () {
+        return this.matchingGroups();
+    }),
 
     allGroups: Class.Memoize(function () {
         return Object.create(this.groupsProto, {

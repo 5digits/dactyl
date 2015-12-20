@@ -117,7 +117,7 @@ var Help = Module("Help", {
                 | ^ (?P<space> \s*)
                     (?P<char>  [-•*+]) \ //
                   (?P<content> .*\n
-                     (?: ${"\\2"} // This is incorrectly interpreted as an octal literal otherwise}\ \ .*\n | \s*\n)* )
+                     (?: ${"\\2" /* This is incorrectly interpreted as an octal literal otherwise */}\ \ .*\n | \s*\n)* )
 
                 | (?P<par>
                       (?: ^ [^\S\n]*

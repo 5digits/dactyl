@@ -21,7 +21,7 @@ lazyRequire("promises", ["CancelablePromise", "Promise", "promises"]);
 lazyRequire("sanitizer", ["sanitizer"]);
 lazyRequire("storage", ["File", "storage"]);
 lazyRequire("template", ["template"]);
-
+let global = this;
 /**
  * A class to manage the primary web content buffer. The name comes
  * from Vim's term, 'buffer', which signifies instances of open
@@ -30,14 +30,17 @@ lazyRequire("template", ["template"]);
  */
 var Buffer = Module("Buffer", {
     Local: function Local(dactyl, modules, window) {
+        let gBrowser = window.gBrowser;
         return {
-            get win() { return window.content; }
+            get browser() { return gBrowser.mCurrentBrowser; },
         };
     },
 
-    init: function init(win) {
+    init: function init(win, browser) {
         if (win)
             this.win = win;
+        if (browser)
+            this.browser = browser;
     },
 
     get addPageInfoSection() { return Buffer.bound.addPageInfoSection; },
@@ -66,7 +69,9 @@ var Buffer = Module("Buffer", {
     /**
      * The load context of the window bound to this buffer.
      */
-    get loadContext() { return sanitizer.getContext(this.win); },
+    get loadContext() {
+        return sanitizer.getContext(this.win, this.topWindow);
+    },
 
     /**
      * Content preference methods.
@@ -243,24 +248,62 @@ var Buffer = Module("Buffer", {
     },
     set lastInputField(value) { this.localStore.lastInputField = util.weakReference(value); },
 
+    get win() {
+        if (this.browser)
+            return this.browser.contentWindow;
+        return this._win;
+    },
+
+    set win(value) {
+        this._win = value;
+    },
+
     /**
      * @property {nsIURI} The current top-level document.
      */
-    get doc() { return this.win.document; },
+    get doc() {
+        if (this.browser)
+            return this.browser.contentDocument;
+        return this.win.document;
+    },
 
-    get docShell() { return util.docShell(this.win); },
+    get docShell() {
+        let docShell;
+        if (this.browser)
+            docShell = this.browser.docShell;
+
+        if (!docShell && this.win && this.win.QueryInterface)
+            docShell = util.docShell(this.win);
+
+        return docShell;
+    },
+
+    get webNav() {
+        if (this.browser)
+            return this.browser.webNavigation;
+
+        return this.docShell.QueryInterface(Ci.nsIWebNavigation);
+    },
 
     get modules() { return this.topWindow.dactyl.modules; },
     set modules(val) {},
 
     topWindow: Class.Memoize(function () {
+        if (this.browser)
+            return this.browser.ownerDocument.defaultView;
+
         return util.topWindow(this.win);
     }),
 
     /**
      * @property {nsIURI} The current top-level document's URI.
      */
-    get uri() { return util.newURI(this.win.location.href); },
+    get uri() {
+        if (this.browser)
+            return this.browser.currentURI.clone();
+
+        return util.newURI(this.win.location.href);
+    },
 
     /**
      * @property {nsIURI} The current top-level document's URI, sans
@@ -278,16 +321,20 @@ var Buffer = Module("Buffer", {
      *     fragment identifier.
      */
     get documentURI() {
-        return this.doc.documentURIObject ||
-               util.newURI(this.doc.documentURI);
+        if (this.browser)
+            return this.browser.documentURI.clone();
+
+        return this.uri.cloneIgnoringRef();
     },
 
     /**
      * @property {string} The current top-level document's URL.
      */
     get URL() {
-        return update(new String(this.win.location.href),
-                      util.newURI(this.win.location.href));
+        let uri = this.browser ? this.browser.currentURI
+                               : util.newURI(this.win.location.href);
+
+        return update(new String(uri.spec), uri);
     },
 
     /**
@@ -296,6 +343,9 @@ var Buffer = Module("Buffer", {
     get pageHeight() { return this.win.innerHeight; },
 
     get contentViewer() {
+        if (!this.win || Cu.isCrossProcessWrapper(this.win) || !this.docShell)
+            return null; // e10s
+
         return this.docShell.contentViewer
                    .QueryInterface(Ci.nsIMarkupDocumentViewer ||
                                    Ci.nsIContentViewer);
@@ -307,6 +357,9 @@ var Buffer = Module("Buffer", {
      */
     get zoomLevel() {
         let v = this.contentViewer;
+        if (v == null)
+            return this.ZoomManager.zoom * 100;
+
         return v[v.textZoom == 1 ? "fullZoom" : "textZoom"] * 100;
     },
     set zoomLevel(value) { this.setZoom(value, this.fullZoom); },
@@ -323,7 +376,12 @@ var Buffer = Module("Buffer", {
     /**
      * @property {string} The current document's title.
      */
-    get title() { return this.doc.title; },
+    get title() {
+        if (this.browser)
+            return this.browser.contentTitle;
+
+        return this.doc.title;
+    },
 
     /**
      * @property {number} The buffer's horizontal scroll percentile.
@@ -370,11 +428,21 @@ var Buffer = Module("Buffer", {
      * @property {Window} Returns the currently focused frame.
      */
     get focusedFrame() {
+        try {
+            if (Cu.isCrossProcessWrapper(this.win))
+                return this.win;
+        } catch (e) {
+            util.dump("WTF: " + e);
+            util.dump(this.win, this.browser);
+            return this.win;
+        }
+
         let frame = this.localStore.focusedFrame;
         return frame && frame.get() || this.win;
     },
     set focusedFrame(frame) {
-        this.localStore.focusedFrame = util.weakReference(frame);
+        if (!Cu.isCrossProcessWrapper(this.win))
+            this.localStore.focusedFrame = util.weakReference(frame);
     },
 
     /**
@@ -2652,10 +2720,18 @@ var Buffer = Module("Buffer", {
             "boolean", false,
             {
                 setter: function (value) {
-                    return buffer.contentViewer.authorStyleDisabled = value;
+                    let { contentViewer } = buffer;
+
+                    if (contentViewer)
+                        return contentViewer.authorStyleDisabled = value;
+                    return false;
                 },
                 getter: function () {
-                    return buffer.contentViewer.authorStyleDisabled;
+                    let { contentViewer } = buffer;
+
+                    if (contentViewer)
+                        return contentViewer.authorStyleDisabled;
+                    return false;
                 }
             });
 

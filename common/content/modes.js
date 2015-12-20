@@ -155,12 +155,15 @@ var Modes = Module("modes", {
                     dactyl.focusContent(true);
                 if (prev.main == modes.NORMAL) {
                     dactyl.focusContent(true);
-                    for (let frame of buffer.allFrames()) {
-                        // clear any selection made
-                        let selection = frame.getSelection();
-                        if (selection && !selection.isCollapsed)
-                            selection.collapseToStart();
-                    }
+
+                    let { win } = buffer;
+                    if (!Cu.isCrossProcessWrapper(win) && win instanceof Ci.nsIDOMWindow)
+                        for (let frame of buffer.allFrames()) {
+                            // clear any selection made
+                            let selection = frame.getSelection();
+                            if (selection && !selection.isCollapsed)
+                                selection.collapseToStart();
+                        }
                 }
 
             }

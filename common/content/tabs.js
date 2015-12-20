@@ -60,7 +60,7 @@ var Tabs = Module("tabs", {
         }
     },
 
-    _alternates: Class.Memoize(() => [config.tabbrowser.mCurrentTab, null]),
+    _alternates: Class.Memoize(() => [gBrowser.mCurrentTab, null]),
 
     cleanup: function cleanup() {
         for (let tab of this.allTabs) {
@@ -118,7 +118,7 @@ var Tabs = Module("tabs", {
     },
 
     get allTabs() {
-        return Array.slice(config.tabbrowser.tabContainer.childNodes);
+        return Array.slice(gBrowser.tabs);
     },
 
     /**
@@ -136,7 +136,7 @@ var Tabs = Module("tabs", {
      */
     get browsers() {
         return function* () {
-            for (let [i, browser] of config.tabbrowser.browsers.entries())
+            for (let [i, browser] of gBrowser.browsers.entries())
                 if (browser !== undefined) // Bug in Google's Page Speed add-on.
                     yield [i, browser];
         }();
@@ -145,7 +145,7 @@ var Tabs = Module("tabs", {
     /**
      * @property {number} The number of tabs in the current window.
      */
-    get count() { return config.tabbrowser.mTabs.length; },
+    get count() { return gBrowser.mTabs.length; },
 
     /**
      * @property {Object} The local options store for the current tab.
@@ -153,7 +153,7 @@ var Tabs = Module("tabs", {
     get options() { return this.localStore.options; },
 
     get visibleTabs() {
-        return config.tabbrowser.visibleTabs ||
+        return gBrowser.visibleTabs ||
                this.allTabs.filter(tab => !tab.hidden);
     },
 
@@ -202,11 +202,11 @@ var Tabs = Module("tabs", {
      * @param {boolean} activate Whether to select the newly cloned tab.
      */
     cloneTab: function cloneTab(tab, activate) {
-        let newTab = config.tabbrowser.addTab("about:blank", { ownerTab: tab });
+        let newTab = gBrowser.addTab("about:blank", { ownerTab: tab });
         Tabs.copyTab(newTab, tab);
 
         if (activate)
-            config.tabbrowser.mTabContainer.selectedItem = newTab;
+            gBrowser.mTabContainer.selectedItem = newTab;
 
         return newTab;
     },
@@ -219,7 +219,7 @@ var Tabs = Module("tabs", {
      */
     detachTab: function detachTab(tab) {
         if (!tab)
-            tab = config.tabbrowser.mTabContainer.selectedItem;
+            tab = gBrowser.mTabContainer.selectedItem;
 
         services.windowWatcher
                 .openWindow(window, window.getBrowserURL(), null, "chrome,dialog=no,all", tab);
@@ -280,7 +280,7 @@ var Tabs = Module("tabs", {
             return index;
         if (index != null)
             return this[visible ? "visibleTabs" : "allTabs"][index];
-        return config.tabbrowser.mCurrentTab;
+        return gBrowser.mCurrentTab;
     },
 
     /**
@@ -293,7 +293,7 @@ var Tabs = Module("tabs", {
      */
     index: function index(tab, visible) {
         let tabs = this[visible ? "visibleTabs" : "allTabs"];
-        return tabs.indexOf(tab || config.tabbrowser.mCurrentTab);
+        return tabs.indexOf(tab || gBrowser.mCurrentTab);
     },
 
     /**
@@ -340,7 +340,7 @@ var Tabs = Module("tabs", {
      * @param {Object} tab The tab to keep.
      */
     keepOnly: function keepOnly(tab) {
-        config.tabbrowser.removeAllTabsBut(tab);
+        gBrowser.removeAllTabsBut(tab);
     },
 
     /**
@@ -416,7 +416,7 @@ var Tabs = Module("tabs", {
      */
     move: function move(tab, spec, wrap) {
         let index = tabs.indexFromSpec(spec, wrap, -1);
-        config.tabbrowser.moveTabTo(tab, index);
+        gBrowser.moveTabTo(tab, index);
     },
 
     /**
@@ -439,7 +439,7 @@ var Tabs = Module("tabs", {
             next = index + (focusLeftTab ? 1 : -1);
         if (next in tabs) {
             this._alternates[0] = tabs[next];
-            config.tabbrowser.mTabContainer.selectedItem = tabs[next];
+            gBrowser.mTabContainer.selectedItem = tabs[next];
         }
 
         if (focusLeftTab)
@@ -464,10 +464,10 @@ var Tabs = Module("tabs", {
         try {
             if (bypassCache) {
                 const flags = Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_PROXY | Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE;
-                config.tabbrowser.getBrowserForTab(tab).reloadWithFlags(flags);
+                gBrowser.getBrowserForTab(tab).reloadWithFlags(flags);
             }
             else
-                config.tabbrowser.reloadTab(tab);
+                gBrowser.reloadTab(tab);
         }
         catch (e if !(e instanceof Error)) {}
     },
@@ -501,7 +501,7 @@ var Tabs = Module("tabs", {
         if (index == -1)
             dactyl.beep();
         else
-            config.tabbrowser.mTabContainer.selectedIndex = index;
+            gBrowser.mTabContainer.selectedIndex = index;
     },
 
     /**
@@ -606,7 +606,7 @@ var Tabs = Module("tabs", {
         if (!tabs) {
             if (this.getTab() == this._alternates[0]
                 || this.alternate && this.allTabs.indexOf(this._alternates[0]) == -1
-                || this.alternate && config.tabbrowser._removingTabs && config.tabbrowser._removingTabs.indexOf(this._alternates[0]) >= 0)
+                || this.alternate && gBrowser._removingTabs && gBrowser._removingTabs.indexOf(this._alternates[0]) >= 0)
                 tabs = [this.getTab(), this.alternate];
         }
         this._alternates = tabs || [this.getTab(), this._alternates[0]];
@@ -614,7 +614,7 @@ var Tabs = Module("tabs", {
 }, {
     copyTab: function (to, from) {
         if (!from)
-            from = config.tabbrowser.mTabContainer.selectedItem;
+            from = gBrowser.mTabContainer.selectedItem;
 
         let tabState = services.sessionStore.getTabState(from);
         services.sessionStore.setTabState(to, tabState);
@@ -1146,7 +1146,7 @@ var Tabs = Module("tabs", {
         };
     },
     events: function initEvents() {
-        let tabContainer = config.tabbrowser.mTabContainer;
+        let tabContainer = gBrowser.mTabContainer;
         function callback() {
             tabs.timeout(function () { this.updateTabCount(); });
         }
@@ -1268,8 +1268,8 @@ var Tabs = Module("tabs", {
                         else
                             config.tabStrip.collapsed = false;
 
-                    if (config.tabbrowser.tabContainer._positionPinnedTabs)
-                        config.tabbrowser.tabContainer._positionPinnedTabs();
+                    if (gBrowser.tabContainer._positionPinnedTabs)
+                        gBrowser.tabContainer._positionPinnedTabs();
                     return value;
                 },
                 values: {

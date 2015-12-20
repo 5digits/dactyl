@@ -954,12 +954,18 @@ var DOM = Class("DOM", {
         try {
             if (elem instanceof Ci.nsIDOMDocument)
                 elem = elem.defaultView;
-            if (elem instanceof Ci.nsIDOMElement)
-                services.focus.setFocus(elem, flags);
-            else if (elem instanceof Ci.nsIDOMWindow) {
-                services.focus.focusedWindow = elem;
-                if (services.focus.focusedWindow != elem)
-                    services.focus.clearFocus(elem);
+
+            if (Cu.isCrossProcessWrapper(elem)) {
+                elem.focus();
+            }
+            else {
+                if (elem instanceof Ci.nsIDOMElement)
+                    services.focus.setFocus(elem, flags);
+                else if (elem instanceof Ci.nsIDOMWindow) {
+                    services.focus.focusedWindow = elem;
+                    if (services.focus.focusedWindow != elem)
+                        services.focus.clearFocus(elem);
+                }
             }
         }
         catch (e) {

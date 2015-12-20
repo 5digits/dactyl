@@ -64,7 +64,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
     },
 
     parse: function parse(str) {
-        if ('{['.contains(str[0]))
+        if ('{['.includes(str[0]))
             return JSON.parse(str);
         return str;
     },

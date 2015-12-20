@@ -97,9 +97,12 @@ var Modules = function Modules(window) {
         if (normal)
             return create(proto);
 
-        let sandbox = Components.utils.Sandbox(window, { sandboxPrototype: proto || modules,
-                                                         sandboxName: name || ("Dactyl Sandbox " + ++_id),
-                                                         wantXrays: true });
+        let sandbox = Components.utils.Sandbox(Cu.getObjectPrincipal(global),
+                                               { sandboxPrototype: proto || modules,
+                                                 sandboxName: name || ("Dactyl Sandbox " + ++_id),
+                                                 addonId: config.addon.id,
+                                                 wantXrays: true,
+                                                 metadata: { addonID: config.addon.id } });
 
         // Hack:
         // sandbox.Object = jsmodules.Object;

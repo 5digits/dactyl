@@ -299,7 +299,7 @@ var DownloadList = Class("DownloadList",
     addDownload: function addDownload(download) {
         if (!this.downloads.has(download)) {
             download = Download(download, this);
-            if (this.filter && !download.displayName.contains(this.filter))
+            if (this.filter && !download.displayName.includes(this.filter))
                 return;
 
             this.downloads.set(download.download, download);

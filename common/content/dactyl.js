@@ -646,6 +646,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Initialize the help system.
      */
     initHelp: function initHelp() {
+        util.dumpStack('INIT HELP');
         if ("noscriptOverlay" in window)
             window.noscriptOverlay.safeAllow("dactyl:", true, false);
 
@@ -852,7 +853,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         click: function onClick(event) {
             let elem = event.originalTarget;
 
-            if (elem instanceof Ci.nsIDOMElement && services.security.isSystemPrincipal(elem.nodePrincipal)) {
+            if (elem instanceof Ci.nsIDOMElement &&
+                    !Cu.isCrossProcessWrapper(elem) &&
+                    services.security.isSystemPrincipal(elem.nodePrincipal)) {
                 let command = elem.getAttributeNS(NS, "command");
                 if (command && event.button == 0) {
                     event.preventDefault();

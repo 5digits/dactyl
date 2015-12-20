@@ -562,7 +562,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             rec([]);
             return res;
         }
-        catch (e if e.message && e.message.contains("res is undefined")) {
+        catch (e if e.message && e.message.includes("res is undefined")) {
             // prefs.safeSet() would be reset on :rehash
             prefs.set("javascript.options.methodjit.chrome", false);
             util.dactyl.warn(_(UTF8("error.damnYouJägermonkey")));
@@ -591,7 +591,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     dequote: function dequote(pattern, chars) {
         return pattern.replace(/\\(.)/,
-                               (m0, m1) => chars.contains(m1) ? m1 : m0);
+                               (m0, m1) => chars.includes(m1) ? m1 : m0);
     },
 
     /**
@@ -1485,6 +1485,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 this.dump(util.stackLines(error.stack).join("\n"));
             }
             catch (e) { dump(e + "\n"); }
+            dump("Stack: " + Error().stack + "\n");
         }
 
         // ctypes.open("libc.so.6").declare("kill", ctypes.default_abi, ctypes.void_t, ctypes.int, ctypes.int)(
@@ -1727,11 +1728,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {Window} The top-level parent window.
      */
     topWindow: function topWindow(win) {
-        return win.QueryInterface(Ci.nsIInterfaceRequestor)
-                  .getInterface(Ci.nsIWebNavigation)
-                  .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
-                  .QueryInterface(Ci.nsIInterfaceRequestor)
-                  .getInterface(Ci.nsIDOMWindow);
+        let docShell =  win.QueryInterface(Ci.nsIInterfaceRequestor)
+                           .getInterface(Ci.nsIDocShell);
+        let { rootTreeItem } = docShell;
+        if (rootTreeItem)
+            return rootTreeItem.QueryInterface(Ci.nsIInterfaceRequestor)
+                               .getInterface(Ci.nsIDOMWindow);
     },
 
     /**
@@ -1742,9 +1744,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     trapErrors: function trapErrors(func, self, ...args) {
         try {
-            if (!callable(func))
-                func = self[func];
-            return func.apply(self || this, args);
+            return apply(self || this, func, args);
         }
         catch (e) {
             this.reportError(e);

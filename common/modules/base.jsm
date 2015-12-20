@@ -275,6 +275,8 @@ literal.locations = literal_.locations;
 function apply(obj, meth, args) {
     // The function's own apply method breaks in strange ways
     // when using CPOWs.
+    if (callable(meth))
+        return Function.apply.call(meth, obj, args);
     return Function.apply.call(obj[meth], obj, args);
 }
 

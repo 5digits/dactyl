@@ -225,7 +225,7 @@ var Hive = Class("Hive", {
             name = null;
         }
 
-        if (filter && filter.contains(","))
+        if (filter && filter.includes(","))
             return filter.split(",").reduce(
                 (n, f) => n + this.removeSheet(name, f, index), 0);
 

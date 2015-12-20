@@ -621,7 +621,8 @@ var Events = Module("events", {
 
             let win = (elem.ownerDocument || elem).defaultView || elem;
 
-            if (!(services.focus.getLastFocusMethod(win) & 0x3000)
+            if (!Cu.isCrossProcessWrapper(win) &&
+                !(services.focus.getLastFocusMethod(win) & 0x3000)
                 && events.isContentNode(elem)
                 && !buffer.focusAllowed(elem)
                 && isinstance(elem, [Ci.nsIDOMHTMLInputElement,
@@ -808,7 +809,7 @@ var Events = Module("events", {
             // Prevents certain sites from transferring focus to an input box
             // before we get a chance to process our key bindings on the
             // "keypress" event.
-            if (!pass)
+            if (!pass && Cu.getClassName(event, true) !== "Proxy")
                 event.stopPropagation();
         },
         keydown: function onKeyDown(event) {

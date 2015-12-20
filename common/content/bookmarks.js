@@ -696,7 +696,7 @@ var Bookmarks = Module("bookmarks", {
                          keyword, true);
 
             let item = keywords[keyword];
-            if (item && item.url.contains("%s"))
+            if (item && item.url.includes("%s"))
                 context.fork("keyword/" + keyword, keyword.length + space.length, null, context => {
                     context.format = history.format;
                     context.title = [/*L*/keyword + " Quick Search"];
@@ -709,7 +709,7 @@ var Bookmarks = Module("bookmarks", {
                         return history.get({ uri: util.newURI(begin), uriIsPrefix: true }).map(function (item) {
                             let rest = item.url.length - end.length;
                             let query = item.url.substring(begin.length, rest);
-                            if (item.url.substr(rest) == end && query.contains("&"))
+                            if (item.url.substr(rest) == end && query.includes("&"))
                                 try {
                                     item.url = decodeURIComponent(query.replace(/[&#].*/, "").replace(/\+/g, " "));
                                     if (!seen.add(item.url))
@@ -765,7 +765,7 @@ var Bookmarks = Module("bookmarks", {
                     return;
 
                 let words = ctxt.filter.toLowerCase().split(/\s+/g);
-                ctxt.completions = ctxt.completions.filter(i => words.every(w => i.toLowerCase().contains(w)));
+                ctxt.completions = ctxt.completions.filter(i => words.every(w => i.toLowerCase().includes(w)));
 
                 ctxt.hasItems = ctxt.completions.length;
                 ctxt.incomplete = true;

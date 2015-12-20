@@ -329,9 +329,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
      * @param {Window|Document|Node} thing The thing for which to return
      *      a load context.
      */
-    getContext: function getContext(thing) {
+    getContext: function getContext(thing, global = null) {
         if (!Ci.nsILoadContext)
             return null;
+
+        if (Cu.isCrossProcessWrapper(thing) && global)
+            thing = global;
 
         if (thing instanceof Ci.nsIDOMNode && thing.ownerDocument)
             thing = thing.ownerDocument;
@@ -634,7 +637,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     completion: function initCompletion(dactyl, modules, window) {
         modules.completion.visibleHosts = function completeHosts(context) {
             let res = util.visibleHosts(window.content);
-            if (context.filter && !res.some(host => host.contains(context.filter)))
+            if (context.filter && !res.some(host => host.includes(context.filter)))
                 res.push(context.filter);
 
             context.title = ["Domain"];

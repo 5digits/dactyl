@@ -784,7 +784,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             context.keys = { text: identity, description: editor.bound.getRegister };
 
             context.match = function (r) {
-                return !this.filter || this.filter.contains(r);
+                return !this.filter || this.filter.includes(r);
             };
 
             context.fork("clipboard", 0, this, ctxt => {

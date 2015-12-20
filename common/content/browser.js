@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -106,7 +106,10 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                 else {
                     // code which should happen for all (also background) newly loaded tabs goes here:
                     if (doc != config.browser.contentDocument)
-                        dactyl.echomsg({ domains: [util.getHost(doc.location)], message: _("buffer.backgroundLoaded", (doc.title || doc.location.href)) }, 3);
+                        dactyl.echomsg({
+                            domains: [util.getHost(doc.location)],
+                            message: _("buffer.backgroundLoaded", (doc.title || doc.location.href))
+                        }, 3);
 
                     this._triggerLoadAutocmd("PageLoad", doc);
                 }
@@ -161,10 +164,11 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             dactyl.applyTriggerObserver("browser.locationChange", arguments);
 
             let win = webProgress.DOMWindow;
-            if (win && uri) {
+            if (win && uri && !Cu.isCrossProcessWrapper(win)) {
                 Buffer(win).updateZoom();
 
                 let oldURI = overlay.getData(win.document)["uri"];
+
                 if (overlay.getData(win.document)["load-idx"] === webProgress.loadedTransIndex
                     || !oldURI || uri.spec.replace(/#.*/, "") !== oldURI.replace(/#.*/, ""))
                     for (let frame of buffer.allFrames(win))
@@ -204,7 +208,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         onProgressChange: function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {},
 
         onLocationChange: util.wrapCallback(function onLocationChange(browser) {
-            Buffer(browser.contentWindow).locationChanged();
+            Buffer(null, browser).locationChanged();
         })
     }
 }, {
