@@ -832,8 +832,7 @@ var Option = Class("Option", {
         if (isArray(acceptable))
             acceptable = new RealSet(acceptable.map(v => v[0]));
         else
-            acceptable = new RealSet(this.parseKey(k)
-                                     for (k of Object.keys(acceptable)));
+            acceptable = new RealSet(Object.keys(acceptable).map(k => this.parseKey(k)));
 
         if (this.type === "regexpmap" || this.type === "sitemap")
             return Array.concat(vals).every(re => acceptable.has(re.result));
@@ -1483,15 +1482,16 @@ var Options = Module("options", {
                 modifiers: {},
                 extra: {
                     serialize: function () {
-                        return [
-                            {
+                        return Array.from(modules.options)
+                                    .filter(opt => (!opt.getter &&
+                                                    !opt.isDefault &&
+                                                    (opt.scope & Option.SCOPE_GLOBAL)))
+                                    .map(
+                            opt => ({
                                 command: this.name,
                                 literalArg: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
                                                                    : opt.name + "=" + opt.stringValue]
-                            }
-                            for (opt of modules.options)
-                            if (!opt.getter && !opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
-                        ];
+                            }));
                     }
                 }
             }
@@ -1661,7 +1661,8 @@ var Options = Module("options", {
     },
     javascript: function initJavascript(dactyl, modules, window) {
         const { options, JavaScript } = modules;
-        JavaScript.setCompleter(Options.prototype.get, [() => ([o.name, o.description] for (o of options))]);
+        JavaScript.setCompleter(Options.prototype.get, [() => Array.from(options,
+                                                                         opt => [opt.name, opt.description])]);
     },
     sanitizer: function initSanitizer(dactyl, modules, window) {
         const { sanitizer } = modules;

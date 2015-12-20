@@ -449,13 +449,17 @@ var Bookmarks = Module("bookmarks", {
             description: "Bookmark page title or description",
             completer: function title(context, args) {
                 let frames = buffer.allFrames();
+
                 if (!args.bang)
-                    return [
-                        [win.document.title, frames.length == 1 ? /*L*/"Current Location" : /*L*/"Frame: " + win.location.href]
-                        for (win of frames)];
+                    return frames.map(win => [win.document.title,
+                                              frames.length == 1 ? /*L*/"Current Location"
+                                                                 : /*L*/"Frame: " + win.location.href]);
+
                 context.keys.text = "title";
                 context.keys.description = "url";
-                return bookmarks.get(args.join(" "), args["-tags"], null, { keyword: args["-keyword"], title: context.filter });
+                return bookmarks.get(args.join(" "), args["-tags"], null,
+                                     { keyword: args["-keyword"],
+                                       title: context.filter });
             },
             type: CommandOption.STRING
         };
@@ -514,12 +518,14 @@ var Bookmarks = Module("bookmarks", {
                     if (!args.bang) {
                         context.title = ["Page URL"];
                         let frames = buffer.allFrames();
-                        context.completions = [
-                            [win.document.documentURI, frames.length == 1 ? /*L*/"Current Location" : /*L*/"Frame: " + win.document.title]
-                            for (win of frames)];
+                        context.completions = frames.map(win => [win.document.documentURI,
+                                                                 frames.length == 1 ? /*L*/"Current Location"
+                                                                                    : /*L*/"Frame: " + win.document.title]);
                     }
                     else
-                        completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
+                        completion.bookmark(context, args["-tags"],
+                                            { keyword: args["-keyword"],
+                                              title: args["-title"] });
                 },
                 options: [keyword, title, tags, post,
                     {

@@ -660,8 +660,8 @@ var JavaScript = Module("javascript", {
             "encodeURI", "encodeURIComponent", "escape", "eval", "isFinite", "isNaN",
             "isXMLName", "parseFloat", "parseInt", "undefined", "unescape", "uneval",
 
-            ...interfaces.filter(key => /^nsIDOM/.test(key)).map(key => k.substr(6)),
-            ...interfaces.filter(key => /^nsI/.test(key)).map(key => k.substr(3)),
+            ...interfaces.filter(key => /^nsIDOM/.test(key)).map(key => key.substr(6)),
+            ...interfaces.filter(key => /^nsI/.test(key)).map(key => key.substr(3)),
             ...this.magicalNames,
         ]);
 

@@ -306,9 +306,12 @@ var Events = Module("events", {
      * @param {string} filter A regular expression filter string. A null
      *     filter selects all macros.
      */
-    getMacros: function (filter) {
+    getMacros: function (filter = null) {
         let re = RegExp(filter || "");
-        return ([k, m.text] for ([k, m] of editor.registers) if (re.test(k)));
+
+        return Array.from(editor.registers,
+                          ([key, macro]) => [key, macro.text])
+                    .filter(([key]) => re.test(key));
     },
 
     /**
@@ -1026,7 +1029,7 @@ var Events = Module("events", {
     completion: function initCompletion() {
         completion.macro = function macro(context) {
             context.title = ["Macro", "Keys"];
-            context.completions = [item for (item of events.getMacros())];
+            context.completions = Array.from(events.getMacros());
         };
     },
     mappings: function initMappings() {

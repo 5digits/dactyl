@@ -671,9 +671,13 @@ var DOM = Class("DOM", {
                              ["span", { highlight: "HtmlTagEnd" }, "<", namespaced(elem), ">"]]
                     ]);
                 else {
-                    let tag = "<" + [namespaced(elem)].concat(
-                        [namespaced(a) + '="' + String.replace(a.value, /["<]/, DOM.escapeHTML) + '"'
-                     for (a of elem.attributes)]).join(" ");
+                    let escape = val => val.replace(/["<]/g, DOM.escapeHTML);
+
+                    let tag = "<" + [
+                        namespaced(elem),
+                        ...Array.from(elem.attributes,
+                                      attr => `${namespaced(attr)}="${escape(attr.value)}"`),
+                    ].join(" ");
 
                     res.push(tag + (!hasChildren ? "/>" : ">...</" + namespaced(elem) + ">"));
                 }
@@ -1076,10 +1080,10 @@ var DOM = Class("DOM", {
 
             let params = DEFAULTS[t || "HTML"];
             let args = Object.keys(params);
+
             update(params, this.constructor.defaults[type],
-                   iter.toObject([k, opts[k]]
-                                 for (k in opts)
-                                 if (k in params)));
+                   Ary.toObject(Object.entries(opts)
+                                      .filter(([k]) => k in params)));
 
             apply(evt, "init" + t + "Event", args.map(arg => params[arg]));
             return evt;
@@ -1672,7 +1676,7 @@ var DOM = Class("DOM", {
             }
 
             // FIXME: Surely we can do better.
-            for (var key in attr) {
+            for (let key in attr) {
                 if (/^xmlns(?:$|:)/.test(key)) {
                     if (_namespaces === namespaces)
                         namespaces = Object.create(namespaces);
@@ -1685,7 +1689,7 @@ var DOM = Class("DOM", {
             var elem = doc.createElementNS(vals[0] || namespaces[""],
                                            name);
 
-            for (var key in attr)
+            for (let key in attr)
                 if (!/^xmlns(?:$|:)/.test(key)) {
                     var val = attr[key];
                     if (nodes && key == "key")
@@ -1699,6 +1703,7 @@ var DOM = Class("DOM", {
                     else
                         elem.setAttributeNS(vals[0] || "", key, val);
                 }
+
             args.forEach(function (e) {
                 elem.appendChild(tag(e, namespaces));
             });
@@ -1825,7 +1830,7 @@ var DOM = Class("DOM", {
 
             // FIXME: Surely we can do better.
             let skipAttr = {};
-            for (var key in attr) {
+            for (let key in attr) {
                 if (/^xmlns(?:$|:)/.test(key)) {
                     if (_namespaces === namespaces)
                         namespaces = update({}, namespaces);

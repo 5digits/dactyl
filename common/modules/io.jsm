@@ -221,9 +221,8 @@ var IO = Module("io", {
 
     charsets: Class.Memoize(function () {
         const BASE = "@mozilla.org/intl/unicode/decoder;1?charset=";
-        return [k.slice(BASE.length)
-                for (k of Object.keys(Cc))
-                if (k.startsWith(BASE))];
+        return Object.keys(Cc).filter(k.startsWith(BASE))
+                     .map(k => k.slice(BASE.length));
     }),
 
     charsetBundle: Class.Memoize(
@@ -930,13 +929,14 @@ unlet s:cpo_save
         commands.add(["scrip[tnames]"],
             "List all sourced script names",
             function () {
-                let names = [k for (k of io._scriptNames)];
+                let names = Array.from(io._scriptNames);
                 if (!names.length)
                     dactyl.echomsg(_("command.scriptnames.none"));
                 else
                     modules.commandline.commandOutput(
                         template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
-                            ([i + 1, file] for ([i, file] of iter(names)))));
+                                         Array.from(names.entries(),
+                                                    ([i, file]) => [i + 1, file])));
 
             },
             { argCount: "0" });

@@ -775,19 +775,34 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             let loadplugins = options.get("loadplugins");
             if (args)
-                loadplugins = { __proto__: loadplugins, value: args.map(Option.parseRegexp) };
+                loadplugins = { __proto__: loadplugins,
+                                value: args.map(Option.parseRegexp) };
 
-            dir.readDirectory(true).forEach(function (file) {
-                if (file.leafName[0] == ".")
+            let shouldSource = file => {
+                if (!loadplugins.getKey(file.path))
+                    return false;
+
+                if (force)
+                    return true;
+
+                if (file.path in dactyl.pluginFiles)
+                    return dactyl.pluginFiles[file.path] < file.lastModifiedTime;
+
+                return true;
+            };
+
+            dir.readDirectory(true).forEach(file => {
+                if (file.leafName.startsWith("."))
                     ;
-                else if (file.isFile() && loadplugins.getKey(file.path)
-                        && !(!force && file.path in dactyl.pluginFiles && dactyl.pluginFiles[file.path] >= file.lastModifiedTime)) {
-                    try {
-                        io.source(file.path);
-                        dactyl.pluginFiles[file.path] = file.lastModifiedTime;
-                    }
-                    catch (e) {
-                        dactyl.reportError(e);
+                else if (file.isFile()) {
+                    if (shouldSource(file)) {
+                        try {
+                            io.source(file.path);
+                            dactyl.pluginFiles[file.path] = file.lastModifiedTime;
+                        }
+                        catch (e) {
+                            dactyl.reportError(e);
+                        }
                     }
                 }
                 else if (file.isDirectory())
@@ -804,10 +819,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.echomsg(
             _("plugin.searchingForIn",
-                JSON.stringify("plugins/**/*.{js," + config.fileExtension + "}"),
-                JSON.stringify([dir.path.replace(/.plugins$/, "")
-                               for (dir of dirs)]
-                                   .join(","))),
+              JSON.stringify("plugins/**/*.{js," + config.fileExtension + "}"),
+              JSON.stringify(dirs.map(dir => dir.path.replace(/.plugins$/, ""))
+                                 .join(","))),
             2);
 
         dirs.forEach(function (dir) {
@@ -1226,7 +1240,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @property {[Window]} Returns an array of all the host application's
      *     open windows.
      */
-    get windows() { return [w for (w of overlay.windows)]; }
+    get windows() { return Array.from(overlay.windows); }
 
 }, {
     isToolbarHidden: function isToolbarHidden(toolbar) {
@@ -1399,7 +1413,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     N: ["Tab number over icon", highlight.selector("TabIconNumber")]
                 },
                 setter: function (opts) {
-                    let classes = [v[1] for ([k, v] of iter(this.opts)) if (opts.indexOf(k) < 0)];
+                    let classes = Object.entries(this.opts)
+                                        .filter(([name]) => !opts.includes(name))
+                                        .map(([name, data]) => data[1]);
 
                     styles.system.add("taboptions", "chrome://*",
                                       classes.length ? classes.join(",") + "{ display: none; }" : "");
@@ -1876,7 +1892,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         completion.dialog = function dialog(context) {
             context.title = ["Dialog"];
             context.filters.push(({ item }) => !item[2] || item[2]());
-            context.completions = [[k, v[0], v[2]] for ([k, v] of iter(config.dialogs))];
+
+            context.completions = (
+                Object.entries(config.dialogs)
+                      .map(([key, val]) => [k, v[0], v[2]]));
         };
 
         completion.menuItem = function menuItem(context) {

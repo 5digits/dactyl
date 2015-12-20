@@ -818,8 +818,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
 
             if (isObject(params.params)) {
-                let data = [encodeURIComponent(k) + "=" + encodeURIComponent(v)
-                            for ([k, v] of iter(params.params))];
+                let encode = ([key, val]) => `${encodeURIComponent(key)}=${encodeURIComponent(val)}`;
+                let data = Object.entries(params).map(encode);
+
                 let uri = util.newURI(url);
                 uri.query += (uri.query ? "&" : "") + data.join("&");
 
@@ -1307,8 +1308,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {RegExp} A custom regexp object.
      */
     regexp: update(function (expr, flags, tokens) {
-        flags = flags || [k for ([k, v] of iter({ g: "global", i: "ignorecase", m: "multiline", y: "sticky" }))
-                          if (expr[v])].join("");
+        if (!flags)
+            flags = Object.entries({ g: "global",
+                                     i: "ignorecase",
+                                     m: "multiline",
+                                     y: "sticky" })
+                          .filter(([short, full]) => expr[full])
+                          .map(([short]) => short)
+                          .join("");
 
         if (isinstance(expr, ["RegExp"]))
             expr = expr.source;
@@ -1472,7 +1479,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             this.errors.push([new Date, obj + "\n" + obj.stack]);
             this.errors = this.errors.slice(-this.maxErrors);
             this.errors.toString = function () {
-                return [k + "\n" + v for ([k, v] of this)].join("\n\n");
+                return this.map(([name, stack]) => `${name}\n${stack}\n`)
+                           .join("\n");
             };
 
             this.dump(String(error));
@@ -1510,9 +1518,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
         catch (e) {}
 
-        let ary = host.split(".");
-        ary = [ary.slice(i).join(".") for (i of util.range(ary.length, 0, -1))];
-        return ary.filter(h => h.length >= base.length);
+        let parts = host.split(".");
+
+        return Array.from(util.range(parts.length, 0, -1),
+                          i => parts.slice(i).join("."))
+                    .filter(host => host.length >= base.length);
     },
 
     /**

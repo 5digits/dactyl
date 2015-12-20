@@ -862,7 +862,8 @@ var Tabs = Module("tabs", {
                     let arg = args[0];
 
                     if (tabs.indexFromSpec(arg) == -1) {
-                        let list = [tab for (tab of tabs.match(args[0], args.count, true))];
+                        let list = Array.from(tabs.match(args[0], args.count, true));
+
                         dactyl.assert(list.length, _("error.invalidArgument", arg));
                         dactyl.assert(list.length == 1, _("buffer.multipleMatching", arg));
                         arg = list[0];
@@ -1296,7 +1297,11 @@ var Tabs = Module("tabs", {
             ];
             options.add(["activate", "act"],
                 "Define when newly created tabs are automatically activated",
-                "stringlist", [g[0] for (g of activateGroups.slice(1)) if (!g[2] || !prefs.get("browser.tabs." + g[2]))].join(","),
+                "stringlist", activateGroups.slice(1)
+                                            .filter(g => (!g[2] ||
+                                                          !prefs.get("browser.tabs." + g[2])))
+                                            .map(g => g[0])
+                                            .join(","),
                 {
                     values: activateGroups,
                     has: Option.has.toggleAll,

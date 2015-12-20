@@ -18,10 +18,10 @@ lazyRequire("resource://gre/modules/DownloadUtils.jsm", ["DownloadUtils"]);
 var MAX_LOAD_TIME = 10 * 1000;
 
 let prefix = "DOWNLOAD_";
-var states = iter([v, k.slice(prefix.length).toLowerCase()]
-                  for ([k, v] of iter(Ci.nsIDownloadManager))
-                  if (k.startsWith(prefix)))
-                .toObject();
+var states = Ary.toObject(
+    Object.entries(Ci.nsIDownloadManager).filter(([key]) => key.startsWith(prefix))
+          .map(([key, val]) => [val,
+                                key.slice(prefix.length).toLowerCase()]));
 
 var Download = Class("Download", {
     init: function init(download, list) {

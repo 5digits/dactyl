@@ -1110,10 +1110,10 @@ var Buffer = Module("Buffer", {
         let distance = reverse ? rect => -rect.top
                                : rect => rect.top;
 
-        let elems = [[e, distance(e.getBoundingClientRect())]
-                     for (e of path.matcher(this.focusedFrame.document))]
-                        .filter(e => e[1] > FUDGE)
-                        .sort((a, b) => a[1] - b[1]);
+        let elems = Array.from(path.matcher(this.focusedFrame.document),
+                               elem => [e, distance(e.getBoundingClientRect())])
+                         .filter(([elem, dist]) => dist > FUDGE)
+                         .sort((a, b) => a[1] - b[1]);
 
         if (offScreen && !reverse)
             elems = elems.filter(function (e) {
@@ -2156,13 +2156,15 @@ var Buffer = Module("Buffer", {
             context.title = ["Stylesheet", "Location"];
 
             // unify split style sheets
-            let styles = iter([s.title, []] for (s of buffer.alternateStyleSheets)).toObject();
+            let styles = Ary.toObject(buffer.alternateStyleSheets
+                                            .map(sheet => [sheet.title, []]));
 
             buffer.alternateStyleSheets.forEach(function (style) {
                 styles[style.title].push(style.href || _("style.inline"));
             });
 
-            context.completions = [[title, href.join(", ")] for ([title, href] of iter(styles))];
+            context.completions = Object.entries(styles)
+                                        .map(([title, href]) => [title, href.join(", ")]);
         };
 
         completion.savePage = function savePage(context, node) {

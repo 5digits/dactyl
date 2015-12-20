@@ -550,7 +550,7 @@ var File = Class("File", {
         if (!this.isDirectory())
             throw Error(_("io.eNotDir"));
 
-        let array = [e for (e of this.iterDirectory())];
+        let array = Array.from(this.iterDirectory());
         if (sort)
             array.sort((a, b) => (b.isDirectory() - a.isDirectory() ||
                                   String.localeCompare(a.path, b.path)));

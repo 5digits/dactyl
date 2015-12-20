@@ -350,11 +350,20 @@ var History = Module("history", {
             };
 
             // FIXME: Schema-specific
-            context.generate = () => [
-                Array.slice(row.rev_host).reverse().join("").slice(1)
-                for (row of iter(services.history.DBConnection
-                                         .createStatement("SELECT DISTINCT rev_host FROM moz_places WHERE rev_host IS NOT NULL;")))
-            ].slice(2);
+            context.generate = () => {
+                // FIXME: Synchronous.
+                let statement = services.history.DBConnection
+                                        .createStatement(`SELECT DISTINCT rev_host FROM moz_places
+                                                          WHERE rev_host IS NOT NULL;`);
+
+                let result = Array.from(iter(statement),
+                                        ({ rev_host }) => Array.from(rev_host)
+                                                               .reverse().join("")
+                                                               .slice(1));
+
+                statement.finalize();
+                return result.slice(2); // Why slice 2?;
+            };
         };
 
         completion.history = function _history(context, maxItems, sort) {

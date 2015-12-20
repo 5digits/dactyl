@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 // Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 //
 // This work is licensed for reuse under an MIT license. Details are
@@ -1399,9 +1399,11 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 },
                 validator: function (value) {
                     this.format({}, value);
+
                     let allowed = new RealSet(["column", "file", "line"]);
-                    return [k for (k of util.compileMacro(value).seen)]
-                                .every(k => allowed.has(k));
+                    return util.compileMacro(value)
+                               .seen.difference(allowed)
+                               .size == 0;
                 }
             });
 

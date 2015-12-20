@@ -1153,13 +1153,13 @@ var Aardvark = Class("Aardvark", {
 // valid selectable element
     findValidElement: function findValidElement(elem) {
         for (; elem; elem = elem.parentNode) {
-            if (Set.has(this.alwaysValidElements, elem.localName))
+            if (hasOwnProperty(this.alwaysValidElements, elem.localName))
                 break;
 
             let { display } = DOM(elem).style;
-            if (Set.has(this.validIfBlockElements, elem.localName) && display == "block")
+            if (hasOwnProperty(this.validIfBlockElements, elem.localName) && display == "block")
                 break;
-            if (Set.has(this.validIfNotInlineElements, elem.localName) && display != "inline")
+            if (hasOwnProperty(this.validIfNotInlineElements, elem.localName) && display != "inline")
                 break;
         }
         return elem;

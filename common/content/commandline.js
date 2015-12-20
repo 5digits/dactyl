@@ -525,7 +525,8 @@ var CommandLine = Module("commandline", {
             if (storage.exists("history-" + name)) {
                 let ary = storage.newArray("history-" + name, { store: true, privateData: true });
 
-                this._store.set(name, [v for ([k, v] of ary)]);
+                this._store.set(name, Array.from(ary, ([key, val]) => val));
+
                 ary.delete();
                 this._store.changed();
             }

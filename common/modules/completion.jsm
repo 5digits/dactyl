@@ -354,9 +354,11 @@ var CompletionContext = Class("CompletionContext", {
     set completions(items) {
         if (items && isArray(items.array))
             items = items.array;
+
         // Accept a generator
         if (!isArray(items))
-            items = [x for (x of iter(items || []))];
+            items = Array.from(items || []);
+
         if (this._completions !== items) {
             delete this.cache.filtered;
             delete this.cache.filter;
@@ -795,7 +797,7 @@ var CompletionContext = Class("CompletionContext", {
             let res = completer.apply(self || this, [context].concat(args));
 
             if (res && !isArray(res) && !isArray(res.__proto__))
-                res = [k for (k of res)];
+                res = Array.from(res);
 
             if (res)
                 context.completions = res;
@@ -1073,9 +1075,9 @@ var Completion = Module("completion", {
             context.fork("about", 6, this, function fork_(context) {
                 context.title = ["about:"];
                 context.generate = function generate_() {
-                    return [[k.substr(services.ABOUT.length), ""]
-                            for (k in Cc)
-                            if (k.startsWith(services.ABOUT))];
+                    return Object.keys(Cc).filter(k => k.startsWith(services.ABOUT))
+                                          .map(k => [k.substr(services.ABOUT.length),
+                                                     ""]);
                 };
             });
 
@@ -1151,10 +1153,11 @@ var Completion = Module("completion", {
                         running[provider] = null;
 
                     context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
-                    context.completions = [
-                        { url: result.getValueAt(i), title: result.getCommentAt(i), icon: result.getImageAt(i) }
-                        for (i of util.range(0, result.matchCount))
-                    ];
+                    context.completions = Array.from(
+                        util.range(0, result.matchCount),
+                        i => ({ url: result.getValueAt(i),
+                                title: result.getCommentAt(i),
+                                icon: result.getImageAt(i) }));
                 }),
                 get onUpdateSearchResult() { return this.onSearchResult; }
             });
@@ -1255,7 +1258,11 @@ var Completion = Module("completion", {
                 completer: function (context) {
                     let PREFIX = "/ex/contexts";
                     context.fork("ex", 0, completion, "ex");
-                    completion.contextList = [[k.substr(PREFIX.length), v.title[0]] for ([k, v] of iter(context.contexts)) if (k.substr(0, PREFIX.length) == PREFIX)];
+
+                    completion.contextList = (
+                        Object.entries(context.contexts)
+                              .filter(([k]) => k.substr(0, PREFIX.length) == PREFIX)
+                              .map(([k, v]) => [k.substr(PREFIX.length), v.title[0]]));
                 },
                 literal: 0
             });

@@ -100,7 +100,8 @@ var QuickMarks = Module("quickmarks", {
      * @param {string} filter The list of quickmarks to display, e.g. "a-c i O-X".
      */
     list: function list(filter) {
-        let marks = [k for ([k, v] of this._qmarks)];
+        let marks = Array.from(this._qmarks, ([k]) => k);
+
         let lowercaseMarks = marks.filter(bind("test", /[a-z]/)).sort();
         let uppercaseMarks = marks.filter(bind("test", /[A-Z]/)).sort();
         let numberMarks    = marks.filter(bind("test", /[0-9]/)).sort();
@@ -115,8 +116,10 @@ var QuickMarks = Module("quickmarks", {
             dactyl.assert(marks.length >= 0, _("quickmark.noMatching", JSON.stringify(filter)));
         }
 
-        commandline.commandOutput(template.tabular(["QuickMark", "URL"], [],
-            ([mark, quickmarks._qmarks.get(mark)] for (mark of marks))));
+        commandline.commandOutput(template.tabular(
+            ["QuickMark", "URL"], [],
+            Array.from(marks,
+                       mark => [mark, quickmarks._qmarks.get(mark)])));
     }
 }, {
 }, {

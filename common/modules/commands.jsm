@@ -798,7 +798,7 @@ var Commands = Module("commands", {
                         let lines = string.split(/\r\n|[\r\n]/);
                         let startLine = context.line;
 
-                        for (var i = 0; i < lines.length && !context.finished; i++) {
+                        for (let i = 0; i < lines.length && !context.finished; i++) {
                             // Deal with editors from Silly OSs.
                             let line = lines[i].replace(/\r$/, "");
 
@@ -834,10 +834,13 @@ var Commands = Module("commands", {
             list: function list(filter, hives) {
                 const { commandline, completion } = this.modules;
                 function completerToString(completer) {
-                    if (completer)
-                        return [k
-                                for ([k, v] of iter(config.completers))
-                                if (completer == completion.bound[v])][0] || "custom";
+                    if (completer) {
+                        for (let [key, val] of Object.entries(config.completers))
+                             if (completion.bound(val) === completer)
+                                 return key;
+
+                         return "custom";
+                    }
 
                     return "";
                 }
@@ -1567,6 +1570,7 @@ var Commands = Module("commands", {
             for (var [command, args] of commands.parseCommands(context.filter, context))
                 if (args.trailing)
                     context.advance(args.commandString.length + 1);
+
             if (!args)
                 args = { commandString: context.filter };
 
@@ -1749,7 +1753,8 @@ var Commands = Module("commands", {
                         names: ["-complete", "-C"],
                         description: "The argument completion function",
                         completer: function (context) {
-                            return [[k, ""] for ([k, v] of iter(config.completers))];
+                            return Object.entries(config.completers)
+                                         .map(([k, v]) => [k, ""]);
                         },
                         type: CommandOption.STRING,
                         validator: function (arg) {
@@ -1906,12 +1911,11 @@ var Commands = Module("commands", {
         setCompleter([CommandHive.prototype.get,
                       CommandHive.prototype.remove],
                      [function () {
-                         return [[c.names, c.description] for (c of this)];
+                         return Array.from(this, cmd => [c.names, c.description]);
                      }]);
         setCompleter([Commands.prototype.get],
                      [function () {
-                         return [[c.names, c.description]
-                                 for (c of this.iterator())];
+                         return Array.from(this.iterator(), cmd => [c.names, c.description]);
                      }]);
     },
     mappings: function initMappings(dactyl, modules, window) {

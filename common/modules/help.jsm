@@ -301,21 +301,21 @@ var Help = Module("Help", {
 
                 dactyl.initHelp();
                 if (FILE.isDirectory()) {
-                    var addDataEntry = function addDataEntry(file, data) {
+                    var addDataEntry = (file, data) => {
                         FILE.child(file).write(data);
                     };
-                    var addURIEntry  = function addURIEntry(file, uri) {
+                    var addURIEntry = (file, uri) => {
                         addDataEntry(file, util.httpGet(uri).responseText);
                     };
                 }
                 else {
                     var zip = services.ZipWriter(FILE.file, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
 
-                    addURIEntry = function addURIEntry(file, uri) {
+                    addURIEntry = (file, uri) => {
                         zip.addEntryChannel(PATH + file, TIME, 9,
                             services.io.newChannel(uri, null, null), false);
                     };
-                    addDataEntry = function addDataEntry(file, data) {// Unideal to an extreme.
+                    addDataEntry = (file, data) => {// Unideal to an extreme.
                         addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
                     };
                 }
@@ -396,12 +396,14 @@ var Help = Module("Help", {
                     addDataEntry(file + ".xhtml", data.join(""));
                 }
 
-                data = [h for (h of highlight)
-                        if (styles.has(h.class) || /^Help/.test(h.class))]
-                    .map(h => h.selector
-                            .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
-                            .replace(/html\|/g, "") + "\t" + "{" + h.cssText + "}")
-                    .join("\n");
+                data = Array.from(highlight)
+                            .filter(h => styles.has(h.class) || /^Help/.test(h.class))
+                            .map(h => (h.selector
+                                        .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
+                                        .replace(/html\|/g, "") +
+                                      "\t" + "{" + h.cssText + "}"))
+                            .join("\n");
+
                 addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
 
                 addDataEntry("tag-map.json", JSON.stringify(help.tags));

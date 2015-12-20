@@ -31,6 +31,9 @@ var Controller = Class("Controller", XPCOM(Ci.nsIController), {
     supportsCommand: function (cmd) { return cmd === this.command; },
 });
 
+var winMap = new WeakMap();
+var docMap = new WeakMap();
+
 var HttpObserver = Class("HttpObserver",
     XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference, Ci.nsIWebProgressListener]), {
 
@@ -58,7 +61,11 @@ var HttpObserver = Class("HttpObserver",
     getHeaders: function getHeaders(win, request) {
         request.QueryInterface(Ci.nsIChannel);
 
-        let headers = overlay.getData(win.document, "headers", Object);
+        let doc = win.document;
+
+        let data = docMap.get(doc);
+        let headers = data && data.headers || {};
+
         if ("response" in headers)
             return;
 
@@ -81,10 +88,9 @@ var HttpObserver = Class("HttpObserver",
             }
             catch (e) {}
 
-            let controller = this.getController(win);
-            if (controller)
-                win.controllers.removeController(controller);
-            win.controllers.appendController(Controller("dactyl-headers", { headers: headers, url: win.document.documentURI }));
+            let data = { headers: headers, url: doc.documentURI };
+            winMap.set(win, data);
+            docMap.set(doc, data);
         }
     },
 
@@ -118,27 +124,19 @@ var HttpObserver = Class("HttpObserver",
             } catch (e) {}
         }
     }),
-
-    getController: function getController(win) {
-        for (let i of util.range(0, win.controllers.getControllerCount())) {
-            let controller = win.controllers.getControllerAt(i);
-            if (controller.supportsCommand("dactyl-headers") && controller.wrappedJSObject instanceof Controller)
-                return controller.wrappedJSObject;
-        }
-    }
 });
 
 let observer = HttpObserver();
-let onUnload = observer.closure.cleanup;
+let onUnload = observer.bound.cleanup;
 
 function* iterHeaders(buffer, type) {
     let win = buffer.focusedFrame;
-    let store = win.document[overlay.id];
+    let store = docMap.get(win.document);
     if (!store || !store.headers)
-        store = observer.getController(win);
+        store = winMap.get(win);
 
     if (store)
-        for (let [k, v] of values(store.headers[type] || []))
+        for (let [k, v] of (store.headers[type] || []))
             yield [k, v];
 }
 

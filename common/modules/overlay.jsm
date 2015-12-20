@@ -296,10 +296,8 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         function insert(key, fn) {
             if (obj[key]) {
                 let iterator = iter(obj[key]);
-                if (isArray(obj[key])) {
-                    iterator = ([elem[1].id, elem.slice(2), elem[1]]
-                                for (elem of obj[key]));
-                }
+                if (isArray(obj[key]))
+                    iterator = obj[key].map(elem => [elem[1].id, elem.slice(2), elem[1]]);
 
                 for (let [elem, xml, attrs] of iterator) {
                     if (elem = doc.getElementById(String(elem))) {
@@ -479,7 +477,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         return this.activeWindow && this.activeWindow.dactyl.modules;
     },
 
-    get modules() { return [w.dactyl.modules for (w of this.windows)]; },
+    get modules() { return Array.from(this.windows, win => win.dactyl.modules) },
 
     /**
      * The most recently active dactyl window.

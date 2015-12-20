@@ -746,12 +746,15 @@ var Mappings = Module("mappings", {
             return null;
         }
         function uniqueModes(modes) {
-            let chars = [k for ([k, v] of iter(modules.modes.modeChars))
-                         if (v.every(mode => modes.indexOf(mode) >= 0))];
+            let chars = (
+                Object.entries(modules.modes.modeChars)
+                      .filter(([char, modes_]) => modes_.every(m => modes.includes(m)))
+                      .map(([char]) => char));
 
-            return Ary.uniq(modes.filter(m => chars.indexOf(m.char) < 0)
-                                 .map(m => m.name.toLowerCase())
-                                 .concat(chars));
+            let names = modes.filter(m => !chars.includes(m.char))
+                             .map(m => m.name.toLowerCase());
+
+            return [...new RealSet([...chars, ...names])];
         }
 
         commands.add(["feedkeys", "fk"],
@@ -773,7 +776,8 @@ var Mappings = Module("mappings", {
         for (let mode of modes.mainModes)
             if (mode.char && !commands.get(mode.char + "map", true))
                 addMapCommands(mode.char,
-                               [m.mask for (m of modes.mainModes) if (m.char == mode.char)],
+                               modes.mainModes.filter(m => m.char == mode.char)
+                                              .map(m => m.mask),
                                mode.displayName);
 
         let args = {
@@ -841,9 +845,11 @@ var Mappings = Module("mappings", {
                         let prefix = /^[bCmn]$/.test(mode.char) ? "" : mode.char + "_";
                         let haveTag = k => hasOwnProp(help.tags, k);
 
-                        return ({ helpTag: prefix + map.name, __proto__: map }
-                                for (map of self.iterate(args, true))
-                                if (map.hive === mappings.builtin || haveTag(prefix + map.name)));
+                        return Array.from(self.iterate(args, true))
+                                    .filter(map => (map.hive === mappings.builtin ||
+                                                    haveTag(prefix + map.name)))
+                                    .map(map => ({ helpTag: prefix + map.name,
+                                                   __proto__: map }));
                     },
                     description: "List all " + mode.displayName + " mode mappings along with their short descriptions",
                     index: mode.char + "-map",
@@ -870,8 +876,8 @@ var Mappings = Module("mappings", {
             [
                 null,
                 function (context, obj, args) {
-                    return [[m.names, m.description]
-                            for (m of this.iterate(args[0]))];
+                    return Array.from(this.iterate(args[0]),
+                                      map => [map.names, map.description]);
                 }
             ]);
     },

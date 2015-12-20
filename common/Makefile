@@ -174,7 +174,18 @@ xpi: $(CHROME)
 
 	$(MAKE_JAR) "$(XPI)" "$(XPI_BASES)" "$(XPI_DIRS)" "$(XPI_TEXTS)" "$(XPI_BINS)" "$(XPI_FILES)"
 	rm -r -- $(CHROME)
-	@echo "Built XPI: $(XPI)"
+
+	@if ! which realpath >/dev/null 2>&1; \
+	then realpah() { 		\
+		local IFS="$$(echo)";	\
+		local x="$$1"; 		\
+		case "$$x" in		\
+		/*) ;;			\
+		*) x=$$(pwd);;		\
+		esac;			\
+	};				\
+	fi;				\
+	echo "Built XPI: $$(realpath -s -- $(XPI))"
 
 #### jar
 

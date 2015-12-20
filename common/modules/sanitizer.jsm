@@ -186,10 +186,10 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         });
 
         function ourItems(persistent) {
-            return [
-                item for (item of values(self.itemMap))
-                if (!item.builtin && (!persistent || item.persistent) && item.name !== "all")
-            ];
+            return Object.values(self.itemMap)
+                         .filter(item => (!item.builtin &&
+                                          (!persistent || item.persistent) &&
+                                          item.name !== "all"));
         }
 
         function prefOverlay(branch, persistent, local) {
@@ -261,13 +261,15 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                             elem.setAttribute("rows", elem.itemCount);
                             win.Sanitizer = Class("Sanitizer", win.Sanitizer, {
                                 sanitize: function sanitize() {
-                                    self.withSavedValues(["sanitizing"], function () {
+                                    self.withSavedValues(["sanitizing"], () => {
                                         self.sanitizing = true;
                                         sanitize.superapply(this, arguments);
-                                        sanitizer.sanitizeItems([item.name for (item of values(self.itemMap))
-                                                                if (item.shouldSanitize(false))],
-                                                                Range.fromArray(this.range || []));
-                                    }, this);
+                                        sanitizer.sanitizeItems(
+                                            Object.values(self.itemMap)
+                                                  .filter(item => item.shouldSanitize(false))
+                                                  .map(item => item.name),
+                                            Range.fromArray(this.range || []));
+                                    });
                                 }
                             });
                         }
@@ -601,13 +603,15 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                             modules.commandline.commandOutput(template.tabular(
                                 ["Host", "Expiry (UTC)", "Path", "Name", "Value"],
                                 ["padding-right: 1em", "padding-right: 1em", "padding-right: 1em", "max-width: 12em; overflow: hidden;", "padding-left: 1ex;"],
-                                ([c.host,
-                                  c.isSession ? ["span", { highlight: "Enabled" }, "session"]
-                                              : (new Date(c.expiry * 1000).toJSON() || "Never").replace(/:\d\d\.000Z/, "").replace("T", " ").replace(/-/g, "/"),
-                                  c.path,
-                                  c.name,
-                                  c.value]
-                                  for (c of Sanitizer.iterCookies(host)))));
+                                Array.from(Sanitizer.iterCookies(host),
+                                           c => [
+                                    c.host,
+                                    c.isSession ? ["span", { highlight: "Enabled" }, "session"]
+                                                : (new Date(c.expiry * 1000).toJSON() || "Never").replace(/:\d\d\.000Z/, "").replace("T", " ").replace(/-/g, "/"),
+                                    c.path,
+                                    c.name,
+                                    c.value,
+                                  ])));
                             return;
                         default:
                             util.assert(cmd in Sanitizer.PERMS, _("error.invalidArgument"));
@@ -680,17 +684,16 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             {
                 initialValue: true,
                 get values() {
-                    return [i
-                            for (i of values(sanitizer.itemMap))
-                            if (i.persistent || i.builtin)];
+                    return Object.values(sanitizer.itemMap)
+                                 .filter(i => i.persistent || i.builtin);
                 },
                 getter: function () {
                     if (!sanitizer.runAtShutdown)
                         return [];
                     else
-                        return [item.name
-                               for (item of values(sanitizer.itemMap))
-                               if (item.shouldSanitize(true))];
+                        return Object.values(sanitizer.itemMap)
+                                     .filter(item => item.shouldSanitize(true))
+                                     .map(item => item.name);
                 },
                 setter: function (value) {
                     if (value.length === 0)

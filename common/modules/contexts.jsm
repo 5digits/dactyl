@@ -215,12 +215,11 @@ var Contexts = Module("contexts", {
                     memoize(contexts.hives, name,
                             () => Object.create(
                                     Object.create(contexts.hiveProto,
-                                                { _hive: { value: name } })));
+                                                  { _hive: { value: name } })));
 
                     memoize(contexts.groupsProto, name, function () {
-                        return [group[name]
-                                for (group of values(this.groups))
-                                if (hasOwnProp(group, name))];
+                        return this.groups.filter(group => hasOwnProp(group, name))
+                                          .map(group => group[name]);
                     });
                 },
 
@@ -728,24 +727,25 @@ var Contexts = Module("contexts", {
                 ],
                 serialGroup: 20,
                 serialize: function () {
-                    return [
-                        {
+                    return contexts.initializedGroups()
+                                   .filter(group => !group.builtin && group.persist)
+                                   .map(group => ({
                             command: this.name,
                             bang: true,
-                            options: iter([v, typeof group[k] == "boolean" ? null : group[k]]
-                                        // FIXME: this map is expressed multiple times
-                                        for ([k, v] of iter({
-                                            args: "-args",
-                                            description: "-description",
-                                            filter: "-locations"
-                                        }))
-                                        if (group[k])).toObject(),
+                            options: Ary.toObject(
+                                Object.entries({
+                                    args: "-args",
+                                    description: "-description",
+                                    filter: "-locations"
+                                })
+                                .filter(([k]) => group[k])
+                                .map(([k, v]) => [v,
+                                                  typeof group[k] == "boolean" ? null : group[k]])
+                            ),
                             arguments: [group.name],
                             ignoreDefaults: true
-                        }
-                        for (group of contexts.initializedGroups())
-                        if (!group.builtin && group.persist)
-                    ].concat([{ command: this.name, arguments: ["user"] }]);
+                        }))
+                        .concat([{ command: this.name, arguments: ["user"] }]);
                 }
             });
 

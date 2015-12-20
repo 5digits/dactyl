@@ -99,8 +99,8 @@ update(Highlight.prototype, {
 
     toString: function () {
         return "Highlight(" + this.class + ")\n\t" +
-               [k + ": " + JSON.stringify(String(v))
-                for ([k, v] of this)].join("\n\t");
+               Array.from(this, ([k, v]) => `${k}: ${JSON.stringify(String(v))}`)
+                    .join("\n\t")
     }
 });
 
@@ -431,18 +431,16 @@ var Highlights = Module("Highlight", {
                     }
                 ],
                 serialize: function () {
-                    return [
-                        {
-                            command: this.name,
-                            arguments: [v.class],
-                            literalArg: v.value,
-                            options: {
-                                "-link": v.extends.length ? v.extends : undefined
-                            }
-                        }
-                        for (v of highlight)
-                        if (v.value != v.defaultValue)
-                    ];
+                    return Array.from(highlight)
+                                .filter(v => v.value != v.defaultValue)
+                                .map(v => ({
+                                    command: this.name,
+                                    arguments: [v.class],
+                                    literalArg: v.value,
+                                    options: {
+                                        "-link": v.extends.length ? v.extends : undefined
+                                    }
+                                }));
                 }
             });
     },
@@ -468,7 +466,8 @@ var Highlights = Module("Highlight", {
 
         completion.highlightGroup = function highlightGroup(context) {
             context.title = ["Highlight Group", "Value"];
-            context.completions = [[v.class, v.value] for (v of highlight)];
+            context.completions = Array.from(highlight,
+                                             v => [v.class, v.value]);
         };
     },
     javascript: function initJavascript(dactyl, modules, window) {

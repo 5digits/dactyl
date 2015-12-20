@@ -196,7 +196,7 @@ var Hive = Class("Hive", {
      */
     find: function find(name, filter, css, index) {
         // Grossly inefficient.
-        let matches = [k for ([k, v] of iter(this.sheets))];
+        let matches = Object.keys(this.sheets);
         if (index)
             matches = String(index).split(",").filter(i => i in this.sheets);
         if (name)

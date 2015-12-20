@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -175,17 +175,23 @@ var Services = Module("Services", {
      * @param {string} init Name of a property or method used to initialize the
      *     class.
      */
-    addClass: function addClass(name, class_, ifaces, init, quiet) {
-        this.services[name] = { class: class_, interfaces: Array.concat(ifaces || []), method: "createInstance", init: init, quiet: quiet };
+    addClass: function addClass(name, class_, ifaces, init = null, quiet = false) {
+        this.services[name] = { class: class_,
+                                interfaces: Array.concat(ifaces || []),
+                                method: "createInstance",
+                                init: init,
+                                quiet: quiet };
+
         if (init)
             memoize(this.services[name], "callable", function () {
                 return callable(XPCOMShim(this.interfaces)[this.init]);
             });
 
-        this[name] = (function Create() {
-            return this._create(name, arguments);
-        }).bind(this);
-        update.apply(null, [this[name]].concat([Ci[i] for (i of Array.concat(ifaces))]));
+        this[name] = (...args) => this._create(name, args);
+
+        update(this[name],
+               ...Array.concat(ifaces).map(iface => Ci[iface]));
+
         return this[name];
     },
 

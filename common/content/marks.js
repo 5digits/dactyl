@@ -274,13 +274,14 @@ var Marks = Module("marks", {
             template.tabular(
                 ["Mark",   "HPos",              "VPos",              "File"],
                 ["",       "text-align: right", "text-align: right", "color: green"],
-                ([name,
-                  mark.offset ? Math.round(mark.offset.x)
-                              : Math.round(mark.position.x * 100) + "%",
-                  mark.offset ? Math.round(mark.offset.y)
-                              : Math.round(mark.position.y * 100) + "%",
-                  mark.location]
-                  for ([name, mark] of marks))));
+                Array.from(marks, ([name, mark]) => [
+                    name,
+                    mark.offset ? Math.round(mark.offset.x)
+                                : Math.round(mark.position.x * 100) + "%",
+                    mark.offset ? Math.round(mark.offset.y)
+                                : Math.round(mark.position.y * 100) + "%",
+                    mark.location,
+                ])));
     },
 
     _onPageLoad: function _onPageLoad(event) {
@@ -399,9 +400,10 @@ var Marks = Module("marks", {
                     return !host || util.isDomainURL(url, host);
                 }
                 function match(marks) {
-                    return (k
-                            for ([k, v] of iter(marks))
-                            if (timespan.contains(v.timestamp) && matchhost(v.location)));
+                    return Array.from(marks)
+                                .filter(([name, mark]) => (timespan.contains(marktimestamp) &&
+                                                           matchhost(marklocation)))
+                                .map(([name]) => name);
                 }
 
                 for (let [url, local] of marks._localMarks)

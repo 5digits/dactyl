@@ -1090,8 +1090,8 @@ var Hints = Module("hints", {
             autocomplete: false,
             completer: function (context) {
                 context.compare = () => 0;
-                context.completions = [[k, v.prompt]
-                                       for ([k, v] of iter(hints.modes))];
+                context.completions = Object.entries(hints.modes)
+                                            .map(([key, mode]) => [key, mode.prompt]);
             },
             onCancel: mappings.bound.popCommand,
             onSubmit: function (arg) {
@@ -1234,16 +1234,16 @@ var Hints = Module("hints", {
     }),
     indexOf: function indexOf(dest, src) {
         let table = this.translitTable;
-        var end = dest.length - src.length;
+        let end = dest.length - src.length;
         if (src.length == 0)
             return 0;
     outer:
-        for (var i = 0; i <= end; i++) {
-                var j = i;
-                for (var k = 0; k < src.length;) {
-                    var s = dest[j++];
+        for (let i = 0; i <= end; i++) {
+                let j = i;
+                for (let k = 0; k < src.length;) {
+                    let s = dest[j++];
                     s = table[s] || s;
-                    for (var l = 0; l < s.length; l++, k++) {
+                    for (let l = 0; l < s.length; l++, k++) {
                         if (s[l] != src[k])
                             continue outer;
                         if (k == src.length - 1)

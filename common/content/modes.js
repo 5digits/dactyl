@@ -209,9 +209,9 @@ var Modes = Module("modes", {
     get all() { return this._modes.slice(); },
 
     get mainModes() {
-        return (mode
-                for ([k, mode] of iter(modes._modeMap))
-                if (!mode.extended && mode.name == k));
+        return Object.entries(modes._modeMap)
+                     .filter(([name, mode]) => !mode.extended && mode.name == name)
+                     .map(([name, mode]) => mode);
     },
 
     get mainMode() { return this._modeMap[this._main]; },
@@ -595,9 +595,9 @@ var Modes = Module("modes", {
                 for (let base of mode.bases)
                     tree[base.name][mode.name] = tree[mode.name];
 
-            let roots = iter([m.name, tree[m.name]]
-                             for (m of list)
-                             if (!m.bases.length)).toObject();
+            let roots = Ary.toObject(
+                list.filter(mode => !mode.bases.length)
+                    .map(mode => [mode.name, tree[mode.name]]));
 
             function rec(obj) {
                 let res = ["ul", { "dactyl:highlight": "Dense" }];

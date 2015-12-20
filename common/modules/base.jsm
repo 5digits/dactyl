@@ -332,10 +332,16 @@ function* properties(obj, prototypes) {
                     return false;
                 };
 
-                return Ary.uniq([k for (k in obj)].concat(
-                    Object.getOwnPropertyNames(
-                              XPCNativeWrapper.unwrap(obj))
-                          .filter(filter)));
+                let keys_ = function* (obj) {
+                    for (let key in object)
+                        yield key;
+                };
+
+                return [...new RealSet(
+                    [...keys_(obj),
+                     ...Object.getOwnPropertyNames(Cu.waiveXrays(obj))
+                              .filter(filter)])
+                ];
             }
             else if (!e.stack) {
                 throw Error(e);
@@ -417,8 +423,11 @@ function keys(obj) {
     if (isinstance(obj, ["Map"]))
         return iter(obj.keys());
 
-    return iter(k for (k in obj)
-                if (hasOwnProp(obj, k)));
+    return iter(function* () {
+        for (let k in obj)
+            if (hasOwnProp(obj, k))
+                yield k;
+    }());
 }
 
 /**
@@ -433,13 +442,16 @@ function values(obj) {
         return iter(obj.values());
 
     if (isinstance(obj, ["Generator", "Iterator", Iter]))
-        return iter(k for (k of obj));
+        return iter(obj);
 
     if (Symbol.iterator in obj)
         return iter(obj[Symbol.iterator]());
 
-    return iter(obj[k] for (k in obj)
-                if (hasOwnProp(obj, k)));
+    return iter(function* () {
+        for (let k in obj)
+            if (hasOwnProp(obj, k))
+                yield obj[k];
+    }());
 }
 
 var RealSet = Set;
@@ -459,7 +471,7 @@ Object.defineProperty(RealSet.prototype, "difference", {
     configurable: true,
     writable: true,
     value: function RealSet_difference(set) {
-        return new RealSet(i for (i of this) if (!set.has(i)));
+        return new RealSet(Array.from(this).filter(i => !set.has(i)));
     }
 });
 
@@ -467,7 +479,7 @@ Object.defineProperty(RealSet.prototype, "intersection", {
     configurable: true,
     writable: true,
     value: function RealSet_intersection(set) {
-        return new RealSet(i for (i of this) if (set.has(i)));
+        return new RealSet(Array.from(this).filter(i => set.has(i)));
     }
 });
 
@@ -1424,7 +1436,7 @@ var StructBase = Class("StructBase", Array, {
     },
 
     toObject: function struct_toObject() {
-        return iter.toObject([k, this[k]] for (k of keys(this.members)));
+        return Ary.toObject(Object.keys(this.members).map(k => [k, this[k]]));
     },
 
     toString: function struct_toString() {
@@ -1670,8 +1682,10 @@ update(iter, {
         return obj;
     },
 
-    compact: function compact(iter) {
-        return (item for (item of iter) if (item != null));
+    compact: function* compact(iter) {
+        for (let item of iter)
+            if (item != null)
+                yield item;
     },
 
     every: function every(iter, pred, self) {
@@ -1838,7 +1852,7 @@ function arrayWrap(fn) {
 var Ary = Class("Ary", Array, {
     init: function (ary) {
         if (Symbol.iterator in ary && !isArray(ary))
-            ary = [k for (k of ary)];
+            ary = Array.from(ary);
 
         return new Proxy(ary, {
             get: function array_get(target, prop) {

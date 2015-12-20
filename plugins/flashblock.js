@@ -404,7 +404,7 @@ var CSS =
      *
      * Change XBL binding for <object> tags, click to view flash
      */
-    String.literal`
+    String.raw`
 
     pseudoembed {
             display: inline-block;
