@@ -659,7 +659,7 @@ var Modes = Module("modes", {
                     return (this.value.find(v => val.some(m => m.name === v.mode))
                                 || { result: default_ }).result;
 
-                return hasOwnProperty(this.valueMap, val) ? this.valueMap[val] : default_;
+                return hasOwnProp(this.valueMap, val) ? this.valueMap[val] : default_;
             },
 
             setter: function (vals) {
@@ -678,7 +678,7 @@ var Modes = Module("modes", {
 
             validator: function validator(vals) {
                 return vals.map(v => v.replace(/^!/, ""))
-                           .every(k => hasOwnProperty(this.values, k));
+                           .every(k => hasOwnProp(this.values, k));
             },
 
             get values() {

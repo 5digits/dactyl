@@ -167,7 +167,7 @@ var Addon = Class("Addon", {
     },
 
     commandAllowed: function commandAllowed(cmd) {
-        util.assert(hasOwnProperty(actions, cmd),
+        util.assert(hasOwnProp(actions, cmd),
                     _("addon.unknownCommand"));
 
         let action = actions[cmd];

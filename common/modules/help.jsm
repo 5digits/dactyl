@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -111,13 +111,13 @@ var Help = Module("Help", {
                                     { mimeType: "text/plain;charset=UTF-8" })
                            .responseText;
 
-            let re = util.regexp(UTF8(literal(function () /*
+            let re = util.regexp(UTF8(String.raw`
                   ^ (?P<comment> \s* # .*\n)
 
                 | ^ (?P<space> \s*)
                     (?P<char>  [-•*+]) \ //
                   (?P<content> .*\n
-                     (?: \2\ \ .*\n | \s*\n)* )
+                     (?: ${"\\2"} // This is incorrectly interpreted as an octal literal otherwise}\ \ .*\n | \s*\n)* )
 
                 | (?P<par>
                       (?: ^ [^\S\n]*
@@ -127,7 +127,7 @@ var Help = Module("Help", {
                   )
 
                 | (?: ^ [^\S\n]* \n) +
-            */$)), "gmxy");
+            `), "gmxy");
 
             let betas = util.regexp(/\[((?:b|rc)\d)\]/, "gx");
 
@@ -241,7 +241,7 @@ var Help = Module("Help", {
             * @returns {string}
             */
             findHelp: function (topic, consolidated) {
-                if (!consolidated && hasOwnProperty(help.files, topic))
+                if (!consolidated && hasOwnProp(help.files, topic))
                     return topic;
                 let items = modules.completion._runCompleter("help", topic, null, !!consolidated).items;
                 let partialMatch = null;
@@ -274,7 +274,7 @@ var Help = Module("Help", {
                 if (!topic) {
                     let helpFile = consolidated ? "all" : modules.options["helpfile"];
 
-                    if (hasOwnProperty(help.files, helpFile))
+                    if (hasOwnProp(help.files, helpFile))
                         dactyl.open("dactyl://help/" + helpFile, { from: "help" });
                     else
                         dactyl.echomsg(_("help.noFile", JSON.stringify(helpFile)));

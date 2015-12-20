@@ -160,7 +160,7 @@ var Messages = Module("messages", {
                     return { configurable: true, enumerable: true, value: this.default, writable: true };
                 */
 
-                if (!hasOwnProperty(obj, "localizedProperties"))
+                if (!hasOwnProp(obj, "localizedProperties"))
                     obj.localizedProperties = new RealSet(obj.localizedProperties);
                 obj.localizedProperties.add(prop);
 

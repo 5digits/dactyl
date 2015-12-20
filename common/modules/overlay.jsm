@@ -489,7 +489,12 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         return this.windows.has(win) && win;
     },
 
-    set activeWindow(win) { this._activeWindow = util.weakReference(win); },
+    set activeWindow(win) {
+        this._activeWindow = util.weakReference(win);
+
+        if (win.dactyl)
+            util.flushLateMethods(win.dactyl);
+    },
 
     /**
      * A list of extant dactyl windows.

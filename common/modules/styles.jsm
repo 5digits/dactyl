@@ -274,7 +274,7 @@ var Styles = Module("Styles", {
         update(services["dactyl:"].providers, {
             "style": function styleProvider(uri, path) {
                 let id = parseInt(path);
-                if (hasOwnProperty(styles.allSheets, id))
+                if (hasOwnProp(styles.allSheets, id))
                     return ["text/css", styles.allSheets[id].fullCSS];
                 return null;
             }
@@ -311,16 +311,16 @@ var Styles = Module("Styles", {
         return apply(obj, name, Array.slice(args, 1));
     },
 
-    addSheet: deprecated("Styles#{user,system}.add", function addSheet() this._proxy("add", arguments)),
-    findSheets: deprecated("Styles#{user,system}.find", function findSheets() this._proxy("find", arguments)),
-    get: deprecated("Styles#{user,system}.get", function get() this._proxy("get", arguments)),
-    removeSheet: deprecated("Styles#{user,system}.remove", function removeSheet() this._proxy("remove", arguments)),
+    addSheet: deprecated("Styles#{user,system}.add", function addSheet() { return this._proxy("add", arguments); }),
+    findSheets: deprecated("Styles#{user,system}.find", function findSheets() { return this._proxy("find", arguments); }),
+    get: deprecated("Styles#{user,system}.get", function get() { return this._proxy("get", arguments); }),
+    removeSheet: deprecated("Styles#{user,system}.remove", function removeSheet() { return this._proxy("remove", arguments); }),
 
-    userSheets: Class.Property({ get: deprecated("Styles#user.sheets", function userSheets() this.user.sheets) }),
-    systemSheets: Class.Property({ get: deprecated("Styles#system.sheets", function systemSheets() this.system.sheets) }),
-    userNames: Class.Property({ get: deprecated("Styles#user.names", function userNames() this.user.names) }),
-    systemNames: Class.Property({ get: deprecated("Styles#system.names", function systemNames() this.system.names) }),
-    sites: Class.Property({ get: deprecated("Styles#user.sites", function sites() this.user.sites) }),
+    userSheets: Class.Property({ get: deprecated("Styles#user.sheets", function userSheets() { return this.user.sheets; }) }),
+    systemSheets: Class.Property({ get: deprecated("Styles#system.sheets", function systemSheets() { return this.system.sheets; }) }),
+    userNames: Class.Property({ get: deprecated("Styles#user.names", function userNames() { return this.user.names; }) }),
+    systemNames: Class.Property({ get: deprecated("Styles#system.names", function systemNames() { return this.system.names; }) }),
+    sites: Class.Property({ get: deprecated("Styles#user.sites", function sites() { return this.user.sites; }) }),
 
     list: function list(content, sites, name, hives) {
         const { commandline, dactyl } = this.modules;
@@ -376,8 +376,9 @@ var Styles = Module("Styles", {
             this.unregisterSheet(url, agent);
 
         let type = services.stylesheet[agent ? "AGENT_SHEET" : "USER_SHEET"];
-        if (reload || !services.stylesheet.sheetRegistered(uri, type))
+        if (reload || !services.stylesheet.sheetRegistered(uri, type)) {
             services.stylesheet.loadAndRegisterSheet(uri, type);
+        }
     },
 
     unregisterSheet: function unregisterSheet(url, agent) {
@@ -493,7 +494,7 @@ var Styles = Module("Styles", {
         }
     },
 
-    propertyPattern: util.regexp(literal(function () /*
+    propertyPattern: util.regexp(String.raw`
             (?:
                 (?P<preSpace> <space>*)
                 (?P<name> [-a-z]*)
@@ -515,7 +516,7 @@ var Styles = Module("Styles", {
                 )?
             )
             (?P<postSpace> <space>* (?: ; | $) )
-        */$), "gix",
+        `, "gix",
         {
             space: /(?: \s | \/\* .*? \*\/ )/,
             string: /(?:" (?:[^\\"]|\\.)* (?:"|$) | '(?:[^\\']|\\.)* (?:'|$) )/
@@ -523,7 +524,7 @@ var Styles = Module("Styles", {
 
     patterns: memoize({
         get property() {
-            return util.regexp(literal(function () /*
+            return util.regexp(String.raw`
                 (?:
                     (?P<preSpace> <space>*)
                     (?P<name> [-a-z]*)
@@ -534,32 +535,32 @@ var Styles = Module("Styles", {
                     )?
                 )
                 (?P<postSpace> <space>* (?: ; | $) )
-            */$), "gix", this);
+            `, "gix", this);
         },
 
         get function() {
-            return util.regexp(literal(function () /*
+            return util.regexp(String.raw`
                 (?P<function>
                     \s* \( \s*
                         (?: <string> | [^)]*  )
                     \s* (?: \) | $)
                 )
-            */$), "gx", this);
+            `, "gx", this);
         },
 
         space: /(?: \s | \/\* .*? \*\/ )/,
 
         get string() {
-            return util.regexp(literal(function () /*
+            return util.regexp(String.raw`
                 (?P<string>
                     " (?:[^\\"]|\\.)* (?:"|$) |
                     ' (?:[^\\']|\\.)* (?:'|$)
                 )
-            */$), "gx", this);
+            `, "gx", this);
         },
 
         get token() {
-            return util.regexp(literal(function () /*
+            return util.regexp(String.raw`
                 (?P<token>
                     (?P<word> [-\w]+)
                     <function>?
@@ -569,7 +570,7 @@ var Styles = Module("Styles", {
                     | <space>+
                     | [^;}\s]+
                 )
-            */$), "gix", this);
+            `, "gix", this);
         }
     }),
 
@@ -744,15 +745,20 @@ var Styles = Module("Styles", {
                 init: function init(group) {
                     init.superapply(this, arguments);
                     this.hive = styles.addHive(group.name, this, this.persist);
+
+                    return new Proxy(this, {
+                        get(target, prop) {
+                            if (prop in target)
+                                return target[prop];
+
+                            return target.hive[prop];
+                        },
+                    });
                 },
 
                 get names() { return this.hive.names; },
                 get sheets() { return this.hive.sheets; },
                 get sites() { return this.hive.sites; },
-
-                __noSuchMethod__: function __noSuchMethod__(meth, args) {
-                    return apply(this.hive, meth, args);
-                },
 
                 destroy: function () {
                     this.hive.dropRef(this);

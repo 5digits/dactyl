@@ -70,7 +70,7 @@ var StoreBase = Class("StoreBase", {
 
     save: function () { (this.storage || storage)._saveData(this); },
 
-    "@@iterator": function () iter(this._object)
+    "@@iterator": function () { return iter(this._object); },
 });
 
 var ArrayStore = Class("ArrayStore", StoreBase, {
@@ -160,7 +160,7 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
     },
 
     has: function has(key) {
-        return hasOwnProperty(this._object, key);
+        return hasOwnProp(this._object, key);
     },
 
     keys: function keys() {
@@ -257,11 +257,14 @@ var Storage = Module("Storage", {
             delete this.dactylSession[key];
     },
 
-    infoPath: Class.Memoize(() =>
-        File(IO.runtimePath.split(",")[0])
-            .child("info").child(config.profileName)),
+    infoPath: Class.Memoize(function () {
+        return File(IO.runtimePath.split(",")[0])
+                .child("info").child(config.profileName);
+    }),
 
-    exists: function exists(key) this.infoPath.child(key).exists(),
+    exists: function exists(key) {
+        return this.infoPath.child(key).exists();
+    },
 
     remove: function remove(key) {
         if (this.exists(key)) {
@@ -327,7 +330,7 @@ var Storage = Module("Storage", {
         if (window instanceof Ci.nsIDOMWindow)
             observers = overlay.getData(window, "storage-observers", Object);
 
-        if (!hasOwnProperty(observers, key))
+        if (!hasOwnProp(observers, key))
             observers[key] = new RealSet;
 
         observers[key].add(callback);
@@ -559,7 +562,7 @@ var File = Class("File", {
      *
      * @returns {nsIFileURL}
      */
-    toURI: deprecated("#URI", function toURI() services.io.newFileURI(this.file)),
+    toURI: deprecated("#URI", function toURI() { return services.io.newFileURI(this.file); }),
 
     /**
      * Writes the string *buf* to this file.
@@ -724,14 +727,17 @@ var File = Class("File", {
     }),
 
     DoesNotExist: function DoesNotExist(path, error) {
-        return {
+        return new Proxy({
             __proto__: DoesNotExist.prototype,
             path: path,
             exists: function () { return false; },
-            __noSuchMethod__: function () {
-                throw error || Error("Does not exist");
+        }, {
+            get(target, prop) {
+                if (prop in target)
+                    return target[prop];
+                return () => { error || Error("Does not exist")};
             }
-        };
+        });
     },
 
     defaultEncoding: "UTF-8",

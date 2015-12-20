@@ -77,7 +77,7 @@ var Bookmarks = Module("bookmarks", {
         if (id != null)
             var bmark = bookmarkcache.bookmarks[id];
         else if (!force) {
-            if (keyword && hasOwnProperty(bookmarkcache.keywords, keyword))
+            if (keyword && hasOwnProp(bookmarkcache.keywords, keyword))
                 bmark = bookmarkcache.keywords[keyword];
             else if (bookmarkcache.isBookmarked(uri))
                 for (bmark of bookmarkcache)
@@ -178,7 +178,7 @@ var Bookmarks = Module("bookmarks", {
         }
     },
 
-    isBookmarked: deprecated("bookmarkcache.isBookmarked", { get: function isBookmarked() bookmarkcache.bound.isBookmarked }),
+    isBookmarked: deprecated("bookmarkcache.isBookmarked", { get: function isBookmarked() { return bookmarkcache.bound.isBookmarked; } }),
 
     /**
      * Remove a bookmark or bookmarks. If *ids* is an array, removes the
@@ -213,7 +213,7 @@ var Bookmarks = Module("bookmarks", {
         }
     },
 
-    getSearchEngines: deprecated("bookmarks.searchEngines", function getSearchEngines() this.searchEngines),
+    getSearchEngines: deprecated("bookmarks.searchEngines", function getSearchEngines() { return this.searchEngines; }),
     /**
      * Returns a list of all visible search engines in the search
      * services, augmented with keyword, title, and icon properties for
@@ -228,7 +228,7 @@ var Bookmarks = Module("bookmarks", {
             if (!alias)
                 alias = "search"; // for search engines which we can't find a suitable alias
 
-            if (hasOwnProperty(aliases, alias))
+            if (hasOwnProp(aliases, alias))
                 alias += ++aliases[alias];
             else
                 aliases[alias] = 0;
@@ -252,10 +252,10 @@ var Bookmarks = Module("bookmarks", {
     hasSuggestions: function hasSuggestions(engineName, query, callback) {
         const responseType = "application/x-suggestions+json";
 
-        if (hasOwnProperty(this.suggestionProviders, engineName))
+        if (hasOwnProp(this.suggestionProviders, engineName))
             return true;
 
-        let engine = hasOwnProperty(this.searchEngines, engineName) && this.searchEngines[engineName];
+        let engine = hasOwnProp(this.searchEngines, engineName) && this.searchEngines[engineName];
         if (engine && engine.supportsResponseType(responseType))
             return true;
 
@@ -281,10 +281,10 @@ var Bookmarks = Module("bookmarks", {
     getSuggestions: function getSuggestions(engineName, query, callback) {
         const responseType = "application/x-suggestions+json";
 
-        if (hasOwnProperty(this.suggestionProviders, engineName))
+        if (hasOwnProp(this.suggestionProviders, engineName))
             return this.suggestionProviders[engineName](query, callback);
 
-        let engine = hasOwnProperty(this.searchEngines, engineName) && this.searchEngines[engineName];
+        let engine = hasOwnProp(this.searchEngines, engineName) && this.searchEngines[engineName];
         if (engine && engine.supportsResponseType(responseType))
             var queryURI = engine.getSubmission(query, responseType).uri.spec;
 
@@ -347,7 +347,7 @@ var Bookmarks = Module("bookmarks", {
         let [keyword, param] = util.split(query, " ", 2);
         param = param || "";
 
-        var engine = hasOwnProperty(bookmarks.searchEngines, keyword) && bookmarks.searchEngines[keyword];
+        var engine = hasOwnProp(bookmarks.searchEngines, keyword) && bookmarks.searchEngines[keyword];
         if (engine) {
             if (engine.searchForm && !param)
                 return engine.searchForm;

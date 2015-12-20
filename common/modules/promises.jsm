@@ -18,7 +18,7 @@ function withCallbacks(fn) {
     return function wrapper(...args) {
         let deferred = Promise.defer();
         function resolve(arg) { deferred.resolve(arg); }
-        function reject(arg)  { deferred.reject(arg); }
+        function reject(arg) { deferred.reject(arg); }
         fn.apply(this, [[resolve, reject, deferred]].concat(args));
         return deferred.promise;
     };

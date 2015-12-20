@@ -975,7 +975,7 @@ var CommandLine = Module("commandline", {
         }
     },
 
-    updateOutputHeight: deprecated("mow.resize", function updateOutputHeight(open, extra) mow.resize(open, extra)),
+    updateOutputHeight: deprecated("mow.resize", function updateOutputHeight(open, extra) { return mow.resize(open, extra); }),
 
     withOutputToString: function withOutputToString(fn, self, ...args) {
         dactyl.registerObserver("echoLine", observe, true);

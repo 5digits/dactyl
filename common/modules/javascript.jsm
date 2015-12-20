@@ -732,6 +732,16 @@ var JavaScript = Module("javascript", {
             init: function init(context) {
                 this.context = context;
                 this.results = [];
+
+                return new Proxy(this, {
+                    get(target, prop) {
+                        if (prop in target)
+                            return target[prop];
+
+                        if (prop in Buffer)
+                            return Buffer[prop].bind(Buffer, target.rootNode);
+                    },
+                });
             },
 
             addOutput: function addOutput(js) {
@@ -775,10 +785,6 @@ var JavaScript = Module("javascript", {
 
                 return this.rootNode;
             }),
-
-            __noSuchMethod__: function (meth, args) {
-                return apply(Buffer, meth, [this.rootNode].concat(args));
-            }
         });
 
         modules.CommandREPLMode = Class("CommandREPLMode", modules.CommandMode, {

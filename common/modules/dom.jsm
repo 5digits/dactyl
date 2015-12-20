@@ -702,7 +702,7 @@ var DOM = Class("DOM", {
                     if (callable(v))
                         v = v.call(this, elem, i);
 
-                    if (hasOwnProperty(hooks, k) && hooks[k].set)
+                    if (hasOwnProp(hooks, k) && hooks[k].set)
                         hooks[k].set.call(this, elem, v, k);
                     else if (v == null)
                         elem.removeAttributeNS(ns, k);
@@ -714,7 +714,7 @@ var DOM = Class("DOM", {
         if (!this.length)
             return null;
 
-        if (hasOwnProperty(hooks, key) && hooks[key].get)
+        if (hasOwnProp(hooks, key) && hooks[key].get)
             return hooks[key].get.call(this, this[0], key);
 
         if (!this[0].hasAttributeNS(ns, key))
@@ -1435,20 +1435,24 @@ var DOM = Class("DOM", {
             submit: { cancelable: true }
         },
 
-        types: Class.Memoize(() => iter(
-            {
-                Mouse: "click mousedown mouseout mouseover mouseup dblclick " +
-                       "hover " +
-                       "popupshowing popupshown popuphiding popuphidden " +
-                       "contextmenu",
-                Key:   "keydown keypress keyup",
-                "":    "change command dactyl-input input submit " +
-                       "load unload pageshow pagehide DOMContentLoaded " +
-                       "resize scroll"
-            }
-        ).map(([k, v]) => v.split(" ").map(v => [v, k]))
-         .flatten()
-         .toObject()),
+        types: Class.Memoize(() => {
+            return iter(
+                {
+                    Mouse: "click mousedown mouseout mouseover mouseup dblclick " +
+                           "hover " +
+                           "popupshowing popupshown popuphiding popuphidden " +
+                           "contextmenu",
+
+                    Key:   "keydown keypress keyup",
+
+                    "":    "change command dactyl-input input submit " +
+                           "load unload pageshow pagehide DOMContentLoaded " +
+                           "resize scroll"
+                }
+            ).map(([k, v]) => v.split(" ").map(v => [v, k]))
+             .flatten()
+             .toObject();
+        }),
 
         /**
          * Dispatches an event to an element as if it were a native event.
@@ -1831,7 +1835,7 @@ var DOM = Class("DOM", {
             let res = [indent, "<", name];
 
             for (let [key, val] of iter(attr)) {
-                if (hasOwnProperty(skipAttr, key))
+                if (hasOwnProp(skipAttr, key))
                     continue;
 
                 let vals = parseNamespace(key);
@@ -1984,7 +1988,7 @@ var DOM = Class("DOM", {
 
 Object.keys(DOM.Event.types).forEach(function (event) {
     let name = event.replace(/-(.)/g, (m, m1) => m1.toUpperCase());
-    if (!hasOwnProperty(DOM.prototype, name))
+    if (!hasOwnProp(DOM.prototype, name))
         DOM.prototype[name] =
             function _event(arg, extra) {
                 return this[callable(arg) ? "listen" : "dispatch"](event, arg, extra);

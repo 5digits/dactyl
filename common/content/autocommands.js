@@ -79,9 +79,9 @@ var AutoCommands = Module("autocommands", {
         return contexts.allGroups.autocmd.filter(h => h._store.length);
     },
 
-    add: deprecated("group.autocmd.add", { get: function add() autocommands.user.bound.add }),
-    get: deprecated("group.autocmd.get", { get: function get() autocommands.user.bound.get }),
-    remove: deprecated("group.autocmd.remove", { get: function remove() autocommands.user.bound.remove }),
+    add: deprecated("group.autocmd.add", { get: function add() { return autocommands.user.bound.add; } }),
+    get: deprecated("group.autocmd.get", { get: function get() { return autocommands.user.bound.get; } }),
+    remove: deprecated("group.autocmd.remove", { get: function remove() { return autocommands.user.bound.remove; } }),
 
     /**
      * Lists all autocommands with a matching *event*, *regexp* and optionally

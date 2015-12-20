@@ -75,7 +75,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
             name = 0;
         if (name == "_")
             var res = null;
-        else if (hasOwnProperty(this.selectionRegisters, name))
+        else if (hasOwnProp(this.selectionRegisters, name))
             res = { text: dactyl.clipboardRead(this.selectionRegisters[name]) || "" };
         else if (!/^[0-9]$/.test(name))
             res = this.registers.get(name);
@@ -113,7 +113,7 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
                 n = 0;
             if (n == "_")
                 ;
-            else if (hasOwnProperty(this.selectionRegisters, n))
+            else if (hasOwnProp(this.selectionRegisters, n))
                 dactyl.clipboardWrite(value.text, verbose, this.selectionRegisters[n]);
             else if (!/^[0-9]$/.test(n))
                 this.registers.set(n, value);

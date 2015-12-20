@@ -28,7 +28,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
         else
             [self, events] = [event, event[callback || "events"]];
 
-        if (hasOwnProperty(events, "input") && !hasOwnProperty(events, "dactyl-input"))
+        if (hasOwnProp(events, "input") && !hasOwnProp(events, "dactyl-input"))
             events["dactyl-input"] = events.input;
 
         return [self, events];
@@ -79,7 +79,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
             let elem = args[0].get();
             if (target == null || elem == target
                                && self == args[1].get()
-                               && hasOwnProperty(events, args[2])
+                               && hasOwnProp(events, args[2])
                                && args[3].wrapped == events[args[2]]
                                && args[4] == capture) {
 
@@ -212,7 +212,7 @@ var Events = Module("events", {
     },
 
     get listen() { return this.builtin.bound.listen; },
-    addSessionListener: deprecated("events.listen", { get: function addSessionListener() this.listen }),
+    addSessionListener: deprecated("events.listen", { get: function addSessionListener() { return this.listen; } }),
 
     /**
      * Wraps an event listener to ensure that errors are reported.
@@ -423,11 +423,11 @@ var Events = Module("events", {
         return true;
     },
 
-    canonicalKeys: deprecated("DOM.Event.canonicalKeys", { get: function canonicalKeys() DOM.Event.bound.canonicalKeys }),
-    create:        deprecated("DOM.Event", function create() DOM.Event.apply(null, arguments)),
-    dispatch:      deprecated("DOM.Event.dispatch", function dispatch() apply(DOM.Event, "dispatch", arguments)),
-    fromString:    deprecated("DOM.Event.parse", { get: function fromString() DOM.Event.bound.parse }),
-    iterKeys:      deprecated("DOM.Event.iterKeys", { get: function iterKeys() DOM.Event.bound.iterKeys }),
+    canonicalKeys: deprecated("DOM.Event.canonicalKeys", { get: function canonicalKeys() { return DOM.Event.bound.canonicalKeys; } }),
+    create:        deprecated("DOM.Event", function create() { return DOM.Event.apply(null, arguments); }),
+    dispatch:      deprecated("DOM.Event.dispatch", function dispatch() { return apply(DOM.Event, "dispatch", arguments); }),
+    fromString:    deprecated("DOM.Event.parse", { get: function fromString() { return DOM.Event.bound.parse; } }),
+    iterKeys:      deprecated("DOM.Event.iterKeys", { get: function iterKeys() { return DOM.Event.bound.iterKeys; } }),
 
     toString: function toString() {
         if (!arguments.length)
@@ -1152,7 +1152,7 @@ var Events = Module("events", {
 
                 has: function (key) {
                     return this.pass.has(key) ||
-                           hasOwnProperty(this.commandHive.stack.mappings, key);
+                           hasOwnProp(this.commandHive.stack.mappings, key);
                 },
 
                 get pass() { this.flush(); return this.pass; },

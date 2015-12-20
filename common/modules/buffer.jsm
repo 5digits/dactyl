@@ -385,7 +385,8 @@ var Buffer = Module("Buffer", {
      * @returns {string}
      */
     get currentWord() { return Buffer.currentWord(this.focusedFrame); },
-    getCurrentWord: deprecated("buffer.currentWord", function getCurrentWord() Buffer.currentWord(this.focusedFrame, true)),
+    getCurrentWord: deprecated("buffer.currentWord",
+                               function getCurrentWord() { return Buffer.currentWord(this.focusedFrame, true); }),
 
     /**
      * Returns true if a scripts are allowed to focus the given input
@@ -770,7 +771,8 @@ var Buffer = Module("Buffer", {
      *
      * @param {Node} elem The context element.
      */
-    openContextMenu: deprecated("DOM#contextmenu", function openContextMenu(elem) DOM(elem).contextmenu()),
+    openContextMenu: deprecated("DOM#contextmenu",
+                                function openContextMenu(elem) { return DOM(elem).contextmenu(); }),
 
     /**
      * Saves a page link to disk.
@@ -1415,14 +1417,14 @@ var Buffer = Module("Buffer", {
     },
 
     getAllFrames: deprecated("buffer.allFrames", "allFrames"),
-    scrollTop: deprecated("buffer.scrollToPercent", function scrollTop() this.scrollToPercent(null, 0)),
-    scrollBottom: deprecated("buffer.scrollToPercent", function scrollBottom() this.scrollToPercent(null, 100)),
-    scrollStart: deprecated("buffer.scrollToPercent", function scrollStart() this.scrollToPercent(0, null)),
-    scrollEnd: deprecated("buffer.scrollToPercent", function scrollEnd() this.scrollToPercent(100, null)),
-    scrollColumns: deprecated("buffer.scrollHorizontal", function scrollColumns(cols) this.scrollHorizontal("columns", cols)),
-    scrollPages: deprecated("buffer.scrollHorizontal", function scrollPages(pages) this.scrollVertical("pages", pages)),
-    scrollTo: deprecated("Buffer.scrollTo", function scrollTo(x, y) this.win.scrollTo(x, y)),
-    textZoom: deprecated("buffer.zoomValue/buffer.fullZoom", function textZoom() this.contentViewer.markupDocumentViewer.textZoom * 100)
+    scrollTop: deprecated("buffer.scrollToPercent", function scrollTop() { return this.scrollToPercent(null, 0); }),
+    scrollBottom: deprecated("buffer.scrollToPercent", function scrollBottom() { return this.scrollToPercent(null, 100); }),
+    scrollStart: deprecated("buffer.scrollToPercent", function scrollStart() { return this.scrollToPercent(0, null); }),
+    scrollEnd: deprecated("buffer.scrollToPercent", function scrollEnd() { return this.scrollToPercent(100, null); }),
+    scrollColumns: deprecated("buffer.scrollHorizontal", function scrollColumns(cols) { return this.scrollHorizontal("columns", cols); }),
+    scrollPages: deprecated("buffer.scrollHorizontal", function scrollPages(pages) { return this.scrollVertical("pages", pages); }),
+    scrollTo: deprecated("Buffer.scrollTo", function scrollTo(x, y) { return this.win.scrollTo(x, y); }),
+    textZoom: deprecated("buffer.zoomValue/buffer.fullZoom", function textZoom() { return this.contentViewer.markupDocumentViewer.textZoom * 100; }),
 }, {
     /**
      * The pattern used to search for a scrollable element when we have
@@ -1508,9 +1510,9 @@ var Buffer = Module("Buffer", {
     get ZOOM_MAX() { return prefs.get("zoom.maxPercent"); },
 
     setZoom: deprecated("buffer.setZoom",
-                        function setZoom(...args) apply(overlay.activeModules.buffer, "setZoom", args)),
+                        function setZoom(...args) { return apply(overlay.activeModules.buffer, "setZoom", args); }),
     bumpZoomLevel: deprecated("buffer.bumpZoomLevel",
-                              function bumpZoomLevel(...args) apply(overlay.activeModules.buffer, "bumpZoomLevel", args)),
+                              function bumpZoomLevel(...args) { return apply(overlay.activeModules.buffer, "bumpZoomLevel", args); }),
 
     /**
      * Returns the currently selected word in *win*. If the selection is
@@ -1585,9 +1587,9 @@ var Buffer = Module("Buffer", {
     },
 
     findScrollableWindow: deprecated("buffer.findScrollableWindow",
-                                     function findScrollableWindow() apply(overlay.activeModules, "findScrollableWindow", arguments)),
+                                     function findScrollableWindow() { return apply(overlay.activeModules, "findScrollableWindow", arguments); }),
     findScrollable: deprecated("buffer.findScrollable",
-                               function findScrollable() apply(overlay.activeModules, "findScrollable", arguments)),
+                               function findScrollable() { return apply(overlay.activeModules, "findScrollable", arguments); }),
 
     isScrollable: function isScrollable(elem, dir, horizontal) {
         if (!DOM(elem).isScrollable(horizontal ? "horizontal" : "vertical"))

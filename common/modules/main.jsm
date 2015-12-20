@@ -341,12 +341,12 @@ overlay.overlayWindow(Object.keys(config.overlays),
 
             let className = mod.className || mod.constructor.className;
 
-            if (!hasOwnProperty(init, className)) {
+            if (!hasOwnProp(init, className)) {
                 init[className] = function callee() {
                     function finish() {
                         this.currentDependency = className;
                         defineModule.time(className, name, INIT[name], mod,
-                                        modules.dactyl, modules, window);
+                                          modules.dactyl, modules, window);
                     }
                     if (!callee.frobbed) {
                         callee.frobbed = true;

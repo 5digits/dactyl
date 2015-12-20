@@ -86,6 +86,8 @@ function ProtocolBase() {
 
     this.pages = {};
     this.providers = {
+        __proto__: null,
+
         "content": function (uri, path) {
             return this.pages[path] || this.contentBase + path;
         },
@@ -98,7 +100,7 @@ function ProtocolBase() {
             channel.owner = systemPrincipal;
             channel.originalURI = uri;
             return channel;
-        }
+        },
     };
 }
 ProtocolBase.prototype = {
@@ -196,7 +198,7 @@ function XMLChannel(uri, contentType, noErrorChannel, unprivileged) {
     let type = this.channel.contentType;
     if (/^text\/|[\/+]xml$/.test(type)) {
         let stream = services.InputStream(channelStream);
-        let [, pre, doctype, url, extra, open, post] = util.regexp(literal(function () /*
+        let [, pre, doctype, url, extra, open, post] = util.regexp(String.raw`
                 ^ ([^]*?)
                 (?:
                     (<!DOCTYPE \s+ \S+ \s+) (?:SYSTEM \s+ "([^"]*)" | ((?:[^[>\s]|\s[^[])*))
@@ -204,8 +206,10 @@ function XMLChannel(uri, contentType, noErrorChannel, unprivileged) {
                     ([^]*)
                 )?
                 $
-            */$), "x").exec(stream.read(4096));
+            `, "x").exec(stream.read(4096));
+
         this.writes.push(pre);
+
         if (doctype) {
             this.writes.push(doctype + (extra || "") + " [\n");
             if (url)

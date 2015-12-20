@@ -150,7 +150,7 @@ var Option = Class("Option", {
         if ((scope & Option.SCOPE_GLOBAL) && (values == undefined))
             values = this.globalValue;
 
-        if (hasOwnProperty(this, "_value"))
+        if (hasOwnProp(this, "_value"))
             values = this._value;
 
         if (this.getter)
@@ -354,7 +354,7 @@ var Option = Class("Option", {
         let defaultValue = this._defaultValue;
         delete this._defaultValue;
 
-        if (hasOwnProperty(this.modules.config.optionDefaults, this.name))
+        if (hasOwnProp(this.modules.config.optionDefaults, this.name))
             defaultValue = this.modules.config.optionDefaults[this.name];
 
         if (defaultValue == null && this.getter)
@@ -551,7 +551,7 @@ var Option = Class("Option", {
             return [Option.quote(k, /:/) + ":" + Option.quote(v, /:/) for ([k, v] of iter(vals))].join(",");
         },
 
-        regexplist: function (vals)  { return vals.join(","); },
+        regexplist: vals => vals.join(","),
         get regexpmap() { return this.regexplist; },
         get sitelist() { return this.regexplist; },
         get sitemap() { return this.regexplist; }
@@ -820,8 +820,8 @@ var Option = Class("Option", {
             let k = values(completions.call(this, { values: {} })).toObject();
             let v = values(completions.call(this, { value: "" })).toObject();
 
-            return Object.keys(vals).every(hasOwnProperty.bind(null, k)) &&
-                   values(vals).every(hasOwnProperty.bind(null, v));
+            return Object.keys(vals).every(hasOwnProp.bind(null, k)) &&
+                   values(vals).every(hasOwnProp.bind(null, v));
         }
 
         if (this.values)
@@ -894,7 +894,7 @@ var OptionHive = Class("OptionHive", Contexts.Hive, {
     init: function init(group) {
         init.supercall(this, group);
         this.values = {};
-        this.has = v => hasOwnProperty(this.values, v);
+        this.has = v => hasOwnProp(this.values, v);
     },
 
     add: function add(names, description, type, defaultValue, extra) {
@@ -1067,18 +1067,18 @@ var Options = Module("options", {
         return values(this._options.sort((a, b) => String.localeCompare(a.name, b.name)));
     },
 
-    allPrefs: deprecated("prefs.getNames", function allPrefs() apply(prefs, "getNames", arguments)),
-    getPref: deprecated("prefs.get", function getPref() apply(prefs, "get", arguments)),
-    invertPref: deprecated("prefs.invert", function invertPref() apply(prefs, "invert", arguments)),
+    allPrefs: deprecated("prefs.getNames", function allPrefs() { return apply(prefs, "getNames", arguments); }),
+    getPref: deprecated("prefs.get", function getPref() { return apply(prefs, "get", arguments); }),
+    invertPref: deprecated("prefs.invert", function invertPref() { return apply(prefs, "invert", arguments); }),
     listPrefs: deprecated("prefs.list", function listPrefs() { this.modules.commandline.commandOutput(apply(prefs, "list", arguments)); }),
-    observePref: deprecated("prefs.observe", function observePref() apply(prefs, "observe", arguments)),
-    popContext: deprecated("prefs.popContext", function popContext() apply(prefs, "popContext", arguments)),
-    pushContext: deprecated("prefs.pushContext", function pushContext() apply(prefs, "pushContext", arguments)),
-    resetPref: deprecated("prefs.reset", function resetPref() apply(prefs, "reset", arguments)),
-    safeResetPref: deprecated("prefs.safeReset", function safeResetPref() apply(prefs, "safeReset", arguments)),
-    safeSetPref: deprecated("prefs.safeSet", function safeSetPref() apply(prefs, "safeSet", arguments)),
-    setPref: deprecated("prefs.set", function setPref() apply(prefs, "set", arguments)),
-    withContext: deprecated("prefs.withContext", function withContext() apply(prefs, "withContext", arguments)),
+    observePref: deprecated("prefs.observe", function observePref() { return apply(prefs, "observe", arguments); }),
+    popContext: deprecated("prefs.popContext", function popContext() { return apply(prefs, "popContext", arguments); }),
+    pushContext: deprecated("prefs.pushContext", function pushContext() { return apply(prefs, "pushContext", arguments); }),
+    resetPref: deprecated("prefs.reset", function resetPref() { return apply(prefs, "reset", arguments); }),
+    safeResetPref: deprecated("prefs.safeReset", function safeResetPref() { return apply(prefs, "safeReset", arguments); }),
+    safeSetPref: deprecated("prefs.safeSet", function safeSetPref() { return apply(prefs, "safeSet", arguments); }),
+    setPref: deprecated("prefs.set", function setPref() { return apply(prefs, "set", arguments); }),
+    withContext: deprecated("prefs.withContext", function withContext() { return apply(prefs, "withContext", arguments); }),
 
     cleanupPrefs: Class.Memoize(() => config.prefs.Branch("cleanup.option.")),
 
@@ -1431,7 +1431,7 @@ var Options = Module("options", {
 
                     util.assert(scope == "g:" || scope == null,
                                 _("command.let.illegalVar", scope + name));
-                    util.assert(hasOwnProperty(globalVariables, name) || (expr && !op),
+                    util.assert(hasOwnProp(globalVariables, name) || (expr && !op),
                                 _("command.let.undefinedVar", fullName));
 
                     if (!expr)
@@ -1535,7 +1535,7 @@ var Options = Module("options", {
             function (args) {
                 for (let name of args) {
                     name = name.replace(/^g:/, ""); // throw away the scope prefix
-                    if (!hasOwnProperty(dactyl._globalVariables, name)) {
+                    if (!hasOwnProp(dactyl._globalVariables, name)) {
                         if (!args.bang)
                             dactyl.echoerr(_("command.let.noSuch", name));
                         return;
@@ -1620,7 +1620,7 @@ var Options = Module("options", {
                     let val = [].find.call(obj, re => (re.key == extra.key));
                     return val && val.result;
                 }
-                if (hasOwnProperty(opt.defaultValue, extra.key))
+                if (hasOwnProp(opt.defaultValue, extra.key))
                     return obj[extra.key];
             }
 

@@ -28,8 +28,13 @@ tmp.Sanitizer.prototype.__proto__ = Class.prototype;
 
 var Range = Struct("min", "max");
 update(Range.prototype, {
-    contains: function (date) date == null ||
-        (this.min == null || date >= this.min) && (this.max == null || date <= this.max),
+    contains: function (date) {
+        if (date != null)
+            return ((this.min == null || date >= this.min) &&
+                    (this.max == null || date <= this.max));
+
+        return false;
+    },
 
     get isEternity() {
         return this.max == null && this.min == null;
@@ -662,7 +667,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
 
                 validator: function (values) {
                     return values.length &&
-                           values.every(val => (val === "all" || hasOwnProperty(sanitizer.itemMap, val.replace(/^!/, ""))));
+                           values.every(val => (val === "all" || hasOwnProp(sanitizer.itemMap, val.replace(/^!/, ""))));
                 }
             });
 

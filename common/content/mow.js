@@ -7,8 +7,22 @@
 "use strict";
 
 var MOW = Module("mow", {
-    init: function init() {
+    init() {
+        let proxy = new Proxy(this, {
+            get(target, prop, receiver) {
+                if (prop in target)
+                    return target[prop];
 
+                if (prop in Buffer)
+                    return Buffer[prop].bind(Buffer, receiver.body);
+            },
+        });
+
+        proxy._init();
+        return proxy;
+    },
+
+    _init() {
         this._resize = Timer(20, 400, function _resize() {
             if (this.visible)
                 this.resize(false);
@@ -64,10 +78,6 @@ var MOW = Module("mow", {
                                      flex: "1", hidden: "false", collapsed: "false",
                                      contextmenu: "dactyl-contextmenu", highlight: "Events" }]]]]
         });
-    },
-
-    __noSuchMethod__: function (meth, args) {
-        return apply(Buffer, meth, [this.body].concat(args));
     },
 
     get widget() { return this.widgets.multilineOutput; },

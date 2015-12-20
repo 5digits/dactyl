@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2010 by anekos <anekos@snca.net>
-// Copyright (c) 2010-2014 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2010-2015 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -142,8 +142,8 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
      */
     get: function (mode, lhs) {
         let abbrevs = this._store[mode];
-        return abbrevs && hasOwnProperty(abbrevs, lhs) ? abbrevs[lhs]
-                                                       : null;
+        return abbrevs && hasOwnProp(abbrevs, lhs) ? abbrevs[lhs]
+                                                   : null;
     },
 
     /**
@@ -225,28 +225,29 @@ var Abbreviations = Module("abbreviations", {
             nonkeyword: /[   "']/
         };
 
-        this._match = util.regexp(literal(function () /*
+        this._match = util.regexp(String.raw`
             (^ | \s | <nonkeyword>) (<keyword>+             )$ | // full-id
             (^ | \s | <keyword>   ) (<nonkeyword>+ <keyword>)$ | // end-id
             (^ | \s               ) (\S* <nonkeyword>       )$   // non-id
-        */$), "x", params);
-        this._check = util.regexp(literal(function () /*
+        `, "x", params);
+
+        this._check = util.regexp(String.raw`
             ^ (?:
               <keyword>+              | // full-id
               <nonkeyword>+ <keyword> | // end-id
               \S* <nonkeyword>          // non-id
             ) $
-        */$), "x", params);
+        `, "x", params);
     },
 
     get allHives() { return contexts.allGroups.abbrevs; },
 
     get userHives() { return this.allHives.filter(h => h !== this.builtin); },
 
-    get: deprecated("group.abbrevs.get", { get: function get() this.user.bound.get }),
-    set: deprecated("group.abbrevs.set", { get: function set() this.user.bound.set }),
-    remove: deprecated("group.abbrevs.remove", { get: function remove() this.user.bound.remove }),
-    removeAll: deprecated("group.abbrevs.clear", { get: function removeAll() this.user.bound.clear }),
+    get: deprecated("group.abbrevs.get", { get: function get() { return this.user.bound.get; } }),
+    set: deprecated("group.abbrevs.set", { get: function set() { return this.user.bound.set; } }),
+    remove: deprecated("group.abbrevs.remove", { get: function remove() { return this.user.bound.remove; } }),
+    removeAll: deprecated("group.abbrevs.clear", { get: function removeAll() { return this.user.bound.clear; } }),
 
     /**
      * Returns the abbreviation for the given *mode* if *text* matches the

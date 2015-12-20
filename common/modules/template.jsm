@@ -16,12 +16,28 @@ var Binding = Class("Binding", {
     init: function (node, nodes) {
         this.node = node;
         this.nodes = nodes;
-        node.dactylBinding = this;
 
         Object.defineProperties(node, this.constructor.properties);
 
         for (let [event, handler] of this.constructor.events)
             node.addEventListener(event, util.wrapCallback(handler, true), false);
+
+        let proxy = new Proxy(this, {
+            get(target, prop) {
+                if (prop in target)
+                    return target[prop];
+
+                let { node } = target;
+                let value = node[prop];
+
+                if (callable(value))
+                    return value.bind(node);
+                return value;
+            },
+        });
+
+        node.dactylBinding = proxy;
+        return proxy;
     },
 
     set collapsed(collapsed) {
@@ -30,20 +46,16 @@ var Binding = Class("Binding", {
         else
             this.removeAttribute("collapsed");
     },
-    get collapsed() { return !!this.getAttribute("collapsed"); },
 
-    __noSuchMethod__: Class.Property({
-        configurable: true,
-        writeable: true,
-        value: function __noSuchMethod__(meth, args) {
-            return apply(this.node, meth, args);
-        }
-    })
+    get collapsed() { return !!this.getAttribute("collapsed"); },
 }, {
     get bindings() {
         return function* () {
             let bindingProto = Object.getPrototypeOf(Binding.prototype);
-            for (let obj = this.prototype; obj !== bindingProto; obj = Object.getPrototypeOf(obj))
+
+            for (let obj = this.prototype;
+                 obj !== bindingProto;
+                 obj = Object.getPrototypeOf(obj))
                 /* FIXME: Symbols */
                 yield obj;
         }.call(this);
@@ -63,15 +75,18 @@ var Binding = Class("Binding", {
 
     events: Class.Memoize(function () {
         let res = [];
+
         for (let obj of this.bindings)
             if (Object.getOwnPropertyDescriptor(obj, "events"))
                 for (let [event, handler] of iter(obj.events))
                     res.push([event, this.bind(handler)]);
+
         return res;
     }),
 
     properties: Class.Memoize(function () {
         let res = {};
+
         for (let obj of this.bindings)
             for (let prop of properties(obj)) {
                 let desc = Object.getOwnPropertyDescriptor(obj, prop);
@@ -82,6 +97,7 @@ var Binding = Class("Binding", {
                     res[prop] = desc;
                 }
             }
+
         return res;
     })
 });
@@ -114,7 +130,7 @@ var Template = Module("Template", {
                 "click": function onClick(event) {
                     event.preventDefault();
                     if (this.commandAllowed) {
-                        if (hasOwnProperty(this.target.commands || {}, this.command))
+                        if (hasOwnProp(this.target.commands || {}, this.command))
                             this.target.commands[this.command].call(this.target);
                         else
                             this.target.command(this.command);
@@ -123,7 +139,7 @@ var Template = Module("Template", {
             },
 
             get commandAllowed() {
-                if (hasOwnProperty(this.target.allowedCommands || {}, this.command))
+                if (hasOwnProp(this.target.allowedCommands || {}, this.command))
                     return this.target.allowedCommands[this.command];
                 if ("commandAllowed" in this.target)
                     return this.target.commandAllowed(this.command);
@@ -148,7 +164,7 @@ var Template = Module("Template", {
 
                 let obj = params.eventTarget;
                 let events = obj[this.getAttribute("events") || "events"];
-                if (hasOwnProperty(events, "input"))
+                if (hasOwnProp(events, "input"))
                     events["dactyl-input"] = events["input"];
 
                 for (let [event, handler] of iter(events))
@@ -231,7 +247,7 @@ var Template = Module("Template", {
         else if (/^n_/.test(topic))
             topic = topic.slice(2);
 
-        if (help.initialized && !hasOwnProperty(help.tags, topic))
+        if (help.initialized && !hasOwnProp(help.tags, topic))
             return ["span", { highlight: type || ""}, text || token];
 
         type = type || (/^'.*'$/.test(token)   ? "HelpOpt" :
@@ -253,7 +269,7 @@ var Template = Module("Template", {
         else if (/^n_/.test(topic))
             topic = topic.slice(2);
 
-        if (help.initialized && !hasOwnProperty(help.tags, topic))
+        if (help.initialized && !hasOwnProp(help.tags, topic))
             return token;
 
         let tag = (/^'.*'$/.test(token)            ? "o" :
@@ -264,11 +280,11 @@ var Template = Module("Template", {
         return [tag, { xmlns: "dactyl" }, topic];
     },
     linkifyHelp: function linkifyHelp(str, help) {
-        let re = util.regexp(literal(function () /*
+        let re = util.regexp(String.raw`
             (?P<pre> [/\s]|^)
             (?P<tag> '[\w-]+' | :(?:[\w-]+!?|!) | (?:._)?<[\w-]+>\w* | \b[a-zA-Z]_(?:[\w[\]]+|.) | \[[\w-;]+\] | E\d{3} )
             (?=      [[\)!,:;./\s]|$)
-        */$), "gx");
+        `, "gx");
         return this.highlightSubstrings(str, (function* () {
             for (let res of re.iterate(str))
                 yield [res.index + res.pre.length, res.tag.length];

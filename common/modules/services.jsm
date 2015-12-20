@@ -194,14 +194,14 @@ var Services = Module("Services", {
      *
      * @param {string} name The class's cache key.
      */
-    create: deprecated("services.*name*()", function create(name) this[util.capitalize(name)]()),
+    create: deprecated("services.*name*()", function create(name) { return this[util.capitalize(name)](); }),
 
     /**
      * Returns the cached service with the specified name.
      *
      * @param {string} name The service's cache key.
      */
-    get: deprecated("services.*name*", function get(name) this[name]),
+    get: deprecated("services.*name*", function get(name) { return this[name]; }),
 
     /**
      * Returns true if the given service is available.
@@ -209,7 +209,7 @@ var Services = Module("Services", {
      * @param {string} name The service's cache key.
      */
     has: function has(name) {
-        return hasOwnProperty(this.services, name) &&
+        return hasOwnProp(this.services, name) &&
                this.services[name].class in Cc &&
                this.services[name].interfaces.every(iface => iface in Ci);
     }

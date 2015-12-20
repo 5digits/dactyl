@@ -36,9 +36,11 @@ var Tabs = Module("tabs", {
             tabs.switchTo(event.originalTarget.getAttribute("identifier"));
         };
 
-        this.tabBinding = styles.system.add("tab-binding", "chrome://browser/content/browser.xul", literal(function () /*
+        this.tabBinding = styles.system.add(
+            "tab-binding", "chrome://browser/content/browser.xul",
+            String.raw`
                 xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab) !important; }
-            */$).replace(/tab-./g, m => config.OS.isMacOSX ? "tab-mac" : m),
+            `,
             false, true);
 
         this.timeout(function () {
@@ -133,10 +135,11 @@ var Tabs = Module("tabs", {
      *     in the current window.
      */
     get browsers() {
-        let browsers = config.tabbrowser.browsers;
-        for (let i = 0; i < browsers.length; i++)
-            if (browsers[i] !== undefined) // Bug in Google's Page Speed add-on.
-                yield [i, browsers[i]];
+        return function* () {
+            for (let [i, browser] of config.tabbrowser.browsers.entries())
+                if (browser !== undefined) // Bug in Google's Page Speed add-on.
+                    yield [i, browser];
+        }();
     },
 
     /**
@@ -1064,7 +1067,7 @@ var Tabs = Module("tabs", {
             tabs.getGroups();
             tabs[visible ? "visibleTabs" : "allTabs"].forEach(function (tab, i) {
                 let group = (tab.tabItem || tab._tabViewTabItem || defItem).parent || defItem.parent;
-                if (!hasOwnProperty(tabGroups, group.id))
+                if (!hasOwnProp(tabGroups, group.id))
                     tabGroups[group.id] = [group.getTitle(), []];
 
                 group = tabGroups[group.id];

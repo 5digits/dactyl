@@ -349,8 +349,8 @@ var Command = Class("Command", {
                 explicitOpts: Class.Memoize(() => ({})),
 
                 has: function AP_has(opt) {
-                    return hasOwnProperty(this.explicitOpts, opt) ||
-                           typeof opt === "number" && hasOwnProperty(this, opt);
+                    return hasOwnProp(this.explicitOpts, opt) ||
+                           typeof opt === "number" && hasOwnProp(this, opt);
                 },
 
                 get literalArg() {
@@ -465,14 +465,36 @@ var Command = Class("Command", {
 
 // Prototype.
 var Ex = Module("Ex", {
-    Local: function Local(dactyl, modules, window) {
+    Local(dactyl, modules, window) {
         return {
+            init() {},
+
             get commands() { return modules.commands; },
             get context() { return modules.contexts.context; }
         };
     },
 
-    _args: function E_args(cmd, args) {
+    commands: null,
+
+    init() {
+        let proxy = new Proxy(this, {
+            get(target, prop, receiver) {
+                if (prop === "isProxy")
+                    return [true, receiver === proxy].join(",");
+
+                if (prop in target || receiver === proxy)
+                    return target[prop];
+
+                return function (...args) {
+                    return this._run(prop)(...args);
+                };
+            },
+        });
+
+        return proxy;
+    },
+
+    _args(cmd, args) {
         args = Array.slice(args);
 
         let res = cmd.newArgs({ context: this.context });
@@ -492,12 +514,13 @@ var Ex = Module("Ex", {
                     Class.replaceProperty(res, opt.names[0], val);
                     res.explicitOpts[opt.names[0]] = val;
                 }
+
         for (let [i, val] of Ary.iterItems(args))
             res[i] = String(val);
         return res;
     },
 
-    _complete: function E_complete(cmd) {
+    _complete(cmd) {
         return (context, func, obj, args) => {
             args = this._args(cmd, args);
             args.completeArg = args.length - 1;
@@ -506,7 +529,7 @@ var Ex = Module("Ex", {
         };
     },
 
-    _run: function E_run(name) {
+    _run(name) {
         const self = this;
         let cmd = this.commands.get(name);
         util.assert(cmd, _("command.noSuch"));
@@ -519,10 +542,6 @@ var Ex = Module("Ex", {
             dactylCompleter: self._complete(cmd)
         });
     },
-
-    __noSuchMethod__: function __noSuchMethod__(meth, args) {
-        return this._run(meth).apply(this, args);
-    }
 });
 
 var CommandHive = Class("CommandHive", Contexts.Hive, {
@@ -616,7 +635,18 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         }
 
         for (let name of names) {
-            ex.__defineGetter__(name, function () { return this._run(name); });
+            if (false)
+                // For some reason, the `this` object of the getter gets
+                // mutilated if we do this in recent Firefox versions.
+                // Just rely on the proxy for now.
+                Object.defineProperty(ex, name, {
+                    configurable: true,
+                    enumerable: true,
+                    get() {
+                        return this._run(name);
+                    },
+                });
+
             if (name in this._map && !this._map[name].isPlaceholder)
                 this.remove(name);
         }
@@ -888,9 +918,9 @@ var Commands = Module("commands", {
         extra.definedAt = contexts.getCaller(caller);
         return apply(group, "add", arguments);
     },
-    addUserCommand: deprecated("group.commands.add", { get: function addUserCommand() this.user.bound._add }),
-    getUserCommands: deprecated("iter(group.commands)", function getUserCommands() iter(this.user).toArray()),
-    removeUserCommand: deprecated("group.commands.remove", { get: function removeUserCommand() this.user.bound.remove }),
+    addUserCommand: deprecated("group.commands.add", { get: function addUserCommand() { return this.user.bound._add } }),
+    getUserCommands: deprecated("iter(group.commands)", function getUserCommands() { return iter(this.user).toArray(); }),
+    removeUserCommand: deprecated("group.commands.remove", { get: function removeUserCommand() { return this.user.bound.remove; } }),
 
     /**
      * Returns the specified command invocation object serialized to
@@ -1074,7 +1104,7 @@ var Commands = Module("commands", {
             let matchOpts = function matchOpts(arg) {
                 // Push possible option matches into completions
                 if (complete && !onlyArgumentsRemaining)
-                    completeOpts = options.filter(opt => (opt.multiple || !hasOwnProperty(args, opt.names[0])));
+                    completeOpts = options.filter(opt => (opt.multiple || !hasOwnProp(args, opt.names[0])));
             };
             let resetCompletions = function resetCompletions() {
                 completeOpts = null;
@@ -1306,14 +1336,14 @@ var Commands = Module("commands", {
         }
     },
 
-    nameRegexp: util.regexp(literal(function () /*
+    nameRegexp: util.regexp(String.raw`
             [^
                 0-9
                 <forbid>
             ]
             [^ <forbid> ]*
-        */$), "gx", {
-        forbid: util.regexp(String.replace(literal(function () /*
+        `, "gx", {
+        forbid: util.regexp(String.replace(String.raw`
             U0000-U002c // U002d -
             U002e-U002f
             U003a-U0040 // U0041-U005a a-z
@@ -1336,7 +1366,7 @@ var Commands = Module("commands", {
             Ufe70-Ufeff // Arabic Presentation Forms-B
             Uff00-Uffef // Halfwidth and Fullwidth Forms
             Ufff0-Uffff // Specials
-        */$), /U/g, "\\u"), "x")
+        `, /U/g, "\\u"), "x")
     }),
 
     validName: Class.Memoize(function validName() {
@@ -1344,7 +1374,7 @@ var Commands = Module("commands", {
     }),
 
     commandRegexp: Class.Memoize(function commandRegexp() {
-        return util.regexp(literal(function () /*
+        return util.regexp(String.raw`
             ^
             (?P<spec>
                 (?P<prespace> [:\s]*)
@@ -1359,7 +1389,7 @@ var Commands = Module("commands", {
                 (?:. | \n)*?
             )?
             $
-        */$), "x", {
+        `, "x", {
             name: this.nameRegexp
         });
     }),
@@ -1832,7 +1862,7 @@ var Commands = Module("commands", {
             iterateIndex: function (args) {
                 let tags = help.tags;
                 return this.iterate(args).filter(cmd => (cmd.hive === commands.builtin ||
-                                                         hasOwnProperty(tags, cmd.helpTag)));
+                                                         hasOwnProp(tags, cmd.helpTag)));
             },
             format: {
                 headings: ["Command", "Group", "Description"],

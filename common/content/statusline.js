@@ -37,27 +37,31 @@ var StatusLine = Module("statusline", {
         config.tabbrowser.getStatusPanel().hidden = true;
 
         if (this.statusBar.localName == "toolbar") {
-            styles.system.add("addon-bar", config.styleableChrome, literal(function () /*
+            styles.system.add("addon-bar", config.styleableChrome, String.raw`
                 #status-bar, #dactyl-status-bar { margin-top: 0 !important; }
                 #dactyl-status-bar { min-height: 0 !important; }
                 :-moz-any(#addon-bar, #dactyl-addon-bar) > statusbar { -moz-box-flex: 1 }
                 :-moz-any(#addon-bar, #dactyl-addon-bar) > xul|toolbarspring { visibility: collapse; }
                 #browser-bottombox>#addon-bar > #addonbar-closebutton { visibility: collapse; }
-            */$));
+            `);
 
             overlay.overlayWindow(window, {
                 append: [
                     ["statusbar", { id: this._statusLine.id, ordinal: "0" }]]
             });
 
-            highlight.loadCSS(util.compileMacro(literal(function () /*
+            let padding = "";
+            if (config.OS.isMacOSX)
+                padding = "padding-right: 10px !important;";
+
+            highlight.loadCSS(String.raw`
                 !AddonBar;#browser-bottombox>#addon-bar,#dactyl-addon-bar {
                     padding-left: 0 !important;
                     padding-top: 0 !important;
                     padding-bottom: 0 !important;
                     min-height: 18px !important;
                     -moz-appearance: none !important;
-                    <padding>
+                    ${padding}
                 }
                 !AddonButton;#browser-bottombox>#addon-bar xul|toolbarbutton, #dactyl-addon-bar xul|toolbarbutton {
                     -moz-appearance: none !important;
@@ -67,12 +71,12 @@ var StatusLine = Module("statusline", {
                     color: inherit !important;
                 }
                 AddonButton:not(:hover)  background: transparent;
-            */$))({ padding: config.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
+            `);
 
             if (document.getElementById("appmenu-button"))
-                highlight.loadCSS(literal(function () /*
+                highlight.loadCSS(String.raw`
                     AppmenuButton       min-width: 0 !important; padding: 0 .5em !important;
-                */$));
+                `);
         }
 
         let prepend = [
@@ -239,8 +243,8 @@ var StatusLine = Module("statusline", {
         this.updateZoomLevel();
     },
 
-    unsafeURI: deprecated("util.unsafeURI", { get: function unsafeURI() util.unsafeURI }),
-    losslessDecodeURI: deprecated("util.losslessDecodeURI", function losslessDecodeURI() apply(util, "losslessDecodeURI", arguments)),
+    unsafeURI: deprecated("util.unsafeURI", { get: function unsafeURI() { return util.unsafeURI; } }),
+    losslessDecodeURI: deprecated("util.losslessDecodeURI", function losslessDecodeURI() { return apply(util, "losslessDecodeURI", arguments); }),
 
     /**
      * Update the URL displayed in the status line. Also displays status

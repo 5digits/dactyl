@@ -39,7 +39,7 @@ var Map = Class("Map", {
         Object.freeze(this.modes);
 
         if (info) {
-            if (hasOwnProperty(Map.types, info.type))
+            if (hasOwnProp(Map.types, info.type))
                 this.update(Map.types[info.type]);
             this.update(info);
         }
@@ -370,7 +370,7 @@ var Mappings = Module("mappings", {
 
     get userHives() { return this.allHives.filter(h => h !== this.builtin); },
 
-    expandLeader: deprecated("your brain", function expandLeader(keyString) keyString),
+    expandLeader: deprecated("your brain", function expandLeader(keyString) { return keyString; }),
 
     prefixes: Class.Memoize(function () {
         let list = Array.map("CASM", s => s + "-");
@@ -415,11 +415,11 @@ var Mappings = Module("mappings", {
         return this.iterate(modes.NORMAL);
     },
 
-    getDefault: deprecated("mappings.builtin.get", function getDefault(mode, cmd) this.builtin.get(mode, cmd)),
-    getUserIterator: deprecated("mappings.user.iterator", function getUserIterator(modes) this.user.iterator(modes)),
-    hasMap: deprecated("group.mappings.has", function hasMap(mode, cmd) this.user.has(mode, cmd)),
-    remove: deprecated("group.mappings.remove", function remove(mode, cmd) this.user.remove(mode, cmd)),
-    removeAll: deprecated("group.mappings.clear", function removeAll(mode) this.user.clear(mode)),
+    getDefault: deprecated("mappings.builtin.get", function getDefault(mode, cmd) { return this.builtin.get(mode, cmd); }),
+    getUserIterator: deprecated("mappings.user.iterator", function getUserIterator(modes) { return this.user.iterator(modes); }),
+    hasMap: deprecated("group.mappings.has", function hasMap(mode, cmd) { return this.user.has(mode, cmd); }),
+    remove: deprecated("group.mappings.remove", function remove(mode, cmd) { return this.user.remove(mode, cmd); }),
+    removeAll: deprecated("group.mappings.clear", function removeAll(mode) { return this.user.clear(mode); }),
 
     /**
      * Adds a new default key mapping.
@@ -839,7 +839,7 @@ var Mappings = Module("mappings", {
                     iterateIndex: function (args) {
                         let self = this;
                         let prefix = /^[bCmn]$/.test(mode.char) ? "" : mode.char + "_";
-                        let haveTag = k => hasOwnProperty(help.tags, k);
+                        let haveTag = k => hasOwnProp(help.tags, k);
 
                         return ({ helpTag: prefix + map.name, __proto__: map }
                                 for (map of self.iterate(args, true))

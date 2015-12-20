@@ -17,6 +17,7 @@ lazyRequire("cache", ["cache"]);
 lazyRequire("dom", ["DOM"]);
 lazyRequire("highlight", ["highlight"]);
 lazyRequire("messages", ["_"]);
+lazyRequire("overlay", ["overlay"]);
 lazyRequire("prefs", ["localPrefs", "prefs"]);
 lazyRequire("storage", ["storage", "File"]);
 lazyRequire("styles", ["Styles"]);
@@ -504,7 +505,7 @@ var ConfigBase = Class("ConfigBase", {
                                             oncommand: "toggleSidebar(this.id || this.observes);" }]);
                 }
 
-                util.overlayWindow(window, { append: append });
+                overlay.overlayWindow(window, { append: append });
             },
 
             get window() { return window; },
@@ -632,14 +633,14 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
         let img = new window.Image;
         img.src = this.logo || "resource://dactyl-local-content/logo.png";
         img.onload = util.wrapCallback(function () {
-            highlight.loadCSS(literal(function () /*
+            highlight.loadCSS(`
                 !Logo  {
                      display:    inline-block;
-                     background: url({src});
-                     width:      {width}px;
-                     height:     {height}px;
+                     background: url(${img.src});
+                     width:      ${img.width}px;
+                     height:     ${img.height}px;
                 }
-            */$).replace(/\{(.*?)\}/g, (m, m1) => img[m1]));
+            `);
             img = null;
         });
     },

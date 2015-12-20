@@ -207,7 +207,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
                     return cache.force(name, true);
         }
 
-        if (hasOwnProperty(this.providers, name)) {
+        if (hasOwnProp(this.providers, name)) {
             util.assert(!this.providing.add(name),
                         "Already generating cache for " + name,
                         false);
@@ -238,7 +238,7 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
         if (this.storage.has(name))
             return this.storage.get(name);
 
-        if (callback && !(hasOwnProperty(this.providers, name) ||
+        if (callback && !(hasOwnProp(this.providers, name) ||
                           this.localProviders.has(name)))
             this.register(name, callback, long);
 
@@ -249,14 +249,14 @@ var Cache = Module("Cache", XPCOM(Ci.nsIRequestObserver), {
     },
 
     _has: function _has(name) {
-        return hasOwnProperty(this.providers, name) ||
+        return hasOwnProp(this.providers, name) ||
                this.storage.has(name);
     },
 
     has: function has(name) {
         return [this.globalProviders, this.localProviders]
                    .some(obj => isinstance(obj, ["Set"]) ? obj.has(name)
-                                                         : hasOwnProperty(obj, name));
+                                                         : hasOwnProp(obj, name));
     },
 
     register: function register(name, callback, long) {

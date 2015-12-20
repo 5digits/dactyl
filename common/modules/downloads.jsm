@@ -97,10 +97,10 @@ var Download = Class("Download", {
     }),
 
     command: function command(name) {
-        util.assert(hasOwnProperty(this.allowedCommands, name), _("download.unknownCommand"));
+        util.assert(hasOwnProp(this.allowedCommands, name), _("download.unknownCommand"));
         util.assert(this.allowedCommands[name], _("download.commandNotAllowed"));
 
-        if (hasOwnProperty(this.commands, name))
+        if (hasOwnProp(this.commands, name))
             this.commands[name].call(this);
     },
 
@@ -560,7 +560,7 @@ var Downloads_ = Module("downloads", XPCOM(Ci.nsIDownloadProgressListener), {
 
                 validator: function (value) {
                     let seen = new RealSet();
-                    return value.every(val => /^[+-]/.test(val) && hasOwnProperty(this.values, val.substr(1))
+                    return value.every(val => /^[+-]/.test(val) && hasOwnProp(this.values, val.substr(1))
                                                                 && !seen.add(val.substr(1)))
                         && value.length;
                 }

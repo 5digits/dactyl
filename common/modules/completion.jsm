@@ -222,9 +222,13 @@ var CompletionContext = Class("CompletionContext", {
          * @function
          */
         this.getKey = function getKey(item, key) {
-            return (typeof self.keys[key] == "function") ? self.keys[key].call(this, item.item) :
-                key in self.keys ? item.item[self.keys[key]]
-                                 : item.item[key];
+            if (typeof self.keys[key] == "function")
+                return self.keys[key].call(this, item.item);
+
+            if (key in self.keys)
+                return item.item[self.keys[key]];
+
+            return item.item[key];
         };
         return this;
     },
@@ -1318,8 +1322,8 @@ var Completion = Module("completion", {
                 },
 
                 setter: function setter(values) {
-                    if (values.length == 1 && !hasOwnProperty(values[0], this.values)
-                            && Array.every(values[0], v => hasOwnProperty(this.valueMap, v)))
+                    if (values.length == 1 && !hasOwnProp(values[0], this.values)
+                            && Array.every(values[0], v => hasOwnProp(this.valueMap, v)))
                         return Array.map(values[0], v => this.valueMap[v]);
 
                     return values;

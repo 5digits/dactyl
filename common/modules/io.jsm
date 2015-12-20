@@ -313,7 +313,7 @@ var IO = Module("io", {
      */
     sourcing: null,
 
-    expandPath: deprecated("File.expandPath", function expandPath() apply(File, "expandPath", arguments)),
+    expandPath: deprecated("File.expandPath", function expandPath() { return apply(File, "expandPath", arguments); }),
 
     /**
      * Returns the first user RC file found in *dir*.
@@ -530,15 +530,20 @@ var IO = Module("io", {
                 stdin.write(input);
 
             function result(status, output) {
-                return {
-                    __noSuchMethod__: function (meth, args) {
-                        return apply(this.output, meth, args);
-                    },
-                    valueOf: function () { return this.output; },
-                    output: output.replace(/^(.*)\n$/, "$1"),
-                    returnValue: status,
-                    toString: function () { return this.output; }
-                };
+                return new Proxy(
+                    {
+                        valueOf: function () { return this.output; },
+                        output: output.replace(/^(.*)\n$/, "$1"),
+                        returnValue: status,
+                        toString: function () { return this.output; },
+                    }, {
+                        get(target, prop) {
+                            if (prop in target)
+                                return target[prop];
+
+                            return target.output[prop];
+                        },
+                    });
             }
 
             function async(status) {
@@ -615,7 +620,7 @@ var IO = Module("io", {
     /**
      * @property {string} The current platform's path separator.
      */
-    PATH_SEP: deprecated("File.PATH_SEP", { get: function PATH_SEP() File.PATH_SEP })
+    PATH_SEP: deprecated("File.PATH_SEP", { get: function PATH_SEP() { return File.PATH_SEP; } })
 }, {
     commands: function initCommands(dactyl, modules, window) {
         const { commands, completion, io } = modules;
@@ -723,13 +728,13 @@ var IO = Module("io", {
                 }
 
                 rtItems.ftdetect.template = //{{{
-literal(function () /*" Vim filetype detection file
+String.raw`" Vim filetype detection file
 <header>
 
 au BufNewFile,BufRead *<name>rc*,*.<fileext> set filetype=<name>
-*/$);//}}}
+`;//}}}
                 rtItems.ftplugin.template = //{{{
-literal(function () /*" Vim filetype plugin file
+String.raw`" Vim filetype plugin file
 <header>
 
 if exists("b:did_ftplugin")
@@ -754,9 +759,9 @@ endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
-*/$);//}}}
+`; //}}}
                 rtItems.syntax.template = //{{{
-literal(function () /*" Vim syntax file
+String.raw`" Vim syntax file
 <header>
 
 if exists("b:current_syntax")
@@ -835,7 +840,7 @@ let &cpo = s:cpo_save
 unlet s:cpo_save
 
 " vim: tw=130 et ts=8 sts=4 sw=4:
-*/$);//}}}
+`;//}}}
 
                 const { options } = modules;
 
@@ -1034,12 +1039,26 @@ unlet s:cpo_save
 
             context.title = [full ? "Path" : "Filename", "Type"];
             context.keys = {
-                text: !full ? "leafName" : function (f) this.path,
-                path: function (f) dir + f.leafName,
-                description: function (f) this.isdir ? "Directory" : "File",
-                isdir: function (f) f.isDirectory(),
-                icon: function (f) this.isdir ? "resource://gre/res/html/folder.png"
-                                              : "moz-icon://" + f.leafName
+                text: !full ? "leafName" : function (f) { return this.path },
+
+                path(f) {
+                    return dir + f.leafName;
+                },
+
+                description(f) {
+                    return this.isdir ? "Directory" : "File";
+                },
+
+                isdir(f) {
+                    return f.isDirectory();
+                },
+
+                icon(f) {
+                    if (this.isdir)
+                        return "resource://gre/res/html/folder.png";
+
+                    return "moz-icon://" + f.leafName;
+                },
             };
             context.compare = (a, b) => b.isdir - a.isdir || String.localeCompare(a.text, b.text);
 
@@ -1051,20 +1070,20 @@ unlet s:cpo_save
             let uri = io.isJarURL(dir);
             if (uri)
                 context.generate = function generate_jar() {
-                    return [
-                        {
-                              isDirectory: function () s.substr(-1) == "/",
-                              leafName: /([^\/]*)\/?$/.exec(s)[1]
-                        }
-                        for (s of io.listJar(uri.JARFile, getDir(uri.JAREntry)))];
+                    return Array.from(io.listJar(uri.JARFile, getDir(uri.JAREntry)),
+                                      path => ({
+                                          isDirectory: () => path.substr(-1) == "/",
+                                          leafName: /([^\/]*)\/?$/.exec(s)[1]
+                                      }));
                 };
             else
                 context.generate = function generate_file() {
                     try {
                         return io.File(file || dir).readDirectory();
                     }
-                    catch (e) {}
-                    return [];
+                    catch (e) {
+                        return [];
+                    }
                 };
         };
 
@@ -1098,7 +1117,7 @@ unlet s:cpo_save
         };
 
         completion.addUrlCompleter("file", "Local files", function (context, full) {
-            let match = util.regexp(literal(function () /*
+            let match = util.regexp(String.raw`
                 ^
                 (?P<prefix>
                     (?P<proto>
@@ -1109,7 +1128,7 @@ unlet s:cpo_save
                 )
                 (?P<path> \/[^\/]* )?
                 $
-            */$), "x").exec(context.filter);
+            `, "x").exec(context.filter);
             if (match) {
                 if (!match.path) {
                     context.key = match.proto;

@@ -56,7 +56,7 @@ function httpGet(uri) {
 
 let moduleName;
 let initialized = false;
-let addon = null;
+var addon = null;
 let addonData = null;
 let basePath = null;
 let bootstrap;
@@ -199,23 +199,27 @@ let JSMLoader = {
             manager.unregisterFactory(factory.classID, factory);
     },
 
-    Factory: function Factory(class_) ({
-        __proto__: class_.prototype,
+    Factory(class_) {
+        let res = Object.create(class_.prototype);
 
-        createInstance: function (outer, iid) {
+        res.createInstance = function (outer, iid) {
             try {
                 if (outer != null)
                     throw Cr.NS_ERROR_NO_AGGREGATION;
+
                 if (!class_.instance)
                     class_.instance = new class_();
+
                 return class_.instance.QueryInterface(iid);
             }
             catch (e) {
                 Cu.reportError(e);
                 throw e;
             }
-        }
-    }),
+        };
+
+        return res;
+    },
 
     registerFactory: function registerFactory(factory) {
         manager.registerFactory(factory.classID,
