@@ -117,9 +117,11 @@ var ConfigBase = Class("ConfigBase", {
                     if (isArray(value))
                         value = Set(value);
 
-                    this[prop] = update({}, this[prop],
-                                        iter([util.camelCase(k), value[k]]
-                                             for (k in value)).toObject());
+                    let overrides = {};
+                    for (let [key, val] of Object.entries(value))
+                        overrides[util.camelCase(key)] = val;
+
+                    this[prop] = update({}, this[prop], overrides);
                 }
                 else
                     this[prop] = value;
@@ -239,7 +241,7 @@ var ConfigBase = Class("ConfigBase", {
         if (jar) {
             let prefix = getDir(jar.JAREntry);
             res = Array.from(io.listJar(jar.JARFile, prefix),
-                             s => slice(prefix.length).replace(/\/.*/, ""));
+                             s => s.slice(prefix.length).replace(/\/.*/, ""));
         }
         else {
             res = Array.from(util.getFile(uri).readDirectory())
@@ -433,10 +435,15 @@ var ConfigBase = Class("ConfigBase", {
     get fileExt() { return this.name.slice(0, -6); },
 
     dtd: Class.Memoize(function () {
-        return iter(this.dtdExtra,
-                    (["dactyl." + k, v] for ([k, v] of iter(config.dtdDactyl))),
-                    (["dactyl." + s, config[s]] for (s of config.dtdStrings)))
-                   .toObject();
+        return Ary.toObject([
+            ...Object.entries(this.dtdExtra),
+
+            ...Object.entries(config.dtdDactyl)
+                     .map(([k, v]) => ["dactyl." + k, v]),
+
+            ...config.dtdStrings
+                     .map(str => ["dactyl." + str, config[str]]),
+        ]);
      }),
 
     dtdDactyl: memoize({
