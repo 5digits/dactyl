@@ -67,4 +67,8 @@
             for (let [i, value] of this.entries())
                 yield value;
         };
+
+    if (!String.prototype.includes)
+        String.prototype.includes = String.prototype.contains;
+
 }
