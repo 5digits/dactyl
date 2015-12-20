@@ -685,8 +685,10 @@ var Modes = Module("modes", {
             },
 
             get values() {
-                return Ary.toObject([[m.name.toLowerCase(), m.description]
-                                     for (m of modes._modes) if (!m.hidden)]);
+                return Ary.toObject(
+                    modes._modes.filter(mode => !mode.hidden)
+                         .map(mode => [mode.name.toLowerCase(),
+                                       mode.description]));
             }
         };
 

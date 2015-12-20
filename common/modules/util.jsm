@@ -1778,9 +1778,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {Generator(nsIDOMWindow)}
      */
     iterFrames: function* iterFrames(win) {
-            yield win;
-            for (let i = 0; i < win.frames.length; i++)
-                yield* iterFrames(win.frames[i]);
+        yield win;
+        for (let i = 0; i < win.frames.length; i++)
+            yield* iterFrames(win.frames[i]);
     },
 
     /**

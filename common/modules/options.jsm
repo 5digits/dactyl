@@ -611,7 +611,7 @@ var Option = Class("Option", {
         list: function list(value, parse) {
             let prev = null;
             return Ary.compact(Option.splitList(value, true)
-                                       .map(function (v) {
+                                     .map(v => {
                 let [count, filter, quote] = Commands.parseArg(v, /:/, true);
 
                 let val = v.substr(count + 1);
@@ -624,7 +624,7 @@ var Option = Class("Option", {
                     util.assert(prev, _("error.syntaxError"), false);
                     prev.result += "," + v;
                 }
-            }, this));
+            }));
         },
     },
 
@@ -886,7 +886,7 @@ var Option = Class("Option", {
 
 update(BooleanOption.prototype, {
     names: Class.Memoize(function () {
-        return Ary.flatten([[name, "no" + name] for (name of this.realNames)]);
+        return this.realNames.flatMap(name => [name, "no" + name]);
     })
 });
 
@@ -1504,7 +1504,7 @@ var Options = Module("options", {
                     bang: true,
                     completer: setCompleter,
                     domains: function domains(args) {
-                        return Ary.flatten(args.map(function (spec) {
+                        return args.flatMap(spec => {
                             try {
                                 let opt = modules.options.parseOpt(spec);
                                 if (opt.option && opt.option.domains)
@@ -1514,17 +1514,17 @@ var Options = Module("options", {
                                 util.reportError(e);
                             }
                             return [];
-                        }));
+                        });
                     },
                     keepQuotes: true,
-                    privateData: function privateData(args) {
-                        return args.some(function (spec) {
-                            let opt = modules.options.parseOpt(spec);
-                            return opt.option && opt.option.privateData &&
-                                   (!callable(opt.option.privateData) ||
-                                   opt.option.privateData(opt.values));
-                        });
-                    }
+                    privateData: args => args.some(spec => {
+                        let opt = modules.options.parseOpt(spec);
+
+                        return (opt.option &&
+                                opt.option.privateData &&
+                                (!callable(opt.option.privateData) ||
+                                 opt.option.privateData(opt.values)));
+                    }),
                 }, params.extra || {}));
         });
 

@@ -240,8 +240,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         let name = commands.add(params.name, params.description,
             function (args) {
-                let results = Ary(params.iterate(args))
-                    .sort((a, b) => String.localeCompare(a.name, b.name));
+                let results = Array.from(params.iterate(args))
+                                   .sort((a, b) => String.localeCompare(a.name, b.name));
 
                 let filters = args.map(arg => {
                     let re = util.regexp.escape(arg);
@@ -261,22 +261,24 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         return seen[this.text] + /*L*/" matching items";
                     };
                     context.ignoreCase = true;
+
                     let seen = {};
-                    context.completions = Ary(keys(item).join(" ").toLowerCase().split(/[()\s]+/)
-                                              for (item of params.iterate(args)))
-                        .flatten()
-                        .map(function (k) {
-                            seen[k] = (seen[k] || 0) + 1;
-                            return k;
-                        }).uniq();
+                    context.completions = new RealSet(
+                        Array.from(params.iterate(args))
+                             .flatMap(item => Object.keys(item).join(" ")
+                                                    .toLowerCase().split(/[()\s]+/))
+                             .map(k => {
+                                 seen[k] = (seen[k] || 0) + 1;
+                                 return k;
+                             }));
                 },
                 options: params.options || []
             });
 
         if (params.index)
             this.indices[params.index] = function* () {
-                let results = Ary((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
-                        .array.sort((a, b) => String.localeCompare(a.name, b.name));
+                let results = Array.from((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
+                                   .sort((a, b) => String.localeCompare(a.name, b.name));
 
                 for (let obj of results) {
                     let res = dactyl.generateHelp(obj, null, null, true);
@@ -646,7 +648,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Initialize the help system.
      */
     initHelp: function initHelp() {
-        util.dumpStack('INIT HELP');
         if ("noscriptOverlay" in window)
             window.noscriptOverlay.safeAllow("dactyl:", true, false);
 
@@ -1415,11 +1416,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 // FIXME: cleanup
                 cleanupValue: config.cleanups.guioptions ||
-                    "rb" + [k for ([k, v] of iter(groups[1].opts))
-                            if (!Dactyl.isToolbarHidden(document.getElementById(v[1][0])))].join(""),
+                    "rb" + Object.entries(groups[1].opts)
+                                 .filter(([k, v]) => !Dactyl.isToolbarHidden(document.getElementById(v[1][0])))
+                                 .map(([k]) => k)
+                                 .join(""),
 
-                values: Ary(groups).map(g => [[k, v[0]] for ([k, v] of iter(g.opts))])
-                                   .flatten(),
+                values: groups.flatMap(g => Object.entries(g.opts)
+                                                  .map(([k, v]) => [k, v[0]])),
 
                 setter: function (value) {
                     for (let group of groups)

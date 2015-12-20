@@ -58,8 +58,8 @@ var Buffer = Module("Buffer", {
      *     buffer. Only returns style sheets for the 'screen' media type.
      */
     get alternateStyleSheets() {
-        let stylesheets = Ary.flatten(
-            this.allFrames().map(w => Array.slice(w.document.styleSheets)));
+        let stylesheets = this.allFrames()
+                              .flatMap(w => w.document.styleSheets);
 
         return stylesheets.filter(
             s => /^(screen|all|)$/i.test(s.media.mediaText) && !/^\s*$/.test(s.title)
@@ -415,11 +415,12 @@ var Buffer = Module("Buffer", {
      * Returns a list of all frames in the given window or current buffer.
      */
     allFrames: function allFrames(win=this.win, focusedFirst) {
-        let frames = iter(util.iterFrames(win)).toArray();
+        let frames = Array.from(util.iterFrames(win));
 
-        if (focusedFirst)
-            return frames.filter(f => f === this.focusedFrame).concat(
-                   frames.filter(f => f !== this.focusedFrame));
+        if (focusedFirst) {
+            let focused = this.focusedFrame;
+            return frames.sort((a, b) => (b === focused) - (a === focused));
+        }
 
         return frames;
     },
@@ -2415,8 +2416,10 @@ var Buffer = Module("Buffer", {
 
                     let frames = buffer.allFrames(undefined, true);
 
-                    let elements = Ary.flatten(frames.map(win => [m for (m of DOM.XPath(xpath, win.document))]))
-                                      .filter(function (elem) {
+                    let elements = Array.from(frames)
+                                        .flatMap(win => DOM.XPath(xpath, win.document))
+                                        .filter(elem => {
+
                         if (isinstance(elem, [Ci.nsIDOMHTMLFrameElement,
                                               Ci.nsIDOMHTMLIFrameElement]))
                             return Editor.getEditor(elem.contentWindow);
@@ -2428,9 +2431,11 @@ var Buffer = Module("Buffer", {
 
                         let style = elem.style;
                         let rect = elem.rect;
+
                         return elem.isVisible &&
-                            (elem[0] instanceof Ci.nsIDOMXULTextBoxElement || style.MozUserFocus != "ignore") &&
-                            rect.width && rect.height;
+                               (elem[0] instanceof Ci.nsIDOMXULTextBoxElement ||
+                                style.MozUserFocus != "ignore") &&
+                               rect.width && rect.height;
                     });
 
                     dactyl.assert(elements.length > 0);

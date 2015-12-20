@@ -71,10 +71,10 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         let doc = target.ownerDocument || target.document || target;
         let listeners = this.getData(doc, "listeners");
 
-        if (!isObject(event))
-            var [self, events] = [null, Ary.toObject([[event, callback]])];
+        if (isObject(event))
+            var [self, events] = [event, event[callback || "events"]];
         else
-            [self, events] = [event, event[callback || "events"]];
+            [self, events] = [null, { [event]: callback }];
 
         for (let [event, callback] of iter(events)) {
             let args = [Cu.getWeakReference(target),

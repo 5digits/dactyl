@@ -27,16 +27,16 @@ var HelpBuilder = Class("HelpBuilder", {
 
             // Scrape the list of help files from all.xml
             this.tags["all"] = this.tags["all.xml"] = "all";
-            let files = this.findHelpFile("all").map(doc =>
-                    [f.value for (f of DOM.XPath("//dactyl:include/@href", doc))]);
+            let files = this.findHelpFile("all").flatMap(
+                doc => Array.from(DOM.XPath("//dactyl:include/@href", doc),
+                                  f => f.value));
 
             // Scrape the tags from the rest of the help files.
-            Ary.flatten(files).forEach(function (file) {
+            for (let file of files) {
                 this.tags[file + ".xml"] = file;
-                this.findHelpFile(file).forEach(function (doc) {
+                for (let doc of this.findHelpFile(file))
                     this.addTags(file, doc);
-                }, this);
-            }, this);
+            }
         }
         finally {
             delete help._data;
@@ -129,10 +129,12 @@ var Help = Module("Help", {
                 | (?: ^ [^\S\n]* \n) +
             `), "gmxy");
 
-            let betas = util.regexp(/\[((?:b|rc)\d)\]/, "gx");
+            let matchBetas = util.regexp(/\[((?:b|rc)\d)\]/, "gx");
 
-            let beta = Ary(betas.iterate(NEWS))
-                        .map(m => m[1]).uniq().slice(-1)[0];
+            let betas = Array.from(betas.iterate(NEWS),
+                                   match => match[1]);
+
+            let beta = betas.sort().pop();
 
             function rec(text, level, li) {
                 let res = [];
@@ -154,7 +156,9 @@ var Help = Module("Help", {
                     else if (match.par) {
                         let [, par, tags] = /([^]*?)\s*((?:\[[^\]]+\])*)\n*$/.exec(match.par);
                         let t = tags;
-                        tags = Ary(betas.iterate(tags)).map(m => m[1]);
+
+                        tags = Array.from(matchBetas.iterate(tags),
+                                          match => match[1]);
 
                         let group = !tags.length               ? "" :
                                     !tags.some(t => t == beta) ? "HelpNewsOld" : "HelpNewsNew";

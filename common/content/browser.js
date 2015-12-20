@@ -243,12 +243,12 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             { argCount: "0" });
     },
     mappings: function initMappings(dactyl, modules, window) {
-        let openModes = Ary.toObject([
-            [dactyl.CURRENT_TAB, ""],
-            [dactyl.NEW_TAB, "tab"],
-            [dactyl.NEW_BACKGROUND_TAB, "background tab"],
-            [dactyl.NEW_WINDOW, "win"]
-        ]);
+        let openModes = {
+            [dactyl.CURRENT_TAB]: "",
+            [dactyl.NEW_TAB]: "tab",
+            [dactyl.NEW_BACKGROUND_TAB]: "background tab",
+            [dactyl.NEW_WINDOW]: "win",
+        };
 
         function open(mode, args) {
             if (dactyl.forceTarget in openModes)

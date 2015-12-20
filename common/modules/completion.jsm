@@ -284,17 +284,17 @@ var CompletionContext = Class("CompletionContext", {
                 get longestSubstring() { return self.longestAllSubstring; },
 
                 get items() {
-                    return Ary.flatten(self.activeContexts.map(function m(context) {
+                    return self.activeContexts.flatMap(context => {
                         let prefix = self.value.substring(minStart, context.offset);
 
-                        return context.items.map(function m(item) {
+                        return context.items.map(item => {
                             return {
                                 text: prefix + item.text,
                                 result: prefix + item.result,
                                 __proto__: item
                             };
                         });
-                    }));
+                    });
                 }
             });
 
@@ -323,24 +323,23 @@ var CompletionContext = Class("CompletionContext", {
          * Possibly.
          */
         let substrings = lists.reduce(
-            function r(res, list) {
-                return res.filter(function f(str) {
-                    return list.some(function s_(s) {
-                        return s.substr(0, str.length) == str;
-                    });
+            (res, list) => {
+                return res.filter(str => {
+                    return list.some(s => s.substr(0, str.length) == str);
                 });
             },
             lists.pop());
 
         if (!substrings) // FIXME: How is this undefined?
             return [];
+
         return Ary.uniq(Array.slice(substrings));
     },
     // Temporary
     get longestAllSubstring() {
         return this.allSubstrings.reduce(function r(a, b) {
-            return a.length > b.length ? a : b, "";
-        });
+            return a.length > b.length ? a : b;
+        }, "");
     },
 
     get caret() { return this._caret - this.offset; },

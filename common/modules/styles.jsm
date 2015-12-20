@@ -125,9 +125,9 @@ var Hive = Class("Hive", {
     },
 
     get sites() {
-        return Ary(this.sheets).map(s => s.sites)
-                               .flatten()
-                               .uniq().array;
+        let sites = this.sheets.flatMap(s => s.sites);
+
+        return [...new RealSet(sites)];
     },
 
     /**
@@ -557,6 +557,7 @@ var Styles = Module("Styles", {
                     ' (?:[^\\']|\\.)* (?:'|$)
                 )
             `, "gx", this);
+            // " Vim.
         },
 
         get token() {
@@ -617,7 +618,11 @@ var Styles = Module("Styles", {
                 let [filter, css] = args;
 
                 if (!css)
-                    styles.list(window.content, filter ? filter.split(",") : null, args["-name"], args.explicitOpts["-group"] ? [args["-group"]] : null);
+                    styles.list(window.content,
+                                filter ? filter.split(",") : null,
+                                args["-name"],
+                                args.explicitOpts["-group"] ? [args["-group"]]
+                                                            : null);
                 else {
                     util.assert(args["-group"].modifiable && args["-group"].hive.modifiable,
                                 _("group.cantChangeBuiltin", _("style.styles")));
@@ -660,9 +665,9 @@ var Styles = Module("Styles", {
                     { names: ["-nopersist", "-N"], description: "Do not save this style to an auto-generated RC file" }
                 ],
                 serialize: function () {
-                    return Ary(styles.hives)
+                    return styles.hives
                         .filter(hive => hive.persist)
-                        .map(hive =>
+                        .flatMap(hive =>
                              hive.sheets.filter(style => style.persist)
                                  .sort((a, b) => String.localeCompare(a.name || "",
                                                                       b.name || ""))
@@ -674,8 +679,7 @@ var Styles = Module("Styles", {
                                         "-group": hive.name == "user" ? undefined : hive.name,
                                         "-name": style.name || undefined
                                     }
-                                })))
-                        .flatten().array;
+                                })));
                 }
             });
 

@@ -116,7 +116,7 @@ var Map = Class("Map", {
         return this.keys.indexOf(name) >= 0;
     },
 
-    get keys() { return Ary.flatten(this.names.map(mappings.bound.expand)); },
+    get keys() { return this.names.flatMap(mappings.bound.expand); },
 
     /**
      * Execute the action for this mapping.
@@ -404,7 +404,7 @@ var Mappings = Module("mappings", {
     iterate: function* (mode) {
         let seen = new RealSet;
         for (let hive of this.hives.iterValues())
-            for (let map of Ary.iterValues(hive.getStack(mode)))
+            for (let map of hive.getStack(mode))
                 if (!seen.add(map.name))
                     yield map;
     },
@@ -646,26 +646,24 @@ var Mappings = Module("mappings", {
                     if (this.name != "map")
                         return [];
                     else
-                        return Ary(mappings.userHives)
+                        return mappings.userHives
                             .filter(h => h.persist)
-                            .map(hive => [
-                                {
-                                    command: "map",
-                                    options: {
-                                        "-count": map.count ? null : undefined,
-                                        "-description": map.description,
-                                        "-group": hive.name == "user" ? undefined : hive.name,
-                                        "-modes": uniqueModes(map.modes),
-                                        "-silent": map.silent ? null : undefined
-                                    },
-                                    arguments: [map.names[0]],
-                                    literalArg: map.rhs,
-                                    ignoreDefaults: true
-                                }
-                                for (map of userMappings(hive))
-                                if (map.persist)
-                            ])
-                            .flatten().array;
+                            .flatMap(hive =>
+                                Array.from(userMappings(hive))
+                                     .filter(map => map.persist)
+                                     .map(map => ({
+                                         command: "map",
+                                         options: {
+                                             "-count": map.count ? null : undefined,
+                                             "-description": map.description,
+                                             "-group": hive.name == "user" ? undefined : hive.name,
+                                             "-modes": uniqueModes(map.modes),
+                                             "-silent": map.silent ? null : undefined
+                                         },
+                                         arguments: [map.names[0]],
+                                         literalArg: map.rhs,
+                                         ignoreDefaults: true
+                                     })));
                 }
             };
             function* userMappings(hive) {
@@ -731,9 +729,11 @@ var Mappings = Module("mappings", {
                 return Array.concat(value).every(findMode);
             },
             completer: function () {
-                return [[Ary.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.description]
-                        for (mode of modes.all)
-                        if (!mode.hidden)];
+                return modes.all.filter(mode => !mode.hidden)
+                            .map(
+                    mode => [Ary.compact([mode.name.toLowerCase().replace(/_/g, "-"),
+                                          mode.char]),
+                             mode.description]);
             }
         };
 

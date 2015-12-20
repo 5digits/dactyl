@@ -186,7 +186,6 @@ defineModule("base", {
         "Set",
         "Struct",
         "StructBase",
-        "Symbol",
         "TextEncoder",
         "TextDecoder",
         "Timer",
@@ -217,6 +216,7 @@ defineModule("base", {
         "iterOwnProperties",
         "keys",
         "literal",
+        "loadPolyfill",
         "memoize",
         "module",
         "octal",
@@ -228,6 +228,12 @@ defineModule("base", {
     ]
 });
 
+function loadPolyfill(obj) {
+    JSMLoader.loadSubScript("resource://dactyl/polyfill.jsm",
+                            obj);
+}
+loadPolyfill(this);
+
 this.lazyRequire("cache", ["cache"]);
 this.lazyRequire("config", ["config"]);
 this.lazyRequire("messages", ["_", "Messages"]);
@@ -235,11 +241,6 @@ this.lazyRequire("promises", ["Task", "promises"]);
 this.lazyRequire("services", ["services"]);
 this.lazyRequire("storage", ["File"]);
 this.lazyRequire("util", ["FailedAssertion", "util"]);
-
-if (typeof Symbol == "undefined")
-    this.Symbol = {
-        iterator: "@@iterator"
-    };
 
 let literal_ = function literal(comment) {
     if (comment)
@@ -1203,34 +1204,19 @@ for (let name of properties(Class.prototype)) {
 }
 
 var closureHooks = {
-    get: function closure_get(target, prop) {
-        if (hasOwnProp(target._closureCache, prop))
+    get(target, prop) {
+        if (prop in target._closureCache)
             return target._closureCache[prop];
 
         let p = target[prop];
         if (callable(p))
             return target._closureCache[prop] = p.bind(target);
         return p;
-    }
-
-    /*
-    getOwnPropertyNames: function getOwnPropertyNames(target) {
-        return [k for (k in properties(target, true))];
     },
-
-    getOwnPropertyDescriptor: function getOwnPropertyDescriptor(target, prop) {
-        let self = this;
-        return {
-            configurable: false,
-            writable: false,
-            get value() { return self.get(target, prop); }
-        }
-    }
-    */
 };
 
 Class.makeClosure = function makeClosure() {
-    this._closureCache = {};
+    this._closureCache = Object.create(null);
 
     return new Proxy(this, closureHooks);
 };
@@ -1402,7 +1388,7 @@ function Struct(...args) {
 
     const Struct = Class(className || "Struct", StructBase, {
         length: args.length,
-        members: Ary(args).map((v, k) => [v, k]).toObject()
+        members: Ary.toObject(args.map((v, k) => [v, k])),
     });
     args.forEach(function (name, i) {
         Struct.prototype.__defineGetter__(name, function () {
@@ -1617,12 +1603,12 @@ function iter(obj, iface) {
     else if (Symbol.iterator in obj)
         res = obj[Symbol.iterator]();
     else if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
-        res = Ary.iterItems(obj);
+        res = Array.from(obj).entries();
     else if (ctypes && ctypes.CData && obj instanceof ctypes.CData) {
         while (obj.constructor instanceof ctypes.PointerType)
             obj = obj.contents;
         if (obj.constructor instanceof ctypes.ArrayType)
-            res = Ary.iterItems(obj);
+            res = Array.from(obj).entries();
         else if (obj.constructor instanceof ctypes.StructType)
             res = (function* () {
                 for (let prop of obj.constructor.fields) {
@@ -1664,14 +1650,14 @@ function iter(obj, iface) {
     }
 
     if (res === undefined)
-        res = Iterator(obj)[Symbol.iterator]();
+        res = Object.entries(obj).values();
 
     return Iter(res);
 }
 update(iter, {
-    toArray: function toArray(iter) {
-        return Ary(iter).array;
-    },
+    toArray: deprecated("Array.from", function toArray(iter) {
+        return Array.from(iter);
+    }),
 
     // See Ary.prototype for API docs.
     toObject: function toObject(iter) {
@@ -1939,10 +1925,10 @@ var Ary = Class("Ary", Array, {
      * @param {Array} ary
      * @returns {Iterator(Object)}
      */
-    iterValues: function* iterValues(ary) {
+    iterValues: deprecated("Array#values", function* iterValues(ary) {
         for (let i = 0; i < ary.length; i++)
             yield ary[i];
-    },
+    }),
 
     /**
      * Returns an Iterator for an array's indices and values.
@@ -1950,11 +1936,11 @@ var Ary = Class("Ary", Array, {
      * @param {Array} ary
      * @returns {Iterator([{number}, {Object}])}
      */
-    iterItems: function* iterItems(ary) {
+    iterItems: deprecated("Array#entries", function* iterItems(ary) {
         let length = ary.length;
         for (let i = 0; i < length; i++)
             yield [i, ary[i]];
-    },
+    }),
 
     /**
      * Returns the nth member of the given array that matches the

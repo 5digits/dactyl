@@ -456,13 +456,13 @@ var Highlights = Module("Highlight", {
             context.keys = { text: f => f.leafName.replace(extRe, ""),
                              description: ".parent.path" };
             context.completions =
-                Ary.flatten(
-                      io.getRuntimeDirectories("colors").map(
-                          dir => dir.readDirectory()
-                                    .filter(file => extRe.test(file.leafName))))
-                   .concat([
-                      { leafName: "default", parent: { path: /*L*/"Revert to builtin colorscheme" } }
-                   ]);
+                io.getRuntimeDirectories("colors")
+                  .flatMap(dir => dir.readDirectory()
+                                     .filter(file => extRe.test(file.leafName)))
+                  .concat([
+                      { leafName: "default",
+                        parent: { path: /*L*/"Revert to builtin colorscheme" } }
+                  ]);
 
         };
 

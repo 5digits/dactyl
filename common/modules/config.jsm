@@ -235,20 +235,19 @@ var ConfigBase = Class("ConfigBase", {
 
         let uri = "resource://dactyl-locale/";
         let jar = io.isJarURL(uri);
+        let res;
         if (jar) {
             let prefix = getDir(jar.JAREntry);
-            var res = iter(s.slice(prefix.length).replace(/\/.*/, "")
-                           for (s of io.listJar(jar.JARFile, prefix)))
-                        .toArray();
+            res = Array.from(io.listJar(jar.JARFile, prefix),
+                             s => slice(prefix.length).replace(/\/.*/, ""));
         }
         else {
-            res = Ary(f.leafName
-                      // Fails on FF3: for (f of util.getFile(uri).iterDirectory())
-                      for (f of util.getFile(uri).readDirectory())
-                      if (f.isDirectory())).array;
+            res = Array.from(util.getFile(uri).readDirectory())
+                       .filter(f => f.isDirectory())
+                       .map(f => f.leafName);
         }
 
-        let exists = function exists(pkg) {
+        let exists = pkg => {
             return services["resource:"].hasSubstitution("dactyl-locale-" + pkg);
         };
 
@@ -265,9 +264,14 @@ var ConfigBase = Class("ConfigBase", {
      * @returns {string}
      */
     bestLocale: function (list) {
-        return values([this.appLocale, this.appLocale.replace(/-.*/, ""),
-                       "en", "en-US", list[0]])
-            .find(bind("has", new RealSet(list)));
+        let candidates =  [this.appLocale,
+                           this.appLocale.replace(/-.*/, ""),
+                           "en",
+                           "en-US",
+                           list[0]];
+
+        list = new RealSet(list);
+        return candidates.find(locale => list.has(locale));
     },
 
     /**

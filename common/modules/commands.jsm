@@ -251,7 +251,7 @@ var Command = Class("Command", {
 
     /** @property {[string]} All of this command's long and short names. */
     names: Class.Memoize(function () {
-        return this.names = Ary.flatten(this.parsedSpecs);
+        return this.parsedSpecs.flatMap();
     }),
 
     /** @property {string} This command's description, as shown in :listcommands */
@@ -330,9 +330,9 @@ var Command = Class("Command", {
     _options: [],
 
     optionMap: Class.Memoize(function () {
-        return Ary(this.options)
-                   .map(opt => opt.names.map(name => [name, opt]))
-                   .flatten().toObject();
+        return Ary.toObject(
+            Array.from(this.options)
+                 .flatMap(opt => opt.names.map(name => [name, opt])));
     }),
 
     newArgs: function newArgs(base) {
@@ -456,7 +456,7 @@ var Command = Class("Command", {
      *  @returns {Array}
      */
     parseSpecs: function parseSpecs(specs) {
-        return specs.map(function (spec) {
+        return specs.map(spec => {
             let [, head, tail] = /([^[]+)(?:\[(.*)])?/.exec(spec);
             return tail ? [head + tail, head] : [head];
         });
@@ -498,8 +498,9 @@ var Ex = Module("Ex", {
         args = Array.slice(args);
 
         let res = cmd.newArgs({ context: this.context });
+
         if (isObject(args[0]))
-            for (let [k, v] of iter(args.shift()))
+            for (let [k, v] of Object.entries(args.shift()))
                 if (k == "!")
                     res.bang = v;
                 else if (k == "#")
@@ -515,8 +516,9 @@ var Ex = Module("Ex", {
                     res.explicitOpts[opt.names[0]] = val;
                 }
 
-        for (let [i, val] of Ary.iterItems(args))
+        for (let [i, val] of args.entries())
             res[i] = String(val);
+
         return res;
     },
 
@@ -593,7 +595,9 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         if (this.cached)
             this.modules.initDependencies("commands");
         this.cached = false;
-        return Ary.iterValues(this._list.sort((a, b) => a.name > b.name));
+
+        return this._list.sort((a, b) => String.localeCompare(a.name, b.name))
+                   .values();
     },
 
     /** @property {string} The last executed Ex command line. */
@@ -623,7 +627,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         extra.hive = this;
         extra.parsedSpecs = Command.parseSpecs(specs);
 
-        let names = Ary.flatten(extra.parsedSpecs);
+        let names = extra.parsedSpecs.flatMap();
         let name = names[0];
 
         if (this.name != "builtin") {
@@ -934,10 +938,10 @@ var Commands = Module("commands", {
 
         let defaults = {};
         if (args.ignoreDefaults)
-            defaults = Ary(this.options).map(opt => [opt.names[0], opt.default])
-                                        .toObject();
+            defaults = Ary.toObject(Array.from(this.options,
+                                               opt => [opt.names[0], opt.default]));
 
-        for (let [opt, val] of iter(args.options || {})) {
+        for (let [opt, val] of Object.entries(args.options || {})) {
             if (val === undefined)
                 continue;
             if (val != null && defaults[opt] === val)
@@ -1788,28 +1792,32 @@ var Commands = Module("commands", {
                 literal: 1,
 
                 serialize: function () {
-                    return Ary(commands.userHives)
+                    return commands.userHives
                         .filter(h => h.persist)
-                        .map(hive => [
-                            {
+                        .flatMap(hive =>
+                            Array.from(hive)
+                                 .filter(cmd => cmd.persist)
+                                 .map(cmd =>
+                            ({
                                 command: this.name,
                                 bang: true,
-                                options: iter([v, typeof cmd[k] == "boolean" ? null : cmd[k]]
-                                            // FIXME: this map is expressed multiple times
-                                            for ([k, v] of iter({
-                                                argCount: "-nargs",
-                                                bang: "-bang",
-                                                count: "-count",
-                                                description: "-description"
-                                            }))
-                                            if (cmd[k])).toObject(),
+                                options: Ary.toObject(
+                                    Object.entries({
+                                        argCount: "-nargs",
+                                        bang: "-bang",
+                                        count: "-count",
+                                        description: "-description",
+                                    })
+                                    .filter(([k, v]) => cmd[k])
+                                    .map(([k, v]) => [
+                                        v,
+                                        typeof cmd[k] == "boolean" ? null : cmd[k]
+                                    ])),
                                 arguments: [cmd.name],
                                 literalArg: cmd.action,
                                 ignoreDefaults: true
-                            }
-                            for (cmd of hive) if (cmd.persist)
-                        ])
-                        .flatten().array;
+                            }))
+                        );
                 }
             });
 

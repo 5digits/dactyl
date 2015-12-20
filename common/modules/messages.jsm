@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2014 Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2011-2015 Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -40,25 +40,24 @@ var Messages = Module("messages", {
     },
 
     bundles: Class.Memoize(function () {
-        let urls = [
+        let urls = new RealSet([
             JSMLoader.getTarget("dactyl://locale/"),
             JSMLoader.getTarget("dactyl://locale-local/"),
             "resource://dactyl-locale/en-US/",
             "resource://dactyl-locale-local/en-US/"
-        ].map(url => url + this.name + ".properties");
+        ].map(url => url + this.name + ".properties"));
 
-        return Ary.uniq(urls, true)
-                  .map(services.stringBundle.createBundle)
-                  .filter(bundle => {
-                      try {
-                          bundle.getSimpleEnumeration();
-                          return true;
-                      }
-                      catch (e) {
-                          return false;
-                      }
-                  });
-   }),
+        return Array.from(urls, services.stringBundle.createBundle)
+                    .filter(bundle => {
+                        try {
+                            bundle.getSimpleEnumeration();
+                            return true;
+                        }
+                        catch (e) {
+                            return false;
+                        }
+                    });
+    }),
 
     iterate: function* () {
         let seen = new RealSet;
@@ -111,12 +110,16 @@ var Messages = Module("messages", {
         file = io.File(file);
 
         function properties(base, iter_, prop="description") {
-            return iter(function* _properties() {
+            return Array.from(function* _properties() {
                 function key(...args) {
-                    return [base, obj.identifier || obj.name].concat(args).join(".").replace(/[\\:=]/g, "\\$&");
+                    return [base,
+                            obj.identifier || obj.name,
+                            ...args]
+                           .join(".")
+                           .replace(/[\\:=]/g, "\\$&");
                 }
 
-                for (var obj of iter_) {
+                for (let obj of iter_) {
                     if (!obj.hive || obj.hive.name !== "user") {
                         yield key(prop) + " = " + obj[prop];
 
@@ -135,20 +138,22 @@ var Messages = Module("messages", {
                             yield key("deprecated") + " = " + obj.deprecated;
                     }
                 }
-            }()).toArray();
+            }());
         }
 
-        file.write(
-            Ary(commands.allHives.map(h => properties("command", h)))
-                        .concat(modes.all.map(m =>
-                            properties("map", values(mappings.builtin.getStack(m)
-                                                             .filter(map => map.modes[0] == m)))))
-                        .concat(properties("mode", values(modes.all.filter(m => !m.hidden))))
-                        .concat(properties("option", options))
-                        .concat(properties("hintmode", values(hints.modes), "prompt"))
-                        .concat(properties("pageinfo", values(Buffer.pageInfo), "title"))
-                        .concat(properties("sanitizeitem", values(sanitizer.itemMap)))
-                .flatten().uniq().join("\n"));
+        let allMessages = [
+            ...commands.allHives.map(h => properties("command", h)),
+            ...modes.all.flatMap(m =>
+                properties("map", values(mappings.builtin.getStack(m)
+                                                 .filter(map => map.modes[0] == m)))),
+            ...properties("mode", values(modes.all.filter(m => !m.hidden))),
+            ...properties("option", options),
+            ...properties("hintmode", values(hints.modes), "prompt"),
+            ...properties("pageinfo", values(Buffer.pageInfo), "title"),
+            ...properties("sanitizeitem", values(sanitizer.itemMap)),
+        ];
+
+        file.write(allMessages.join("\n"));
     }
 }, {
     Localized: Class("Localized", Class.Property, {

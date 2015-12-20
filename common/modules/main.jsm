@@ -104,6 +104,8 @@ var Modules = function Modules(window) {
                                                  wantXrays: true,
                                                  metadata: { addonID: config.addon.id } });
 
+        loadPolyfill(sandbox);
+
         // Hack:
         // sandbox.Object = jsmodules.Object;
         sandbox.File = global.File;

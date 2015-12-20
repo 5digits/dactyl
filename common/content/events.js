@@ -23,10 +23,10 @@ var EventHive = Class("EventHive", Contexts.Hive, {
     },
 
     _events: function _events(event, callback) {
-        if (!isObject(event))
-            var [self, events] = [null, Ary.toObject([[event, callback]])];
+        if (isObject(event))
+            var [self, events] = [event, event[callback || "events"]];
         else
-            [self, events] = [event, event[callback || "events"]];
+            [self, events] = [null, { [event]: callback }];
 
         if (hasOwnProp(events, "input") && !hasOwnProp(events, "dactyl-input"))
             events["dactyl-input"] = events.input;
@@ -1141,7 +1141,7 @@ var Events = Module("events", {
                         return this.value.filter(f => f(buffer.documentURI));
                     });
                     memoize(this, "pass", function () {
-                        return new RealSet(Ary.flatten(this.filters.map(f => f.keys)));
+                        return new RealSet(this.filters.flatMap(f => f.keys));
                     });
                     memoize(this, "commandHive", function hive() {
                         return Hive(this.filters, "command");

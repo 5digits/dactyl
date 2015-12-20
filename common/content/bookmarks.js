@@ -436,10 +436,9 @@ var Bookmarks = Module("bookmarks", {
             names: ["-tags", "-T"],
             description: "A comma-separated list of tags",
             completer: function tags(context) {
-                context.generate = () => Ary(b.tags
-                                             for (b of bookmarkcache)
-                                             if (b.tags))
-                                            .flatten().uniq().array;
+                context.generate = () => new RealSet(Array.from(bookmarkcache)
+                                                          .flatMap(b.tags));
+
                 context.keys = { text: identity, description: identity };
             },
             type: CommandOption.LIST

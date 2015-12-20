@@ -110,9 +110,10 @@ var JavaScript = Module("javascript", {
         if (isPrototypeOf.call(this.toplevel, obj) && !toplevel)
             return [];
 
-        let completions = [k for (k of this.iter(obj, toplevel))];
+        let completions = Array.from(this.iter(obj, toplevel));
         if (obj === this.modules) // Hack.
-            completions = Ary.uniq(completions.concat([k for (k of this.iter(this.modules.jsmodules, toplevel))]));
+            completions = [...new RealSet([...completions,
+                                           ...this.iter(this.modules.jsmodules, toplevel)])];
         return completions;
     },
 
@@ -640,7 +641,9 @@ var JavaScript = Module("javascript", {
      * enumerable by any standard method.
      */
     globalNames: Class.Memoize(function () {
-        return Ary.uniq([
+        let interfaces = Object.keys(Ci);
+
+        let names = new RealSet([
             "Array", "ArrayBuffer", "AttributeName", "Audio", "Boolean", "Components",
             "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
             "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date", "Error",
@@ -655,11 +658,14 @@ var JavaScript = Module("javascript", {
             "XMLList", "XMLSerializer", "XPCNativeWrapper",
             "XULControllers", "constructor", "decodeURI", "decodeURIComponent",
             "encodeURI", "encodeURIComponent", "escape", "eval", "isFinite", "isNaN",
-            "isXMLName", "parseFloat", "parseInt", "undefined", "unescape", "uneval"
-        ].concat([k.substr(6) for (k of keys(Ci)) if (/^nsIDOM/.test(k))])
-         .concat([k.substr(3) for (k of keys(Ci)) if (/^nsI/.test(k))])
-         .concat(this.magicalNames)
-         .filter(k => k in this.window));
+            "isXMLName", "parseFloat", "parseInt", "undefined", "unescape", "uneval",
+
+            ...interfaces.filter(key => /^nsIDOM/.test(key)).map(key => k.substr(6)),
+            ...interfaces.filter(key => /^nsI/.test(key)).map(key => k.substr(3)),
+            ...this.magicalNames,
+        ]);
+
+        return [...names].filter(key => key in this.window);
     })
 }, {
     EVAL_TMP: "__dactyl_eval_tmp",

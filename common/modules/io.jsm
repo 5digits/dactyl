@@ -589,11 +589,13 @@ var IO = Module("io", {
      *     otherwise, the return value of *func*.
      */
     withTempFiles: function withTempFiles(func, self, checked, ext, label) {
-        let args = Ary(util.range(0, func.length))
-                    .map(bind("createTempFile", this, ext, label)).array;
+        let args = Array.from(util.range(0, func.length),
+                              () => this.createTempFile(ext, label));
+
         try {
             if (!args.every(identity))
                 return false;
+
             var res = func.apply(self || this, args);
         }
         finally {
@@ -679,11 +681,10 @@ var IO = Module("io", {
                 dactyl.assert(!file.exists() || args.bang, _("io.exists", JSON.stringify(file.path)));
 
                 // TODO: Use a set/specifiable list here:
-                let lines = [cmd.serialize().map(commands.commandToString, cmd)
-                             for (cmd of commands.iterator())
-                             if (cmd.serialize)];
-
-                lines = Ary.flatten(lines);
+                let lines = Array.from(commands.iterator())
+                                 .filter(cmd => cmd.serialize)
+                                 .flatMap(cmd => cmd.serialize()
+                                                    .map(commands.commandToString, cmd));
 
                 lines.unshift('"' + config.version + "\n");
                 lines.push("\n\" vim: set ft=" + config.name + ":");
@@ -840,7 +841,7 @@ let &cpo = s:cpo_save
 unlet s:cpo_save
 
 " vim: tw=130 et ts=8 sts=4 sw=4:
-`;//}}}
+`;//}}} "
 
                 const { options } = modules;
 
@@ -876,15 +877,21 @@ unlet s:cpo_save
                     appname: config.appName,
                     fileext: config.fileExtension,
                     maintainer: "Doug Kearns <dougkearns@gmail.com>",
+
                     autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
-                                       keys(config.autocommands)),
+                                       Object.keys(config.autocommands)),
+
                     commands: wrap("syn keyword " + config.name + "Command ",
-                                  Ary(c.specs for (c of commands.iterator())).flatten()),
+                                   Array.from(commands.iterator()).flatMap(cmd => cmd.specs)),
+
                     options: wrap("syn keyword " + config.name + "Option ",
-                                  Ary(o.names for (o of options) if (o.type != "boolean")).flatten()),
+                                  Array.from(options).filter(opt => opt.type != "boolean")
+                                                     .flatMap(opt => opt.names)),
+
                     toggleoptions: wrap("let s:toggleOptions = [",
-                                        Ary(o.realNames for (o of options) if (o.type == "boolean"))
-                                            .flatten().map(JSON.stringify),
+                                        Array.from(options).filter(opt => opt.type == "boolean")
+                                                           .flatMap(opt => opt.realNames)
+                                                           .map(JSON.stringify),
                                         ", ") + "]"
                 }; //}}}
 
@@ -1103,16 +1110,14 @@ unlet s:cpo_save
             context.title = ["Shell Command", "Path"];
             context.generate = () => {
                 let dirNames = services.environment.get("PATH").split(config.OS.pathListSep);
-                let commands = [];
 
-                for (let dirName of dirNames) {
+                return dirNames.flatMap(dirName => {
                     let dir = io.File(dirName);
                     if (dir.exists() && dir.isDirectory())
-                        commands.push([[file.leafName, dir.path] for (file of iter(dir.directoryEntries))
-                                       if (file.isFile() && file.isExecutable())]);
-                }
-
-                return Ary.flatten(commands);
+                        return Array.from(dir.directoryEntries)
+                                    .filter(file => file.isFile() && file.isExecutable())
+                                    .map(file => [file.leafName, dir.path])
+                });
             };
         };
 

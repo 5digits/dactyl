@@ -1379,7 +1379,8 @@ var Hints = Module("hints", {
                 },
                 validator: function (value) {
                     let values = DOM.Event.parse(value).map(DOM.Event.bound.stringify);
-                    return Option.validIf(Ary.uniq(values).length === values.length && values.length > 1,
+
+                    return Option.validIf(new RealSet(values).size === values.length && values.length > 1,
                                           _("option.hintkeys.duplicate"));
                 }
             });

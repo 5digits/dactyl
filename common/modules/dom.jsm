@@ -723,17 +723,17 @@ var DOM = Class("DOM", {
         return this[0].getAttributeNS(ns, key);
     },
 
-    css: update(function css(key, val) {
+    css: update(function css(props, val = undefined) {
         if (val !== undefined)
-            key = Ary.toObject([[key, val]]);
+            props = { [props]: val };
 
-        if (isObject(key))
-            return this.each(function (elem) {
-                for (let [k, v] of iter(key))
+        if (isObject(props))
+            return this.each(elem => {
+                for (let [k, v] of Object.entries(props))
                     elem.style[css.property(k)] = v;
             });
 
-        return this[0].style[css.property(key)];
+        return this[0].style[css.property(props)];
     }, {
         name: function (property) {
             return property.replace(/[A-Z]/g, m0 => "-" + m0.toLowerCase());
@@ -895,13 +895,13 @@ var DOM = Class("DOM", {
         if (isObject(event))
             capture = listener;
         else
-            event = Ary.toObject([[event, listener]]);
+            event = { [event]: listener };
 
-        for (let [evt, callback] of iter(event))
+        for (let [evt, callback] of Object.entries(event))
             event[evt] = util.wrapCallback(callback, true);
 
-        return this.each(function (elem) {
-            for (let [evt, callback] of iter(event))
+        return this.each(elem => {
+            for (let [evt, callback] of Object.entries(event))
                 elem.addEventListener(evt, callback, capture);
         });
     },
@@ -909,30 +909,31 @@ var DOM = Class("DOM", {
         if (isObject(event))
             capture = listener;
         else
-            event = Ary.toObject([[event, listener]]);
+            event = { [event]: listener };
 
-        return this.each(function (elem) {
-            for (let [k, v] of iter(event))
-                elem.removeEventListener(k, v.wrapper || v, capture);
+        return this.each(elem => {
+            for (let [event, callback] of Object.entries(event))
+                elem.removeEventListener(event, callback.wrapper || v, capture);
         });
     },
     once: function once(event, listener, capture) {
         if (isObject(event))
             capture = listener;
         else
-            event = Ary.toObject([[event, listener]]);
+            event = { [event]: listener };
 
         for (let pair of iter(event)) {
             let [evt, callback] = pair;
             event[evt] = util.wrapCallback(function wrapper(event) {
                 this.removeEventListener(evt, wrapper.wrapper, capture);
+
                 return callback.apply(this, arguments);
             }, true);
         }
 
-        return this.each(function (elem) {
-            for (let [k, v] of iter(event))
-                elem.addEventListener(k, v, capture);
+        return this.each(elem => {
+            for (let [event, callback] of Object.entries(event))
+                elem.addEventListener(event, callback, capture);
         });
     },
 
@@ -940,6 +941,7 @@ var DOM = Class("DOM", {
         this.canceled = false;
         return this.each(function (elem) {
             let evt = DOM.Event(this.document, event, params, elem);
+
             if (!DOM.Event.dispatch(elem, evt, extraProps))
                 this.canceled = true;
         }, this);
@@ -1231,7 +1233,7 @@ var DOM = Class("DOM", {
          */
         parse: function parse(input, unknownOk=true) {
             if (isArray(input))
-                return Ary.flatten(input.map(k => this.parse(k, unknownOk)));
+                return input.flatMap(k => this.parse(k, unknownOk));
 
             let out = [];
             for (let match of util.regexp.iterate(/<.*?>?>|[^<]|<(?!.*>)/g, input)) {
@@ -1971,11 +1973,11 @@ var DOM = Class("DOM", {
      * @returns {string}
      */
     makeXPath: function makeXPath(nodes) {
-        return Ary(nodes).map(util.debrace).flatten()
-                         .map(node => /^[a-z]+:/.test(node) ? node
-                                                            : [node, "xhtml:" + node])
-                         .flatten()
-                         .map(node => "//" + node).join(" | ");
+        return nodes.flatMap(util.debrace)
+                    .flatMap(node => /^[a-z]+:/.test(node) ? node
+                                                           : [node, "xhtml:" + node])
+                    .map(node => "//" + node)
+                    .join(" | ");
     },
 
     namespaces: {

@@ -366,23 +366,21 @@ var Abbreviations = Module("abbreviations", {
                         }
                     ],
                     serialize: function () {
-                        return Ary(abbreviations.userHives)
+                        return abbreviations.userHives
                             .filter(h => h.persist)
-                            .map(hive => [
-                                {
-                                    command: this.name,
-                                    arguments: [abbr.lhs],
-                                    literalArg: abbr.rhs,
-                                    options: {
-                                        "-group": hive.name == "user" ? undefined : hive.name,
-                                        "-javascript": callable(abbr.rhs) ? null : undefined
-                                    }
-                                }
-                                for (abbr of hive.merged)
-                                if (abbr.modesEqual(modes))
-                            ]).
-                            flatten().array;
-                    }
+                            .flatMap(hive =>
+                                hive.merged
+                                    .filter(abbr => abbr.modesEqual(modes))
+                                    .map(abbr => ({
+                                        command: this.name,
+                                        arguments: [abbr.lhs],
+                                        literalArg: abbr.rhs,
+                                        options: {
+                                            "-group": hive.name == "user" ? undefined : hive.name,
+                                            "-javascript": callable(abbr.rhs) ? null : undefined
+                                        }
+                                    })));
+                    },
                 });
 
             commands.add([ch + "una[bbreviate]"],
