@@ -26,7 +26,7 @@
                 // The check is necessary, since keys may be removed during
                 // iteration.
                 if (key in obj)
-                    result.push([key, obj[val]]);
+                    result.push([key, obj[key]]);
             }
 
             return result;
@@ -40,7 +40,7 @@
                 // The check is necessary, since keys may be removed during
                 // iteration.
                 if (key in obj)
-                    result.push(obj[val]);
+                    result.push(obj[key]);
             }
 
             return result;
