@@ -122,15 +122,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             global = Class.objectGlobal(obj);
 
         return (global && global.dactyl ||
-                overlay.activeWindow && overlay.activeWindow.dactyl ||
+                loaded.overlay && overlay.activeWindow && overlay.activeWindow.dactyl ||
                 anythingObjectHack);
     }, {
         get(target, prop) {
             if (prop in target)
                 return target[prop];
 
-            if (loaded.overlay)
-                return target()[prop];
+            return target()[prop];
         },
     }),
 

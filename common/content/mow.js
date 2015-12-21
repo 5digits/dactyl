@@ -306,6 +306,11 @@ var MOW = Module("mow", {
         set: function set_mowVisible(value) {
             this.widgets.mowContainer.collapsed = !value;
 
+            // Don't block on the MOW iframe loading if we don't
+            // actually need it.
+            if (!value && !commandline.multilineOutputReady)
+                return;
+
             let elem = this.widget;
             if (!value && elem && elem.contentWindow == document.commandDispatcher.focusedWindow) {
 

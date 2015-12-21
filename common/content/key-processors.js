@@ -18,15 +18,14 @@ var ProcessorStack = Class("ProcessorStack", {
             events.dbg("STACK " + mode);
 
         let main = { __proto__: mode.main, params: mode.params };
-        this.modes = Ary([mode.params.keyModes,
-                          main,
-                          mode.main.allBases.slice(1)]).flatten().compact();
+        this.modes = [...(mode.params.keyModes || []),
+                      main,
+                      ...mode.main.allBases.slice(1)];
 
         if (builtin)
             hives = hives.filter(h => h.name === "builtin");
 
-        this.processors = this.modes.map(m => hives.map(h => KeyProcessor(m, h)))
-                                    .flatten().array;
+        this.processors = this.modes.flatMap(mode => hives.map(hive => KeyProcessor(mode, hive)))
         this.ownsBuffer = !this.processors.some(p => p.main.ownsBuffer);
 
         for (let input of this.processors) {
@@ -83,7 +82,7 @@ var ProcessorStack = Class("ProcessorStack", {
         if (this.ownsBuffer)
             statusline.inputBuffer = this.processors.length ? this.buffer : "";
 
-        if (!this.processors.some(p => !p.extended) && this.actions.length) {
+        if (this.processors.every(p => p.extended) && this.actions.length) {
             // We have matching actions and no processors other than
             // those waiting on further arguments. Execute actions as
             // long as they continue to return PASS.
@@ -115,9 +114,8 @@ var ProcessorStack = Class("ProcessorStack", {
         }
         else if (result !== Events.KILL && !this.actions.length &&
                  !(this.events[0].isReplay || this.passUnknown ||
-                   this.modes.some(function (m) {
-                       return m.passEvent(this);
-                   }, this.events[0]))) {
+                   this.modes.some(mode => mode.passEvent(this.events[0])))) {
+
             // No patching processors, this isn't a fake, pass-through
             // event, we're not in pass-through mode, and we're not
             // choosing to pass unknown keys. Kill the event and beep.

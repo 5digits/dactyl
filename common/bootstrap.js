@@ -46,6 +46,11 @@ function debug(...args) {
         dump(name + ": " + args.join(", ") + "\n");
 }
 
+function* entries(obj) {
+    for (let key of Object.keys(obj))
+        yield [key, obj[key]]
+}
+
 function httpGet(uri) {
     let xmlhttp = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
     xmlhttp.overrideMimeType("text/plain");
@@ -57,8 +62,8 @@ function httpGet(uri) {
 let moduleName;
 let initialized = false;
 var addon = null;
-let addonData = null;
-let basePath = null;
+var addonData = null;
+var basePath = null;
 let bootstrap;
 let bootstrap_jsm;
 let components = {};
@@ -239,10 +244,10 @@ function init() {
     if (!manifest.categories)
         manifest.categories = [];
 
-    for (let [classID, { contract, path, categories }] of Iterator(manifest.components || {})) {
+    for (let [classID, { contract, path, categories }] of entries(manifest.components || {})) {
         components[classID] = new FactoryProxy(getURI(path).spec, classID, contract);
         if (categories)
-            for (let [category, id] in Iterator(categories))
+            for (let [category, id] of entries(categories))
                 manifest.categories.push([category, id, contract]);
     }
 
@@ -250,7 +255,7 @@ function init() {
         categoryManager.addCategoryEntry(category, id, value,
                                          false, true);
 
-    for (let [pkg, path] in Iterator(manifest.resources || {})) {
+    for (let [pkg, path] of entries(manifest.resources || {})) {
         moduleName = moduleName || pkg;
         resourceProto.setSubstitution(pkg, getURI(path));
     }

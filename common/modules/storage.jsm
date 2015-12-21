@@ -920,9 +920,9 @@ var AsyncFile = Class("AsyncFile", File, {
     }),
 
     _setEncoding: function _setEncoding(options) {
-        if (this.encoding != null && !("encoding" in options))
+        if (this.charset != null && !("encoding" in options))
             options = update({}, options,
-                             { encoding: this.encoding });
+                             { encoding: this.charset });
 
         return options;
     },

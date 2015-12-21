@@ -219,6 +219,20 @@ var IO = Module("io", {
         };
     },
 
+    shell: Class.Memoize(() => {
+        if (config.OS.isWindows)
+            return "cmd.exe";
+        else
+            return services.environment.get("SHELL") || "sh";
+    }),
+
+    shellcmdflag: Class.Memoize(() => {
+        if (config.OS.isWindows)
+            return "/c";
+        else
+            return "-c";
+    }),
+
     charsets: Class.Memoize(function () {
         const BASE = "@mozilla.org/intl/unicode/decoder;1?charset=";
         return Object.keys(Cc).filter(k.startsWith(BASE))
@@ -513,12 +527,14 @@ var IO = Module("io", {
      *      command string or an array of strings (a command and arguments)
      *      which will be escaped and concatenated.
      * @param {string} input Any input to be provided to the command on stdin.
-     * @param {function(object)} callback A callback to be called when
-     *      the command completes. @optional
+     * @param {function(object) | boolean} async A callback to be called when
+     *      the command completes, or a boolean indicating that a
+     *      promise should be returned. @optional
      * @returns {object|null}
      */
-    system: function system(command, input, callback) {
-        util.dactyl.echomsg(_("io.callingShell", command), 4);
+    system: function system(command, input = "", async = false) {
+        if (loaded.overlay)
+            util.dactyl.echomsg(_("io.callingShell", command), 4);
 
         let { shellEscape } = util.bound;
 
@@ -545,16 +561,28 @@ var IO = Module("io", {
                     });
             }
 
-            function async(status) {
-                let output = stdout.read();
-                for (let f of [stdin, stdout, cmd])
-                    if (f.exists())
-                        f.remove(false);
-                callback(result(status, output));
+            let deferred;
+            let promise = new Promise((resolve, reject) => {
+                deferred = { resolve, reject };
+            });
+            if (callable(async))
+                promise.then(async);
+
+            function handleResult(status) {
+                stdout.async.read().then(output => {
+                    deferred.resolve(result(status, output));
+                });
             }
 
-            let shell = io.pathSearch(storage["options"].get("shell").value);
-            let shcf = storage["options"].get("shellcmdflag").value;
+            if (!storage["options"])
+                var { shell, shellcmdflag } = this;
+            else {
+                shell = storage["options"].get("shell").value;
+                shellcmdflag = storage["options"].get("shellcmdflag").value;
+            }
+
+            shell = io.pathSearch(shell);
+
             util.assert(shell, _("error.invalid", "'shell'"));
 
             if (isArray(command))
@@ -563,16 +591,18 @@ var IO = Module("io", {
             // TODO: implement 'shellredir'
             if (config.OS.isWindows && !/sh/.test(shell.leafName)) {
                 command = "cd /D " + this.cwd.path + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
-                var res = this.run(shell, shcf.split(/\s+/).concat(command), callback ? async : true);
+                var res = this.run(shell, shellcmdflag.split(/\s+/).concat(command), async ? handleResult : true);
             }
             else {
                 cmd.write("cd " + shellEscape(this.cwd.path) + "\n" +
                           ["exec", ">" + shellEscape(stdout.path), "2>&1", "<" + shellEscape(stdin.path),
-                          shellEscape(shell.path), shcf, shellEscape(command)].join(" "));
-                res = this.run("/bin/sh", ["-e", cmd.path], callback ? async : true);
+                          shellEscape(shell.path), shellcmdflag, shellEscape(command)].join(" "));
+                res = this.run("/bin/sh", ["-e", cmd.path], async ? handleResult : true);
             }
 
-            return callback ? true : result(res, stdout.read());
+            if (async)
+                return promise;
+            return result(res, stdout.read());
         }, this, true);
     },
 
@@ -591,6 +621,11 @@ var IO = Module("io", {
         let args = Array.from(util.range(0, func.length),
                               () => this.createTempFile(ext, label));
 
+        function cleanup() {
+            // XXX: Sync.
+            args.forEach(f => { f.remove(false); });
+        }
+
         try {
             if (!args.every(identity))
                 return false;
@@ -598,8 +633,10 @@ var IO = Module("io", {
             var res = func.apply(self || this, args);
         }
         finally {
-            if (!checked || res !== true)
-                args.forEach(f => { f.remove(false); });
+            if (res && typeof res === "object" && "then" in res && callable(res.then))
+                res.then(cleanup, cleanup);
+            else if (!checked || res !== true)
+                cleanup();
         }
         return res;
     }
@@ -1180,15 +1217,7 @@ unlet s:cpo_save
     options: function initOptions(dactyl, modules, window) {
         const { completion, options } = modules;
 
-        var shell, shellcmdflag;
-        if (config.OS.isWindows) {
-            shell = "cmd.exe";
-            shellcmdflag = "/c";
-        }
-        else {
-            shell = services.environment.get("SHELL") || "sh";
-            shellcmdflag = "-c";
-        }
+        let { shell, shellcmdflag } = io;
 
         options.add(["banghist", "bh"],
             "Replace occurrences of ! with the previous command when executing external commands",

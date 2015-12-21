@@ -317,8 +317,11 @@ var CommandWidgets = Class("CommandWidgets", {
         return document.getElementById("dactyl-contextmenu");
     }),
 
+    multilineOutputReady: false,
+
     multilineOutput: Class.Memoize(function () {
         return this._whenReady("dactyl-multiline-output", elem => {
+            this.multilineOutputReady = true;
             highlight.highlightNode(elem.contentDocument.body, "MOW");
         });
     }, true),
