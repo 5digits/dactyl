@@ -176,7 +176,7 @@ xpi: $(CHROME)
 	rm -r -- $(CHROME)
 
 	@if ! which realpath >/dev/null 2>&1; \
-	then realpah() { 		\
+	then realpath() { 		\
 		local IFS="$$(echo)";	\
 		local x="$$1"; 		\
 		case "$$x" in		\
