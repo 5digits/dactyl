@@ -84,6 +84,8 @@ var Map = Class("Map", {
     /** @property {boolean} Whether the RHS of the mapping should expand mappings recursively. */
     noremap: false,
 
+    passThrough: true,
+
     /** @property {function(object)} A function to be executed before this mapping. */
     preExecute: function preExecute(args) {},
     /** @property {function(object)} A function to be executed after this mapping. */
@@ -232,10 +234,13 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      *
      * @param {Modes.Mode} mode The mode to search.
      * @param {string} cmd The map name to match.
+     * @param {boolean} skipPassThrough Ignore pass-through mappings.
      * @returns {Map|null}
      */
-    get: function (mode, cmd) {
-        return this.getStack(mode).mappings[cmd];
+    get: function (mode, cmd, skipPassThrough = false) {
+        let map = this.getStack(mode).mappings[cmd];
+        if (!(skipPassThrough && map.passThrough))
+            return map;
     },
 
     /**
@@ -244,9 +249,12 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      *
      * @param {Modes.Mode} mode The mode to search.
      * @param {string} prefix The map prefix string to match.
+     * @param {boolean} skipPassThrough Ignore pass-through mappings.
      * @returns {number)
      */
-    getCandidates: function (mode, prefix) {
+    getCandidates: function (mode, prefix, skipPassThrough = false) {
+        if (skipPassThrough)
+            return this.getStack(mode).hardCandidates[prefix] || 0;
         return this.getStack(mode).candidates[prefix] || 0;
     },
 
@@ -294,9 +302,8 @@ var MapHive = Class("MapHive", Contexts.Hive, {
 }, {
     Stack: Class("Stack", Array, {
         init: function (ary) {
-            let self = ary || [];
-            self.__proto__ = this.__proto__;
-            return self;
+            if (ary)
+                this.push(...ary);
         },
 
         "@@iterator": function () {
@@ -304,6 +311,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
         },
 
         get candidates() { return this.states.candidates; },
+        get hardCandidates() { return this.states.hardCandidates; },
         get mappings() { return this.states.mappings; },
 
         add: function (map) {
@@ -312,8 +320,9 @@ var MapHive = Class("MapHive", Contexts.Hive, {
         },
 
         states: Class.Memoize(function () {
-            var states = {
+            let states = {
                 candidates: {},
+                hardCandidates: {},
                 mappings: {}
             };
 
@@ -323,8 +332,11 @@ var MapHive = Class("MapHive", Contexts.Hive, {
                     let state = "";
                     for (let key of DOM.Event.iterKeys(name)) {
                         state += key;
-                        if (state !== name)
+                        if (state !== name) {
                             states.candidates[state] = (states.candidates[state] || 0) + 1;
+                            if (!map.passThrough)
+                                states.hardCandidates[state] = (states.hardCandidates[state] || 0) + 1;
+                        }
                     }
                 }
             return states;

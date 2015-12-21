@@ -1161,14 +1161,16 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
              "<*-Home>", "<*-End>", "<*-PageUp>", "<*-PageDown>",
              "<M-c>", "<M-v>", "<*-Tab>"],
             "Handled by " + config.host,
-            () => Events.PASS_THROUGH);
+            () => Events.PASS,
+            { passThrough: true });
 
         mappings.add([modes.INSERT],
             ["<Space>", "<Return>"], "Expand Insert mode abbreviation",
             function () {
                 editor.expandAbbreviation(modes.INSERT);
-                return Events.PASS_THROUGH;
-            });
+                return Events.PASS;
+            },
+            { passThrough: true });
 
         mappings.add([modes.INSERT],
             ["<C-]>", "<C-5>"], "Expand Insert mode abbreviation",

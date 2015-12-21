@@ -784,21 +784,43 @@ var Events = Module("events", {
 
             let key = DOM.Event.stringify(event);
 
-            let pass = this.passing && !event.isMacro ||
-                    DOM.Event.feedingEvent && DOM.Event.feedingEvent.isReplay ||
-                    event.isReplay ||
-                    modes.main == modes.PASS_THROUGH ||
-                    modes.main == modes.QUOTE
-                        && modes.getStack(1).main !== modes.PASS_THROUGH
-                        && !this.shouldPass(event) ||
-                    !modes.passThrough && this.shouldPass(event) ||
-                    !this.processor && event.type === "keydown"
-                        && options.get("passunknown").getKey(modes.main.allBases)
-                        && !(modes.main.count && /^\d$/.test(key) ||
-                             modes.main.allBases.some(
-                               mode => mappings.hives
-                                               .some(hive => hive.get(mode, key)
-                                                          || hive.getCandidates(mode, key))));
+            let hasCandidates = mode => {
+                return mappings.hives.some(hive => (hive.get(mode, key, true) ||
+                                                    hive.getCandidates(mode, key, true)));
+            };
+
+            let pass = (() => {
+                if (this.passing && !event.isMacro)
+                    return true;
+
+                if (DOM.Event.feedingEvent && DOM.Event.feedingEvent.isReplay)
+                    return true;
+
+                if (event.isReplay)
+                    return true;
+
+                if (modes.main == modes.PASS_THROUGH)
+                    return true;
+
+                if (modes.main == modes.QUOTE &&
+                        modes.getStack(1).main !== modes.PASS_THROUGH &&
+                        !this.shouldPass(event))
+                    return true;
+
+                if (!modes.passThrough && this.shouldPass(event))
+                    return true;
+
+                if (!this.processor && event.type === "keydown" &&
+                        options.get("passunknown").getKey(modes.main.allBases)) {
+                    if (!(modes.main.count && /^\d$/.test(key)))
+                        return true;
+
+                    if (modes.main.allBases.some(hasCandidates))
+                        return true;
+                }
+
+                return false;
+            })();
 
             events.dbg("ON " + event.type.toUpperCase() + " " + key +
                        " passing: " + this.passing + " " +
