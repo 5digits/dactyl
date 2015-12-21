@@ -62,12 +62,19 @@
             return result;
         };
 
+    // < FF43
+    if (!Array.prototype.includes)
+        Array.prototype.includes = function (...args) {
+	    return this.indexOf(...args) != -1;
+        };
+
     if (!Array.prototype.values)
         Array.prototype.values = function* () {
             for (let [i, value] of this.entries())
                 yield value;
         };
 
+    // < FF40
     if (!String.prototype.includes)
         String.prototype.includes = String.prototype.contains;
 
