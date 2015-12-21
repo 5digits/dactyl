@@ -798,7 +798,7 @@ var Commands = Module("commands", {
                         let lines = string.split(/\r\n|[\r\n]/);
                         let startLine = context.line;
 
-                        for (let i = 0; i < lines.length && !context.finished; i++) {
+                        for (var i = 0; i < lines.length && !context.finished; i++) {
                             // Deal with editors from Silly OSs.
                             let line = lines[i].replace(/\r$/, "");
 
