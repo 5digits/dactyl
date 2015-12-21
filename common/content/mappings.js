@@ -84,7 +84,7 @@ var Map = Class("Map", {
     /** @property {boolean} Whether the RHS of the mapping should expand mappings recursively. */
     noremap: false,
 
-    passThrough: true,
+    passThrough: false,
 
     /** @property {function(object)} A function to be executed before this mapping. */
     preExecute: function preExecute(args) {},
@@ -173,7 +173,9 @@ var Map = Class("Map", {
 var MapHive = Class("MapHive", Contexts.Hive, {
     init: function init(group) {
         init.supercall(this, group);
-        this.stacks = {};
+
+        // Name clashes. Ugh.
+        this.stacks = new jsmodules.Map();
     },
 
     /**
@@ -224,9 +226,12 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      * @returns {[Map]}
      */
     getStack: function getStack(mode) {
-        if (!(mode in this.stacks))
-            return this.stacks[mode] = MapHive.Stack();
-        return this.stacks[mode];
+        if (!this.stacks.has(mode.id)) {
+            let stack = MapHive.Stack();
+            this.stacks.set(mode.id, stack);
+            return stack;
+        }
+        return this.stacks.get(mode.id);
     },
 
     /**
@@ -239,8 +244,10 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      */
     get: function (mode, cmd, skipPassThrough = false) {
         let map = this.getStack(mode).mappings[cmd];
-        if (!(skipPassThrough && map.passThrough))
-            return map;
+
+        if (skipPassThrough && map && !map.passThrough)
+            return null;
+        return map;
     },
 
     /**
@@ -284,8 +291,8 @@ var MapHive = Class("MapHive", Contexts.Hive, {
                 delete stack.states;
                 map.names.splice(j, 1);
                 if (map.names.length == 0) // FIX ME.
-                    for (let [mode, stack] of iter(this.stacks))
-                        this.stacks[mode] = MapHive.Stack(stack.filter(m => m != map));
+                    for (let [mode, stack] of this.stacks)
+                        this.stacks.set(mode.id, MapHive.Stack(stack.filter(m => m != map)));
                 return;
             }
         }
@@ -297,7 +304,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      * @param {Modes.Mode} mode The mode to remove all mappings from.
      */
     clear: function (mode) {
-        this.stacks[mode] = MapHive.Stack([]);
+        this.stacks.set(mode.id, MapHive.Stack());
     }
 }, {
     Stack: Class("Stack", Array, {
@@ -680,7 +687,7 @@ var Mappings = Module("mappings", {
             };
             function* userMappings(hive) {
                 let seen = new RealSet;
-                for (let stack of values(hive.stacks))
+                for (let stack of hive.stacks.values())
                     for (let map of Ary.iterValues(stack))
                         if (!seen.add(map.id))
                             yield map;

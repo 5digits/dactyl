@@ -99,6 +99,8 @@ var EventHive = Class("EventHive", Contexts.Hive, {
 var Events = Module("events", {
     dbg: function () {},
 
+    debug: false,
+
     init: function () {
         this.keyEvents = [];
 
@@ -705,9 +707,11 @@ var Events = Module("events", {
                     return Events.kill(event);
                 }
 
-                if (this.processor)
-                    events.dbg("ON KEYPRESS " + key + " processor: " + this.processor,
-                               event.originalTarget instanceof Element ? event.originalTarget : String(event.originalTarget));
+                if (this.processor) {
+                    if (events.debug)
+                        events.dbg("ON KEYPRESS " + key + " processor: " + this.processor,
+                                   event.originalTarget instanceof Element ? event.originalTarget : String(event.originalTarget));
+                }
                 else {
                     let mode = modes.getStack(0);
                     if (event.dactylMode)
@@ -732,9 +736,11 @@ var Events = Module("events", {
                     else if (!event.isMacro && !event.noremap && events.shouldPass(event))
                         ignore = true;
 
-                    events.dbg("\n\n");
-                    events.dbg("ON KEYPRESS " + key + " ignore: " + ignore,
-                               event.originalTarget instanceof Element ? event.originalTarget : String(event.originalTarget));
+                    if (events.debug) {
+                        events.dbg("\n\n");
+                        events.dbg("ON KEYPRESS " + key + " ignore: " + ignore,
+                                   event.originalTarget instanceof Element ? event.originalTarget : String(event.originalTarget));
+                    }
 
                     if (ignore)
                         return null;
@@ -822,11 +828,12 @@ var Events = Module("events", {
                 return false;
             })();
 
-            events.dbg("ON " + event.type.toUpperCase() + " " + key +
-                       " passing: " + this.passing + " " +
-                       " pass: " + pass +
-                       " replay: " + event.isReplay +
-                       " macro: " + event.isMacro);
+            if (events.debug)
+                events.dbg("ON " + event.type.toUpperCase() + " " + key +
+                           " passing: " + this.passing + " " +
+                           " pass: " + pass +
+                           " replay: " + event.isReplay +
+                           " macro: " + event.isMacro);
 
             if (event.type === "keydown")
                 this.passing = pass;
