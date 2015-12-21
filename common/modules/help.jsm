@@ -95,7 +95,7 @@ var Help = Module("Help", {
         update(services["dactyl:"].providers, {
             "help": Loop((uri, path) => help.files[path]),
             "help-overlay": Loop((uri, path) => help.overlays[path]),
-            "help-tag": Loop(function (uri, path) {
+            "help-tag": Loop((uri, path) => {
                 let tag = decodeURIComponent(path);
                 if (tag in help.files)
                     return RedirectChannel("dactyl://help/" + tag, uri);

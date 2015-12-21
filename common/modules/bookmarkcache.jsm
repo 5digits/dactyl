@@ -97,7 +97,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         let res = {};
         for (let bookmark of this)
             if (bookmark.keyword)
-                res[bookmark.keyword] = res;
+                res[bookmark.keyword] = bookmark;
 
         return res;
     }),

@@ -22,7 +22,7 @@ function getSites() {
     const ns     = services.noscript;
     const global = options["script"];
     const groups = { allowed: ns.jsPolicySites, temp: ns.tempSites, untrusted: ns.untrustedSites };
-    const show   = RealSet(options["noscript-list"]);
+    const show   = new RealSet(options["noscript-list"]);
     const sites  = window.noscriptOverlay.getSites();
 
     const blockUntrusted = global && ns.alwaysBlockUntrustedContent;
@@ -76,7 +76,7 @@ function getSites() {
         res = res.concat(ary);
     }
 
-    let seen = RealSet();
+    let seen = new RealSet();
     return res.filter(function (h) {
         let res = !seen.has(h);
         seen.add(h);
@@ -100,7 +100,7 @@ function getObjects() {
         if (sites.some(s => s == host))
             specific.push(filter);
     }
-    let seen = RealSet();
+    let seen = new RealSet();
     return specific.concat(general).filter(function (site) {
         let res = !seen.has(site);
         seen.add(site);
@@ -292,25 +292,25 @@ group.options.add(["script"],
         has: (val) => hasOwnProperty(services.noscript.jsPolicySites.sitesMap, val) &&
             !hasOwnProperty(services.noscript.tempSites.sitesMap, val),
         get set() {
-            return RealSet(k for (k in services.noscript.jsPolicySites.sitesMap))
-                .difference(RealSet(k for (k in services.noscript.tempSites.sitesMap)))
+            return new RealSet(k for (k in services.noscript.jsPolicySites.sitesMap))
+                .difference(new RealSet(k for (k in services.noscript.tempSites.sitesMap)))
         }
     }, {
         names: ["noscript-tempsites", "nst"],
         description: "The list of sites temporarily allowed to execute scripts",
         action: (add, sites) => sites.length && noscriptOverlay.safeAllow(sites, add, true, -1),
         completer: (context) => completion.noscriptSites(context),
-        get set() { return RealSet(k for (k in services.noscript.tempSites.sitesMap)) },
+        get set() { return new RealSet(k for (k in services.noscript.tempSites.sitesMap)) },
     }, {
         names: ["noscript-untrusted", "nsu"],
         description: "The list of untrusted sites",
         action: (add, sites) => sites.length && services.noscript.setUntrusted(sites, add),
         completer: (context) => completion.noscriptSites(context),
-        get set() { return RealSet(k for (k in services.noscript.untrustedSites.sitesMap)) },
+        get set() { return new RealSet(k for (k in services.noscript.untrustedSites.sitesMap)) },
     }, {
         names: ["noscript-objects", "nso"],
         description: "The list of allowed objects",
-        get set() { return RealSet(array.flatten(
+        get set() { return new RealSet(array.flatten(
             [Array.concat(v).map(function (v) { return v + "@" + this; }, k)
              for ([k, v] of iter(services.noscript.objectWhitelist))])) },
         action: function (add, patterns) {
@@ -354,7 +354,7 @@ group.options.add(["script"],
             initialValue: true,
             getter: params.getter || (() => Array.from(params.set)),
             setter: function (values) {
-                let newset  = RealSet(values);
+                let newset  = new RealSet(values);
                 let current = params.set;
                 let value   = this.value;
                 params.action(true,  values.filter(site => !current.has(site)))

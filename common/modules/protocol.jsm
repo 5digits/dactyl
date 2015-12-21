@@ -153,7 +153,8 @@ ProtocolBase.prototype = {
 function LocaleChannel(pkg, locale, path, orig) {
     for (let locale of [locale, "en-US"])
         for (let sep of "-/") {
-            var channel = Channel(["resource:/", pkg + sep + locale, path].join("/"), orig, true, true);
+            var channel = Channel(["resource:/", pkg + sep + locale, path].join("/"),
+                                  orig, true, true);
             if (channel)
                 return channel;
         }
@@ -163,6 +164,7 @@ function LocaleChannel(pkg, locale, path, orig) {
 
 function StringChannel(data, contentType, uri) {
     let channel = services.StreamChannel(uri);
+
     channel.contentStream = services.CharsetConv("UTF-8").convertToInputStream(data);
     if (contentType)
         channel.contentType = contentType;
@@ -201,7 +203,7 @@ function XMLChannel(uri, contentType, noErrorChannel, unprivileged) {
         let [, pre, doctype, url, extra, open, post] = util.regexp(String.raw`
                 ^ ([^]*?)
                 (?:
-                    (<!DOCTYPE \s+ \S+ \s+) (?:SYSTEM \s+ "([^"]*)" | ((?:[^[>\s]|\s[^[])*))
+                    (<!DOCTYPE \s+ \S+ \s+) (?:SYSTEM \s+ "([^\"]*)" | ((?:[^[>\s]|\s[^[])*))
                     (\s+ \[)?
                     ([^]*)
                 )?
