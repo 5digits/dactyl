@@ -1895,7 +1895,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             context.completions = (
                 Object.entries(config.dialogs)
-                      .map(([key, val]) => [k, v[0], v[2]]));
+                      .map(([k, v]) => [k, v[0], v[2]]));
         };
 
         completion.menuItem = function menuItem(context) {
