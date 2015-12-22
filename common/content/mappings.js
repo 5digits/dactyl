@@ -291,8 +291,8 @@ var MapHive = Class("MapHive", Contexts.Hive, {
                 delete stack.states;
                 map.names.splice(j, 1);
                 if (map.names.length == 0) // FIX ME.
-                    for (let [mode, stack] of this.stacks)
-                        this.stacks.set(mode.id, MapHive.Stack(stack.filter(m => m != map)));
+                    for (let [modeId, stack] of this.stacks)
+                        this.stacks.set(modeId, MapHive.Stack(stack.filter(m => m != map)));
                 return;
             }
         }
