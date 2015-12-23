@@ -1081,9 +1081,10 @@ var DOM = Class("DOM", {
             let params = DEFAULTS[t || "HTML"];
             let args = Object.keys(params);
 
-            update(params, this.constructor.defaults[type],
-                   Ary.toObject(Object.entries(opts)
-                                      .filter(([k]) => k in params)));
+            update(params, this.constructor.defaults[type]);
+            for (let p in opts)
+                if (p in params)
+                    params[p] = opts[p];
 
             apply(evt, "init" + t + "Event", args.map(arg => params[arg]));
             return evt;
