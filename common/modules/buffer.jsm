@@ -2929,7 +2929,11 @@ Buffer.addPageInfoSection("s", "Security", function* (verbose) {
 
         yield ["Verified by", data.caOrg];
 
-        let { host, port } = identity._lastUri;
+        let uri = identity._lastUri;
+        if (uri === undefined)
+            uri = identity._uri;
+
+        let { host, port } = uri;
         if (port == -1)
             port = 443;
 
