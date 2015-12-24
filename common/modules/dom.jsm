@@ -1081,10 +1081,11 @@ var DOM = Class("DOM", {
             let params = DEFAULTS[t || "HTML"];
             let args = Object.keys(params);
 
-            update(params, this.constructor.defaults[type]);
+            let props = {}; // FIXME
             for (let p in opts)
                 if (p in params)
-                    params[p] = opts[p];
+                    props[p] = opts[p];
+            update(params, this.constructor.defaults[type], props);
 
             apply(evt, "init" + t + "Event", args.map(arg => params[arg]));
             return evt;
