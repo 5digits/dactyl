@@ -437,7 +437,7 @@ var Bookmarks = Module("bookmarks", {
             description: "A comma-separated list of tags",
             completer: function tags(context) {
                 context.generate = () => new RealSet(Array.from(bookmarkcache)
-                                                          .flatMap(b.tags));
+                                                          .flatMap(b => b.tags));
 
                 context.keys = { text: identity, description: identity };
             },
