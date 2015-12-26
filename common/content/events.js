@@ -817,13 +817,10 @@ var Events = Module("events", {
                     return true;
 
                 if (!this.processor && event.type === "keydown" &&
-                        options.get("passunknown").getKey(modes.main.allBases)) {
-                    if (!(modes.main.count && /^\d$/.test(key)))
-                        return true;
-
-                    if (modes.main.allBases.some(hasCandidates))
-                        return true;
-                }
+                        options.get("passunknown").getKey(modes.main.allBases) &&
+                        !(modes.main.count && /^\d$/.test(key) ||
+                        modes.main.allBases.some(hasCandidates)))
+                    return true;
 
                 return false;
             })();
