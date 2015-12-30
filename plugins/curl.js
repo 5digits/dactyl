@@ -1,7 +1,7 @@
 "use strict";
 var INFO =
 ["plugin", { name: "curl",
-             version: "0.3",
+             version: "0.4",
              href: "http://dactyl.sf.net/pentadactyl/plugins#curl-plugin",
              summary: "Curl command-line generator",
              xmlns: "dactyl" },
@@ -25,6 +25,9 @@ var INFO =
                 "page."]]]];
 
 hints.addMode('C', "Generate curl command for a form", function(elem) {
+    let doc = elem.ownerDocument;
+    let win = doc.defaultView;
+
     if (elem.form)
         var { url, postData, elements } = DOM(elem).formData;
     else
@@ -33,19 +36,31 @@ hints.addMode('C', "Generate curl command for a form", function(elem) {
     if (!url || /^javascript:/.test(url))
         return;
 
-    url = util.newURI(url, null,
-                      elem.ownerDocument.documentURIObject).spec;
+    url = util.newURI(url, null, doc.documentURIObject).spec;
 
-    let { shellEscape } = util.closure;
+    if (!elements)
+        elements = [];
 
-    dactyl.clipboardWrite(["curl"].concat(
-        [].concat(
-            [["--form-string", shellEscape(datum)] for (datum of (elements || []))],
-            postData != null && !elements.length ? [["-d", shellEscape("")]] : [],
-            [["-H", shellEscape("Cookie: " + elem.ownerDocument.cookie)],
-             ["-A", shellEscape(navigator.userAgent)],
-             [shellEscape(url)]]
-        ).map(function(e) e.join(" ")).join(" \\\n     ")).join(" "), true);
+    let paramLines = [
+        ...elements.map(datum => ["--form-string", datum]),
+
+        ["-H", "Cookie: " + doc.cookie],
+
+        ["-A", win.navigator.userAgent],
+
+        [url],
+    ];
+
+    if (postData != null && !elements.length)
+        paramLines.unshift(["-d", postData]);
+
+
+    let { shellEscape } = util.bound;
+    let params = paramLines.map(params => params.map(shellEscape).join(" "))
+                           .join(" \\\n     ");
+
+
+    dactyl.clipboardWrite(`curl ${params}`, true);
 });
 
 /* vim:se sts=4 sw=4 et: */

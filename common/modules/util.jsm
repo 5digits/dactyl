@@ -1543,6 +1543,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * separators.
      */
     shellEscape: function shellEscape(str) {
+        // Pass through simple strings without escaping.
+        if (/^[-+\w/.,/:]+$/.test(str))
+            return str;
+
         return '"' + String.replace(str, /[\\"$`]/g, "\\$&") + '"';
     },
 

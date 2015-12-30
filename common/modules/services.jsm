@@ -175,7 +175,7 @@ var Services = Module("Services", {
      * @param {string} init Name of a property or method used to initialize the
      *     class.
      */
-    addClass: function addClass(name, class_, ifaces, init = null, quiet = false) {
+    addClass: function addClass(name, class_, ifaces, init = null, quiet = true) {
         this.services[name] = { class: class_,
                                 interfaces: Array.concat(ifaces || []),
                                 method: "createInstance",
