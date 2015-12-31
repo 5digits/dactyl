@@ -97,7 +97,9 @@ var EventHive = Class("EventHive", Contexts.Hive, {
  * @instance events
  */
 var Events = Module("events", {
-    dbg: function () {},
+    dbg: function (...args) {
+        util.dump(...args);
+    },
 
     debug: false,
 
@@ -818,11 +820,13 @@ var Events = Module("events", {
 
                 if (!this.processor && event.type === "keydown" &&
                         options.get("passunknown").getKey(modes.main.allBases)) {
-                    if (!(modes.main.count && /^\d$/.test(key)))
-                        return true;
+                    if (modes.main.count && /^\d$/.test(key))
+                        return false;
 
                     if (modes.main.allBases.some(hasCandidates))
-                        return true;
+                        return false;
+
+                    return true;
                 }
 
                 return false;

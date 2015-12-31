@@ -245,8 +245,9 @@ var MapHive = Class("MapHive", Contexts.Hive, {
     get: function (mode, cmd, skipPassThrough = false) {
         let map = this.getStack(mode).mappings[cmd];
 
-        if (skipPassThrough && map && !map.passThrough)
+        if (skipPassThrough && map && map.passThrough)
             return null;
+
         return map;
     },
 
