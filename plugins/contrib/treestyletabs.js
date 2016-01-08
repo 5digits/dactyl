@@ -27,9 +27,9 @@ var INFO = [
 // pass true to close, false to open
 function fold_collapse_expand_target(tab, collapse, children = false) {
     if (children) {
-        let childs = TreeStyleTabService.getDescendantTabs(tab);
-        for (let x in childs) {
-            gBrowser.treeStyleTab.collapseExpandSubtree(childs[x], collapse);
+        let children = TreeStyleTabService.getDescendantTabs(tab);
+        for (let x in children) {
+            gBrowser.treeStyleTab.collapseExpandSubtree(children[x], collapse);
         }
     }
     gBrowser.treeStyleTab.collapseExpandSubtree(tab, collapse);
