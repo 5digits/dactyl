@@ -36,8 +36,15 @@ function fold_collapse_expand_target(tab, collapse, children = false) {
 }
 
 function fold_collapse_expand(collapse, children = false) {
+    let tab = gBrowser.tabContainer.selectedItem;
+
+    if (!TreeStyleTabService.hasChildTabs(tab)) {
+        let tab = TreeStyleTabService.getParentTab(tab);
+        collapse = TreeStyleTabService.isSubtreeCollapsed(tab);
+    }
+
     fold_collapse_expand_target(
-        gBrowser.tabContainer.selectedItem,
+        tab,
         collapse,
         children
         );
