@@ -163,8 +163,23 @@ create_command_and_mapping(
     "tabchildopen",
     "Open one or more URLs in a new child tab",
     function (args) {
-        TreeStyleTabService.readyToOpenChildTab();
-        dactyl.open(args, { where: dactyl.NEW_TAB });
+        let tab = gBrowser.tabContainer.selectedItem;
+        TreeStyleTabService.readyToOpenChildTab(tab, true);
+        dactyl.open(args[0] || "about:blank",
+            { from: "tabopen", where: dactyl.NEW_TAB, background: args.bang });
+        TreeStyleTabService.stopToOpenChildTab();
+    },
+    "",
+    {
+        bang: true,
+        completer: function (context) {
+            completion.url(context);
+        },
+        domains: function (args) {
+            return commands.get("open").domains(args);
+        },
+        literal: 0,
+        privateData: true
     },
     ""
     );
