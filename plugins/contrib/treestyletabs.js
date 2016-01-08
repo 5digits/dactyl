@@ -180,6 +180,41 @@ create_command_and_mapping(
         },
         literal: 0,
         privateData: true
+    }
+    );
+
+create_command_and_mapping(
+    "tabbartoggle",
+    "Toggle tab bar",
+    function () {
+        gBrowser.treeStyleTab.tabbarShown=!gBrowser.treeStyleTab.tabbarShown;
     },
     ""
     );
+
+create_command_and_mapping(
+    "tabclosechildren",
+    "Close children of current tab",
+    function () {
+        let tab = gBrowser.tabContainer.selectedItem;
+        let children = TreeStyleTabService.getDescendantTabs(tab);
+        for (let child in children) {
+            config.removeTab(children[child]);
+        }
+    },
+    ""
+    )
+
+create_command_and_mapping(
+    "tabclosewithchildren",
+    "Close children and current tab",
+    function () {
+        let tab = gBrowser.tabContainer.selectedItem;
+        let children = TreeStyleTabService.getDescendantTabs(tab);
+        for (let child in children) {
+            config.removeTab(children[child]);
+        }
+        config.removeTab(tab);
+    },
+    ""
+    )
