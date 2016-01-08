@@ -50,8 +50,8 @@ function fold_collapse_expand_toggle(children = false) {
         );
 }
 
-function create_command_and_mapping(command, description, funcref, mapping) {
-    group.commands.add([command], description, funcref, {}, true );
+function create_command_and_mapping(command, description, funcref, mapping, command_option = {}) {
+    group.commands.add([command], description, funcref, command_option, true );
     if (mapping != "")
         group.mappings.add([modes.NORMAL], [mapping], description, funcref);
 }
