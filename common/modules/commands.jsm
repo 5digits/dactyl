@@ -1911,11 +1911,15 @@ var Commands = Module("commands", {
         setCompleter([CommandHive.prototype.get,
                       CommandHive.prototype.remove],
                      [function () {
-                         return Array.from(this, cmd => [c.names, c.description]);
+                         return Array.from(this,
+                                           cmd => [cmd.names,
+                                                   cmd.description]);
                      }]);
         setCompleter([Commands.prototype.get],
                      [function () {
-                         return Array.from(this.iterator(), cmd => [c.names, c.description]);
+                         return Array.from(this.iterator(),
+                                           cmd => [cmd.names,
+                                                   cmd.description]);
                      }]);
     },
     mappings: function initMappings(dactyl, modules, window) {
