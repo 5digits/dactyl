@@ -27,17 +27,24 @@ var INFO = [
 // pass true to close, false to open
 function fold_collapse_expand_target(tab, collapse, children = false) {
     if (children) {
-        let childs = TreeStyleTabService.getDescendantTabs(tab);
-        for (let x in childs) {
-            gBrowser.treeStyleTab.collapseExpandSubtree(childs[x], collapse);
+        let children = TreeStyleTabService.getDescendantTabs(tab);
+        for (let x in children) {
+            gBrowser.treeStyleTab.collapseExpandSubtree(children[x], collapse);
         }
     }
     gBrowser.treeStyleTab.collapseExpandSubtree(tab, collapse);
 }
 
 function fold_collapse_expand(collapse, children = false) {
+    let tab = gBrowser.tabContainer.selectedItem;
+
+    if (!TreeStyleTabService.hasChildTabs(tab)) {
+        let tab = TreeStyleTabService.getParentTab(tab);
+        collapse = TreeStyleTabService.isSubtreeCollapsed(tab);
+    }
+
     fold_collapse_expand_target(
-        gBrowser.tabContainer.selectedItem,
+        tab,
         collapse,
         children
         );
@@ -50,8 +57,8 @@ function fold_collapse_expand_toggle(children = false) {
         );
 }
 
-function create_command_and_mapping(command, description, funcref, mapping) {
-    group.commands.add([command], description, funcref, {}, true );
+function create_command_and_mapping(command, description, funcref, mapping, command_option = {}) {
+    group.commands.add([command], description, funcref, command_option, true );
     if (mapping != "")
         group.mappings.add([modes.NORMAL], [mapping], description, funcref);
 }
@@ -156,8 +163,58 @@ create_command_and_mapping(
     "tabchildopen",
     "Open one or more URLs in a new child tab",
     function (args) {
-        TreeStyleTabService.readyToOpenChildTab();
-        dactyl.open(args, { where: dactyl.NEW_TAB });
+        let tab = gBrowser.tabContainer.selectedItem;
+        TreeStyleTabService.readyToOpenChildTab(tab, true);
+        dactyl.open(args[0] || "about:blank",
+            { from: "tabopen", where: dactyl.NEW_TAB, background: args.bang });
+        TreeStyleTabService.stopToOpenChildTab();
+    },
+    "",
+    {
+        bang: true,
+        completer: function (context) {
+            completion.url(context);
+        },
+        domains: function (args) {
+            return commands.get("open").domains(args);
+        },
+        literal: 0,
+        privateData: true
+    }
+    );
+
+create_command_and_mapping(
+    "tabbartoggle",
+    "Toggle tab bar",
+    function () {
+        gBrowser.treeStyleTab.tabbarShown=!gBrowser.treeStyleTab.tabbarShown;
     },
     ""
     );
+
+create_command_and_mapping(
+    "tabclosechildren",
+    "Close children of current tab",
+    function () {
+        let tab = gBrowser.tabContainer.selectedItem;
+        let children = TreeStyleTabService.getDescendantTabs(tab);
+        for (let child in children) {
+            config.removeTab(children[child]);
+        }
+    },
+    ""
+    )
+
+create_command_and_mapping(
+    "tabclosewithchildren",
+    "Close children and current tab",
+    function () {
+        let tab = gBrowser.tabContainer.selectedItem;
+        let children = TreeStyleTabService.getDescendantTabs(tab);
+        for (let child in children) {
+            config.removeTab(children[child]);
+        }
+        config.removeTab(tab);
+    },
+    ""
+    )
