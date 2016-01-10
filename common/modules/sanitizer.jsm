@@ -632,7 +632,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                             };
                             break;
                         case 1:
-                            context.completions = Sanitizer.COMMANDS;
+                            context.completions = iter(Sanitizer.COMMANDS);
                             break;
                         }
                     }
