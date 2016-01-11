@@ -1117,7 +1117,7 @@ unlet s:cpo_save
                     return Array.from(io.listJar(uri.JARFile, getDir(uri.JAREntry)),
                                       path => ({
                                           isDirectory: () => path.substr(-1) == "/",
-                                          leafName: /([^\/]*)\/?$/.exec(s)[1]
+                                          leafName: /([^\/]*)\/?$/.exec(path)[1]
                                       }));
                 };
             else
