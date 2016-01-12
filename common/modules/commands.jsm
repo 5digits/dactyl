@@ -836,7 +836,7 @@ var Commands = Module("commands", {
                 function completerToString(completer) {
                     if (completer) {
                         for (let [key, val] of Object.entries(config.completers))
-                             if (completion.bound(val) === completer)
+                             if (completion.bound[val] === completer)
                                  return key;
 
                          return "custom";
