@@ -235,7 +235,7 @@ var IO = Module("io", {
 
     charsets: Class.Memoize(function () {
         const BASE = "@mozilla.org/intl/unicode/decoder;1?charset=";
-        return Object.keys(Cc).filter(k.startsWith(BASE))
+        return Object.keys(Cc).filter(k => k.startsWith(BASE))
                      .map(k => k.slice(BASE.length));
     }),
 
