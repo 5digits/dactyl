@@ -265,8 +265,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     let seen = {};
                     context.completions = new RealSet(
                         Array.from(params.iterate(args))
-                             .flatMap(item => Object.keys(item).join(" ")
-                                                    .toLowerCase().split(/[()\s]+/))
+                             .flatMap(item => keys(item).join(" ")
+                                                        .toLowerCase()
+                                                        .split(/[()\s]+/))
                              .map(k => {
                                  seen[k] = (seen[k] || 0) + 1;
                                  return k;
