@@ -22,6 +22,13 @@ var INFO = [
             "project",
             { name: "Pentadactyl", "min-version": "1.0" }
         ],
+        [
+            "p", {},
+            "A set of commands to be able to properly use TreeStyleTabs with pentadactyl. ",
+            "Please note that the functions tend to be slow when mapped to keys (this is a ",
+            "general problem), so if it's too slow for you copy this script and insert the ",
+            "binds you want in the empty quotes in every create_command_and_mapping(). "
+        ]
     ];
 
 // pass true to close, false to open
@@ -57,10 +64,22 @@ function fold_collapse_expand_toggle(children = false) {
         );
 }
 
+function info_add_description(tags, description) {
+    INFO = INFO.concat(
+            [
+                "item", {},
+                ["tags", {}, tags],
+                ["spec", {}, tags],
+                ["description", {}, ["p", {}, description ]]
+            ]
+        );
+}
+
 function create_command_and_mapping(command, description, funcref, mapping, command_option = {}) {
     group.commands.add([command], description, funcref, command_option, true );
     if (mapping != "")
         group.mappings.add([modes.NORMAL], [mapping], description, funcref);
+    info_add_description(":" + command + " " + mapping, description);
 }
 
 create_command_and_mapping(
