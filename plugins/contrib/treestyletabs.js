@@ -238,3 +238,32 @@ create_command_and_mapping(
     },
     ""
     )
+
+create_command_and_mapping(
+    "tabattachto",
+    "Attach tab as child to another tab",
+    function (args) {
+        if (args[0]) {
+            let tab = gBrowser.tabContainer.selectedItem;
+
+            let parenttab = tabs.getTab(parseInt(args[0], 10) - 1);
+
+            gBrowser.treeStyleTab.attachTabTo(tab, parenttab);
+        }
+    },
+    "",
+    {
+        completer: function (context) {
+            completion.buffer(context, false);
+        }
+    }
+    )
+
+create_command_and_mapping(
+    "tabdetachfrom",
+    "Detach tab from parent",
+    function () {
+        gBrowser.treeStyleTab.detachTab(gBrowser.tabContainer.selectedItem);
+    },
+    ""
+    )
