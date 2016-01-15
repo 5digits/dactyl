@@ -22,6 +22,13 @@ var INFO = [
             "project",
             { name: "Pentadactyl", "min-version": "1.0" }
         ],
+        [
+            "p", {},
+            "A set of commands to be able to properly use TreeStyleTabs with pentadactyl. ",
+            "Please note that the functions tend to be slow when mapped to keys (this is a ",
+            "general problem), so if it's too slow for you copy this script and insert the ",
+            "binds you want in the empty quotes in every create_command_and_mapping(). "
+        ]
     ];
 
 // pass true to close, false to open
@@ -39,8 +46,8 @@ function fold_collapse_expand(collapse, children = false) {
     let tab = gBrowser.tabContainer.selectedItem;
 
     if (!TreeStyleTabService.hasChildTabs(tab)) {
-        let tab = TreeStyleTabService.getParentTab(tab);
-        collapse = TreeStyleTabService.isSubtreeCollapsed(tab);
+        tab = TreeStyleTabService.getParentTab(tab);
+        gBrowser.tabContainer.selectedIndex = gBrowser.tabContainer.getIndexOfItem(tab);
     }
 
     fold_collapse_expand_target(
@@ -57,10 +64,22 @@ function fold_collapse_expand_toggle(children = false) {
         );
 }
 
+function info_add_description(tags, description) {
+    INFO = INFO.concat(
+            [
+                "item", {},
+                ["tags", {}, tags],
+                ["spec", {}, tags],
+                ["description", {}, ["p", {}, description ]]
+            ]
+        );
+}
+
 function create_command_and_mapping(command, description, funcref, mapping, command_option = {}) {
     group.commands.add([command], description, funcref, command_option, true );
     if (mapping != "")
         group.mappings.add([modes.NORMAL], [mapping], description, funcref);
+    info_add_description(":" + command + " " + mapping, description);
 }
 
 create_command_and_mapping(
@@ -215,6 +234,55 @@ create_command_and_mapping(
             config.removeTab(children[child]);
         }
         config.removeTab(tab);
+    },
+    ""
+    )
+
+create_command_and_mapping(
+    "tabnextvisible",
+    "Switch to the next visible tab",
+    function () {
+        let tab = TreeStyleTabService.getNextVisibleTab(gBrowser.tabContainer.selectedItem);
+        gBrowser.tabContainer.selectedIndex = gBrowser.tabContainer.getIndexOfItem(tab);
+    },
+    ""
+    )
+
+create_command_and_mapping(
+    "tabpreviousvisible",
+    "Switch to the previous visible tab",
+    function () {
+        let tab = TreeStyleTabService.getPreviousVisibleTab(gBrowser.tabContainer.selectedItem);
+        gBrowser.tabContainer.selectedIndex = gBrowser.tabContainer.getIndexOfItem(tab);
+    },
+    ""
+    )
+
+create_command_and_mapping(
+    "tabattachto",
+    "Attach tab as child to another tab",
+    function (args) {
+        if (args[0]) {
+            let tab = gBrowser.tabContainer.selectedItem;
+
+            let parenttab = tabs.getTab(parseInt(args[0], 10) - 1);
+
+            gBrowser.treeStyleTab.attachTabTo(tab, parenttab);
+        }
+    },
+    "",
+    {
+        completer: function (context) {
+            completion.buffer(context, false);
+        }
+    }
+    )
+
+create_command_and_mapping(
+    "tabdetachfrom",
+    "Detach tab from parent",
+    function () {
+        gBrowser.treeStyleTab.detachTab(gBrowser.tabContainer.selectedItem);
     },
     ""
     )
