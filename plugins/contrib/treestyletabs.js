@@ -218,3 +218,23 @@ create_command_and_mapping(
     },
     ""
     )
+
+create_command_and_mapping(
+    "tabnextvisible",
+    "Switch to the next visible tab",
+    function () {
+        let tab = TreeStyleTabService.getNextVisibleTab(gBrowser.tabContainer.selectedItem);
+        gBrowser.tabContainer.selectedIndex = gBrowser.tabContainer.getIndexOfItem(tab);
+    },
+    ""
+    )
+
+create_command_and_mapping(
+    "tabpreviousvisible",
+    "Switch to the previous visible tab",
+    function () {
+        let tab = TreeStyleTabService.getPreviousVisibleTab(gBrowser.tabContainer.selectedItem);
+        gBrowser.tabContainer.selectedIndex = gBrowser.tabContainer.getIndexOfItem(tab);
+    },
+    ""
+    )
