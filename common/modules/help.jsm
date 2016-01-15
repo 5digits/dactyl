@@ -458,7 +458,7 @@ var Help = Module("Help", {
             dactyl.initHelp();
             context.title = ["Help"];
             context.anchored = false;
-            context.completions = help.tags;
+            context.completions = iter(help.tags);
             if (consolidated)
                 context.keys = {
                     text: 0,
