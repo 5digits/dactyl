@@ -542,14 +542,18 @@ var Contexts = Module("contexts", {
             var makeParams = function makeParams(self, args) {
                 let obj = params.apply(self, args);
 
-                return iter.toObject([k, Proxy(obj, k)]
-                                     for (k of properties(obj)));
+                return iter.toObject(function* () {
+                    for (let k of properties(obj))
+                        yield [k, Proxy(obj, k)];
+                }());
             };
 
         else if (params)
             makeParams = function makeParams(self, args) {
-                return iter.toObject([name, process(args[i])]
-                                     for ([i, name] of iter(params)));
+                return iter.toObject(function* () {
+                    for (let [i, name] of iter(params))
+                        yield [name, process(args[i])];
+                }());
             };
 
         let rhs = args.literalArg;

@@ -290,9 +290,10 @@ var HintSession = Class("HintSession", CommandMode, {
         let doc = win.document;
 
         memoize(doc, "dactylLabels", () =>
-            iter([l.getAttribute("for"), l]
-                 for (l of doc.querySelectorAll("label[for]")))
-             .toObject());
+            iter(function* () {
+                for (let l of doc.querySelectorAll("label[for]"))
+                    yield [l.getAttribute("for"), l];
+            }()).toObject());
 
         let [offsetX, offsetY] = this.getContainerOffsets(doc);
 

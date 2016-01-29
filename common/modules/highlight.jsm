@@ -378,14 +378,16 @@ var Highlights = Module("Highlight", {
                         template.tabular(["Key", "Sample", "Link", "CSS"],
                             ["padding: 0 1em 0 0; vertical-align: top; max-width: 16em; overflow: hidden;",
                              "text-align: center"],
-                            ([h.class,
-                              ["span", { style: "text-align: center; line-height: 1em;" + h.value + style }, "XXX"],
-                              template.map(h.extends, s => template.highlight(s), ","),
-                              template.highlightRegexp(h.value, /\b[-\w]+(?=:)|\/\*.*?\*\//g,
-                                                       match => ["span", { highlight: match[0] == "/" ? "Comment" : "Key" }, match])
-                             ]
-                             for (h of highlight)
-                             if (!key || h.class.indexOf(key) > -1))));
+                            (function* () {
+                                for (let h of highlight)
+                                    if (!key || h.class.indexOf(key) > -1)
+                                        yield [h.class,
+                                               ["span", { style: "text-align: center; line-height: 1em;" + h.value + style }, "XXX"],
+                                               template.map(h.extends, s => template.highlight(s), ","),
+                                               template.highlightRegexp(h.value, /\b[-\w]+(?=:)|\/\*.*?\*\//g,
+                                                                        match => ["span", { highlight: match[0] == "/" ? "Comment" : "Key" }, match])];
+                            }())
+                    ));
                 else if (!key && clear)
                     highlight.clear();
                 else if (key)

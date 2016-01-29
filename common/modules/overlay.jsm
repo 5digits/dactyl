@@ -304,9 +304,11 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                         // Urgh. Hack.
                         let namespaces;
                         if (attrs)
-                            namespaces = iter([k.slice(6), DOM.fromJSON.namespaces[v] || v]
-                                              for ([k, v] of iter(attrs))
-                                              if (/^xmlns(?:$|:)/.test(k))).toObject();
+                            namespaces = iter(function* () {
+                                for (let [k, v] of iter(attrs))
+                                    if (/^xmlns(?:$|:)/.test(k))
+                                        yield [k.slice(6), DOM.fromJSON.namespaces[v] || v];
+                            }()).toObject();
 
                         let node = DOM.fromJSON(xml, doc, obj.objects, namespaces);
 

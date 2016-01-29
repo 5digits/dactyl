@@ -548,7 +548,11 @@ var Option = Class("Option", {
         },
 
         stringmap: function (vals) {
-            return [Option.quote(k, /:/) + ":" + Option.quote(v, /:/) for ([k, v] of iter(vals))].join(",");
+            return Array.from(iter(vals),
+                              ([k, v]) => Option.quote(k, /:/) +
+                                          ":" +
+                                          Option.quote(v, /:/))
+                             .join(",");
         },
 
         regexplist: vals => vals.join(","),
