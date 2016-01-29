@@ -934,13 +934,18 @@ var Options = Module("options", {
 
                 modules.cache.register("options.dtd",
                     () => util.makeDTD(
-                            iter(([["option", o.name, "default"].join("."),
-                                   o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
-                                   o.defaultValue === true  ? "on"  :
-                                   o.defaultValue === false ? "off" : o.stringDefaultValue]
-                                  for (o of self)),
+                            iter(function* () {
+                                     for (let o of self)
+                                         yield [["option", o.name, "default"].join("."),
+                                                o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
+                                                o.defaultValue === true  ? "on"  :
+                                                o.defaultValue === false ? "off" : o.stringDefaultValue];
+                                 }(),
 
-                                 ([["option", o.name, "type"].join("."), o.type] for (o of self)),
+                                 function* () {
+                                     for (let o of self)
+                                         yield [["option", o.name, "type"].join("."), o.type];
+                                 }(),
 
                                  config.dtd)),
                     true);
@@ -1398,7 +1403,10 @@ var Options = Module("options", {
 
             // Fill in the current values if we're removing
             if (opt.operator == "-" && isArray(opt.values)) {
-                let have = new RealSet(i.text for (i of context.allItems.items));
+                let have = new RealSet(function* () {
+                    for (let i of context.allItems.items)
+                        yield i.text;
+                }());
                 context = context.fork("current-values", 0);
                 context.anchored = optcontext.anchored;
                 context.maxItems = optcontext.maxItems;
