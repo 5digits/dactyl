@@ -401,8 +401,8 @@ var Marks = Module("marks", {
                 }
                 function match(marks) {
                     return Array.from(marks)
-                                .filter(([name, mark]) => (timespan.contains(marktimestamp) &&
-                                                           matchhost(marklocation)))
+                                .filter(([name, mark]) => (timespan.contains(mark.timestamp) &&
+                                                           matchhost(mark.location)))
                                 .map(([name]) => name);
                 }
 
