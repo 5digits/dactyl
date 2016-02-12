@@ -311,7 +311,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             // be called, and with much greater granularity. Only process this
             // event if it's triggered externally.
             if (!this.sanitizing)
-                this.sanitizeItems(null, Range(), data);
+                this.sanitizeItems(null, Range(), host);
         },
         "browser:purge-session-history": function (subject, data) {
             // See above.
