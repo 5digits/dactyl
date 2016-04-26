@@ -1580,9 +1580,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {[string]}
      */
     split: function split(str, re, limit) {
-        re.lastIndex = 0;
         if (!re.global)
             re = RegExp(re.source || re, "g");
+        re.lastIndex = 0;
         let match, start = 0, res = [];
         while (--limit && (match = re.exec(str)) && match[0].length) {
             res.push(str.substring(start, match.index));
