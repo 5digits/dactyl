@@ -31,8 +31,8 @@
         <em:targetApplication>
             <Description
                 em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                em:minVersion="34.0"
-                em:maxVersion="45.*"/>
+                em:minVersion="38.0"
+                em:maxVersion="47.*"/>
         </em:targetApplication>
     </Description>
 </RDF>
