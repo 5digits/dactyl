@@ -19,14 +19,20 @@ var namespace = "@namespace html " + JSON.stringify(XHTML) + ";\n" +
 var Sheet = Struct("name", "id", "sites", "css", "hive", "agent");
 Sheet.liveProperty = function (name) {
     let i = this.prototype.members[name];
-    this.prototype.__defineGetter__(name, function () { return this[i]; });
-    this.prototype.__defineSetter__(name, function (val) {
-        if (isArray(val))
-            val = Array.slice(val);
-        if (isArray(val))
-            Object.freeze(val);
-        this[i] = val;
-        this.enabled = this.enabled;
+    Object.defineProperty(this.prototype, name, {
+        get() {
+            return this[i];
+        },
+        set(val) {
+            if (isArray(val))
+                val = Array.slice(val);
+            if (isArray(val))
+                Object.freeze(val);
+            this[i] = val;
+            this.enabled = this.enabled;
+        },
+        enumerable: true,
+        configurable: true
     });
 };
 Sheet.liveProperty("agent");

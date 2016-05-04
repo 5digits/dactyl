@@ -26,8 +26,7 @@ try {
 catch (e) {}
 
 let objproto = Object.prototype;
-var { __lookupGetter__, __lookupSetter__, __defineGetter__, __defineSetter__,
-      hasOwnProperty, propertyIsEnumerable } = objproto;
+var { hasOwnProperty, propertyIsEnumerable } = objproto;
 
 var hasOwnProp = Function.call.bind(hasOwnProperty);
 
@@ -780,7 +779,7 @@ function memoize(obj, key, getter) {
     if (arguments.length == 1) {
         let res = update(Object.create(obj), obj);
         for (let prop of Object.getOwnPropertyNames(obj)) {
-            let get = __lookupGetter__.call(obj, prop);
+            let get = Object.getOwnPropertyDescriptor(obj, prop).get;
             if (get)
                 memoize(res, prop, get);
         }
@@ -847,8 +846,12 @@ function update(target) {
 
                     let func = desc.value.wrapped || desc.value;
                     if (!func.superapply) {
-                        func.__defineGetter__("super", function get_super() {
-                            return Object.getPrototypeOf(target)[k];
+                        Object.defineProperty(func, "super", {
+                            get: function get_super() {
+                                return Object.getPrototypeOf(target)[k];
+                            },
+                            enumerable: true,
+                            configurable: true
                         });
 
                         func.superapply = function superapply(self, args) {
@@ -1169,7 +1172,11 @@ Class.prototype = {
                 if (typeof desc.value === "function") {
                     let func = desc.value.wrapped || desc.value;
                     if (!func.superapply) {
-                        func.__defineGetter__("super", () => Object.getPrototypeOf(this)[k]);
+                        Object.defineProperty(func, "super", {
+                            get: () => Object.getPrototypeOf(this)[k],
+                            enumerable: true,
+                            configurable: true
+                        });
 
                         func.superapply = function superapply(self, args) {
                             let meth = Object.getPrototypeOf(self)[k];
@@ -1403,11 +1410,15 @@ function Struct(...args) {
         members: Ary.toObject(args.map((v, k) => [v, k])),
     });
     args.forEach(function (name, i) {
-        Struct.prototype.__defineGetter__(name, function () {
-            return this[i];
-        });
-        Struct.prototype.__defineSetter__(name, function (val) {
-            this[i] = val;
+        Object.defineProperty(Struct.prototype, name, {
+            get() {
+                return this[i];
+            },
+            set(val) {
+                this[i] = val;
+            },
+            enumerable: true,
+            configurable: true
         });
     });
     return Struct;
@@ -1467,11 +1478,15 @@ var StructBase = Class("StructBase", Array, {
      */
     defaultValue: function defaultValue(key, val) {
         let i = this.prototype.members[key];
-        this.prototype.__defineGetter__(i, function () {
-            return this[i] = val.call(this);
-        });
-        this.prototype.__defineSetter__(i, function (value) {
-            return Class.replaceProperty(this, i, value);
+        Object.defineProperty(this.prototype, i, {
+            get() {
+                return this[i] = val.call(this);
+            },
+            set(value) {
+                Class.replaceProperty(this, i, value);
+            },
+            enumerable: true,
+            configurable: true
         });
         return this;
     },

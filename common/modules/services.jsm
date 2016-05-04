@@ -160,7 +160,7 @@ var Services = Module("Services", {
     add: function add(name, class_, ifaces, meth) {
         const self = this;
         this.services[name] = { method: meth, class: class_, interfaces: Array.concat(ifaces || []) };
-        if (name in this && ifaces && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
+        if (name in this && ifaces && !Object.getOwnPropertyDescriptor(this, name).get && !(this[name] instanceof Ci.nsISupports))
             throw TypeError();
         memoize(this, name, () => self._create(name));
     },

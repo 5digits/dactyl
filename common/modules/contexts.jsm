@@ -459,8 +459,12 @@ var Contexts = Module("contexts", {
             group = this.Group(name, description, filter, persist);
             this.groupList.unshift(group);
             this.groupMap[name] = group;
-            this.hiveProto.__defineGetter__(name, function () {
-                return group[this._hive];
+            Object.defineProperty(this.hiveProto, name, {
+                get() {
+                    return group[this._hive];
+                },
+                enumerable: true,
+                configurable: true
             });
         }
 

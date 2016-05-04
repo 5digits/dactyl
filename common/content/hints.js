@@ -762,9 +762,13 @@ var Hints = Module("hints", {
             events.listen(appContent, "scroll", this.resizeTimer.bound.tell, false);
 
         const Mode = Hints.Mode;
-        Mode.prototype.__defineGetter__("matcher", function () {
-            return options.get("extendedhinttags")
-                          .getKey(this.name, options.get("hinttags").matcher);
+        Object.defineProperty(Mode.prototype, "matcher", {
+            get() {
+                return options.get("extendedhinttags")
+                              .getKey(this.name, options.get("hinttags").matcher);
+            },
+            enumerable: true,
+            configurable: true
         });
 
         function cleanLoc(loc) {

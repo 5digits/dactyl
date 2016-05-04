@@ -180,8 +180,16 @@ var CommandWidgets = Class("CommandWidgets", {
             return (obj.getElement || identity)(map[id] || document.getElementById(prefix + id));
         }
 
-        this.active.__defineGetter__(obj.name, () => this.activeGroup[obj.name][obj.name]);
-        this.activeGroup.__defineGetter__(obj.name, () => this.getGroup(obj.name));
+        Object.defineProperty(this.active, obj.name, {
+            get: () => this.activeGroup[obj.name][obj.name],
+            enumerable: true,
+            configurable: true,
+        });
+        Object.defineProperty(this.activeGroup, obj.name, {
+            get: () => this.getGroup(obj.name),
+            enumerable: true,
+            configurable: true,
+        });
 
         memoize(this.statusbar, obj.name, () => get("dactyl-statusline-field-", statusline.widgets, (obj.id || obj.name)));
         memoize(this.commandbar, obj.name, () => get("dactyl-", {}, (obj.id || obj.name)));

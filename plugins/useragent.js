@@ -62,9 +62,13 @@ let init = function init_() {
     UserAgent = Struct("name", "useragent", "appname", "appcodename",
                            "appversion", "platform", "vendor", "vendorsub", "userset");
 
-    UserAgent.prototype.__defineGetter__("options", function () {
-        return opts.slice(1).map(opt => [opt.name, this[opt.name]])
-                   .filter(opt => opt[1]);
+    Object.defineProperty(UserAgent.prototype, "options", {
+        get() {
+            return opts.slice(1).map(opt => [opt.name, this[opt.name]])
+                       .filter(opt => opt[1]);
+        },
+        enumerable: true,
+        configurable: true
     });
 
     useragents = array([

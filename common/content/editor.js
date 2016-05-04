@@ -16,13 +16,17 @@ var Editor = Module("editor", XPCOM(Ci.nsIEditActionListener, ModuleBase), {
         if (elem)
             this.element = elem;
         else
-            this.__defineGetter__("element", () => {
-                let elem = dactyl.focusedElement;
-                if (elem)
-                    return elem.inputField || elem;
+            Object.defineProperty(this, "element", {
+                get: () => {
+                    let elem = dactyl.focusedElement;
+                    if (elem)
+                        return elem.inputField || elem;
 
-                let win = document.commandDispatcher.focusedWindow;
-                return DOM(win).isEditable && win || null;
+                    let win = document.commandDispatcher.focusedWindow;
+                    return DOM(win).isEditable && win || null;
+                },
+                enumerable: true,
+                configurable: true
             });
     },
 

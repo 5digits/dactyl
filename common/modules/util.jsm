@@ -283,8 +283,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
     compileFormat: function compileFormat(format) {
         let stack = [frame()];
-        stack.__defineGetter__("top", function () {
-            return this[this.length - 1];
+        Object.defineProperty(stack, "top", {
+            get() {
+                return this[this.length - 1];
+            },
+            configurable: true
         });
 
         function frame() {
@@ -370,8 +373,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     compileMacro: function compileMacro(macro, keepUnknown) {
         let stack = [frame()];
-        stack.__defineGetter__("top", function () {
-            return this[this.length - 1];
+        Object.defineProperty(stack, "top", {
+            get() {
+                return this[this.length - 1];
+            },
+            configurable: true,
         });
 
         let unknown = identity;

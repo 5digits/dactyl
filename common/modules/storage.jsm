@@ -31,8 +31,20 @@ var StoreBase = Class("StoreBase", {
         this._load = load;
         this._options = options;
 
-        this.__defineGetter__("store", () => store);
-        this.__defineGetter__("name", () => name);
+        Object.defineProperties(this, {
+            "store": {
+                value: store,
+                writable: false,
+                enumerable: true,
+                configurable: true,
+            },
+            "name": {
+                value: name,
+                writable: false,
+                enumerable: true,
+                configurable: true,
+            }
+        });
         for (let [k, v] of iter(options))
             if (this.OPTIONS.indexOf(k) >= 0)
                 this[k] = v;
@@ -301,8 +313,12 @@ var Storage = Module("Storage", {
 
             this.keys[key] = new constructor(key, params.store, load, params);
             this.keys[key].timer = new Timer(1000, 10000, () => this.save(key));
-            this.__defineGetter__(key, function () {
-                return this.keys[key];
+            Object.defineProperty(this, key, {
+                get() {
+                    return this.keys[key];
+                },
+                enumerable: true,
+                configurable: true,
             });
         }
         return this.keys[key];

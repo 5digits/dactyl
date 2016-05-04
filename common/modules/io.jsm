@@ -886,8 +886,11 @@ unlet s:cpo_save
                     sep = sep || " ";
                     let width = 0;
                     let lines = [];
-                    lines.__defineGetter__("last", function () {
-                        return this[this.length - 1];
+                    Object.defineProperty(lines, "last", {
+                        get() {
+                            return this[this.length - 1];
+                        },
+                        configurable: true
                     });
 
                     for (let item of values(items.array || items)) {

@@ -62,8 +62,12 @@ var CompletionContext = Class("CompletionContext", {
             ["anchored", "compare", "editor", "_filter", "filterFunc", "forceAnchored", "top"]
                 .forEach(key => self[key] = parent[key]);
 
-            self.__defineGetter__("value", function get_value() {
-                return this.top.value;
+            Object.defineProperty(self, "value", {
+                get() {
+                    return this.top.value;
+                },
+                enumerable: true,
+                configurable: true
             });
 
             self.offset = parent.offset;
@@ -90,11 +94,15 @@ var CompletionContext = Class("CompletionContext", {
             if (self != this)
                 return self;
             ["_caret", "contextList", "maxItems", "onUpdate", "selectionTypes", "tabPressed", "updateAsync", "value"].forEach(function fe(key) {
-                self.__defineGetter__(key, function () {
-                    return this.top[key];
-                });
-                self.__defineSetter__(key, function (val) {
-                    this.top[key] = val;
+                Object.defineProperty(self, key, {
+                    get() {
+                        return this.top[key];
+                    },
+                    set(val) {
+                        this.top[key] = val;
+                    },
+                    enumerable: true,
+                    configurable: true
                 });
             });
         }
@@ -175,19 +183,29 @@ var CompletionContext = Class("CompletionContext", {
              * @property {CompletionContext} The top-level completion context.
              */
             this.top = this;
-            this.__defineGetter__("incomplete", function get_incomplete() {
-                return this._incomplete ||
-                       this.contextList.some(c => c.parent && c.incomplete);
-            });
-            this.__defineGetter__("waitingForTab", function get_waitingForTab() {
-                return this._waitingForTab ||
-                       this.contextList.some(c => c.parent && c.waitingForTab);
-            });
-            this.__defineSetter__("incomplete", function get_incomplete(val) {
-                this._incomplete = val;
-            });
-            this.__defineSetter__("waitingForTab", function get_waitingForTab(val) {
-                this._waitingForTab = val;
+            Object.defineProperties(this, {
+                "incomplete": {
+                    get() {
+                        return this._incomplete ||
+                               this.contextList.some(c => c.parent && c.incomplete);
+                    },
+                    set(val) {
+                        this._incomplete = val;
+                    },
+                    enumerable: true,
+                    configurable: true
+                },
+                "waitingForTab": {
+                    get() {
+                        return this._waitingForTab ||
+                               this.contextList.some(c => c.parent && c.waitingForTab);
+                    },
+                    set(val) {
+                        this._waitingForTab = val;
+                    },
+                    enumerable: true,
+                    configurable: true
+                }
             });
             this.reset();
         }
@@ -432,17 +450,22 @@ var CompletionContext = Class("CompletionContext", {
                 // This is only allowed to be a simple accessor, and shouldn't
                 // reference any variables. Don't bother with eval context.
                 v = Function("i", "return i" + v);
+            let descriptor = {
+                enumerable: true,
+                configurable: true
+            };
             if (typeof v == "function")
-                res.__defineGetter__(k, function p_gf() {
+                descriptor.get = function p_gf() {
                     return Class.replaceProperty(this, k, v.call(this, this.item, self));
-                });
+                };
             else
-                res.__defineGetter__(k, function p_gp() {
+                descriptor.get = function p_gp() {
                     return Class.replaceProperty(this, k, this.item[v]);
-                });
-            res.__defineSetter__(k, function p_s(val) {
+                };
+            descriptor.set = function p_s(val) {
                 Class.replaceProperty(this, k, val);
-            });
+            };
+            Object.defineProperty(res, k, descriptor);
         }
         return res;
     },
@@ -811,8 +834,12 @@ var CompletionContext = Class("CompletionContext", {
     split: function split(name, obj, fn, ...args) {
         let context = this.fork(name);
         let alias = prop => {
-            context.__defineGetter__(prop, () => this[prop]);
-            context.__defineSetter__(prop, val => this[prop] = val);
+            Object.defineProperty(context, prop, {
+                get: () => this[prop],
+                set: val => this[prop] = val,
+                enumerable: true,
+                configurable: true,
+            });
         };
         alias("_cache");
         alias("_completions");

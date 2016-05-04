@@ -1060,11 +1060,15 @@ var Options = Module("options", {
                 memoize(this._options, this._options.length, closure);
 
                 // quickly access options with options["wildmode"]:
-                this.__defineGetter__(name, function () {
-                    return this._optionMap[name].value;
-                });
-                this.__defineSetter__(name, function (value) {
-                    this._optionMap[name].value = value;
+                Object.defineProperty(this, name, {
+                    get() {
+                        return this._optionMap[name].value;
+                    },
+                    set(value) {
+                        this._optionMap[name].value = value;
+                    },
+                    enumerable: true,
+                    configurable: true
                 });
             }
         };

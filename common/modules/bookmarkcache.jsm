@@ -61,7 +61,13 @@ update(Bookmark.prototype, {
     }
 });
 Bookmark.prototype.members.uri = Bookmark.prototype.members.url;
-Bookmark.setter = function (key, func) { return this.prototype.__defineSetter__(key, func); };
+Bookmark.setter = function (key, func) {
+    return Object.defineProperty(this.prototype, key, {
+        set: func,
+        enumerable: true,
+        configurable: true
+    });
+};
 Bookmark.setter("url", function (val) { this.uri = isString(val) ? newURI(val) : val; });
 Bookmark.setter("title", function (val) { services.bookmarks.setItemTitle(this.id, val); });
 Bookmark.setter("post", function (val) { bookmarkcache.annotate(this.id, bookmarkcache.POST, val); });
