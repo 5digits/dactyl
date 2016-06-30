@@ -188,8 +188,10 @@ completion.noscriptSites = function (context) {
     context.generate = getSites;
     context.keys = {
         text: util.identity,
-        description: site => groupDesc[this.highlight] +
-            (this.groups.untrusted && this.highlight != "NoScriptUntrusted" ? " (untrusted)" : ""),
+        description: function (site) {
+            return groupDesc[this.highlight] +
+                (this.groups.untrusted && this.highlight != "NoScriptUntrusted" ? " (untrusted)" : "")
+        },
 
         highlight: function (site) {
             return this.groups.temp      ? "NoScriptTemp" :
