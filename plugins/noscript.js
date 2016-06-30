@@ -243,7 +243,7 @@ prefs.complete = group => context => {
     context.keys = { text: "text", description: "description" };
     context.completions = values(prefs[group]);
 };
-prefs.get = function (group) { return [p.text for (p of values(this[group])) if (getPref(p.pref))]; };
+prefs.get = function (group) { return [for (p of values(this[group])) if (getPref(p.pref)) p.text]; };
 prefs.set = function (group, val) {
     for (let p of values(this[group]))
         setPref(p.pref, val.indexOf(p.text) >= 0);
@@ -292,27 +292,27 @@ group.options.add(["script"],
         has: (val) => hasOwnProperty(services.noscript.jsPolicySites.sitesMap, val) &&
             !hasOwnProperty(services.noscript.tempSites.sitesMap, val),
         get set() {
-            return new RealSet(k for (k in services.noscript.jsPolicySites.sitesMap))
-                .difference(new RealSet(k for (k in services.noscript.tempSites.sitesMap)))
+            return new RealSet((for (k of services.noscript.jsPolicySites.sitesMap) k))
+                .difference(new RealSet((for (k of services.noscript.tempSites.sitesMap) k)))
         }
     }, {
         names: ["noscript-tempsites", "nst"],
         description: "The list of sites temporarily allowed to execute scripts",
         action: (add, sites) => sites.length && noscriptOverlay.safeAllow(sites, add, true, -1),
         completer: (context) => completion.noscriptSites(context),
-        get set() { return new RealSet(k for (k in services.noscript.tempSites.sitesMap)) },
+        get set() { return new RealSet((for (k of iter(services.noscript.tempSites.sitesMap)) k)) },
     }, {
         names: ["noscript-untrusted", "nsu"],
         description: "The list of untrusted sites",
         action: (add, sites) => sites.length && services.noscript.setUntrusted(sites, add),
         completer: (context) => completion.noscriptSites(context),
-        get set() { return new RealSet(k for (k in services.noscript.untrustedSites.sitesMap)) },
+        get set() { return new RealSet((for (k of iter(services.noscript.untrustedSites.sitesMap)) k)) },
     }, {
         names: ["noscript-objects", "nso"],
         description: "The list of allowed objects",
         get set() { return new RealSet(array.flatten(
-            [Array.concat(v).map(function (v) { return v + "@" + this; }, k)
-             for ([k, v] of iter(services.noscript.objectWhitelist))])) },
+            [for (wListObj of iter(services.noscript.objectWhitelist))
+                Array.concat(wListObj[1]).map(function (v) { return v + "@" + this; }, wListObj[0])])) },
         action: function (add, patterns) {
             for (let pattern of values(patterns)) {
                 let [mime, site] = util.split(pattern, /@/, 2);
