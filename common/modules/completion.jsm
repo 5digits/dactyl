@@ -423,7 +423,7 @@ var CompletionContext = Class("CompletionContext", {
             yield ["context", function p_context() { return self; }];
             yield ["result", quote ? function p_result() { return quote[0] + util.trapErrors(1, quote, this.text) + quote[2]; }
                                    : function p_result() { return this.text; }];
-            yield ["texts", function p_texts() { return Array.concat(this.text); }];
+            yield ["texts", function p_texts() { return [].concat(this.text); }];
         };
 
         for (let i of iter(this.keys, result(this.quote))) {

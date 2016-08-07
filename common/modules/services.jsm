@@ -159,7 +159,7 @@ var Services = Module("Services", {
      */
     add: function add(name, class_, ifaces, meth) {
         const self = this;
-        this.services[name] = { method: meth, class: class_, interfaces: Array.concat(ifaces || []) };
+        this.services[name] = { method: meth, class: class_, interfaces: [].concat(ifaces || []) };
         if (name in this && ifaces && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
             throw TypeError();
         memoize(this, name, () => self._create(name));
@@ -177,7 +177,7 @@ var Services = Module("Services", {
      */
     addClass: function addClass(name, class_, ifaces, init = null, quiet = true) {
         this.services[name] = { class: class_,
-                                interfaces: Array.concat(ifaces || []),
+                                interfaces: [].concat(ifaces || []),
                                 method: "createInstance",
                                 init: init,
                                 quiet: quiet };
@@ -190,7 +190,7 @@ var Services = Module("Services", {
         this[name] = (...args) => this._create(name, args);
 
         update(this[name],
-               ...Array.concat(ifaces).map(iface => Ci[iface]));
+               ...[].concat(ifaces).map(iface => Ci[iface]));
 
         return this[name];
     },

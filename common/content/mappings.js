@@ -184,7 +184,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      * @param {[Modes.Mode]} modes The modes for which to return mappings.
      */
     iterate: function (modes) {
-        let stacks = Array.concat(modes).map(this.bound.getStack);
+        let stacks = [].concat(modes).map(this.bound.getStack);
         return values(stacks.shift().sort((m1, m2) => String.localeCompare(m1.name, m2.name))
             .filter(map => map.rhs &&
                 stacks.every(stack => stack.some(m => m.rhs && m.rhs === map.rhs && m.name === map.name))));
@@ -201,7 +201,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      * @optional
      */
     add: function (modes, keys, description, action, extra={}) {
-        modes = Array.concat(modes);
+        modes = [].concat(modes);
         if (!modes.every(identity))
             throw TypeError(/*L*/"Invalid modes: " + modes);
 
@@ -746,7 +746,7 @@ var Mappings = Module("mappings", {
             names: ["-mode", "-m"],
             type: CommandOption.STRING,
             validator: function (value) {
-                return Array.concat(value).every(findMode);
+                return [].concat(value).every(findMode);
             },
             completer: function () {
                 return modes.all.filter(mode => !mode.hidden)

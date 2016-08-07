@@ -218,7 +218,7 @@ var Help = Module("Help", {
     flush: function flush(entries, time) {
         cache.flushEntry("help.json", time);
 
-        for (let entry of Array.concat(entries || []))
+        for (let entry of [].concat(entries || []))
             cache.flushEntry(entry, time);
     },
 

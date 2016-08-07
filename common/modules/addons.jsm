@@ -421,7 +421,7 @@ var Addons = Module("addons", {
                 return (!perm || addon.permissions & perm) && (!command.filter || command.filter(addon));
             }
 
-            commands.add(Array.concat(command.name),
+            commands.add([].concat(command.name),
                 command.description,
                 function (args) {
                     let name = args[0];
