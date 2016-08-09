@@ -1600,7 +1600,7 @@ var CommandLine = Module("commandline", {
                 statusline.progress = "";
             else
                 statusline.progress = _("completion.matchIndex",
-                                        this.itemList.getOffset(idx),
+                                        this.itemList.getOffset(idx) + 1,
                                         this.itemList.itemCount);
         },
 
