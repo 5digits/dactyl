@@ -385,7 +385,7 @@ var Template = Module("Template", {
             _i = i;
 
             s.push(str.substring(start, i),
-                   highlight.apply(this, Array.concat(args || str.substr(i, length))));
+                   highlight.apply(this, [].concat(args || str.substr(i, length))));
             start = i + length;
         }
         s.push(str.substr(start));

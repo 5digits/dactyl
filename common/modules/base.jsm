@@ -682,7 +682,7 @@ function isinstance(object, interfaces) {
     if (object == null)
         return false;
 
-    return Array.concat(interfaces).some(function isinstance_some(iface) {
+    return [].concat(interfaces).some(function isinstance_some(iface) {
         if (typeof iface === "string") {
             if (objToString(object) === "[object " + iface + "]")
                 return true;
@@ -1243,7 +1243,7 @@ memoize(Class.prototype, "bound", Class.makeClosure);
  * @returns {Class}
  */
 function XPCOM(interfaces, superClass) {
-    interfaces = Array.concat(interfaces);
+    interfaces = [].concat(interfaces);
 
     let shim = XPCOMShim(interfaces);
 

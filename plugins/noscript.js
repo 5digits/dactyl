@@ -28,7 +28,7 @@ function getSites() {
     const blockUntrusted = global && ns.alwaysBlockUntrustedContent;
 
     let res = [];
-    for (let site of array.iterValues(Array.concat(sites.topSite, sites))) {
+    for (let site of array.iterValues([].concat(sites.topSite, sites))) {
         let ary = [];
 
         let untrusted    = groups.untrusted.matches(site);
@@ -311,7 +311,7 @@ group.options.add(["script"],
         names: ["noscript-objects", "nso"],
         description: "The list of allowed objects",
         get set() { return new RealSet(array.flatten(
-            [Array.concat(v).map(function (v) { return v + "@" + this; }, k)
+            [[].concat(v).map(function (v) { return v + "@" + this; }, k)
              for ([k, v] of iter(services.noscript.objectWhitelist))])) },
         action: function (add, patterns) {
             for (let pattern of values(patterns)) {

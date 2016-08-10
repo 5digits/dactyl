@@ -245,7 +245,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         if (url instanceof Ci.nsIDOMWindow)
             overlay._loadOverlay(url, fn);
         else {
-            Array.concat(url).forEach(function (url) {
+            [].concat(url).forEach(function (url) {
                 let matcher = this.matchFilter(url);
                 if (!matcher.exact)
                     this.overlayMatchers.push([matcher, fn]);

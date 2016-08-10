@@ -676,7 +676,7 @@ var tests = {
             ["! " + name, sidebarState(false)]
         ],
         get noOutput()
-            Array.concat.apply([],
+            [].concat.apply([],
                 ["Add-ons", // Final "! Add-ons" currently failing
                  "Bookmarks",
                  "Downloads",
@@ -953,7 +953,7 @@ function addTest(cmdName, testName, func) {
 function runCommands(cmdName, testName, commands, test, forbidErrors) {
     addTest(cmdName, testName, function () {
         commands.forEach(function (val) {
-            var [cmd, testVal] = Array.concat(val);
+            var [cmd, testVal] = [].concat(val);
 
             dump("CMD: " + testName + " " + cmdName + " " + cmd + "\n");
             dactyl.clearMessage();
@@ -974,7 +974,7 @@ function runCommands(cmdName, testName, commands, test, forbidErrors) {
 function _runCommands(cmdName, testName, commands) {
     addTest(cmdName, testName, function () {
         commands.forEach(function (value) {
-            var [cmd, test] = Array.concat(value);
+            var [cmd, test] = [].concat(value);
 
             dump("CMD: " + testName + " " + cmdName + " " + cmd + "\n");
             var res = dactyl.runExCommand(cmd);
@@ -993,7 +993,7 @@ function runTest(message, test, ...args) {
 }
 
 for (var val in Iterator(tests)) (function ([command, paramsList]) {
-    Array.concat(paramsList).forEach(function (params, i) {
+    [].concat(paramsList).forEach(function (params, i) {
         if (params.init)
             _runCommands(command, "init" + (i || ""), params.init);
 
@@ -1039,7 +1039,7 @@ for (var val in Iterator(tests)) (function ([command, paramsList]) {
             case "error":
                 addTest(command, testName, function () {
                     commands.forEach(function (val) {
-                        var [cmd, test] = Array.concat(val);
+                        var [cmd, test] = [].concat(val);
                         cmd = command + cmd.replace(/^(!?) ?/, "$1 ");
 
                         var res = dactyl.assertMessageError(function () {
@@ -1055,7 +1055,7 @@ for (var val in Iterator(tests)) (function ([command, paramsList]) {
             case "completions":
                 addTest(command, testName, function () {
                     commands.forEach(function (val) {
-                        var [cmd, test] = Array.concat(val);
+                        var [cmd, test] = [].concat(val);
                         cmd = command + cmd.replace(/^(!?) ?/, "$1 ");
 
                         dactyl.assertNoErrorMessages(function () {

@@ -134,7 +134,7 @@ update(CommandOption, {
  */
 var Command = Class("Command", {
     init: function init(specs, description, action, extra) {
-        specs = Array.concat(specs); // XXX
+        specs = [].concat(specs); // XXX
 
         this.specs = specs;
         this.description = description;
@@ -992,7 +992,7 @@ var Commands = Module("commands", {
     hasDomain: function hasDomain(command, host) {
         try {
             for (let [cmd, args] of this.subCommands(command))
-                if (Array.concat(cmd.domains(args)).some(domain => util.isSubdomain(domain, host)))
+                if ([].concat(cmd.domains(args)).some(domain => util.isSubdomain(domain, host)))
                     return true;
         }
         catch (e) {

@@ -698,7 +698,7 @@ var JavaScript = Module("javascript", {
      *      functions.
      */
     setCompleter: function (funcs, completers) {
-        funcs = Array.concat(funcs);
+        funcs = [].concat(funcs);
         for (let func of funcs) {
             func.dactylCompleter = function (context, func, obj, args) {
                 let completer = completers[args.length - 1];

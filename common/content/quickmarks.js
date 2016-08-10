@@ -106,7 +106,7 @@ var QuickMarks = Module("quickmarks", {
         let uppercaseMarks = marks.filter(bind("test", /[A-Z]/)).sort();
         let numberMarks    = marks.filter(bind("test", /[0-9]/)).sort();
 
-        marks = Array.concat(lowercaseMarks, uppercaseMarks, numberMarks);
+        marks = [].concat(lowercaseMarks, uppercaseMarks, numberMarks);
 
         dactyl.assert(marks.length > 0, _("quickmark.none"));
 

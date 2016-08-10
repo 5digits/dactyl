@@ -758,7 +758,7 @@ var Option = Class("Option", {
         },
 
         stringlist: function stringlist(operator, values, scope, invert) {
-            values = Array.concat(values);
+            values = [].concat(values);
 
             function uniq(ary) {
                 let seen = new RealSet;
@@ -767,10 +767,10 @@ var Option = Class("Option", {
 
             switch (operator) {
             case "+":
-                return uniq(Array.concat(this.value, values), true);
+                return uniq([].concat(this.value, values), true);
             case "^":
                 // NOTE: Vim doesn't prepend if there's a match in the current value
-                return uniq(Array.concat(values, this.value), true);
+                return uniq([].concat(values, this.value), true);
             case "-":
                 return this.value.filter(function (item) {
                     return !this.has(item);
@@ -839,9 +839,9 @@ var Option = Class("Option", {
             acceptable = new RealSet(Object.keys(acceptable).map(k => this.parseKey(k)));
 
         if (this.type === "regexpmap" || this.type === "sitemap")
-            return Array.concat(vals).every(re => acceptable.has(re.result));
+            return [].concat(vals).every(re => acceptable.has(re.result));
 
-        return Array.concat(vals).every(v => acceptable.has(v));
+        return [].concat(vals).every(v => acceptable.has(v));
     },
 
     types: {}
