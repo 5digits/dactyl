@@ -18,6 +18,7 @@
 
     let identity = x => x;
 
+    // < FF47
     if (!Object.entries)
         Object.entries = function (obj) {
             let result = [];
@@ -32,6 +33,7 @@
             return result;
         };
 
+    // < FF47
     if (!Object.values)
         Object.values = function (obj) {
             let result = [];
@@ -46,6 +48,7 @@
             return result;
         };
 
+    // < FFEleventyBillion
     if (!Array.prototype.flatMap)
         Array.prototype.flatMap = function (fn = identity, self = null) {
             let result = [];
@@ -68,11 +71,18 @@
 	    return this.indexOf(...args) != -1;
         };
 
+    // < FF48
     if (!Array.prototype.values)
         Array.prototype.values = function* () {
             for (let [i, value] of this.entries())
                 yield value;
         };
+
+    // > FF47
+    // Broken in 48: primitive first arg is wrapped
+    Array.concat = function (...args) {
+        return Array.prototype.concat.apply([], args);
+    }
 
     // < FF40
     if (!String.prototype.includes)
