@@ -17,7 +17,11 @@ function module(uri) {
 
 const DEBUG = true;
 
-__defineGetter__("BOOTSTRAP", () => "resource://" + moduleName + "/bootstrap.jsm");
+Object.defineProperty(global, "BOOTSTRAP", {
+    get: () => "resource://" + moduleName + "/bootstrap.jsm",
+    enumerable: true,
+    configurable: true
+});
 
 var { AddonManager } = module("resource://gre/modules/AddonManager.jsm");
 var { XPCOMUtils }   = module("resource://gre/modules/XPCOMUtils.jsm");

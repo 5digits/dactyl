@@ -63,8 +63,12 @@ var History = Module("history", {
         let sh = webNav.sessionHistory;
 
         let obj = [];
-        obj.__defineGetter__("index", () => sh.index);
-        obj.__defineSetter__("index", val => { webNav.gotoIndex(val); });
+        Object.defineProperty(obj, "index", {
+            get: () => sh.index,
+            set: val => webNav.gotoIndex(val),
+            enumerable: true,
+            configurable: true
+        });
         obj[Symbol.iterator] = function () { return this.entries(); };
 
         for (let item of iter(sh.SHistoryEnumerator, Ci.nsISHEntry))

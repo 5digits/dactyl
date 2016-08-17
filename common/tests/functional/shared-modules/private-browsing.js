@@ -69,10 +69,13 @@ function privateBrowsing(controller) {
   this._pbMenuItem = new elementslib.Elem(this._controller.menus['tools-menu'].privateBrowsingItem);
   this._pbTransitionItem = new elementslib.ID(this._controller.window.document, "Tools:PrivateBrowsing");
 
-  this.__defineGetter__('_pbs', function() {
-    delete this._pbs;
-    return this._pbs = Cc["@mozilla.org/privatebrowsing;1"].
-                       getService(Ci.nsIPrivateBrowsingService);
+  Object.defineProperty(this, '_pbs', {
+    enumerable: true,
+    configurable: true,
+    get() {
+      return Cc["@mozilla.org/privatebrowsing;1"].
+             getService(Ci.nsIPrivateBrowsingService);
+    }
   });
 }
 

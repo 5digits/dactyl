@@ -253,15 +253,19 @@ overlay.overlayWindow(Object.keys(config.overlays),
                     this.initDependencies(className);
                 }
                 else
-                    modules.__defineGetter__(className, () => {
-                        let module = modules.jsmodules[className];
-                        Class.replaceProperty(modules, className, module);
-                        if (module.reallyInit)
-                            module.reallyInit(); // :(
+                    Object.defineProperty(modules, className, {
+                        get: () => {
+                            let module = modules.jsmodules[className];
+                            Class.replaceProperty(modules, className, module);
+                            if (module.reallyInit)
+                                module.reallyInit(); // :(
 
-                        if (!module.lazyDepends)
-                            self.initDependencies(className);
-                        return module;
+                            if (!module.lazyDepends)
+                                this.initDependencies(className);
+                            return module;
+                        },
+                        enumerable: true,
+                        configurable: true,
                     });
             }, this);
         },
@@ -380,9 +384,12 @@ overlay.overlayWindow(Object.keys(config.overlays),
 
             Module.list.forEach(mod => {
                 if (!mod.frobbed) {
-                    modules.__defineGetter__(mod.className, () => {
-                        delete modules[mod.className];
-                        return this.loadModule(mod.className, null, Components.stack.caller);
+                    Object.defineProperty(modules, mod.className, {
+                        get: () => {
+                            return this.loadModule(mod.className, null, Components.stack.caller);
+                        },
+                        enumerable: true,
+                        configurable: true
                     });
                     Object.keys(mod.prototype.INIT)
                         .forEach(name => { this.deferInit(name, mod.prototype.INIT, mod); });

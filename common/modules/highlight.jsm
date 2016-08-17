@@ -17,27 +17,31 @@ var Highlight = Struct("class", "selector", "sites",
                        "value", "extends", "agent",
                        "base", "baseClass", "style");
 Highlight.liveProperty = function (name, prop) {
-    this.prototype.__defineGetter__(name, function () {
-        return this.get(name);
-    });
-    this.prototype.__defineSetter__(name, function (val) {
-        if (isObject(val) && name !== "style") {
-            if (isArray(val))
-                val = Array.slice(val);
-            else
-                val = update({}, val);
-            Object.freeze(val);
-        }
-        this.set(name, val);
+    Object.defineProperty(this.prototype, name, {
+        get() {
+            return this.get(name);
+        },
+        set(val) {
+            if (isObject(val) && name !== "style") {
+                if (isArray(val))
+                    val = Array.slice(val);
+                else
+                    val = update({}, val);
+                Object.freeze(val);
+            }
+            this.set(name, val);
 
-        if (name === "value" || name === "extends")
-            for (let h of highlight)
-                if (h.extends.indexOf(this.class) >= 0)
-                    h.style.css = h.css;
+            if (name === "value" || name === "extends")
+                for (let h of highlight)
+                    if (h.extends.indexOf(this.class) >= 0)
+                        h.style.css = h.css;
 
-        this.style[prop || name] = this[prop || name];
-        if (this.onChange)
-            this.onChange();
+            this.style[prop || name] = this[prop || name];
+            if (this.onChange)
+                this.onChange();
+        },
+        enumerable: true,
+        configurable: true,
     });
 };
 Highlight.liveProperty("agent");
@@ -155,19 +159,23 @@ var Highlights = Module("Highlight", {
         if (!old && obj.base && obj.base.style.enabled)
             obj.style.enabled = true;
         else
-            this.loaded.__defineSetter__(obj.class, function () {
-                Object.defineProperty(this, obj.class, {
-                    value: true,
-                    configurable: true,
-                    enumerable: true,
-                    writable: true
-                });
+            Object.defineProperty(this.loaded, obj.class, {
+                set() {
+                    Object.defineProperty(this, obj.class, {
+                        value: true,
+                        configurable: true,
+                        enumerable: true,
+                        writable: true
+                    });
 
-                if (obj.class === obj.baseClass)
-                    for (let h of highlight)
-                        if (h.baseClass === obj.class)
-                            this[h.class] = true;
-                obj.style.enabled = true;
+                    if (obj.class === obj.baseClass)
+                        for (let h of highlight)
+                            if (h.baseClass === obj.class)
+                                this[h.class] = true;
+                    obj.style.enabled = true;
+                },
+                enumerable: true,
+                configurable: true
             });
         return obj;
     },

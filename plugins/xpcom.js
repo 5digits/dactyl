@@ -98,16 +98,20 @@ userContext.xpwrapper = function xpwrapper(obj, iface) {
         try {
             let shim = XPCOMShim([iface]);
             iter.forEach(properties(shim), function (prop) {
-                res.__defineGetter__(prop, function () {
-                    let res = obj.QueryInterface(Ci[iface])[prop];
-                    if (callable(res)) {
-                        let fn = (...args) => res.apply(obj, args);
-                        fn.toString = () => res.toString();
-                        fn.toSource = () => res.toSource();
-                        return fn;
-                    }
-                    return res;
-                })
+                Object.defineProperty(res, prop, {
+                    get() {
+                        let res = obj.QueryInterface(Ci[iface])[prop];
+                        if (callable(res)) {
+                            let fn = (...args) => res.apply(obj, args);
+                            fn.toString = () => res.toString();
+                            fn.toSource = () => res.toSource();
+                            return fn;
+                        }
+                        return res;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
             });
         }
         catch (e if e === Cr.NS_ERROR_NO_INTERFACE) {
@@ -146,7 +150,11 @@ memoize(userContext, "xpclasses", function () {
         return userContext.xpwrapper(cls);
     }
     Object.keys(Cc).forEach(function (k) {
-        xpclasses.__defineGetter__(k, () => xpclasses(k));
+        Object.defineProperty(xpclasses, k, {
+            get: () => xpclasses(k),
+            enumerable: true,
+            configurable: true
+        });
     });
     JavaScript.setCompleter([xpclasses], Completer(Cc));
     return xpclasses;
@@ -179,7 +187,11 @@ memoize(userContext, "xpservices", function () {
         return userContext.xpwrapper(cls);
     }
     Object.keys(Cc).forEach(function (k) {
-        xpservices.__defineGetter__(k, () => xpservices(k));
+        Object.defineProperty(xpservices, k, {
+            get: () => xpservices(k),
+            enumerable: true,
+            configurable: true
+        });
     });
     JavaScript.setCompleter([xpservices], Completer(Cc));
     return xpservices;
