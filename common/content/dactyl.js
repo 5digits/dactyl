@@ -2071,8 +2071,20 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         dactyl.initialized = true;
 
         util.delay(() => {
-            if (services.focus.activeWindow === window)
+            if (services.focus.activeWindow === window) {
                 overlay.activeWindow = window;
+            } else {
+                const onActivate = evt => {
+                    if (evt.target === window) {
+                        overlay.activeWindow = window;
+                    }
+                }
+                window.addEventListener("activate", onActivate, true);
+                window.addEventListener("unload", function onUnload() {
+                    window.removeEventListener("unload", onUnload);
+                    window.removeEventListener("activate", onActivate, true);
+                });
+            }
 
             util.flushLateMethods(dactyl);
         });
