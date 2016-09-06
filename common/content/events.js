@@ -870,6 +870,12 @@ var Events = Module("events", {
                 autocommands.trigger("Fullscreen", { url: this._fullscreen ? "on" : "off", state: this._fullscreen });
             }
             statusline.updateZoomLevel();
+        },
+
+        activate: function onActivate(event) {
+            if (event.target === window) {
+                overlay.activeWindow = window;
+            }
         }
     },
 
