@@ -1111,7 +1111,7 @@ var Buffer = Module("Buffer", {
                                : rect => rect.top;
 
         let elems = Array.from(path.matcher(this.focusedFrame.document),
-                               elem => [e, distance(e.getBoundingClientRect())])
+                               elem => [elem, distance(elem.getBoundingClientRect())])
                          .filter(([elem, dist]) => dist > FUDGE)
                          .sort((a, b) => a[1] - b[1]);
 
