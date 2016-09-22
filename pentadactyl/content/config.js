@@ -203,7 +203,7 @@ var Config = Module("config", ConfigBase, {
         const { document } = window;
 
         completion.location = function location(context) {
-            completion.autocomplete("history", context);
+            completion.autocomplete("unifiedcomplete", context);
             context.title = ["Smart Completions"];
         };
 
