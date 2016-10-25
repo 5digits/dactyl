@@ -151,9 +151,9 @@ ProtocolBase.prototype = {
 };
 
 function LocaleChannel(pkg, locale, path, orig) {
-    for (let locale of [locale, "en-US"])
+    for (let loc of [locale, "en-US"])
         for (let sep of "-/") {
-            var channel = Channel(["resource:/", pkg + sep + locale, path].join("/"),
+            var channel = Channel(["resource:/", pkg + sep + loc, path].join("/"),
                                   orig, true, true);
             if (channel)
                 return channel;
