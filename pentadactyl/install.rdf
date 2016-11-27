@@ -9,6 +9,7 @@
         em:description="Firefox for Vim and Links addicts"
         em:homepageURL="http://5digits.org/pentadactyl"
         em:bootstrap="true"
+        em:multiprocessCompatible="false"
         em:strictCompatibility="true">
 
         <em:creator>Kris Maglione, Doug Kearns</em:creator>
