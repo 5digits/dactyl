@@ -58,7 +58,7 @@ var Config = Module("config", ConfigBase, {
                 savepage: ["Save page to disk",
                     () => { window.saveDocument(window.content.document); }],
                 searchengines: ["Manage installed search engines",
-                    () => { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
+                    () => { window.openPreferences("paneSearch"); }],
                 selectionsource: ["View selection source",
                     () => { modules.buffer.viewSelectionSource(); }]
             },
