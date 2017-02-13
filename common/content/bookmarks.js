@@ -372,8 +372,18 @@ var Bookmarks = Module("bookmarks", {
                 }
                 catch (e) {}
 
-            if (charset)
-                var encodedParam = escape(window.convertFromUnicode(charset, param)).replace(/\+/g, encodeURIComponent);
+            if (charset) {
+                try {
+                    let converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"].
+                                        createInstance(Ci.nsIScriptableUnicodeConverter);
+                    converter.charset = charset;
+                    var encodedParam = converter.ConvertFromUnicode(param) + converter.Finish();
+                }
+                catch (e) {
+                    encodedParam = param;
+                }
+                encodedParam = escape(encodedParam).replace(/\+/g, encodeURIComponent);
+            }
             else
                 encodedParam = bookmarkcache.keywords[keyword.toLowerCase()].encodeURIComponent(param);
 
