@@ -192,7 +192,8 @@ var Buffer = Module("Buffer", {
     incrementURL: function incrementURL(count) {
         let { dactyl } = this.modules;
 
-        let matches = this.uri.spec.match(/(.*?)(\d+)(\D*)$/);
+        let decodedspec = decodeURIComponent(this.uri.spec)
+        let matches = decodedspec.match(/(.*?)(\d+)(\D*)$/);
         dactyl.assert(matches);
         let oldNum = matches[2];
 
