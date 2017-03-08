@@ -17,18 +17,12 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                                                              this.progressListener);
         util.addObserver(this);
 
-        this._unoverlay = overlay.overlayObject(FullZoom, {
-            get siteSpecific() { return false; },
-            set siteSpecific(val) {}
-        });
-
         config.tabbrowser.addTabsProgressListener(this.tabsProgressListener);
     },
 
     destroy: function () {
         this.cleanupProgressListener();
         this.observe.unregister();
-        this._unoverlay();
         config.tabbrowser.removeTabsProgressListener(this.tabsProgressListener);
     },
 
