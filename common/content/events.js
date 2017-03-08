@@ -618,9 +618,6 @@ var Events = Module("events", {
                 util.trapErrors("addEditActionListener",
                                 DOM(elem).editor, editor);
 
-            if (elem == window)
-                overlay.activeWindow = window;
-
             overlay.setData(elem, "had-focus", true);
             if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
                 if (Events.isHidden(elem, true))
@@ -873,6 +870,12 @@ var Events = Module("events", {
                 autocommands.trigger("Fullscreen", { url: this._fullscreen ? "on" : "off", state: this._fullscreen });
             }
             statusline.updateZoomLevel();
+        },
+
+        activate: function onActivate(event) {
+            if (event.target === window) {
+                overlay.activeWindow = window;
+            }
         }
     },
 

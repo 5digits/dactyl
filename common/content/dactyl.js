@@ -2069,13 +2069,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         statusline.update();
         dactyl.log(_("dactyl.initialized", config.appName), 0);
         dactyl.initialized = true;
-
-        util.delay(() => {
-            if (services.focus.activeWindow === window)
-                overlay.activeWindow = window;
-
-            util.flushLateMethods(dactyl);
-        });
     }
 });
 
