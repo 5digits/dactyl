@@ -103,7 +103,8 @@ install:
 		awk -v "profile=$(PROFILE)"					\
 			'BEGIN { RS="#" } 					\
 			index($$0, "\nName=" profile "\n") { print; exit } 	\
-			!profile && /\nName=default\n/ { args["name=default"] = $$0 } 	\
+			!profile && /\nName=default([\-0-9]*)?\n/  		\
+			    { args["name=default"] = $$0 } 			\
 			!profile && /\nDefault=1/ { args["default=1"] = $$0 } 	\
 			END {							\
 				if (args["default=1"]) print args["default=1"];	\
