@@ -443,7 +443,7 @@ function values(obj) {
     if (isinstance(obj, ["Generator", "Iterator", Iter]))
         return iter(obj);
 
-    if (Symbol.iterator in obj)
+    if (typeof obj === 'object' && Symbol.iterator in obj)
         return iter(obj[Symbol.iterator]());
 
     return iter(function* () {
