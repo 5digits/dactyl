@@ -1737,7 +1737,8 @@ var Buffer = Module("Buffer", {
         let timers = new WeakMap;
 
         return function smoothScrollTo(node, x, y) {
-            let { options } = overlay.activeModules;
+            let doc = node.ownerDocument || node.document || node;
+            let { options } = util.topWindow(doc.defaultView).dactyl.modules;
 
             let time = options["scrolltime"];
             let steps = options["scrollsteps"];
