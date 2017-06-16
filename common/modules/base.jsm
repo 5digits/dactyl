@@ -923,7 +923,7 @@ function Class(...args) {
         })',
         "constructor", (name || superclass.className).replace(/\W/g, "_"))
             .replace("PARAMS",
-                     /^function .*?\((.*?)\)/
+                     /^.*?\((.*?)\)/
                         .exec(args[0] && args[0].init || Class.prototype.init)[1]
                         .replace(/\b(self|res|Constructor)\b/g, "$1_")));
 
